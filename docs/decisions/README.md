@@ -20,6 +20,7 @@ ficam no `CLAUDE.md` do projeto.
 | Banco de dados | PostgreSQL; produção no Neon (Marketplace da Vercel); local em Docker Desktop | plataforma | [0003](0003-banco-de-dados-postgresql-neon-docker.md) |
 | Linguagem / framework | TypeScript; Next.js (telas) + Hono em `/api` com OpenAPI/Swagger via Zod; camada de serviços independente | plataforma | [0004](0004-linguagem-e-framework-typescript-nextjs-hono.md) |
 | Autenticação | Better Auth, usuários e sessões no nosso PostgreSQL; autorização na camada de serviços | plataforma | [0005](0005-autenticacao-better-auth.md) |
+| Baseline de segurança | OWASP ASVS 5.0 nível 2 + NIST SP 800-63B (senhas, 2FA, recuperação) + LGPD; políticas de negócio definidas por projeto | plataforma | [0006](0006-baseline-de-seguranca-asvs-nist-lgpd.md) |
 
 ## Premissas de arquitetura
 
@@ -38,6 +39,10 @@ Requisitos que orientam as próximas decisões:
 * **Autenticação ≠ autorização:** o login diz *quem é* o usuário; o que ele
   pode ver e fazer é verificado na camada de serviços, igual para telas, API
   e MCP. Um agente de IA nunca enxerga mais que o usuário que o autorizou.
+* **Padrão × política:** os padrões de segurança (ADR-0006) definem *como*
+  implementar; as políticas de negócio (quem convida, quais perfis exigem
+  2FA, duração de sessão, retenção de auditoria, matriz de permissões) são
+  definidas no `CLAUDE.md` de cada projeto, dentro desse baseline.
 
 ## Em discussão
 
@@ -47,11 +52,12 @@ Requisitos que orientam as próximas decisões:
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
 | Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3) |
+| Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
 
 ## Notas explicativas
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
-Zod, Swagger/OpenAPI, Better Auth) ficam em
+Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST e LGPD) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 

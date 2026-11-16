@@ -97,3 +97,40 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Contexto:** a equipe do Auth.js (NextAuth), biblioteca mais antiga do
   ecossistema, juntou-se ao Better Auth em 2025; o Auth.js ficou em
   manutenção.
+
+## Padrões de segurança: ASVS, NIST e LGPD (ADR-0006)
+
+* **OWASP:** fundação sem fins lucrativos que publica padrões abertos e
+  gratuitos de segurança de aplicações. O **OWASP Top 10** é a lista das
+  falhas mais comuns (conscientização); o **ASVS** é o checklist verificável.
+* **ASVS 5.0 (Application Security Verification Standard):** centenas de
+  requisitos organizados por tema (autenticação, sessão, autorização,
+  validação, criptografia, logs, API, configuração) e em três níveis:
+  * **Nível 1:** básico, para qualquer aplicação.
+  * **Nível 2:** para aplicações com dados sensíveis ou confidenciais. É o
+    adotado.
+  * **Nível 3:** para sistemas críticos (bancos, saúde, infraestrutura).
+* **Exemplos de requisitos do ASVS:** sessão expira e pode ser revogada;
+  cookies com atributos de segurança; limite de tentativas de login;
+  mensagens que não revelam se um e-mail está cadastrado; troca de senha
+  exige a senha atual; autorização verificada no servidor em todo pedido.
+* **NIST SP 800-63B:** diretriz do instituto de padrões dos EUA sobre
+  identidade digital, referência mundial. Pontos principais:
+  * Senha **longa** em vez de "complexa"; sem obrigar símbolos e números.
+  * **Sem troca periódica forçada**; troca apenas se houver suspeita de
+    vazamento.
+  * Bloquear senhas conhecidas em vazamentos e senhas óbvias.
+  * 2FA por **aplicativo autenticador ou passkey**; SMS desaconselhado
+    (sujeito a clonagem de chip).
+* **Passkey:** login sem senha usando a biometria ou o PIN do dispositivo
+  (celular, computador), resistente a phishing.
+* **LGPD (Lei nº 13.709/2018):** lei brasileira de proteção de dados
+  pessoais. Exige finalidade e base legal para cada dado coletado, coletar
+  só o necessário, atender aos direitos do titular (acesso, correção,
+  exclusão, portabilidade), proteger os dados e comunicar incidentes
+  relevantes à ANPD e aos titulares.
+* **OWASP Cheat Sheets:** guias práticos e curtos por tema (ex.: "esqueci a
+  senha", MFA, gestão de sessão), usados durante a implementação.
+* **Padrão × política:** os padrões dizem *como* fazer com segurança; quem
+  pode convidar, quais perfis exigem 2FA ou por quanto tempo guardar a
+  auditoria são decisões de negócio de cada projeto.
