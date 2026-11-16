@@ -14,6 +14,7 @@ ver [ADR-0001](0001-registrar-decisoes-de-arquitetura-com-adrs.md)).
 | Registro de decisões | ADRs MADR em `docs/decisions/` + este resumo | plataforma | [0001](0001-registrar-decisoes-de-arquitetura-com-adrs.md) |
 | Pasta e backup | Projetos em `C:\dev\<nome>`; git com commits frequentes; backup manual no Google Drive | plataforma | [0002](0002-pasta-de-trabalho-local-e-backup.md) |
 | Banco de dados | PostgreSQL; produção no Neon (Marketplace da Vercel); local em Docker Desktop | plataforma | [0003](0003-banco-de-dados-postgresql-neon-docker.md) |
+| Linguagem / framework | TypeScript; Next.js (telas) + Hono em `/api` com OpenAPI/Swagger via Zod; camada de serviços independente | plataforma | [0004](0004-linguagem-e-framework-typescript-nextjs-hono.md) |
 
 ## Premissas de arquitetura
 
@@ -34,8 +35,8 @@ Requisitos que orientam as próximas decisões:
 
 | Tema | Situação |
 |---|---|
-| Linguagem / framework | Próxima decisão; considerar OpenAPI/Swagger nativo e SDK MCP |
-| Autenticação | Depois da linguagem |
+| Autenticação | Próxima decisão; atender pessoas, API e MCP (OAuth) |
+| ORM, interface, testes e lint | Na criação do projeto |
 | Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3) |
 
 ## Notas explicativas
