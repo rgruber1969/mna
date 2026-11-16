@@ -72,6 +72,7 @@ Escolhas de baixo impacto e fáceis de reverter ficam só aqui.
 | Tema | Decisão | Data |
 |---|---|---|
 | Finais de linha | LF em todos os arquivos (`.gitattributes`) | 2026-11-16 |
+| Tema visual padrão | Identidade RGRUBER: `#123E7A` / `#5E8FD3` / `#5E6470`, Manrope, sem degradês ([docs/marca/rgruber](../marca/rgruber/README.md)) | 2026-11-16 |
 
 ## Substituídas
 
