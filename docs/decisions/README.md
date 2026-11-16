@@ -25,6 +25,7 @@ ficam no `CLAUDE.md` do projeto.
 | Instruções do Claude Code | CLAUDE.md como índice (~80 linhas); regras de negócio em `docs/projeto/`; `.claude/rules/` com `paths:`; skills para procedimentos | plataforma | [0008](0008-organizacao-das-instrucoes-do-claude-code.md) |
 | Multi-tenant | Banco único; `tenant_id` em toda tabela de negócio; RLS no PostgreSQL + filtro na camada de serviços; tenant = organização do Better Auth; usuário global com participação por tenant | plataforma | [0009](0009-multi-tenant-banco-unico-com-rls.md) |
 | White label | Admin do tenant define logos, nome, cor primária, cor de destaque e fonte (lista curta); tons derivados; contraste WCAG AA; variáveis CSS em tempo real; tokens semânticos obrigatórios; rodapé "Desenvolvido por RGRUBER Consultoria"; evolução prevista para editor completo | plataforma | [0010](0010-white-label-tokens-por-tenant.md) |
+| Endereços | Subdomínio por tenant (`slug.dominio`); console da plataforma em `admin.dominio`, na mesma aplicação; cookies por host; o endereço identifica, a sessão autoriza | plataforma | [0011](0011-enderecos-subdominio-por-tenant-e-console.md) |
 
 ## Premissas de arquitetura
 
@@ -57,14 +58,15 @@ Requisitos que orientam as próximas decisões:
 | ORM, interface, testes e lint | Na criação do projeto |
 | Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3); seguir as regras do ADR-0007 para documentos; necessário para logos de tenant |
 | Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
+| Domínio | Escolha e compra do domínio definitivo (DNS na Vercel, subdomínio coringa) |
 | Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
 
 ## Notas explicativas
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
 Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
-pessoais, instruções do Claude Code, multi-tenant, RLS e white label) ficam
-em
+pessoais, instruções do Claude Code, multi-tenant, RLS, white label e
+subdomínios) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 

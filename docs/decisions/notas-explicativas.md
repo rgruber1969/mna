@@ -263,3 +263,21 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **SVG higienizado:** SVG é texto e pode conter código executável; um logo
   SVG enviado por usuário precisa ter scripts e links externos removidos
   antes de ser exibido, ou o upload aceita só PNG/WebP.
+
+## Subdomínios e console (ADR-0011)
+
+* **Subdomínio:** a parte antes do domínio principal. Em `bt.mna.com.br`,
+  `bt` é o subdomínio do tenant BT; em `admin.mna.com.br`, `admin` é o
+  console da RGRUBER.
+* **Subdomínio coringa (`*.mna.com.br`):** configuração de DNS que faz
+  qualquer subdomínio apontar para a aplicação; assim, um tenant novo
+  funciona sem mexer no DNS.
+* **Uma aplicação, duas "portas":** console e tenants rodam no mesmo
+  código; a aplicação olha o endereço digitado e decide qual área mostrar.
+  Para o usuário, parecem sistemas separados.
+* **"O endereço identifica, a sessão autoriza":** digitar `bt.mna.com.br`
+  não dá acesso a nada; o sistema confere se a pessoa logada participa do
+  tenant BT.
+* **Cookie restrito ao host:** o "crachá" de login emitido em
+  `bt.mna.com.br` não vale em `xyz.mna.com.br` nem em `admin.mna.com.br`.
+* **Slug:** o nome curto do tenant usado no endereço (`bt`, `xyz`).
