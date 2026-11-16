@@ -169,3 +169,36 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Chave de criptografia:** perder a chave significa perder os dados
   criptografados; por isso guarda, backup e rotação da chave são tratados
   como decisão própria.
+
+## Como o Claude Code carrega instruções (ADR-0008)
+
+| Mecanismo | Quando entra no contexto | Economiza contexto? |
+|---|---|---|
+| Texto no `CLAUDE.md` | Sempre, em toda sessão | Não |
+| Arquivo importado com `@caminho` | Sempre: é "colado" junto com o CLAUDE.md | Não, só organiza |
+| Rule em `.claude/rules/` com `paths:` | Só ao trabalhar em arquivos daqueles caminhos | Sim |
+| Link simples (sem `@`) para documento | Só quando o Claude decide abrir | Sim |
+| Skill | Só quando a tarefa corresponde à skill | Sim |
+
+* **Por que limitar o CLAUDE.md:** tudo o que é carregado sempre disputa
+  atenção com a tarefa do momento; regras demais carregadas sempre tendem a
+  ser menos seguidas.
+* **`~/.claude/CLAUDE.md`:** arquivo pessoal, na pasta do usuário, carregado
+  em todos os projetos (ex.: idioma, forma de trabalhar).
+* **Rule com `paths:`:** arquivo Markdown em `.claude/rules/` com um
+  cabeçalho que diz a quais pastas ou arquivos ele se aplica, por exemplo:
+
+  ```markdown
+  ---
+  paths:
+    - "src/server/auth/**"
+  ---
+  Sempre exigir 2FA para perfis X e Y. Detalhes: docs/projeto/autenticacao-e-sessao.md
+  ```
+
+* **Skill:** pacote de instruções para uma tarefa recorrente (ex.: "criar
+  rota protegida"), acionado quando a tarefa aparece ou pelo comando
+  `/nome-da-skill`.
+* **Hook:** comando executado automaticamente pelo Claude Code em momentos
+  definidos (ex.: rodar lint após editar um arquivo, avisar se o CLAUDE.md
+  passar de 80 linhas). Não depende da memória do Claude.

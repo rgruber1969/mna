@@ -22,6 +22,7 @@ ficam no `CLAUDE.md` do projeto.
 | Autenticação | Better Auth, usuários e sessões no nosso PostgreSQL; autorização na camada de serviços | plataforma | [0005](0005-autenticacao-better-auth.md) |
 | Baseline de segurança | OWASP ASVS 5.0 nível 2 + NIST SP 800-63B (senhas, 2FA, recuperação) + LGPD; políticas de negócio definidas por projeto | plataforma | [0006](0006-baseline-de-seguranca-asvs-nist-lgpd.md) |
 | Dados pessoais | Inventário e classificação; criptografia por campo para dados sensíveis; logs sem dados pessoais; testes e previews sem dados reais; retenção e exclusão | plataforma | [0007](0007-protecao-de-dados-pessoais.md) |
+| Instruções do Claude Code | CLAUDE.md como índice (~80 linhas); regras de negócio em `docs/projeto/`; `.claude/rules/` com `paths:`; skills para procedimentos | plataforma | [0008](0008-organizacao-das-instrucoes-do-claude-code.md) |
 
 ## Premissas de arquitetura
 
@@ -59,8 +60,8 @@ Requisitos que orientam as próximas decisões:
 ## Notas explicativas
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
-Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD e proteção de dados
-pessoais) ficam em
+Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
+pessoais e instruções do Claude Code) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 
