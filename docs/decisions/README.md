@@ -5,7 +5,11 @@ contexto, as alternativas e os prós e contras (formato MADR,
 ver [ADR-0001](0001-registrar-decisoes-de-arquitetura-com-adrs.md)).
 
 **Escopo:** `plataforma` = reaproveitado no template e em futuras aplicações;
-`MNA` = específico desta aplicação.
+`projeto` = específico da aplicação atual.
+
+Este arquivo contém apenas decisões e premissas de plataforma, reaproveitáveis
+em qualquer projeto. Regras de negócio e premissas específicas da aplicação
+ficam no `CLAUDE.md` do projeto.
 
 ## Decisões em vigor
 
@@ -35,20 +39,11 @@ Requisitos que orientam as próximas decisões:
   pode ver e fazer é verificado na camada de serviços, igual para telas, API
   e MCP. Um agente de IA nunca enxerga mais que o usuário que o autorizou.
 
-### Premissas específicas do MNA
-
-* **Perfis diversos:** administradores do portal, advogados, advisors,
-  clientes e outros; a maioria é externa e vem de organizações diferentes.
-* **Acesso por deal:** cada usuário vê apenas os deals (e documentos) em que
-  foi incluído, com papel definido naquele deal.
-* **Entrada por convite**, 2FA para acesso a documentos sigilosos e trilha de
-  auditoria (quem acessou o quê e quando).
-
 ## Em discussão
 
 | Tema | Situação |
 |---|---|
-| Modelo de permissões | Papel global + papel por deal; ADR próprio |
+| Modelo de permissões | Papel global + papel por recurso; ADR próprio |
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
 | Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3) |
@@ -103,8 +98,8 @@ Requisitos que orientam as próximas decisões:
 
 * **Hono:** framework para construir a API, a parte da aplicação que atende
   outros sistemas com dados, não pessoas com telas. Define as rotas (ex.:
-  `GET /api/deals/42` devolve o deal 42 em JSON; `POST /api/deals` cria um
-  deal) e o que cada uma faz. É leve, roda dentro do Next.js na Vercel ou
+  `GET /api/contatos/42` devolve o contato 42 em JSON; `POST /api/contatos`
+  cria um contato) e o que cada uma faz. É leve, roda dentro do Next.js na Vercel ou
   sozinho em qualquer servidor, e o complemento `@hono/zod-openapi` gera a
   documentação Swagger automaticamente. Analogia: o Next.js é a recepção que
   atende pessoas; o Hono é o balcão de protocolo que atende sistemas.
@@ -112,10 +107,10 @@ Requisitos que orientam as próximas decisões:
   Escreve-se uma vez como um dado deve ser, por exemplo:
 
   ```ts
-  const NovoDeal = z.object({
+  const NovoContato = z.object({
     nome: z.string().min(3),
-    valorEstimado: z.number().positive(),
-    etapa: z.enum(["prospecção", "due diligence", "negociação", "fechado"]),
+    email: z.string().email(),
+    tipo: z.enum(["cliente", "fornecedor", "parceiro"]),
   })
   ```
 
@@ -138,10 +133,10 @@ Requisitos que orientam as próximas decisões:
   2FA, passkeys, organizações e convites, papéis, chaves de API para
   integrações e servidor OAuth para clientes MCP.
 * **Responde "quem é você?"** (autenticação). "O que você pode fazer?"
-  (autorização, como o acesso por deal) é regra nossa, na camada de
-  serviços.
-* **Custo zero por usuário:** importante quando cada deal envolve dezenas de
-  participantes externos.
+  (autorização, como acesso restrito a determinados registros) é regra
+  nossa, na camada de serviços.
+* **Custo zero por usuário:** importante quando há muitos usuários externos
+  (clientes, parceiros, convidados).
 * **Responsabilidade nossa:** manter a biblioteca atualizada, configurar
   limite de tentativas e cookies seguros, e construir as telas de login,
   convite e 2FA.

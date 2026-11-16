@@ -3,7 +3,7 @@
 status: proposto
 date: AAAA-MM-DD
 decision-makers: Ricardo Gruber
-# Escopo: "plataforma" (reaproveitado em futuras aplicações) | "MNA" (específico desta aplicação)
+# Escopo: "plataforma" (reaproveitado em futuras aplicações) | "projeto" (específico da aplicação atual)
 scope: plataforma
 ---
 

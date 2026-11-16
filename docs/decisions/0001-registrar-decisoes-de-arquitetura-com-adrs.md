@@ -116,6 +116,10 @@ Complementa a decisão sem substituí-la:
   o ADR completo quando precisar do contexto.
 * Decisões de baixo impacto e fáceis de reverter podem ficar só na tabela de
   "decisões menores" do resumo, sem ADR próprio.
+* O valor de escopo `MNA` passa a ser `projeto` (específico da aplicação
+  atual), para que o template sirva a qualquer projeto.
+* O resumo contém apenas decisões e premissas de plataforma; regras e
+  premissas específicas da aplicação ficam no `CLAUDE.md` do projeto.
 
 ## Mais informações
 
