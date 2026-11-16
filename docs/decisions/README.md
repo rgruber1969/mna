@@ -15,6 +15,7 @@ ver [ADR-0001](0001-registrar-decisoes-de-arquitetura-com-adrs.md)).
 | Pasta e backup | Projetos em `C:\dev\<nome>`; git com commits frequentes; backup manual no Google Drive | plataforma | [0002](0002-pasta-de-trabalho-local-e-backup.md) |
 | Banco de dados | PostgreSQL; produção no Neon (Marketplace da Vercel); local em Docker Desktop | plataforma | [0003](0003-banco-de-dados-postgresql-neon-docker.md) |
 | Linguagem / framework | TypeScript; Next.js (telas) + Hono em `/api` com OpenAPI/Swagger via Zod; camada de serviços independente | plataforma | [0004](0004-linguagem-e-framework-typescript-nextjs-hono.md) |
+| Autenticação | Better Auth, usuários e sessões no nosso PostgreSQL; autorização na camada de serviços | plataforma | [0005](0005-autenticacao-better-auth.md) |
 
 ## Premissas de arquitetura
 
@@ -30,12 +31,25 @@ Requisitos que orientam as próximas decisões:
   regras.
 * **Autenticação para três públicos:** pessoas (web), sistemas (API, via
   chave ou token) e agentes de IA (MCP, via OAuth).
+* **Autenticação ≠ autorização:** o login diz *quem é* o usuário; o que ele
+  pode ver e fazer é verificado na camada de serviços, igual para telas, API
+  e MCP. Um agente de IA nunca enxerga mais que o usuário que o autorizou.
+
+### Premissas específicas do MNA
+
+* **Perfis diversos:** administradores do portal, advogados, advisors,
+  clientes e outros; a maioria é externa e vem de organizações diferentes.
+* **Acesso por deal:** cada usuário vê apenas os deals (e documentos) em que
+  foi incluído, com papel definido naquele deal.
+* **Entrada por convite**, 2FA para acesso a documentos sigilosos e trilha de
+  auditoria (quem acessou o quê e quando).
 
 ## Em discussão
 
 | Tema | Situação |
 |---|---|
-| Autenticação | Próxima decisão; atender pessoas, API e MCP (OAuth) |
+| Modelo de permissões | Papel global + papel por deal; ADR próprio |
+| Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
 | Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3) |
 
@@ -84,6 +98,56 @@ Requisitos que orientam as próximas decisões:
   com `pg_dump`/`pg_restore`.
 * **Não inclui:** autenticação e armazenamento de arquivos (decisões
   próprias).
+
+### O que são Hono e Zod (ADR-0004)
+
+* **Hono:** framework para construir a API, a parte da aplicação que atende
+  outros sistemas com dados, não pessoas com telas. Define as rotas (ex.:
+  `GET /api/deals/42` devolve o deal 42 em JSON; `POST /api/deals` cria um
+  deal) e o que cada uma faz. É leve, roda dentro do Next.js na Vercel ou
+  sozinho em qualquer servidor, e o complemento `@hono/zod-openapi` gera a
+  documentação Swagger automaticamente. Analogia: o Next.js é a recepção que
+  atende pessoas; o Hono é o balcão de protocolo que atende sistemas.
+* **Zod:** biblioteca para descrever o formato dos dados e verificá-los.
+  Escreve-se uma vez como um dado deve ser, por exemplo:
+
+  ```ts
+  const NovoDeal = z.object({
+    nome: z.string().min(3),
+    valorEstimado: z.number().positive(),
+    etapa: z.enum(["prospecção", "due diligence", "negociação", "fechado"]),
+  })
+  ```
+
+  Essa única definição serve a quatro usos: (1) **validação**: a API recusa
+  dados inválidos com mensagem clara; (2) **Swagger**: a documentação mostra
+  campos e valores permitidos; (3) **MCP**: um agente de IA sabe que dados
+  fornecer; (4) **telas**: o TypeScript aponta, já no editor, o uso de campos
+  inexistentes. Documentação e comportamento nunca divergem.
+* **Swagger / OpenAPI:** OpenAPI é o padrão de descrição de APIs; Swagger é
+  a página interativa que lê essa descrição e permite consultar e testar
+  cada rota pelo navegador.
+
+### O que é Better Auth (ADR-0005)
+
+* **Biblioteca de autenticação** open source em TypeScript que roda dentro da
+  própria aplicação (não é um serviço externo). Usuários, sessões e chaves
+  ficam em tabelas no nosso PostgreSQL.
+* **Funciona por plugins**, ativados conforme a necessidade: e-mail e senha,
+  link mágico (login por link enviado ao e-mail), login com Google/Microsoft,
+  2FA, passkeys, organizações e convites, papéis, chaves de API para
+  integrações e servidor OAuth para clientes MCP.
+* **Responde "quem é você?"** (autenticação). "O que você pode fazer?"
+  (autorização, como o acesso por deal) é regra nossa, na camada de
+  serviços.
+* **Custo zero por usuário:** importante quando cada deal envolve dezenas de
+  participantes externos.
+* **Responsabilidade nossa:** manter a biblioteca atualizada, configurar
+  limite de tentativas e cookies seguros, e construir as telas de login,
+  convite e 2FA.
+* **Contexto:** a equipe do Auth.js (NextAuth), biblioteca mais antiga do
+  ecossistema, juntou-se ao Better Auth em 2025; o Auth.js ficou em
+  manutenção.
 
 ## Decisões menores (sem ADR próprio)
 
