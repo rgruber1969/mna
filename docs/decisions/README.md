@@ -23,6 +23,7 @@ ficam no `CLAUDE.md` do projeto.
 | Baseline de segurança | OWASP ASVS 5.0 nível 2 + NIST SP 800-63B (senhas, 2FA, recuperação) + LGPD; políticas de negócio definidas por projeto | plataforma | [0006](0006-baseline-de-seguranca-asvs-nist-lgpd.md) |
 | Dados pessoais | Inventário e classificação; criptografia por campo para dados sensíveis; logs sem dados pessoais; testes e previews sem dados reais; retenção e exclusão | plataforma | [0007](0007-protecao-de-dados-pessoais.md) |
 | Instruções do Claude Code | CLAUDE.md como índice (~80 linhas); regras de negócio em `docs/projeto/`; `.claude/rules/` com `paths:`; skills para procedimentos | plataforma | [0008](0008-organizacao-das-instrucoes-do-claude-code.md) |
+| Multi-tenant | Banco único; `tenant_id` em toda tabela de negócio; RLS no PostgreSQL + filtro na camada de serviços; tenant = organização do Better Auth; usuário global com participação por tenant | plataforma | [0009](0009-multi-tenant-banco-unico-com-rls.md) |
 
 ## Premissas de arquitetura
 
@@ -50,10 +51,11 @@ Requisitos que orientam as próximas decisões:
 
 | Tema | Situação |
 |---|---|
-| Modelo de permissões | Papel global + papel por recurso; ADR próprio |
+| White label | Logomarca, nome e cores por tenant, com verificação de contraste; tema padrão RGRUBER; próxima decisão |
+| Modelo de permissões | Papel global + papel por recurso, dentro do tenant; ADR próprio |
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
-| Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3); seguir as regras do ADR-0007 para documentos |
+| Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3); seguir as regras do ADR-0007 para documentos; necessário para logos de tenant |
 | Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
 | Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
 
@@ -61,7 +63,7 @@ Requisitos que orientam as próximas decisões:
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
 Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
-pessoais e instruções do Claude Code) ficam em
+pessoais, instruções do Claude Code, multi-tenant e RLS) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 

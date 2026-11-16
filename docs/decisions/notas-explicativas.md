@@ -202,3 +202,38 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Hook:** comando executado automaticamente pelo Claude Code em momentos
   definidos (ex.: rodar lint após editar um arquivo, avisar se o CLAUDE.md
   passar de 80 linhas). Não depende da memória do Claude.
+
+## Multi-tenant e RLS (ADR-0009)
+
+* **Tenant:** cada empresa cliente que contrata a aplicação, com seus
+  próprios usuários, dados e identidade visual. "Multi-tenant" é uma única
+  instalação da aplicação atendendo vários clientes, com os dados de cada
+  um isolados.
+* **Modelos de isolamento:** banco único com coluna `tenant_id` (adotado),
+  um schema por tenant, ou um banco por tenant. Quanto mais isolado, mais
+  caro de operar.
+* **RLS (Row-Level Security, segurança por linha):** recurso do PostgreSQL
+  que filtra quais linhas cada conexão pode ver ou alterar. A regra fica no
+  banco e vale para qualquer consulta, mesmo que o código esqueça o filtro.
+* **Analogia:** a camada de serviços é a recepção do prédio, que confere
+  para qual andar a pessoa pode ir; o RLS é a fechadura de cada sala. Se a
+  recepção se distrair, a sala de outra empresa continua trancada.
+* **Exemplo:**
+
+  ```sql
+  -- "Só mostre linhas do tenant da transação atual"
+  CREATE POLICY isolamento_tenant ON deals
+    USING (tenant_id = current_setting('app.tenant_id')::uuid);
+  ```
+
+  A cada requisição, a aplicação informa o tenant ao banco
+  (`SET LOCAL app.tenant_id = ...`); a partir daí, `SELECT * FROM deals`
+  devolve apenas as linhas daquele tenant, mesmo sem `WHERE`.
+* **Por que importa:** o erro mais comum em SaaS é esquecer um filtro de
+  tenant numa consulta e mostrar dados de um cliente a outro. Com RLS, esse
+  esquecimento não vaza dados.
+* **O que o RLS não faz aqui:** regras finas dentro do tenant (ex.: um
+  usuário só vê os registros em que foi incluído) continuam na camada de
+  serviços.
+* **Usuário global:** a pessoa tem um único login e uma participação em cada
+  tenant que atende, com papel próprio em cada um.
