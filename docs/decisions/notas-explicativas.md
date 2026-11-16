@@ -134,3 +134,38 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Padrão × política:** os padrões dizem *como* fazer com segurança; quem
   pode convidar, quais perfis exigem 2FA ou por quanto tempo guardar a
   auditoria são decisões de negócio de cada projeto.
+
+## Proteção de dados pessoais (ADR-0007)
+
+* **O que a stack já faz sozinha:** senhas com hash (o Better Auth grava só
+  uma "impressão digital" irreversível), disco criptografado no Neon
+  (protege contra roubo físico, não contra quem acessa o banco) e tráfego
+  criptografado (TLS). Os demais dados pessoais ficam legíveis no banco.
+* **Pseudonimização:** troca o dado por um código; a ligação com a pessoa
+  fica guardada à parte. Para a LGPD continua sendo dado pessoal, mas o
+  risco diminui.
+* **Anonimização:** remove a ligação de forma irreversível. Deixa de ser
+  dado pessoal, mas o dado não serve mais para operar o sistema.
+* **Criptografia por campo:** a aplicação embaralha o campo antes de gravar
+  e desembaralha ao ler, com uma chave guardada fora do banco. Quem acessa
+  só o banco (ou um backup vazado) vê texto ilegível.
+* **Índice cego:** um hash do valor, gravado ao lado do campo criptografado,
+  que permite buscar por igualdade (ex.: "existe alguém com este CPF?") sem
+  revelar o valor.
+* **Por que não criptografar tudo:** campos como nome e e-mail de login
+  precisam ser pesquisados, ordenados e usados para enviar mensagens. A LGPD
+  exige medidas adequadas ao risco, não criptografia de todos os campos.
+* **Classificação adotada:** *público* (exibível), *pessoal* (legível, com
+  acesso controlado) e *sensível* (criptografado por campo).
+* **Logs:** principal fonte de vazamento em sistemas reais. Registra-se o ID
+  do usuário, nunca e-mail, CPF ou tokens; o indispensável é mascarado
+  (ex.: `r***@dominio.com`).
+* **Ambientes de teste:** o branch de preview do Neon é uma cópia do banco de
+  produção; por isso previews e banco local usam dados fictícios ou
+  anonimizados.
+* **Inventário de dados:** lista dos campos pessoais com finalidade, base
+  legal, classificação e prazo de retenção. Atende ao registro das operações
+  de tratamento exigido pela LGPD (art. 37).
+* **Chave de criptografia:** perder a chave significa perder os dados
+  criptografados; por isso guarda, backup e rotação da chave são tratados
+  como decisão própria.

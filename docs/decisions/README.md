@@ -21,6 +21,7 @@ ficam no `CLAUDE.md` do projeto.
 | Linguagem / framework | TypeScript; Next.js (telas) + Hono em `/api` com OpenAPI/Swagger via Zod; camada de serviços independente | plataforma | [0004](0004-linguagem-e-framework-typescript-nextjs-hono.md) |
 | Autenticação | Better Auth, usuários e sessões no nosso PostgreSQL; autorização na camada de serviços | plataforma | [0005](0005-autenticacao-better-auth.md) |
 | Baseline de segurança | OWASP ASVS 5.0 nível 2 + NIST SP 800-63B (senhas, 2FA, recuperação) + LGPD; políticas de negócio definidas por projeto | plataforma | [0006](0006-baseline-de-seguranca-asvs-nist-lgpd.md) |
+| Dados pessoais | Inventário e classificação; criptografia por campo para dados sensíveis; logs sem dados pessoais; testes e previews sem dados reais; retenção e exclusão | plataforma | [0007](0007-protecao-de-dados-pessoais.md) |
 
 ## Premissas de arquitetura
 
@@ -51,13 +52,15 @@ Requisitos que orientam as próximas decisões:
 | Modelo de permissões | Papel global + papel por recurso; ADR próprio |
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
-| Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3) |
+| Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3); seguir as regras do ADR-0007 para documentos |
+| Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
 | Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
 
 ## Notas explicativas
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
-Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST e LGPD) ficam em
+Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD e proteção de dados
+pessoais) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 
