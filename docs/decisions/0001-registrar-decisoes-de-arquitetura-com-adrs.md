@@ -105,6 +105,18 @@ Convenções:
 * Contras: o raciocínio se perde; o reuso em futuras aplicações vira cópia
   sem entendimento.
 
+## Adendo (2026-11-16): resumo das decisões
+
+Complementa a decisão sem substituí-la:
+
+* `docs/decisions/README.md` mantém a tabela das decisões em vigor, em
+  discussão e substituídas, atualizada no mesmo commit de cada ADR.
+* O CLAUDE.md referencia apenas esse resumo (`@docs/decisions/README.md`),
+  não cada ADR, para não carregar todos os ADRs em toda sessão. O Claude abre
+  o ADR completo quando precisar do contexto.
+* Decisões de baixo impacto e fáceis de reverter podem ficar só na tabela de
+  "decisões menores" do resumo, sem ADR próprio.
+
 ## Mais informações
 
 * MADR: <https://adr.github.io/madr/>
