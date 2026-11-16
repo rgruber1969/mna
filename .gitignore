@@ -1,0 +1,17 @@
+# Segredos e configuração local
+.env
+.env*.local
+!.env.example
+
+# Dependências e builds
+node_modules/
+.next/
+.vercel/
+dist/
+build/
+coverage/
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,27 @@
+# Serviços locais de desenvolvimento (ADR-0003).
+# Subir:  docker compose up -d      Parar: docker compose down
+# Apagar os dados locais: docker compose down -v
+name: mna
+
+services:
+  db:
+    # Manter na mesma versão major do Postgres usado no Neon.
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mna_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-mna}
+    ports:
+      # Apenas localhost: o banco não fica exposto na rede.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
