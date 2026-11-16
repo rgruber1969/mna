@@ -24,6 +24,7 @@ ficam no `CLAUDE.md` do projeto.
 | Dados pessoais | Inventário e classificação; criptografia por campo para dados sensíveis; logs sem dados pessoais; testes e previews sem dados reais; retenção e exclusão | plataforma | [0007](0007-protecao-de-dados-pessoais.md) |
 | Instruções do Claude Code | CLAUDE.md como índice (~80 linhas); regras de negócio em `docs/projeto/`; `.claude/rules/` com `paths:`; skills para procedimentos | plataforma | [0008](0008-organizacao-das-instrucoes-do-claude-code.md) |
 | Multi-tenant | Banco único; `tenant_id` em toda tabela de negócio; RLS no PostgreSQL + filtro na camada de serviços; tenant = organização do Better Auth; usuário global com participação por tenant | plataforma | [0009](0009-multi-tenant-banco-unico-com-rls.md) |
+| White label | Admin do tenant define logos, nome, cor primária, cor de destaque e fonte (lista curta); tons derivados; contraste WCAG AA; variáveis CSS em tempo real; tokens semânticos obrigatórios; rodapé "Desenvolvido por RGRUBER Consultoria"; evolução prevista para editor completo | plataforma | [0010](0010-white-label-tokens-por-tenant.md) |
 
 ## Premissas de arquitetura
 
@@ -51,7 +52,6 @@ Requisitos que orientam as próximas decisões:
 
 | Tema | Situação |
 |---|---|
-| White label | Logomarca, nome e cores por tenant, com verificação de contraste; tema padrão RGRUBER; próxima decisão |
 | Modelo de permissões | Papel global + papel por recurso, dentro do tenant; ADR próprio |
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
@@ -63,7 +63,8 @@ Requisitos que orientam as próximas decisões:
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
 Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
-pessoais, instruções do Claude Code, multi-tenant e RLS) ficam em
+pessoais, instruções do Claude Code, multi-tenant, RLS e white label) ficam
+em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 

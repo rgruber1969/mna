@@ -237,3 +237,29 @@ Claude Code. Decisões em vigor: [README](README.md).
   serviços.
 * **Usuário global:** a pessoa tem um único login e uma participação em cada
   tenant que atende, com papel próprio em cada um.
+
+## White label e tokens de design (ADR-0010)
+
+* **White label:** o cliente usa o sistema com a própria marca (logo, nome,
+  cores), como se fosse dele. Aqui, com um discreto "Desenvolvido por
+  RGRUBER Consultoria" no rodapé.
+* **Variável CSS:** um "apelido" para um valor de estilo, definido num lugar
+  só e usado em toda a interface. Trocar o valor do apelido muda todas as
+  telas de uma vez, sem novo deploy.
+* **Token de design semântico:** variável com nome que diz *para que serve*,
+  não *qual cor é*. Ex.: `primary` (cor principal de ação), `text-muted`
+  (texto secundário), `border`. Os componentes usam sempre os tokens; o
+  tenant muda o valor deles.
+* **Por que proibir cor fixa no código:** se um botão usa `#123E7A`
+  diretamente, ele ignora a marca do tenant. Com o token `primary`, ele
+  acompanha qualquer marca e permite ampliar a personalização no futuro sem
+  mexer nos componentes.
+* **Tons derivados:** a partir da cor primária escolhida, o sistema calcula
+  automaticamente as variações (mais clara para fundos, mais escura para
+  hover, a cor de texto legível sobre ela).
+* **WCAG AA:** padrão internacional de acessibilidade; exige contraste
+  mínimo de 4,5:1 entre texto normal e fundo (3:1 para texto grande). Abaixo
+  disso, pessoas com baixa visão ou em telas ruins não conseguem ler.
+* **SVG higienizado:** SVG é texto e pode conter código executável; um logo
+  SVG enviado por usuário precisa ter scripts e links externos removidos
+  antes de ser exibido, ou o upload aceita só PNG/WebP.

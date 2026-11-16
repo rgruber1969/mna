@@ -13,7 +13,7 @@ arquivo criado) ou `recusado`.
 
 | # | Instrução ou procedimento | Ocorrências | Proposta | Situação |
 |---|---|---|---|---|
-| 1 | Ao gravar um ADR, atualizar o README das decisões e, se houver conceito novo, as notas explicativas | 7 (ADR-0003 a 0009) | Skill "registrar ADR" (template MADR, numeração, README, notas, commit) | observando |
+| 1 | Ao gravar um ADR, atualizar o README das decisões e, se houver conceito novo, as notas explicativas | 8 (ADR-0003 a 0010) | Skill "registrar ADR" (template MADR, numeração, README, notas, commit) | observando |
 | 2 | Explicar em linguagem simples cada ferramenta ou conceito novo adotado | 5 | Já coberto pelo `~/.claude/CLAUDE.md` | observando |
 
 ## Histórico de propostas
