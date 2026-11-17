@@ -422,3 +422,24 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Segredo × chave de criptografia:** segredos (senhas de serviços, chaves
   de API) dão acesso a serviços; chaves de criptografia protegem dados.
   Ambos ficam fora do repositório.
+
+## Ferramentas de desenvolvimento (ADR-0018)
+
+* **ORM:** camada que traduz o código TypeScript em comandos do banco e
+  descreve as tabelas no próprio código. **Drizzle** é o escolhido.
+* **Migração:** arquivo que registra cada mudança na estrutura do banco
+  (nova tabela, nova coluna), aplicada em ordem em todos os ambientes.
+* **shadcn/ui:** coleção de componentes de interface (botões, tabelas,
+  diálogos) que são **copiados para dentro do projeto**, em vez de
+  instalados como pacote fechado; por isso podem ser alterados livremente.
+* **Tailwind CSS:** forma de estilizar a interface com classes curtas
+  (ex.: espaçamentos, cores por tokens), muito usada com shadcn/ui.
+* **Vitest:** executa testes automatizados de código (regras de negócio,
+  permissões).
+* **Playwright:** abre um navegador de verdade e simula um usuário
+  clicando, para testar fluxos completos.
+* **ESLint:** aponta problemas e violações de regras no código; aqui também
+  verifica regras dos ADRs (ex.: proibição de cor fixa).
+* **Prettier:** formata o código automaticamente, sempre no mesmo padrão.
+* **pnpm:** instalador de bibliotecas (pacotes), mais rápido e econômico
+  que o npm padrão.

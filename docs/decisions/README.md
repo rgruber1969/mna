@@ -26,6 +26,7 @@ projeto e em `docs/projeto/`.
 | [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
 | [0016](0016-antivirus-nos-uploads.md) | Antivírus | Simulado (local/demo), GuardDuty (produção); download só após "Disponível" |
 | [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | `.env` / Vercel (fora da produção); AWS KMS com chave por tenant (produção) |
+| [0018](0018-ferramentas-de-desenvolvimento.md) | Ferramentas | Drizzle; shadcn/ui + Tailwind; Vitest + Playwright; ESLint + Prettier; pnpm |
 
 ## Premissas de arquitetura
 
@@ -39,7 +40,6 @@ projeto e em `docs/projeto/`.
 
 | Tema | Situação |
 |---|---|
-| ORM, interface, testes e lint | Na criação do projeto |
 | Checklist ASVS nível 2 | Curadoria; vira skill/rule do template |
 
 ## Decisões menores (sem ADR próprio)
