@@ -305,3 +305,28 @@ Claude Code. Decisões em vigor: [README](README.md).
   limite de ~4,5 MB por requisição das funções da Vercel.
 * **Por que não guardar arquivos no banco:** deixa o banco lento, caro e
   com backups pesados.
+
+## Modelo de permissões (ADR-0013)
+
+* **Recurso e ação:** recurso é uma área do sistema (geralmente um item de
+  menu, ex.: Documentos); ação é o que se faz nela (ver, criar, editar,
+  excluir, baixar).
+* **Matriz de permissões:** tabela recurso × ação com "sim" ou "não".
+* **Perfil:** um nome para uma matriz (ex.: "Advisor da vendedora"),
+  criado e ajustado pelo administrador do tenant.
+* **Perfil no tenant × perfil no processo:** o primeiro vale para telas
+  gerais (cadastros, configurações); o segundo, para o que está dentro de
+  um processo (no MNA, um deal).
+* **Participação:** o vínculo "esta pessoa, neste processo, com este
+  perfil, neste alcance".
+* **Alcance:** a parte do processo onde a participação vale (o processo
+  inteiro ou etapas/subetapas específicas).
+* **Soma de permissões:** quem tem duas participações no mesmo lugar recebe
+  tudo o que cada uma concede.
+* **Negado por padrão:** o que não foi concedido está proibido; por isso
+  somar nunca abre uma brecha.
+* **Verificador único:** uma só função decide "pode ou não pode", usada
+  igualmente por telas, API e MCP. Esconder um botão na tela é
+  conveniência; a segurança está no verificador.
+* **RBAC:** sigla em inglês para controle de acesso baseado em papéis
+  (perfis); o modelo adotado é um RBAC configurável com escopo por recurso.

@@ -1,8 +1,8 @@
 # MNA: perfis e permissões
 
-Regras de quem acessa o quê. A implementação técnica segue o ADR de modelo
-de permissões (pendente), dentro do isolamento por tenant (ADR-0009) e do
-console separado (ADR-0011).
+Regras de quem acessa o quê. Modelo técnico no ADR-0013 (perfis
+configuráveis em duas camadas, com alcance), dentro do isolamento por tenant
+(ADR-0009) e do console separado (ADR-0011).
 
 ## Dois níveis de usuário
 
@@ -25,6 +25,8 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
 
 ## Administradores do tenant
 
+* Veem e acessam **todos os deals** do tenant, sem precisar ser incluídos,
+  com todos os acessos auditados.
 * Editam as permissões de todos os usuários do tenant.
 * Únicos que convidam usuários, incluem e removem pessoas de deals (versão
   1) e geram chaves de API.
@@ -43,9 +45,22 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
     mesmo perfil.
 * **Granularidade:** cada item de menu × ações **ver, criar, editar, excluir
   e baixar** (quando aplicável).
-* **Escopo por deal:** o usuário só acessa deals em que foi incluído, com o
-  perfil que tem naquele deal. Um usuário pode ter perfis diferentes em
-  deals diferentes.
+* **Duas camadas de perfil:** perfil no tenant (cadastros, configurações,
+  auditoria, lista de deals) e perfil no deal (etapas, documentos, tarefas,
+  contratos).
+* **Escopo por deal:** o usuário só acessa deals em que foi incluído
+  (participação). Um usuário pode ter perfis diferentes em deals
+  diferentes.
+* **Vários perfis no mesmo deal:** permitido; as permissões se **somam**.
+* **Alcance obrigatório em toda participação** (desde a versão 1): "deal
+  inteiro" ou uma ou mais etapas/subetapas específicas.
+* No modo por usuário, o ajuste individual vale por **usuário × perfil**,
+  em todos os deals em que o usuário tem aquele perfil.
+* **Papel da empresa × perfil do usuário:** o papel da empresa no deal
+  (ex.: escritório da compradora) é informação de negócio; as permissões
+  vêm do perfil de cada pessoa. Ao atribuir um papel à empresa, o sistema
+  pode sugerir o perfil correspondente para os usuários dela; o
+  administrador confirma.
 * **Auditoria:** consultável por quem tiver essa permissão concedida pelos
   administradores do tenant.
 * **Áreas restritas dentro do deal** (ex.: notas internas de advisors):
@@ -58,10 +73,15 @@ Exemplo ilustrativo (os valores reais são configurados pelo tenant):
 | Advisor | sim | sim | sim |
 | Cliente | sim | não | só os liberados |
 
-## Pontos a definir no ADR de permissões
+## Exemplo: escritório com duas funções no mesmo deal
 
-* Relação entre "perfil" (papel no deal) e permissões por menu: perfil
-  global no tenant, perfil por deal, ou ambos.
-* Precedência entre permissão do perfil e ajuste individual do usuário.
-* Como as permissões se aplicam à API e ao futuro MCP (mesmas regras, sem
-  exceção).
+O escritório da compradora atua como advogado societário do deal e também
+faz a diligência jurídica. A Ana, desse escritório, tem duas participações:
+
+| Participação | Perfil | Alcance | Matriz (exemplo) |
+|---|---|---|---|
+| 1 | Advogado da compradora | Deal inteiro | Documentos: ver, baixar · Tarefas: ver |
+| 2 | Auditor jurídico da compradora | Subetapa "Diligência jurídica" | Documentos: ver, criar, editar, baixar · Tarefas: ver, criar, editar |
+
+Resultado: na diligência jurídica, a Ana soma as duas matrizes; nas demais
+etapas, vale só a participação 1.

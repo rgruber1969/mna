@@ -27,6 +27,7 @@ ficam no `CLAUDE.md` do projeto.
 | White label | Admin do tenant define logos, nome, cor primária, cor de destaque e fonte (lista curta); tons derivados; contraste WCAG AA; variáveis CSS em tempo real; tokens semânticos obrigatórios; rodapé "Desenvolvido por RGRUBER Consultoria"; evolução prevista para editor completo | plataforma | [0010](0010-white-label-tokens-por-tenant.md) |
 | Endereços | Subdomínio por tenant (`slug.dominio`); console da plataforma em `admin.dominio`, na mesma aplicação; cookies por host; o endereço identifica, a sessão autoriza | plataforma | [0011](0011-enderecos-subdominio-por-tenant-e-console.md) |
 | Armazenamento de arquivos | Protocolo S3; local MinIO, demonstração Cloudflare R2 (dados fictícios), produção AWS S3 São Paulo; privado, link temporário após permissão e auditoria; upload direto do navegador | plataforma | [0012](0012-armazenamento-de-arquivos-s3.md) |
+| Permissões | Perfis configuráveis pelo tenant (recurso × ação); perfil no tenant + perfil no processo; participação com alcance obrigatório; várias participações somam; modo por perfil ou por usuário; negado por padrão; verificador único | plataforma | [0013](0013-modelo-de-permissoes.md) |
 
 ## Premissas de arquitetura
 
@@ -54,7 +55,6 @@ Requisitos que orientam as próximas decisões:
 
 | Tema | Situação |
 |---|---|
-| Modelo de permissões | Papel global + papel por recurso, dentro do tenant; ADR próprio |
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
 | Antivírus nos uploads | Escanear arquivos enviados antes de liberar download (documentos vêm de empresas externas) |
@@ -67,7 +67,7 @@ Requisitos que orientam as próximas decisões:
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
 Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
 pessoais, instruções do Claude Code, multi-tenant, RLS, white label,
-subdomínios e armazenamento S3) ficam em
+subdomínios, armazenamento S3 e permissões) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 
