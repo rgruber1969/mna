@@ -281,3 +281,27 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Cookie restrito ao host:** o "crachá" de login emitido em
   `bt.mna.com.br` não vale em `xyz.mna.com.br` nem em `admin.mna.com.br`.
 * **Slug:** o nome curto do tenant usado no endereço (`bt`, `xyz`).
+
+## Armazenamento de arquivos (ADR-0012)
+
+* **Armazenamento de objetos:** serviço feito para guardar arquivos
+  ("objetos") de qualquer tamanho, barato e durável. O banco guarda só as
+  informações sobre o arquivo (nome, versão, quem enviou); o arquivo fica
+  no armazenamento.
+* **Protocolo S3:** a "língua" criada pela Amazon para conversar com
+  armazenamento de objetos, hoje padrão de mercado. AWS S3, Cloudflare R2 e
+  MinIO falam a mesma língua; por isso dá para trocar de um para outro só
+  mudando a configuração.
+* **AWS S3:** o serviço original da Amazon; tem região em São Paulo.
+* **Cloudflare R2:** alternativa compatível com S3, com franquia gratuita e
+  download sem custo de tráfego; sem região no Brasil.
+* **MinIO:** armazenamento compatível com S3 que roda num contêiner Docker,
+  usado no desenvolvimento local.
+* **Link temporário (URL pré-assinada):** endereço de download ou upload
+  válido por poucos minutos, gerado pela aplicação depois de conferir a
+  permissão. Quem recebe o link não precisa de senha, mas ele expira logo.
+* **Upload direto do navegador:** o arquivo vai do computador do usuário
+  direto ao armazenamento, sem passar pelo servidor da aplicação; evita o
+  limite de ~4,5 MB por requisição das funções da Vercel.
+* **Por que não guardar arquivos no banco:** deixa o banco lento, caro e
+  com backups pesados.

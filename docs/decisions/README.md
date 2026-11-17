@@ -26,6 +26,7 @@ ficam no `CLAUDE.md` do projeto.
 | Multi-tenant | Banco único; `tenant_id` em toda tabela de negócio; RLS no PostgreSQL + filtro na camada de serviços; tenant = organização do Better Auth; usuário global com participação por tenant | plataforma | [0009](0009-multi-tenant-banco-unico-com-rls.md) |
 | White label | Admin do tenant define logos, nome, cor primária, cor de destaque e fonte (lista curta); tons derivados; contraste WCAG AA; variáveis CSS em tempo real; tokens semânticos obrigatórios; rodapé "Desenvolvido por RGRUBER Consultoria"; evolução prevista para editor completo | plataforma | [0010](0010-white-label-tokens-por-tenant.md) |
 | Endereços | Subdomínio por tenant (`slug.dominio`); console da plataforma em `admin.dominio`, na mesma aplicação; cookies por host; o endereço identifica, a sessão autoriza | plataforma | [0011](0011-enderecos-subdominio-por-tenant-e-console.md) |
+| Armazenamento de arquivos | Protocolo S3; local MinIO, demonstração Cloudflare R2 (dados fictícios), produção AWS S3 São Paulo; privado, link temporário após permissão e auditoria; upload direto do navegador | plataforma | [0012](0012-armazenamento-de-arquivos-s3.md) |
 
 ## Premissas de arquitetura
 
@@ -56,7 +57,6 @@ Requisitos que orientam as próximas decisões:
 | Modelo de permissões | Papel global + papel por recurso, dentro do tenant; ADR próprio |
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
-| Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3); seguir as regras do ADR-0007 para documentos; necessário para logos de tenant |
 | Antivírus nos uploads | Escanear arquivos enviados antes de liberar download (documentos vêm de empresas externas) |
 | Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
 | Domínio | Escolha e compra do domínio definitivo (DNS na Vercel, subdomínio coringa) |
@@ -66,8 +66,8 @@ Requisitos que orientam as próximas decisões:
 
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
 Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
-pessoais, instruções do Claude Code, multi-tenant, RLS, white label e
-subdomínios) ficam em
+pessoais, instruções do Claude Code, multi-tenant, RLS, white label,
+subdomínios e armazenamento S3) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 
@@ -78,6 +78,7 @@ Escolhas de baixo impacto e fáceis de reverter ficam só aqui.
 | Tema | Decisão | Data |
 |---|---|---|
 | Finais de linha | LF em todos os arquivos (`.gitattributes`) | 2026-11-16 |
+| Região do banco | Produção no Neon em São Paulo; demonstração em qualquer região gratuita (ADR-0012) | 2026-11-17 |
 | Tema visual padrão | Identidade RGRUBER: `#123E7A` / `#5E8FD3` / `#5E6470`, Manrope, sem degradês ([docs/marca/rgruber](../marca/rgruber/README.md)) | 2026-11-16 |
 
 ## Substituídas
