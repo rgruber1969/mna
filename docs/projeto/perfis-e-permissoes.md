@@ -63,8 +63,18 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
   administrador confirma.
 * **Auditoria:** consultável por quem tiver essa permissão concedida pelos
   administradores do tenant.
-* **Áreas restritas dentro do deal** (ex.: notas internas de advisors):
-  para depois.
+* **Lista de acesso por versão de documento** (áreas restritas):
+  * Quem envia uma versão escolhe, por **perfil e/ou usuário**, quem pode
+    **ver e baixar** aquela versão.
+  * A lista **só restringe**: as opções são os participantes que já têm
+    acesso àquela etapa do deal; ninguém ganha acesso além do seu alcance.
+  * **Administradores do tenant** veem todas as versões, inclusive as
+    restritas, com auditoria.
+  * Nova versão vem com a lista **pré-preenchida com a da versão anterior**,
+    ajustável.
+  * Conversas de uma versão ficam visíveis só para quem tem acesso a ela.
+  * Exemplo: notas internas do lado vendedor numa versão visível apenas aos
+    usuários da vendedora e do seu advisor.
 
 Exemplo ilustrativo (os valores reais são configurados pelo tenant):
 

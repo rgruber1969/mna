@@ -19,15 +19,15 @@ estimativas iniciais do Claude, para revisão do responsável. A coluna
 | 8 | Deals: participantes, papéis, várias vendedoras | Essencial | M | 7 | |
 | 9 | Etapas: cadastro padrão e adaptação por deal (lista e linha do tempo) | Essencial | M | 8 | |
 | 10 | Etapas com subetapas, dependências e paralelismo, com manuseio gráfico | Alto | G | 9 | |
-| 11 | Documentos com versões, comentários, classificação e filtros (data room) | Essencial | G | 8, Armazenamento | |
+| 11 | Documentos com versões, comentários, classificação, filtros e lista de acesso por versão (data room) | Essencial | G | 8, Armazenamento | |
 | 12 | Lista padrão de documentos por etapa/subetapa | Alto | M | 9, 11 | |
 | 13 | Templates DOCX com preenchimento de campos | Médio | M | 12 | |
-| 14 | Painel de pendências e status na tela principal | Alto | M | 8, 9 | |
-| 15 | Kanban de tarefas | Médio | M | 14 | |
-| 16 | Mensageria | Médio | G | 14 | |
+| 14 | Tela principal: KPIs e gráficos, pendências, prazos, status dos deals, últimas mensagens | Alto | M | 8, 9 | |
+| 15 | Kanban de deals (funil por etapa principal) + visão em tabela + histórico do deal | Alto | M | 9 | |
+| 16 | Mensageria em deal, etapa, versão de documento e tarefa (sem tempo real, imutável, anexos) + configuração de avisos do tenant | Médio | G | 11, 14 | |
 | 17 | Contratos de serviço (mandato, honorários) | Médio | M | 7, 11 | |
 | 18 | Valuation | Médio | G | Definição da estrutura | |
-| 19 | E-book | Médio | G | Definição da estrutura | |
+| 19 | E-book e OnePager (teaser e completo) em PDF, com versões, comentários da vendedora, liberação ao comprador e logo da vendedora no deal | Médio | G | 7, 8, 11 | |
 | 20 | Auditoria de tudo + tela de consulta | Essencial | M | 2 | |
 | 21 | Limpeza de auditoria com exportação PDF/XLSX | Baixo no início | M | 20 | |
 | 22 | Exportação completa do deal em PDF (fim da retenção) | Baixo no início | M | 8, 11 | |
@@ -35,11 +35,18 @@ estimativas iniciais do Claude, para revisão do responsável. A coluna
 | 24 | Criptografia de campos sensíveis | Essencial | P | Gestão de chaves | |
 | 25 | API REST com Swagger (cresce junto com cada funcionalidade) | Essencial | M | 5 | |
 | 26 | Chaves de API geradas por administradores | Médio | P | 25 | |
+| 27 | Tarefas: vários responsáveis (usuários/perfis), checklist, documentos ligados | Alto | M | 8 | |
+| 28 | Tarefas automáticas por gatilhos fixos (a informar) | Médio | M | 27 | |
+| 29 | Gatilhos de tarefas configuráveis pelo tenant | Baixo | G | 28 | |
+| 30 | Menções (@pessoa) e marcar mensagem como tarefa | Médio | M | 16, 27 | |
+| 31 | Resumos automáticos (mensagens e histórico de documento): texto simulado na demonstração | Médio | P | 11, 16 | |
 
 Observações:
 
 * Itens 21 e 22 só são necessários quando os prazos de retenção vencerem;
   podem entrar depois sem risco, desde que os dados sejam guardados
   corretamente desde o início.
-* Itens 18 e 19 precisam de definição de estrutura antes de estimar
+* Item 18 (valuation) precisa de definição de estrutura antes de estimar
   melhor.
+* Item 31: a geração real dos resumos (IA ou resumo local sem IA) é
+  decisão para a produção (`pendencias.md`).

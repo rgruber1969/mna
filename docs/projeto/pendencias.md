@@ -9,14 +9,12 @@ registrado.
 - [x] **1. Skill "registrar ADR"**: aprovada e criada em
       `.claude/skills/registrar-adr/SKILL.md`.
 - [x] **2. Checklist ASVS nível 2**: aprovado em
-      `docs/seguranca/asvs-checklist.md` (215 aplica, 14 n/a, 20 futuro
-      MCP, 4 condicionais a WebSocket).
-- [ ] **3. Questionários de definição**: aguardando respostas em
-      `perguntas-fase2.md`:
-  - [ ] 3a. E-book
-  - [ ] 3b. Kanban de tarefas
-  - [ ] 3c. Mensageria
-  - [ ] 3d. Áreas restritas dentro do deal
+      `docs/seguranca/asvs-checklist.md` (215 aplica, 18 n/a, 20 futuro
+      MCP; WebSocket descartado no questionário 2).
+- [x] **3. Questionários de definição**: respondidos em
+      `perguntas-fase2.md` e incorporados a `dominio.md`,
+      `perfis-e-permissoes.md` (lista de acesso por versão), ADR-0013
+      (adendo), `escopo-v1.md` e `backlog-futuro.md`.
 - [x] **4. Relembrar o conceito da decisão "Neon em São Paulo na
       produção"**: explicado em 2026-11-17 (região = local físico do
       servidor; motivos: LGPD, latência, coerência com AWS São Paulo;
@@ -25,6 +23,12 @@ registrado.
       revisando as estimativas de valor e esforço (que são do Claude) e
       considerando que os itens 21 e 22 podem ficar para depois sem risco.
 - [ ] **6. Valuation**: detalhar a funcionalidade (questionário próprio).
+
+## Antes da produção
+
+- [ ] **Resumos automáticos com IA ou sem IA** (mensagens e histórico de
+      documento): decidir provedor de IA e confidencialidade, ou adotar
+      resumo local sem IA. Até lá, texto simulado na demonstração.
 
 ## Dependem de terceiros ou de tempo
 

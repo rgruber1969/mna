@@ -64,7 +64,12 @@ Processo de M&A (inicialmente aquisição). Pontos-chave:
 * Participantes: empresas com seus papéis e usuários com seu perfil naquele
   deal.
 * Contém etapas, documentos, tarefas e contratos de serviço.
+* **Logomarca da empresa vendedora** pode ser enviada no próprio deal (usada
+  no e-book e no OnePager). A marca do sistema continua a do tenant (white
+  label).
 * Deal encerrado continua acessível para consulta.
+* **Histórico do deal** visível a partir do cartão (kanban) ou da linha
+  (tabela).
 
 ### Valuation
 
@@ -72,11 +77,50 @@ Entidade própria, no mesmo nível do deal, usada principalmente pelo advisor.
 Pode estar ligada a um deal e/ou a uma empresa vendedora. Estrutura a
 detalhar.
 
-### E-book
+### E-book e OnePager
 
-Material de apresentação da empresa vendedora, montado pelo advisor, em
-geral durante a prospecção. Tarefa importante, mas opcional. Estrutura a
-detalhar.
+Material de apresentação da empresa vendedora a potenciais compradores,
+montado pelo advisor, em geral durante a prospecção (tarefa importante, mas
+opcional).
+
+* **Quatro documentos por deal:** e-book **teaser** (anônimo, antes do NDA),
+  e-book **completo** (depois do NDA), **OnePager teaser** e **OnePager
+  completo**.
+* **Formato na versão 1:** PDF (outros formatos no backlog).
+* **Conteúdo:** combinação de dados digitados no sistema, puxados do
+  cadastro da empresa e do valuation, e arquivos anexados.
+* **Identidade visual:** do tenant, da empresa vendedora (logo enviada no
+  deal), do advisor da vendedora, ou combinação, à escolha do usuário.
+* **Versões e revisão:** cada versão recebe comentários da vendedora antes
+  de o advisor produzir a próxima.
+* **Liberação ao comprador:** a vendedora muda o status para "disponível ao
+  comprador"; o sistema envia e-mail aos usuários do comprador com link para
+  a tela no sistema, onde visualizam ou baixam o PDF.
+
+Estrutura sugerida (aprovada; referência complementar: info memo enviado
+pelo responsável):
+
+| Seção | E-book completo | Teaser |
+|---|---|---|
+| Capa com codinome do projeto | Sim | Sim |
+| Aviso legal | Sim | Sim |
+| Agenda | Sim | Sim |
+| Sumário executivo e grandes números (KPIs) | Sim | Sim, números em faixas |
+| Histórico e marcos | Sim | Sem nomes nem datas identificáveis |
+| Produtos e serviços | Sim | Genérico |
+| Mercado, ecossistema e concorrência | Sim | Sim |
+| Clientes: perfil, concentração e casos | Sim | Sem clientes nomeados |
+| Operação, equipe, sócios e organograma | Sim | Sem nomes |
+| Parcerias | Sim | Genérico |
+| Estrutura societária | Sim | Não |
+| Plano de negócios e prioridades | Sim | Resumido |
+| Dados financeiros (histórico e projeções) | Sim | Em faixas |
+| Tese de investimento | Sim | Sim |
+| Estrutura da transação proposta | Sim | Resumida |
+| Próximos passos e contatos do advisor | Sim | Sim (só o advisor) |
+
+**OnePager:** uma página com destaques, grandes números e tese (versões
+teaser e completa).
 
 ### Contrato de serviço
 
@@ -130,18 +174,73 @@ Etapas padrão:
   podem ser atrelados aos documentos padrão. Na versão 1, por
   **preenchimento de campos** (o sistema gera o DOCX preenchido; a edição
   acontece no Word).
+* **Lista de acesso por versão:** quem envia uma versão escolhe, por perfil
+  e/ou usuário, quem pode **ver e baixar** aquela versão (regras em
+  `perfis-e-permissoes.md`). Quem quiser alterar baixa, edita (ex.:
+  comentários no Word) e envia nova versão ligada ao mesmo documento.
+  Não há rascunho nem fluxo de "liberar": a versão final é enviada já com
+  o acesso do lado comprador, quando for o caso.
+* Versões listadas em ordem decrescente de data e hora.
+* **Resumo do histórico de alterações** do documento (ver "Resumos
+  automáticos").
 * Sem marca d'água ou bloqueio de download: vale a permissão do usuário.
 * O conjunto de documentos do deal, filtrado por permissão, funciona como
   **data room**.
 
+### Kanban de deals
+
+* **Funil por etapa:** colunas = etapas do deal (configuráveis, com padrão
+  igual às etapas padrão); cartões = deals.
+* Deal com etapas em paralelo aparece só na **etapa principal** (a mais
+  avançada), com indicador de outras etapas ativas; assim os KPIs não
+  contam o mesmo deal duas vezes.
+* **Visão em tabela** como alternativa.
+* Kanban de tarefas gerais (fora de deal): backlog.
+
 ### Tarefas e pendências
 
-* **Na tela principal:** pendências do usuário e status do processo,
-  inclusive o que depende de outras pessoas.
-* **Tela de detalhe com kanban** (a definir) e **mensageria**.
+* Campos: título, descrição, responsáveis, prazo, prioridade,
+  etapa/subetapa, documentos ligados, checklist e comentários; atributos
+  específicos de deal podem surgir depois.
+* **Vários responsáveis:** usuários e/ou perfis.
+* Criar, mover e concluir seguem as **permissões do deal**.
+* **Tarefas automáticas** por gatilhos (a informar); gatilhos configuráveis
+  pelo sistema são um cenário futuro.
+* Dependência entre tarefas: não; dependência só entre **etapas** do deal.
+
+### Tela principal
+
+* **Topo:** gráficos e KPIs (deals por etapa, do usuário e gerais se tiver
+  permissão; tarefas pendentes etc.).
+* Minhas tarefas, tarefas que aguardam outros, prazos da semana, status de
+  cada deal em que participo.
+* **Bloco com as últimas mensagens** do usuário.
+
+### Mensageria e avisos
+
+* **Conversas** em deal, etapa, documento (versão) e tarefa, visíveis a
+  todos que têm acesso àquele item. **Sem conversa privada** entre duas
+  pessoas.
+* **Anexos** ficam na conversa; botão para transformá-los em documento do
+  deal.
+* Mensagens **não podem ser editadas nem apagadas** (correção por nova
+  mensagem).
+* **Sem tempo real:** atualização ao recarregar ou em poucos segundos.
+* **Menções** (`@pessoa`) e **marcar mensagem como tarefa**: desejáveis
+  (escopo a decidir).
+* Mensagens entram na **exportação do deal** e na **retenção de 10 anos**.
+* **Configuração do tenant** (administradores): avisos por e-mail, sistema
+  ou ambos; antecedência dos lembretes de prazo.
+* Ícone de mensagens no topo do sistema.
+
+### Resumos automáticos
+
+* Resumo das mensagens não lidas ou recentes.
+* Resumo do histórico de alterações de um documento.
+* A forma de gerar (IA com provedor externo ou resumo local sem IA) é
+  decisão pendente para a produção; até lá, ver `pendencias.md`.
 
 ## Pendências de domínio
 
-* Estrutura de valuation e de e-book.
-* Kanban e mensageria: escopo e comportamento.
-* Áreas restritas dentro de um deal (para depois).
+* Estrutura de valuation (item 6 de `pendencias.md`).
+* Gatilhos de tarefas automáticas (a informar).

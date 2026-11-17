@@ -10,7 +10,7 @@ versão 1" é anotado aqui.
 - [ ] Áreas restritas dentro de um deal (ex.: notas internas de advisors)
 
 - [ ] E-book e OnePager em outros formatos além de PDF: apresentação
-      (PPTX) e página web com link privado
+      (PPTX) e página web com link privado (o OnePager na V1 é só PDF)
 
 ## Tarefas
 

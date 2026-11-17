@@ -330,6 +330,10 @@ Claude Code. Decisões em vigor: [README](README.md).
   conveniência; a segurança está no verificador.
 * **RBAC:** sigla em inglês para controle de acesso baseado em papéis
   (perfis); o modelo adotado é um RBAC configurável com escopo por recurso.
+* **Lista de acesso (ACL) por item:** além do perfil, um item específico
+  (ex.: uma versão de documento) pode ter sua própria lista de quem o vê.
+  Ela só restringe: funciona como uma porta trancada dentro de uma sala em
+  que a pessoa já podia entrar.
 
 ## E-mail (ADR-0014)
 

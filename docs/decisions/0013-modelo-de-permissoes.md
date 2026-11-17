@@ -139,3 +139,10 @@ Elementos:
 * Aplicação ao MNA: `docs/projeto/perfis-e-permissoes.md`.
 * Ajuste individual por usuário × processo (em vez de usuário × perfil) pode
   ser acrescentado depois sem refazer o modelo.
+* Adendo (2026-11-17): **lista de acesso por item.** Itens de conteúdo (ex.:
+  versão de documento) podem ter uma lista de acesso definida por quem os
+  cria, por perfil e/ou usuário. A lista **só restringe** (as opções são os
+  participantes cujo alcance já inclui o item; a permissão efetiva é a
+  interseção); administradores do tenant continuam com acesso total,
+  auditado; um novo item derivado (ex.: nova versão) herda a lista do
+  anterior, ajustável. Conversas ligadas ao item seguem a mesma lista.
