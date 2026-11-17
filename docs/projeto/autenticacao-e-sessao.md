@@ -37,10 +37,17 @@ Todas as gratuitas, para todos os usuários:
 
 * **Duração máxima:** 8 horas; depois, novo login.
 * **Inatividade:** saída automática após 1 hora sem uso.
-* **Uma sessão por usuário:** um novo login encerra a sessão anterior em
-  outro dispositivo.
+* **Uma sessão por usuário por endereço:** um novo login num endereço
+  encerra a sessão anterior naquele endereço (em outro dispositivo);
+  sessões em outros tenants e no console continuam (ADR-0019).
 * Sessão válida só no endereço onde foi criada (tenant ou console;
   ADR-0011).
+
+## Conta e vínculo (ADR-0019)
+
+* Cada pessoa tem **uma conta** na plataforma (uma senha, um 2FA) e um
+  **vínculo** por tenant; revogar o vínculo na BT não afeta outros tenants.
+* Nenhuma tela de um tenant revela se um e-mail já tem conta na plataforma.
 
 ## Desligamento
 

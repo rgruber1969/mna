@@ -448,3 +448,17 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Prettier:** formata o código automaticamente, sempre no mesmo padrão.
 * **pnpm:** instalador de bibliotecas (pacotes), mais rápido e econômico
   que o npm padrão.
+
+## Identidade e vínculo com tenants (ADR-0019)
+
+* **Conta (identidade):** quem a pessoa é na plataforma: e-mail, senha,
+  2FA e passkey. Existe uma só por pessoa, como um documento de identidade.
+* **Vínculo:** a ligação da conta com um tenant, como um crachá de cada
+  prédio. Cada tenant tem o seu crachá, que pode ser revogado sem afetar
+  os outros.
+* **Convite:** link de uso único que permite criar a conta (ou usar a
+  existente) e ativar o vínculo; guardamos só um "resumo embaralhado"
+  (hash) do link, para que um vazamento do banco não revele convites
+  válidos.
+* **Sessão:** o "estou logado" guardado num cookie; aqui ela também
+  registra o endereço onde nasceu e não vale em nenhum outro.
