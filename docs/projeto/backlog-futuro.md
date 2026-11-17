@@ -12,6 +12,17 @@ versão 1" é anotado aqui.
 - [ ] E-book e OnePager em outros formatos além de PDF: apresentação
       (PPTX) e página web com link privado (o OnePager na V1 é só PDF)
 
+## Valuation
+
+- [ ] Integração direta com sistemas contábeis para importar números
+- [ ] Taxa de desconto (WACC) calculada a partir de componentes e dados de
+      mercado (ex.: múltiplos setoriais, Damodaran) buscados automaticamente
+- [ ] Ponte do valor da empresa (EV) ao valor das ações (equity): dívida
+      líquida, capital de giro e contingências
+- [ ] Valor presente das ofertas (à vista, parcelas, earnout) para comparação
+- [ ] Saídas além da tela: relatório PDF, exportação Excel, gráfico "campo de
+      futebol" comparando faixas dos métodos
+
 ## Tarefas
 
 - [ ] Kanban de tarefas gerais (fora de deal), com colunas sugeridas:

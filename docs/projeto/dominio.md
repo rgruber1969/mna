@@ -74,8 +74,42 @@ Processo de M&A (inicialmente aquisição). Pontos-chave:
 ### Valuation
 
 Entidade própria, no mesmo nível do deal, usada principalmente pelo advisor.
-Pode estar ligada a um deal e/ou a uma empresa vendedora. Estrutura a
-detalhar.
+
+* **Finalidades:** definir o preço pedido pela vendedora, preparar a
+  negociação, avaliar ofertas recebidas e alimentar o e-book.
+* **Pode existir sem deal** (avaliação avulsa de uma empresa); quando há
+  deal, fica ligado a ele e à empresa vendedora.
+* **Acesso:** pelo modelo de permissões (montar, comentar, aprovar e ver são
+  permissões). Padrão: advisor monta, vendedora vê, comenta e aprova; **lado
+  comprador sem acesso**.
+* **Métodos:** fluxo de caixa descontado, múltiplos de mercado (EV/EBITDA,
+  EV/Receita, EV/ARR), transações comparáveis, patrimonial ajustado e
+  múltiplo de faturamento recorrente ou "regra de bolso" do setor.
+* **Resultado:** valor de cada método **e** valor final ponderado, com peso
+  configurável por método (soma dos pesos = 100%).
+* **Cenários** (pessimista, base, otimista) e **tabelas de sensibilidade**.
+* **Tese do setor:** campo para os múltiplos de EBITDA e de faturamento
+  usados no segmento da vendedora, com documentos ou links que os comprovem.
+* **Expectativa da vendedora:** valor mínimo de venda esperado.
+* **Painel visual** confrontando todos os números: métodos, valor final,
+  expectativa da vendedora × realidade, ofertas recebidas.
+* **Dados de entrada (V1):** digitados ou importados por arquivo (modelo
+  padrão de planilha). DRE de 3 anos; demais dados conforme o método
+  (balanço, projeções, ajustes de EBITDA, dívida líquida, capital de giro,
+  contingências, regime tributário). Taxa de desconto (WACC) digitada.
+* **Versões e aprovação**, como o e-book (comentários da vendedora entre
+  versões).
+* **No e-book:** inclusão dos números do valuation é **opcional**, porque a
+  vendedora costuma não expô-los até receber ofertas.
+* **Saída na V1:** tela com resumo e gráficos.
+
+### Ofertas
+
+* Registro das **ofertas recebidas** de compradores, na negociação informal
+  ou no Term Sheet (ou LOI, ou MOU).
+* Guarda a **estrutura de pagamento**: parcela à vista, parcelas a prazo,
+  earnout e condições.
+* Comparação das ofertas com o valuation no painel visual.
 
 ### E-book e OnePager
 
@@ -168,6 +202,11 @@ Etapas padrão:
   recolher** as versões de cada um.
 * Atributos para **classificação, agrupamento e filtragem**.
 * Tipos predominantes: XLSX, PDF e DOCX; tamanhos variáveis.
+* **Cadastro de documentos** (catálogo do tenant) com a indicação de
+  **obrigatório ou opcional** em cada contexto: no deal, na etapa/subetapa
+  e no valuation. Diligências usam listas de centenas de documentos com
+  checklist próprio. Quando o deal tem várias vendedoras, os documentos são
+  pedidos por empresa vendedora.
 * **Lista padrão de documentos por etapa e subetapa**, no cadastro padrão de
   etapas, editável em cada deal.
 * **Templates** (tipicamente DOCX que depois viram PDF para assinatura)
@@ -248,5 +287,4 @@ Etapas padrão:
 
 ## Pendências de domínio
 
-* Estrutura de valuation (item 6 de `pendencias.md`).
 * Gatilhos de tarefas automáticas (a informar).
