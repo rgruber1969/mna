@@ -17,8 +17,10 @@ registrado.
   - [ ] 3b. Kanban de tarefas
   - [ ] 3c. Mensageria
   - [ ] 3d. Áreas restritas dentro do deal
-- [ ] **4. Relembrar o conceito da decisão "Neon em São Paulo na
-      produção"** (ADR-0012, decisões menores do README).
+- [x] **4. Relembrar o conceito da decisão "Neon em São Paulo na
+      produção"**: explicado em 2026-11-17 (região = local físico do
+      servidor; motivos: LGPD, latência, coerência com AWS São Paulo;
+      escolhida na criação do banco).
 - [ ] **5. Escopo da versão 1**: marcar a coluna "V1?" em `escopo-v1.md`,
       revisando as estimativas de valor e esforço (que são do Claude) e
       considerando que os itens 21 e 22 podem ficar para depois sem risco.
