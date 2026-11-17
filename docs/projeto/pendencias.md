@@ -22,7 +22,7 @@ registrado.
 - [x] **5. Escopo da versão 1**: V1 = demonstração completa, 23
       funcionalidades reais e 8 simuladas com aviso (`escopo-v1.md`);
       estimativas revisadas (item 15 valor Alto; item 31 esforço M).
-- [ ] **6. Valuation**: detalhar a funcionalidade (questionário próprio).
+- [ ] **6. Valuation**: aguardando respostas em `perguntas-valuation.md`.
 
 ## Antes da produção
 
