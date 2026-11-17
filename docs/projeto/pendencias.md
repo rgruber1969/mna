@@ -8,8 +8,9 @@ registrado.
 
 - [x] **1. Skill "registrar ADR"**: aprovada e criada em
       `.claude/skills/registrar-adr/SKILL.md`.
-- [ ] **2. Checklist ASVS nível 2**: curadoria pelo Claude; aprovação da
-      lista final e dos itens "não se aplica".
+- [x] **2. Checklist ASVS nível 2**: aprovado em
+      `docs/seguranca/asvs-checklist.md` (215 aplica, 14 n/a, 20 futuro
+      MCP, 4 condicionais a WebSocket).
 - [ ] **3. Questionários de definição** (um por tema, no formato de
       `perguntas-mna.md`):
   - [ ] 3a. E-book

@@ -40,7 +40,6 @@ projeto e em `docs/projeto/`.
 
 | Tema | Situação |
 |---|---|
-| Checklist ASVS nível 2 | Curadoria; vira skill/rule do template |
 
 ## Decisões menores (sem ADR próprio)
 
@@ -50,6 +49,7 @@ projeto e em `docs/projeto/`.
 | Tema visual padrão | Identidade RGRUBER ([docs/marca/rgruber](../marca/rgruber/README.md)) | 2026-11-16 |
 | Nome do produto | Sempre por configuração (`PRODUCT_NAME`), nunca escrito em telas e e-mails | 2026-11-17 |
 | Região do banco | Produção na mesma região dos arquivos (São Paulo) | 2026-11-17 |
+| Checklist ASVS | 253 requisitos L1/L2 classificados em [docs/seguranca/asvs-checklist.md](../seguranca/asvs-checklist.md) | 2026-11-17 |
 
 ## Substituídas
 

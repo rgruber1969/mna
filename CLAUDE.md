@@ -57,6 +57,7 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 - `docs/decisions/`: ADRs, resumo (`README.md`) e notas explicativas.
 - `docs/projeto/`: regras de negócio do MNA (fonte da verdade).
 - `docs/marca/`: identidade visual e logos.
+- `docs/seguranca/asvs-checklist.md`: checklist ASVS (consultar em trabalho de segurança).
 - `docs/claude/instrucoes-repetidas.md`: registro de repetições.
 - `.claude/rules/`: regras por área, com `paths:` (a criar com o código).
 
