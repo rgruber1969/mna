@@ -22,7 +22,7 @@ ADRs 0011 (endereços), 0012 (arquivos) e 0014 (e-mail).
 | Tenant | `bt.localhost:3000` | `bt.mna.rgruber.com.br` | `bt.<domínio>` |
 | Banco | Postgres no Docker | Neon, qualquer região gratuita | Neon em São Paulo |
 | Funções da aplicação | Máquina local | Vercel, São Paulo (`gru1`), de preferência | Vercel, São Paulo (`gru1`) |
-| Arquivos | MinIO no Docker | Cloudflare R2 | AWS S3 São Paulo |
+| Arquivos | RustFS no Docker | Cloudflare R2 | AWS S3 São Paulo |
 | E-mail | Mailpit no Docker | Resend | Amazon SES São Paulo |
 | Tarefas | Servidor local do Inngest | Inngest (franquia gratuita) | Inngest |
 | Antivírus | Simulado (bloqueia EICAR) | Simulado | AWS GuardDuty (S3) |

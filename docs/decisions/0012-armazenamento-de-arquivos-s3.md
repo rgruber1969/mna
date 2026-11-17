@@ -128,3 +128,9 @@ Regras, válidas para qualquer provedor:
 * Relacionado: ADR-0003 (banco e Docker), ADR-0007 (dados pessoais),
   ADR-0009 (multi-tenant), ADR-0010 (logos de tenant).
 * Pendente: antivírus nos uploads.
+* Adendo (2026-11-17): **local passa de MinIO para RustFS.** A imagem Docker
+  da MinIO foi retirada do Docker Hub (mudança de distribuição da versão
+  comunitária). Avaliados RustFS, Garage, SeaweedFS e S3Mock; escolhido o
+  **RustFS** (compatível com S3, configuração simples, console web), fixado
+  na versão 1.0.6. Demonstração (R2) e produção (S3) não mudam. Alternativa
+  se o RustFS se mostrar instável: Garage.

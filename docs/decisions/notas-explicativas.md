@@ -295,8 +295,9 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **AWS S3:** o serviço original da Amazon; tem região em São Paulo.
 * **Cloudflare R2:** alternativa compatível com S3, com franquia gratuita e
   download sem custo de tráfego; sem região no Brasil.
-* **MinIO:** armazenamento compatível com S3 que roda num contêiner Docker,
-  usado no desenvolvimento local.
+* **RustFS:** armazenamento compatível com S3 que roda num contêiner Docker,
+  usado no desenvolvimento local (substituiu a MinIO, que deixou de ser
+  distribuída). É o "S3 de mentira" do computador do desenvolvedor.
 * **Link temporário (URL pré-assinada):** endereço de download ou upload
   válido por poucos minutos, gerado pela aplicação depois de conferir a
   permissão. Quem recebe o link não precisa de senha, mas ele expira logo.

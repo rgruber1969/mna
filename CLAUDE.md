@@ -48,9 +48,10 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 
 ## Comandos
 
-- Serviços locais (Postgres, Mailpit, Inngest): `docker compose up -d`.
+- Serviços locais (Postgres, RustFS, Mailpit, Inngest): `docker compose up -d`.
 - Primeira vez: copiar `.env.example` para `.env`; `pnpm install`;
-  `pnpm db:preparar`; `pnpm db:migrar`; `pnpm db:migrar:teste`.
+  `pnpm db:preparar`; `pnpm db:migrar`; `pnpm db:migrar:teste`;
+  `pnpm arquivos:preparar`.
 - Aplicação: `pnpm dev` (http://localhost:3000; API em `/api/docs`).
 - Antes de commitar: `pnpm verificar` (tipos, lint, formatação, testes);
   navegador: `pnpm test:e2e`.
@@ -65,7 +66,7 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 - `docs/claude/instrucoes-repetidas.md`: registro de repetições.
 - `src/server/services/`: camada de serviços (regras de negócio).
 - `src/server/api/`: rotas Hono; `src/server/db/`: esquema, migrações e acesso;
-  `src/server/tarefas/`: Inngest. `e2e/`: testes no navegador.
+  `src/server/tarefas/`: Inngest; `src/server/arquivos/`: armazenamento S3. `e2e/`: testes no navegador.
 - `.claude/rules/`: regras por área, com `paths:` (a criar com o código).
 
 ## Manutenção deste arquivo

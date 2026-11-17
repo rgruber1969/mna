@@ -62,6 +62,10 @@ export default defineConfig([
     },
   },
   {
+    files: ["src/server/arquivos/**"],
+    rules: { "no-restricted-imports": ["error", { paths: sdkRestritos, patterns: [bancoRestrito] }] },
+  },
+  {
     files: ["src/server/db/**", "src/server/services/**"],
     rules: {
       "no-restricted-imports": [
