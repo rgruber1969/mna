@@ -27,6 +27,7 @@ ADRs 0011 (endereços), 0012 (arquivos) e 0014 (e-mail).
 | Tarefas | Servidor local do Inngest | Inngest (franquia gratuita) | Inngest |
 | Antivírus | Simulado (bloqueia EICAR) | Simulado | AWS GuardDuty (S3) |
 | Chaves de criptografia | Fixa no `.env` | Configuração secreta da Vercel | AWS KMS, chave por tenant |
+| Resumos automáticos | Local, sem IA | Local, sem IA | A decidir (local ou IA) |
 | Dados | Fictícios | **Só fictícios** | Reais |
 
 ## Domínio e e-mail da demonstração

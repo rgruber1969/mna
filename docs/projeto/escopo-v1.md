@@ -39,7 +39,7 @@ estimativas iniciais do Claude, para revisão do responsável. A coluna
 | 28 | Tarefas automáticas por gatilhos fixos (a informar) | Médio | M | 27 | |
 | 29 | Gatilhos de tarefas configuráveis pelo tenant | Baixo | G | 28 | |
 | 30 | Menções (@pessoa) e marcar mensagem como tarefa | Médio | M | 16, 27 | |
-| 31 | Resumos automáticos (mensagens e histórico de documento): texto simulado na demonstração | Médio | P | 11, 16 | |
+| 31 | Resumos automáticos (mensagens e histórico de documento): resumo local sem IA | Médio | M | 11, 16 | |
 
 Observações:
 
@@ -48,5 +48,5 @@ Observações:
   corretamente desde o início.
 * Item 18 (valuation) precisa de definição de estrutura antes de estimar
   melhor.
-* Item 31: a geração real dos resumos (IA ou resumo local sem IA) é
-  decisão para a produção (`pendencias.md`).
+* Item 31: resumo local sem IA no desenvolvimento e na demonstração; na
+  produção, manter ou adotar IA é decisão pendente (`pendencias.md`).

@@ -237,8 +237,14 @@ Etapas padrão:
 
 * Resumo das mensagens não lidas ou recentes.
 * Resumo do histórico de alterações de um documento.
-* A forma de gerar (IA com provedor externo ou resumo local sem IA) é
-  decisão pendente para a produção; até lá, ver `pendencias.md`.
+* **Desenvolvimento e demonstração: resumo local real, sem IA**, gerado por
+  regras no nosso servidor (nada sai do ambiente). Exemplos: "12 mensagens
+  não lidas de 4 pessoas desde ontem; você foi mencionado 2 vezes; trechos
+  mais relevantes: …"; "3 versões em 10 dias; a v3 alterou as seções 4 e 7;
+  comentários de 2 pessoas".
+* **Produção:** manter o resumo local ou adotar IA (provedor e
+  confidencialidade a decidir; ver `pendencias.md`). A troca é feita no
+  módulo de resumo, sem mudar as telas.
 
 ## Pendências de domínio
 

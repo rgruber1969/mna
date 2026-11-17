@@ -27,8 +27,9 @@ registrado.
 ## Antes da produção
 
 - [ ] **Resumos automáticos com IA ou sem IA** (mensagens e histórico de
-      documento): decidir provedor de IA e confidencialidade, ou adotar
-      resumo local sem IA. Até lá, texto simulado na demonstração.
+      documento): na produção, manter o resumo local sem IA (já usado no
+      desenvolvimento e na demonstração) ou adotar IA, decidindo provedor e
+      confidencialidade.
 
 ## Dependem de terceiros ou de tempo
 
