@@ -13,6 +13,7 @@ export default defineConfig({
   },
   test: {
     include: ["src/**/*.test.ts"],
+    exclude: ["e2e/**", "node_modules/**"],
     environment: "node",
     // Testes de banco usam o banco de testes, nunca o da aplicação.
     env: { DATABASE_URL: process.env.DATABASE_URL_TESTE ?? "" },

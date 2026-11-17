@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+src/server/db/migracoes/
+docs/
+*.md
+.next/

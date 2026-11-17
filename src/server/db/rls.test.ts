@@ -22,10 +22,10 @@ beforeAll(async () => {
     [`teste-a-${sufixo}`, `teste-b-${sufixo}`],
   );
   [tenantA, tenantB] = r.rows.map((x) => x.id);
-  await dono.query(
-    `insert into evento_auditoria (tenant_id, tipo) values ($1, 'teste.a'), ($2, 'teste.b')`,
-    [tenantA, tenantB],
-  );
+  await dono.query(`insert into evento_auditoria (tenant_id, tipo) values ($1, 'teste.a'), ($2, 'teste.b')`, [
+    tenantA,
+    tenantB,
+  ]);
 });
 
 afterAll(async () => {
@@ -45,11 +45,15 @@ describe("catálogo do banco", () => {
       where c.relkind = 'r'`);
     expect(r.rows.length).toBeGreaterThan(0);
     const semProtecao = r.rows.filter((t) => !t.rls || !t.forcado || t.politicas === 0);
-    expect(semProtecao, `Tabelas sem RLS completo: ${semProtecao.map((t) => t.tabela).join(", ")}`).toEqual([]);
+    expect(semProtecao, `Tabelas sem RLS completo: ${semProtecao.map((t) => t.tabela).join(", ")}`).toEqual(
+      [],
+    );
   });
 
   it("o papel da aplicação não é superusuário nem contorna RLS", async () => {
-    const r = await app.execute(sql`select rolsuper, rolbypassrls from pg_roles where rolname = current_user`);
+    const r = await app.execute(
+      sql`select rolsuper, rolbypassrls from pg_roles where rolname = current_user`,
+    );
     expect(r.rows[0]).toEqual({ rolsuper: false, rolbypassrls: false });
   });
 });
@@ -67,12 +71,20 @@ describe("isolamento entre tenants", () => {
 
   it("não consegue gravar evento em outro tenant", async () => {
     await expect(
-      comTenant(tenantA, (tx) => tx.insert(eventoAuditoria).values({ tenantId: tenantB, tipo: "invasao" }), app),
+      comTenant(
+        tenantA,
+        (tx) => tx.insert(eventoAuditoria).values({ tenantId: tenantB, tipo: "invasao" }),
+        app,
+      ),
     ).rejects.toThrow();
   });
 
   it("grava no próprio tenant", async () => {
-    await comTenant(tenantA, (tx) => tx.insert(eventoAuditoria).values({ tenantId: tenantA, tipo: "teste.gravar" }), app);
+    await comTenant(
+      tenantA,
+      (tx) => tx.insert(eventoAuditoria).values({ tenantId: tenantA, tipo: "teste.gravar" }),
+      app,
+    );
     const linhas = await comTenant(tenantA, (tx) => tx.select().from(eventoAuditoria), app);
     expect(linhas.map((l) => l.tipo).sort()).toEqual(["teste.a", "teste.gravar"]);
   });
@@ -84,9 +96,11 @@ describe("isolamento entre tenants", () => {
         () => "permitido",
         (e: Error & { cause?: Error }) => e.cause?.message ?? e.message,
       );
-    expect(await motivo(comTenant(tenantA, (tx) => tx.update(eventoAuditoria).set({ tipo: "alterado" }), app))).toMatch(
+    expect(
+      await motivo(comTenant(tenantA, (tx) => tx.update(eventoAuditoria).set({ tipo: "alterado" }), app)),
+    ).toMatch(/permission denied/);
+    expect(await motivo(comTenant(tenantA, (tx) => tx.delete(eventoAuditoria), app))).toMatch(
       /permission denied/,
     );
-    expect(await motivo(comTenant(tenantA, (tx) => tx.delete(eventoAuditoria), app))).toMatch(/permission denied/);
   });
 });
