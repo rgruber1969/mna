@@ -24,8 +24,8 @@ licença.
 | Situação | Requisitos |
 |---|---|
 | aplica | 215 |
-| n/a | 14 |
-| condicional | 4 |
+| n/a | 18 |
+| condicional | 0 |
 | futuro (MCP) | 20 |
 
 ## Como usar
@@ -232,10 +232,10 @@ licença.
 
 | ID | Nível | Situação | Verificado | Requisito (texto oficial) |
 |---|---|---|---|---|
-| V4.4.1 | 1 | condicional | ☐ | Verify that WebSocket over TLS (WSS) is used for all WebSocket connections. |
-| V4.4.2 | 2 | condicional | ☐ | Verify that, during the initial HTTP WebSocket handshake, the Origin header field is checked against a list of origins allowed for the application. |
-| V4.4.3 | 2 | condicional | ☐ | Verify that, if the application's standard session management cannot be used, dedicated tokens are being used for this, which comply with the relevant Session Management security requirements. |
-| V4.4.4 | 2 | condicional | ☐ | Verify that dedicated WebSocket session management tokens are initially obtained or validated through the previously authenticated HTTPS session when transitioning an existing HTTPS session to a WebSocket channel. |
+| V4.4.1 | 1 | n/a: sem WebSocket (mensageria sem tempo real, decidido no questionário 2, M5) | ☐ | Verify that WebSocket over TLS (WSS) is used for all WebSocket connections. |
+| V4.4.2 | 2 | n/a: sem WebSocket (mensageria sem tempo real, decidido no questionário 2, M5) | ☐ | Verify that, during the initial HTTP WebSocket handshake, the Origin header field is checked against a list of origins allowed for the application. |
+| V4.4.3 | 2 | n/a: sem WebSocket (mensageria sem tempo real, decidido no questionário 2, M5) | ☐ | Verify that, if the application's standard session management cannot be used, dedicated tokens are being used for this, which comply with the relevant Session Management security requirements. |
+| V4.4.4 | 2 | n/a: sem WebSocket (mensageria sem tempo real, decidido no questionário 2, M5) | ☐ | Verify that dedicated WebSocket session management tokens are initially obtained or validated through the previously authenticated HTTPS session when transitioning an existing HTTPS session to a WebSocket channel. |
 
 ## V5 Tratamento de arquivos (File Handling)
 

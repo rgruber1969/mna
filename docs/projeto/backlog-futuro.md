@@ -9,6 +9,14 @@ versão 1" é anotado aqui.
 - [ ] Edição de templates DOCX no navegador (ex.: OnlyOffice, Collabora)
 - [ ] Áreas restritas dentro de um deal (ex.: notas internas de advisors)
 
+- [ ] E-book e OnePager em outros formatos além de PDF: apresentação
+      (PPTX) e página web com link privado
+
+## Tarefas
+
+- [ ] Kanban de tarefas gerais (fora de deal), com colunas sugeridas:
+      A fazer → Em andamento → Aguardando terceiros → Concluído
+
 ## Identidade visual e acesso
 
 - [ ] Domínio próprio do cliente (ex.: `mna.cliente.com.br`)
