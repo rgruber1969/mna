@@ -15,7 +15,7 @@ responsável.
     componentes das telas reais, para ser aproveitada quando a função real
     for construída.
 
-Resumo: **23 reais e 8 simuladas**. A ordem de tornar reais as simuladas
+Resumo: **24 reais e 8 simuladas**. A ordem de tornar reais as simuladas
 será definida depois da demonstração, conforme a reação do cliente.
 
 | # | Funcionalidade | Valor | Esforço | Depende de | Demonstração |
@@ -51,7 +51,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 29 | Gatilhos de tarefas configuráveis pelo tenant | Baixo | G | 28 | Simulado |
 | 30 | Menções (@pessoa) e marcar mensagem como tarefa | Médio | M | 16, 27 | Real |
 | 31 | Resumos automáticos (mensagens e histórico de documento): resumo local sem IA | Médio | M | 11, 16 | Real |
-| 32 | Ofertas recebidas com estrutura de pagamento e comparação com o valuation | Alto | M | 8, 18 | A definir |
+| 32 | Ofertas recebidas com estrutura de pagamento, rateio entre vendedoras e comparação com o valuation | Alto | M | 8, 18 | Real |
 
 Como cada item simulado aparece na demonstração:
 
@@ -59,7 +59,7 @@ Como cada item simulado aparece na demonstração:
 |---|---|
 | 10 | Diagrama visual das etapas do deal de exemplo, navegável, sem edição gráfica (a edição em lista é real) |
 | 13 | Lista de templates e botão "gerar" que devolve um DOCX de exemplo |
-| 18 | Telas com um valuation fictício completo (premissas, métodos, resultado) |
+| 18 | Telas com um valuation fictício completo (premissas, métodos, ponderação, rateio entre vendedoras, painel); a comparação com ofertas reais usa esses números, com aviso |
 | 19 | Fluxo real de status (versões, comentários, liberação ao comprador) com PDFs de exemplo, sem geração automática |
 | 21, 22 | Telas com botão de exportação que devolve PDF/XLSX de exemplo |
 | 28, 29 | Tela de configuração de gatilhos com exemplos; tarefas de exemplo marcadas como "geradas automaticamente" |

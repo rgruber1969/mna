@@ -22,7 +22,9 @@ registrado.
 - [x] **5. Escopo da versão 1**: V1 = demonstração completa, 23
       funcionalidades reais e 8 simuladas com aviso (`escopo-v1.md`);
       estimativas revisadas (item 15 valor Alto; item 31 esforço M).
-- [ ] **6. Valuation**: aguardando respostas em `perguntas-valuation.md`.
+- [x] **6. Valuation**: respondido em `perguntas-valuation.md` e
+      incorporado a `dominio.md` (valuation, ofertas, catálogo de
+      documentos), `escopo-v1.md` (itens 12, 18 e 32) e `backlog-futuro.md`.
 
 ## Antes da produção
 

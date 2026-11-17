@@ -78,7 +78,12 @@ Entidade própria, no mesmo nível do deal, usada principalmente pelo advisor.
 * **Finalidades:** definir o preço pedido pela vendedora, preparar a
   negociação, avaliar ofertas recebidas e alimentar o e-book.
 * **Pode existir sem deal** (avaliação avulsa de uma empresa); quando há
-  deal, fica ligado a ele e à empresa vendedora.
+  deal, fica ligado a ele e à(s) empresa(s) vendedora(s).
+* **Deal com várias vendedoras: um valuation único do conjunto**, com
+  DRE e documentos de cada empresa, e o **percentual de cada empresa sobre
+  o total** (rateio). O critério do rateio é registrado (ex.: faturamento
+  de cada empresa sobre o do grupo) e o percentual pode ser definido em
+  qualquer etapa, comumente no QPA.
 * **Acesso:** pelo modelo de permissões (montar, comentar, aprovar e ver são
   permissões). Padrão: advisor monta, vendedora vê, comenta e aprova; **lado
   comprador sem acesso**.
@@ -110,6 +115,9 @@ Entidade própria, no mesmo nível do deal, usada principalmente pelo advisor.
 * Guarda a **estrutura de pagamento**: parcela à vista, parcelas a prazo,
   earnout e condições.
 * Comparação das ofertas com o valuation no painel visual.
+* **Preço único para várias vendedoras:** o preço fechado (total, parcelas,
+  earnout) é rateado entre as empresas vendedoras pelo percentual definido
+  (ex.: 70% e 30%), com o critério registrado.
 
 ### E-book e OnePager
 
