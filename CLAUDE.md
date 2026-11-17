@@ -67,6 +67,7 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 - `src/server/services/`: camada de serviços (regras de negócio).
 - `src/server/api/`: rotas Hono; `src/server/db/`: esquema, migrações e acesso;
   `src/server/tarefas/`: Inngest; `src/server/arquivos/`: armazenamento S3. `e2e/`: testes no navegador.
+- `.claude/hooks/`: verificações automáticas (formatação, lint, segredos, testes).
 - `.claude/rules/`: regras por área, com `paths:` (a criar com o código).
 
 ## Manutenção deste arquivo

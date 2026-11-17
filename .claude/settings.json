@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/apos-editar.mjs\"",
+            "timeout": 60,
+            "statusMessage": "Formatando e conferindo regras dos ADRs..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/antes-do-commit.mjs\"",
+            "timeout": 60,
+            "statusMessage": "Procurando segredos antes do commit..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/ao-parar.mjs\"",
+            "timeout": 300,
+            "statusMessage": "Conferindo tipos e testes..."
+          }
+        ]
+      }
+    ]
+  }
+}

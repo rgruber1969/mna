@@ -52,6 +52,7 @@ projeto e em `docs/projeto/`.
 | Região das funções | Funções da Vercel em São Paulo (`gru1`), na mesma região do banco | 2026-11-17 |
 | Resumos automáticos | Módulo único de resumo; local e demonstração com resumo local sem IA (nada sai do servidor); produção: IA ou local, a decidir | 2026-11-17 |
 | Funcionalidades simuladas | Configuração por funcionalidade (real ou simulada); simulada sempre com aviso visível; a aplicação recusa iniciar em produção com funcionalidade simulada | 2026-11-17 |
+| Hooks do Claude Code | Após editar: Prettier + ESLint no arquivo (e aviso de CLAUDE.md > 80 linhas); antes de commit: varredura de segredos; ao encerrar: tipos + testes ([.claude/hooks](../../.claude/hooks)) | 2026-11-17 |
 | Checklist ASVS | 253 requisitos L1/L2 classificados em [docs/seguranca/asvs-checklist.md](../seguranca/asvs-checklist.md) | 2026-11-17 |
 
 ## Substituídas
