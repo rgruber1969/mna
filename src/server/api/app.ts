@@ -2,6 +2,9 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { produto } from "@/config/produto";
 import { obterStatusDoSistema } from "@/server/services/sistema";
+import { serve as servirTarefas } from "inngest/hono";
+import { inngest } from "@/server/tarefas/cliente";
+import { funcoes } from "@/server/tarefas/funcoes";
 
 /**
  * API REST (ADR-0004): Hono com especificação OpenAPI gerada a partir dos
@@ -33,6 +36,13 @@ const rotaStatus = createRoute({
 });
 
 api.openapi(rotaStatus, (c) => c.json(obterStatusDoSistema(), 200));
+
+/**
+ * Endpoint chamado pelo Inngest para executar as tarefas (ADR-0015).
+ * Não aparece no Swagger: é de uso interno do orquestrador.
+ */
+const atenderTarefas = servirTarefas({ client: inngest, functions: funcoes });
+api.on(["GET", "POST", "PUT"], "/inngest", (c) => atenderTarefas(c));
 
 /**
  * Documentação da API. Fora da produção, sempre disponível; em produção,

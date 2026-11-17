@@ -12,6 +12,7 @@
     "@hono/swagger-ui": "^0.6.2",
     "@hono/zod-openapi": "^1.6.3",
     "hono": "^4.13.19",
+    "inngest": "^4.26.2",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
