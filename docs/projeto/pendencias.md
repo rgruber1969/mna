@@ -6,8 +6,8 @@ registrado.
 
 ## Em ordem
 
-- [ ] **1. Skill "registrar ADR"**: apresentar o conteúdo para aprovação
-      (registro de repetições: 16 ocorrências).
+- [x] **1. Skill "registrar ADR"**: aprovada e criada em
+      `.claude/skills/registrar-adr/SKILL.md`.
 - [ ] **2. Checklist ASVS nível 2**: curadoria pelo Claude; aprovação da
       lista final e dos itens "não se aplica".
 - [ ] **3. Questionários de definição** (um por tema, no formato de
