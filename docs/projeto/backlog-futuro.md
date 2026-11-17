@@ -34,6 +34,8 @@ versão 1" é anotado aqui.
 - [ ] Envio de e-mails pelo domínio do próprio cliente (exige DNS do lado
       dele)
 - [ ] Editor completo de tema ("modo avançado" de white label)
+- [ ] Redefinição de 2FA aprovada pelos administradores dos outros tenants
+      que exigem 2FA da pessoa, sem precisar da RGRUBER
 
 ## Integrações
 

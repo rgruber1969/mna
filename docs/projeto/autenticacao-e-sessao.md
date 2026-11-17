@@ -51,12 +51,39 @@ Todas as gratuitas, para todos os usuários:
   Microsoft Authenticator), à escolha do usuário.
 * **Não** usar código por e-mail ou SMS como segundo fator (não aceito pelo
   NIST 800-63B; com link mágico, seria o mesmo canal do login).
-* **Configuração do tenant** (pelos administradores): 2FA obrigatório para
-  todos, por perfil ou por usuário.
-* **Recuperação:** códigos de recuperação gerados no cadastro do 2FA; se
-  perdidos, o administrador do tenant redefine o 2FA do usuário (ação
-  auditada).
 * **Console da RGRUBER:** 2FA sempre obrigatório.
+
+### Exigência no tenant (decidido em 2026-11-17)
+
+* **As regras se somam:** o 2FA é exigido de uma pessoa se o tenant exige
+  de **todos**, **ou** se o **perfil** dela exige, **ou** se ela foi
+  **marcada individualmente**. Desligar uma regra não apaga as outras.
+* **Administradores do tenant sempre** precisam de 2FA.
+* O "por perfil" entra junto com o módulo de perfis (ADR-0013); até lá,
+  valem "todos" e "marcado individualmente".
+* **Bloqueio imediato:** quem passa a ser obrigado e não tem 2FA só vê a
+  tela de configuração no próximo acesso. Quem tem 2FA mas entrou só com
+  senha ou só com link precisa entrar de novo com dois fatores.
+* A exigência é por tenant; os **fatores são da conta** (ADR-0019): a
+  passkey ou o autenticador configurados valem em todos os tenants da
+  pessoa.
+
+### Recuperação (decidido em 2026-11-17)
+
+* **Pela própria pessoa:** códigos de recuperação (10, uso único) gerados
+  ao configurar o aplicativo autenticador; a tela de segurança incentiva
+  cadastrar uma segunda passkey.
+* **Administrador do tenant pode sempre:** exigir 2FA, revogar o acesso e
+  remover um aparelho perdido (uma passkey ou o autenticador) **desde que
+  reste outro fator**.
+* **Redefinição completa** (a conta fica sem nenhum fator): o administrador
+  do tenant faz se **nenhum outro tenant exige 2FA** da pessoa; caso
+  contrário, só a RGRUBER, pelo console, com motivo obrigatório e
+  confirmação prévia da identidade da pessoa (procedimento, fora do
+  sistema).
+* Toda redefinição apaga autenticador, códigos e passkeys, encerra todas as
+  sessões da pessoa, avisa por e-mail e é auditada.
+* Aprovação da redefinição pelos outros tenants (sem a RGRUBER): backlog.
 
 ## Sessão
 
