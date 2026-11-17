@@ -28,6 +28,7 @@ ficam no `CLAUDE.md` do projeto.
 | Endereços | Subdomínio por tenant (`slug.dominio`); console da plataforma em `admin.dominio`, na mesma aplicação; cookies por host; o endereço identifica, a sessão autoriza | plataforma | [0011](0011-enderecos-subdominio-por-tenant-e-console.md) |
 | Armazenamento de arquivos | Protocolo S3; local MinIO, demonstração Cloudflare R2 (dados fictícios), produção AWS S3 São Paulo; privado, link temporário após permissão e auditoria; upload direto do navegador | plataforma | [0012](0012-armazenamento-de-arquivos-s3.md) |
 | Permissões | Perfis configuráveis pelo tenant (recurso × ação); perfil no tenant + perfil no processo; participação com alcance obrigatório; várias participações somam; modo por perfil ou por usuário; negado por padrão; verificador único | plataforma | [0013](0013-modelo-de-permissoes.md) |
+| E-mail | Módulo único; local Mailpit, demonstração Resend, produção Amazon SES São Paulo (alternativa: Resend em produção); React Email com marca do tenant; sem dados sensíveis; envio em segundo plano | plataforma | [0014](0014-envio-de-email.md) |
 
 ## Premissas de arquitetura
 
@@ -55,11 +56,11 @@ Requisitos que orientam as próximas decisões:
 
 | Tema | Situação |
 |---|---|
-| Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
+| Tarefas em segundo plano | Fila ou agendador para envio de e-mail, antivírus, exportações em PDF e limpeza de auditoria, compatível com a Vercel |
 | ORM, interface, testes e lint | Na criação do projeto |
 | Antivírus nos uploads | Escanear arquivos enviados antes de liberar download (documentos vêm de empresas externas) |
 | Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
-| Domínio | Escolha e compra do domínio definitivo (DNS na Vercel, subdomínio coringa) |
+| Domínio | Escolha e compra do domínio definitivo (DNS na Vercel, subdomínio coringa); **pré-requisito já na demonstração** para enviar e-mails (ADR-0014) |
 | Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
 
 ## Notas explicativas
@@ -67,7 +68,7 @@ Requisitos que orientam as próximas decisões:
 Explicações dos conceitos e ferramentas adotados (WSL e Docker, Neon, Hono,
 Zod, Swagger/OpenAPI, Better Auth, ASVS, NIST, LGPD, proteção de dados
 pessoais, instruções do Claude Code, multi-tenant, RLS, white label,
-subdomínios, armazenamento S3 e permissões) ficam em
+subdomínios, armazenamento S3, permissões e e-mail) ficam em
 [notas-explicativas.md](notas-explicativas.md), para leitura. Esse arquivo
 não é referenciado no CLAUDE.md, para não pesar no contexto das sessões.
 

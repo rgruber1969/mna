@@ -330,3 +330,29 @@ Claude Code. Decisões em vigor: [README](README.md).
   conveniência; a segurança está no verificador.
 * **RBAC:** sigla em inglês para controle de acesso baseado em papéis
   (perfis); o modelo adotado é um RBAC configurável com escopo por recurso.
+
+## E-mail (ADR-0014)
+
+* **E-mail transacional:** enviado um a um, disparado por uma ação (convite,
+  link mágico, aviso de pendência). Diferente de e-mail marketing (envio em
+  massa).
+* **Entregabilidade:** a capacidade de o e-mail chegar à caixa de entrada,
+  e não ao spam.
+* **SPF, DKIM e DMARC:** registros no DNS do domínio que provam aos
+  provedores (Gmail, Outlook) que o e-mail saiu de um servidor autorizado e
+  não foi adulterado. Sem eles, os e-mails tendem a cair no spam.
+* **Mailpit:** "carteiro falso" que roda no Docker; captura todos os
+  e-mails enviados no desenvolvimento e mostra numa página local, sem
+  entregar a ninguém.
+* **Resend:** serviço de envio moderno, com franquia gratuita; usado na
+  demonstração.
+* **Amazon SES:** serviço de envio da AWS, muito barato e com região em São
+  Paulo; usado em produção. Começa em "modo de teste" (só envia a endereços
+  verificados) até a AWS liberar.
+* **React Email:** forma de escrever e-mails como componentes TypeScript,
+  reaproveitando a marca e as cores do tenant.
+* **Bounce:** devolução de um e-mail (endereço inexistente, caixa cheia).
+  Endereços que devolvem com frequência são bloqueados para não prejudicar
+  a reputação do domínio.
+* **Envio em segundo plano:** a tela registra o pedido e segue; o e-mail é
+  enviado logo depois por uma tarefa separada, que tenta de novo se falhar.

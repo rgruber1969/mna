@@ -12,6 +12,8 @@ versão 1" é anotado aqui.
 ## Identidade visual e acesso
 
 - [ ] Domínio próprio do cliente (ex.: `mna.cliente.com.br`)
+- [ ] Envio de e-mails pelo domínio do próprio cliente (exige DNS do lado
+      dele)
 - [ ] Editor completo de tema ("modo avançado" de white label)
 
 ## Integrações
