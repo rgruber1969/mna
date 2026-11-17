@@ -16,6 +16,8 @@
   --text: #0f172a;
   --text-muted: #5e6470;
   --border: #e2e8f0;
+  --danger: #b42318;
+  --success: #067647;
 }
 
 @theme inline {
@@ -28,6 +30,8 @@
   --color-text: var(--text);
   --color-muted: var(--text-muted);
   --color-border: var(--border);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
   --font-sans: var(--font-manrope);
 }
 

@@ -12,11 +12,21 @@ const entrada = await lerEntrada();
 if (entrada.stop_hook_active) process.exit(0);
 
 // "Impressão digital" do código: último commit + alterações pendentes.
-const pastas = ["src", "e2e", "scripts", "package.json", "tsconfig.json", "vitest.config.mts", "drizzle.config.ts"];
+const pastas = [
+  "src",
+  "e2e",
+  "scripts",
+  "package.json",
+  "tsconfig.json",
+  "vitest.config.mts",
+  "drizzle.config.ts",
+];
 const head = git(["rev-parse", "HEAD"]).stdout.trim();
 const pendente = git(["status", "--porcelain", "--", ...pastas]).stdout;
 const diff = git(["diff", "HEAD", "--", ...pastas]).stdout;
-const chave = createHash("sha256").update(head + pendente + diff).digest("hex");
+const chave = createHash("sha256")
+  .update(head + pendente + diff)
+  .digest("hex");
 
 const marcador = path.join(raiz, ".git", "claude-ultima-verificacao");
 if (fs.existsSync(marcador) && fs.readFileSync(marcador, "utf8") === chave) process.exit(0);

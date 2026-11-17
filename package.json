@@ -5,6 +5,7 @@
   "scripts": {
     "arquivos:preparar": "node scripts/arquivos-preparar-local.mjs",
     "build": "next build",
+    "console:convidar-admin": "tsx --env-file=.env scripts/console-convidar-admin.mts",
     "db:gerar": "drizzle-kit generate",
     "db:migrar": "node scripts/db-migrar.mjs",
     "db:migrar:teste": "node scripts/db-migrar.mjs teste",

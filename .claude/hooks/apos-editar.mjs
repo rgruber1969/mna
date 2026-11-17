@@ -28,12 +28,19 @@ if (path.basename(absoluto) === "CLAUDE.md") {
 }
 
 // Prettier (respeita .prettierignore; ignora tipos que não conhece).
-executarNode("node_modules/prettier/bin/prettier.cjs", ["--write", "--ignore-unknown", "--log-level", "warn", relativo]);
+executarNode("node_modules/prettier/bin/prettier.cjs", [
+  "--write",
+  "--ignore-unknown",
+  "--log-level",
+  "warn",
+  relativo,
+]);
 
 // ESLint em código-fonte.
 if (/\.(m?[jt]sx?)$/.test(absoluto)) {
   const r = executarNode("node_modules/eslint/bin/eslint.js", ["--no-warn-ignored", relativo]);
-  if (r.status !== 0) problemas.push(`ESLint encontrou problemas em ${relativo}:\n${(r.stdout || r.stderr).trim()}`);
+  if (r.status !== 0)
+    problemas.push(`ESLint encontrou problemas em ${relativo}:\n${(r.stdout || r.stderr).trim()}`);
 }
 
 if (problemas.length) {

@@ -20,6 +20,12 @@ Todas as gratuitas, para todos os usuários:
 * Google
 * Microsoft
 
+## Senha
+
+* Mínimo de **12 caracteres**, máximo de 128, sem regras de composição
+  (NIST 800-63B); limite de tentativas ativo.
+* Mensagem de erro única no login, sem revelar se o e-mail tem conta.
+
 ## Segundo fator (2FA)
 
 * **Métodos:** passkey **ou** aplicativo autenticador (ex.: Google ou

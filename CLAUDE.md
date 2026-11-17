@@ -53,6 +53,7 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
   `pnpm db:preparar`; `pnpm db:migrar`; `pnpm db:migrar:teste`;
   `pnpm arquivos:preparar`.
 - Aplicação: `pnpm dev` (http://localhost:3000; API em `/api/docs`).
+- Primeiro acesso ao console: `pnpm console:convidar-admin <e-mail> "<Nome>"`.
 - Antes de commitar: `pnpm verificar` (tipos, lint, formatação, testes);
   navegador: `pnpm test:e2e`.
 - Mudou `src/server/db/esquema.ts`: `pnpm db:gerar` e depois `pnpm db:migrar`.

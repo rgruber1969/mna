@@ -16,6 +16,8 @@ novo com dado pessoal é registrado aqui no mesmo commit.
 |---|---|---|---|---|
 | Usuários | Nome, e-mail, telefone | Pessoal | Contrato | E-mail usado no login e nos convites |
 | Usuários | CPF | **Sensível** | Contrato | |
+| Usuários | Endereço IP e navegador da sessão | Pessoal | Legítimo interesse (segurança) | Tabela `sessao`; apagados quando a sessão termina |
+| Convidados | Nome e e-mail do convite | Pessoal | Contrato | Tabelas `convite` e `convite_plataforma`; token guardado só como hash |
 | Sócios e partes de contratos | Nome, e-mail, telefone, endereço completo | Pessoal | Contrato | Usados na confecção de contratos |
 | Sócios e partes de contratos | CPF, RG (identidade) | **Sensível** | Contrato | |
 | Sócios e partes de contratos | Dados do cônjuge | **Sensível** | Contrato | |

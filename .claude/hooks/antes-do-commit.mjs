@@ -20,14 +20,18 @@ const padroes = [
   ["token Slack", /\bxox[abprs]-[A-Za-z0-9-]{10,}/],
   ["chave Google", /\bAIza[0-9A-Za-z_-]{35}\b/],
   ["chave de assinatura Inngest", /\bsignkey-(prod|test|branch)-[A-Za-z0-9]{20,}/],
-  ["conexão de banco na nuvem com senha", /postgres(ql)?:\/\/[^:\s]+:[^@\s]+@[^\s/]*(neon\.tech|amazonaws\.com|supabase\.co)/],
+  [
+    "conexão de banco na nuvem com senha",
+    /postgres(ql)?:\/\/[^:\s]+:[^@\s]+@[^\s/]*(neon\.tech|amazonaws\.com|supabase\.co)/,
+  ],
 ];
 
 const achados = [];
 const examinar = (origem, texto) => {
   for (const linha of texto.split("\n")) {
     if (origem === "diff" && !(linha.startsWith("+") && !linha.startsWith("+++"))) continue;
-    for (const [nome, re] of padroes) if (re.test(linha)) achados.push(`${nome}: ${linha.slice(0, 120).trim()}`);
+    for (const [nome, re] of padroes)
+      if (re.test(linha)) achados.push(`${nome}: ${linha.slice(0, 120).trim()}`);
   }
 };
 
@@ -39,7 +43,8 @@ examinar("diff", git(["diff", "--no-color", "-U0"]).stdout);
 const novos = git(["ls-files", "--others", "--exclude-standard"]).stdout.split("\n").filter(Boolean);
 const preparados = git(["diff", "--cached", "--name-only"]).stdout.split("\n").filter(Boolean);
 for (const rel of [...novos, ...preparados]) {
-  if (/(^|\/)\.env$|(^|\/)\.env\.(?!example$)/.test(rel)) achados.push(`arquivo de segredos sendo versionado: ${rel}`);
+  if (/(^|\/)\.env$|(^|\/)\.env\.(?!example$)/.test(rel))
+    achados.push(`arquivo de segredos sendo versionado: ${rel}`);
   const abs = path.join(raiz, rel);
   if (novos.includes(rel) && fs.existsSync(abs) && fs.statSync(abs).size < 1e6) {
     examinar("arquivo", fs.readFileSync(abs, "utf8"));
