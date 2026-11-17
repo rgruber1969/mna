@@ -15,6 +15,9 @@ arquivo criado) ou `recusado`.
 |---|---|---|---|---|
 | 1 | Ao gravar um ADR, atualizar o README das decisões e, se houver conceito novo, as notas explicativas | 16 (ADR-0003 a 0018) | Skill "registrar ADR" (template MADR, numeração, README, notas, commit) | aprovado: [.claude/skills/registrar-adr](../../.claude/skills/registrar-adr/SKILL.md) |
 | 2 | Explicar em linguagem simples cada ferramenta ou conceito novo adotado | 5 | Já coberto pelo `~/.claude/CLAUDE.md` | observando |
+| 3 | Reiniciar o servidor de desenvolvimento (encerrar o processo da porta e subir `pnpm dev`) | 3 | Script `pnpm dev:reiniciar` ou skill | observando |
+| 4 | Ao instalar pacote, conferir builds bloqueados pelo pnpm e registrar em `pnpm-workspace.yaml` | 2 | Hook após `pnpm add` | observando |
+| 5 | Usar `/c/Users/suporte/AppData/Roaming/npm` no PATH do Bash para achar o `pnpm` | 6 | Ajuste de ambiente (PATH do usuário) | observando |
 
 ## Histórico de propostas
 
