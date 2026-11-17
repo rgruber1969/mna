@@ -19,7 +19,12 @@ const sdkRestritos = [
 ];
 const sdkPadroes = [
   { group: ["@aws-sdk/*"], message: "ADR-0012/0017: use os módulos de armazenamento e criptografia." },
+  {
+    group: ["better-auth", "better-auth/*"],
+    message: "ADR-0019: Better Auth só em src/server/auth; telas chamam src/server/services.",
+  },
 ];
+const semBetterAuth = sdkPadroes.filter((p) => !p.group.includes("better-auth"));
 
 // Telas e rotas da API não acessam o banco: chamam a camada de serviços.
 const bancoRestrito = {
@@ -64,6 +69,31 @@ export default defineConfig([
   {
     files: ["src/server/arquivos/**"],
     rules: { "no-restricted-imports": ["error", { paths: sdkRestritos, patterns: [bancoRestrito] }] },
+  },
+  {
+    files: ["src/server/email/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: sdkRestritos.filter((s) => s.name !== "nodemailer"),
+          patterns: [...sdkPadroes, bancoRestrito],
+        },
+      ],
+    },
+  },
+  {
+    // Módulo de autenticação: Better Auth + acesso às tabelas de identidade.
+    files: ["src/server/auth/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: sdkRestritos.filter((s) => s.name !== "pg" && s.name !== "drizzle-orm/node-postgres"),
+          patterns: semBetterAuth,
+        },
+      ],
+    },
   },
   {
     files: ["src/server/db/**", "src/server/services/**"],

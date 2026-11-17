@@ -15,6 +15,20 @@
       "when": 1794943920133,
       "tag": "0001_rls_e_privilegios",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794949464940,
+      "tag": "0002_identidade",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794949469316,
+      "tag": "0003_privilegios_identidade",
+      "breakpoints": true
     }
   ]
 }

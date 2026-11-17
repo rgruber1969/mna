@@ -1,5 +1,17 @@
 import { sql } from "drizzle-orm";
-import { index, jsonb, pgPolicy, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgPolicy,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 /**
  * Esquema do banco (ADR-0009, ADR-0018).
@@ -28,9 +40,194 @@ export const tenant = pgTable("tenant", {
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Identidade (ADR-0005, ADR-0019) ---------------------------------------
+// Tabelas do Better Auth: globais porque a conta é única na plataforma. As
+// chaves das propriedades seguem os nomes exigidos pelo Better Auth; o
+// acesso fica restrito a src/server/auth e à camada de serviços.
+
+const criadoEm = () => timestamp("criado_em", { withTimezone: true }).notNull().defaultNow();
+const atualizadoEm = () => timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow();
+
+/** Conta (Better Auth "user"). Dados pessoais: nome e e-mail. */
+export const usuario = pgTable("usuario", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("nome").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verificado").notNull().default(false),
+  image: text("imagem"),
+  twoFactorEnabled: boolean("dois_fatores_ativo").notNull().default(false),
+  /** Papel na plataforma (console). Só vale no endereço do console. */
+  papelPlataforma: text("papel_plataforma"),
+  createdAt: criadoEm(),
+  updatedAt: atualizadoEm(),
+});
+
+/** Sessão (Better Auth "session"), ligada à área onde foi criada. */
+export const sessao = pgTable(
+  "sessao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    token: text("token").notNull().unique(),
+    userId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    /** "console" ou "tenant:<id>" (ADR-0019, regra 7). */
+    area: text("area").notNull(),
+    expiresAt: timestamp("expira_em", { withTimezone: true }).notNull(),
+    ipAddress: text("endereco_ip"),
+    userAgent: text("navegador"),
+    createdAt: criadoEm(),
+    updatedAt: atualizadoEm(),
+  },
+  (t) => [index("sessao_usuario_area_idx").on(t.userId, t.area)],
+);
+
+/** Credenciais e logins sociais (Better Auth "account"). */
+export const conta = pgTable(
+  "conta",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    accountId: text("id_no_provedor").notNull(),
+    providerId: text("provedor").notNull(),
+    accessToken: text("token_acesso"),
+    refreshToken: text("token_renovacao"),
+    idToken: text("token_id"),
+    accessTokenExpiresAt: timestamp("token_acesso_expira_em", { withTimezone: true }),
+    refreshTokenExpiresAt: timestamp("token_renovacao_expira_em", { withTimezone: true }),
+    scope: text("escopo"),
+    password: text("senha_hash"),
+    createdAt: criadoEm(),
+    updatedAt: atualizadoEm(),
+  },
+  (t) => [index("conta_usuario_idx").on(t.userId)],
+);
+
+/** Tokens temporários do Better Auth (ex.: link mágico, redefinição). */
+export const verificacao = pgTable(
+  "verificacao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    identifier: text("identificador").notNull(),
+    value: text("valor").notNull(),
+    expiresAt: timestamp("expira_em", { withTimezone: true }).notNull(),
+    createdAt: criadoEm(),
+    updatedAt: atualizadoEm(),
+  },
+  (t) => [index("verificacao_identificador_idx").on(t.identifier)],
+);
+
+/** Segredo do aplicativo autenticador e códigos de recuperação. */
+export const doisFatores = pgTable(
+  "dois_fatores",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    secret: text("segredo").notNull(),
+    backupCodes: text("codigos_recuperacao").notNull(),
+    verified: boolean("verificado").notNull().default(true),
+    failedVerificationCount: integer("tentativas_falhas").notNull().default(0),
+    lockedUntil: timestamp("bloqueado_ate", { withTimezone: true }),
+  },
+  (t) => [index("dois_fatores_usuario_idx").on(t.userId), index("dois_fatores_segredo_idx").on(t.secret)],
+);
+
+/** Limite de tentativas (Better Auth "rateLimit"), compartilhado entre instâncias. */
+export const limiteTentativas = pgTable("limite_tentativas", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: text("chave").notNull().unique(),
+  count: integer("contagem").notNull(),
+  lastRequest: bigint("ultima_requisicao", { mode: "number" }).notNull(),
+});
+
+/** Convites para o console (usuários da plataforma). Token só como hash. */
+export const convitePlataforma = pgTable("convite_plataforma", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  nome: text("nome").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiraEm: timestamp("expira_em", { withTimezone: true }).notNull(),
+  aceitoEm: timestamp("aceito_em", { withTimezone: true }),
+  criadoEm: criadoEm(),
+});
+
+/** Auditoria das ações da plataforma (console). Imutável; só identificadores. */
+export const eventoPlataforma = pgTable(
+  "evento_plataforma",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tipo: text("tipo").notNull(),
+    atorId: uuid("ator_id"),
+    alvoTipo: text("alvo_tipo"),
+    alvoId: uuid("alvo_id"),
+    detalhes: jsonb("detalhes").$type<Record<string, string | number | boolean | null>>(),
+    ocorridoEm: timestamp("ocorrido_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("evento_plataforma_ocorrido_idx").on(t.ocorridoEm)],
+);
+
 // ---------------------------------------------------------------------------
 // Tabelas de negócio (sempre com tenant_id + RLS)
 // ---------------------------------------------------------------------------
+
+/** Vínculo da conta com o tenant (ADR-0019, regra 3). */
+export const vinculoTenant = pgTable(
+  "vinculo_tenant",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    situacao: text("situacao").$type<"ativo" | "revogado">().notNull(),
+    administrador: boolean("administrador").notNull().default(false),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    uniqueIndex("vinculo_tenant_usuario_uq").on(t.tenantId, t.usuarioId),
+    pgPolicy("isolamento_tenant", {
+      for: "all",
+      to: "mna_app",
+      using: doTenantAtual,
+      withCheck: doTenantAtual,
+    }),
+  ],
+).enableRLS();
+
+/** Convite para o tenant (ADR-0019, regra 4). Token só como hash. */
+export const convite = pgTable(
+  "convite",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    nome: text("nome").notNull(),
+    administrador: boolean("administrador").notNull().default(false),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiraEm: timestamp("expira_em", { withTimezone: true }).notNull(),
+    aceitoEm: timestamp("aceito_em", { withTimezone: true }),
+    criadoPor: uuid("criado_por"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    index("convite_tenant_idx").on(t.tenantId),
+    pgPolicy("isolamento_tenant", {
+      for: "all",
+      to: "mna_app",
+      using: doTenantAtual,
+      withCheck: doTenantAtual,
+    }),
+  ],
+).enableRLS();
 
 /**
  * Trilha de auditoria (ADR-0007, docs/projeto/dados-pessoais.md).
