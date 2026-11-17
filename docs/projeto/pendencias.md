@@ -19,9 +19,9 @@ registrado.
       produção"**: explicado em 2026-11-17 (região = local físico do
       servidor; motivos: LGPD, latência, coerência com AWS São Paulo;
       escolhida na criação do banco).
-- [ ] **5. Escopo da versão 1**: marcar a coluna "V1?" em `escopo-v1.md`,
-      revisando as estimativas de valor e esforço (que são do Claude) e
-      considerando que os itens 21 e 22 podem ficar para depois sem risco.
+- [x] **5. Escopo da versão 1**: V1 = demonstração completa, 23
+      funcionalidades reais e 8 simuladas com aviso (`escopo-v1.md`);
+      estimativas revisadas (item 15 valor Alto; item 31 esforço M).
 - [ ] **6. Valuation**: detalhar a funcionalidade (questionário próprio).
 
 ## Antes da produção

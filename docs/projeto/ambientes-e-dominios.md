@@ -30,6 +30,15 @@ ADRs 0011 (endereços), 0012 (arquivos) e 0014 (e-mail).
 | Resumos automáticos | Local, sem IA | Local, sem IA | A decidir (local ou IA) |
 | Dados | Fictícios | **Só fictícios** | Reais |
 
+## Funcionalidades simuladas na demonstração
+
+* A demonstração mostra **todas** as funcionalidades; 8 delas são
+  **simuladas** (lista em `escopo-v1.md`).
+* Toda tela simulada exibe o aviso **"Funcionalidade em demonstração: dados
+  simulados"**, sem exceção.
+* Cada funcionalidade tem uma configuração "real" ou "simulada"; em
+  produção, a aplicação **recusa iniciar** se alguma estiver simulada.
+
 ## Domínio e e-mail da demonstração
 
 * DNS de `rgruber.com.br` no Registro.br (sem subdomínio coringa): cada
