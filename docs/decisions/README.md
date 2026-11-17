@@ -57,6 +57,7 @@ Requisitos que orientam as próximas decisões:
 | Envio de e-mail | Necessário para convites, link mágico e recuperação de senha |
 | ORM, interface, testes e lint | Na criação do projeto |
 | Armazenamento de arquivos | A decidir (o Neon não inclui; ex.: Vercel Blob, S3); seguir as regras do ADR-0007 para documentos; necessário para logos de tenant |
+| Antivírus nos uploads | Escanear arquivos enviados antes de liberar download (documentos vêm de empresas externas) |
 | Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
 | Domínio | Escolha e compra do domínio definitivo (DNS na Vercel, subdomínio coringa) |
 | Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
