@@ -17,6 +17,7 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 - Dados pessoais e auditoria: [docs/projeto/dados-pessoais.md](docs/projeto/dados-pessoais.md)
 - Escopo da versão 1: [docs/projeto/escopo-v1.md](docs/projeto/escopo-v1.md)
 - Fora da versão 1: [docs/projeto/backlog-futuro.md](docs/projeto/backlog-futuro.md)
+- Ambientes, domínios e nome do produto: [docs/projeto/ambientes-e-dominios.md](docs/projeto/ambientes-e-dominios.md)
 - Identidade visual padrão: [docs/marca/rgruber/README.md](docs/marca/rgruber/README.md)
 
 ## Regras inegociáveis
