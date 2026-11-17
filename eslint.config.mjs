@@ -20,7 +20,7 @@ const sdkRestritos = [
 const sdkPadroes = [
   { group: ["@aws-sdk/*"], message: "ADR-0012/0017: use os módulos de armazenamento e criptografia." },
   {
-    group: ["better-auth", "better-auth/*"],
+    group: ["better-auth", "better-auth/*", "@better-auth/*"],
     message: "ADR-0019: Better Auth só em src/server/auth; telas chamam src/server/services.",
   },
 ];

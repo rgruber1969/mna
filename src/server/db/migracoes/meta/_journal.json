@@ -29,6 +29,20 @@
       "when": 1794949469316,
       "tag": "0003_privilegios_identidade",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794951769703,
+      "tag": "0004_passkey_e_segundo_fator",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794951770966,
+      "tag": "0005_privilegios_passkey",
+      "breakpoints": true
     }
   ]
 }

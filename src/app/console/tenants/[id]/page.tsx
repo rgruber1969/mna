@@ -7,6 +7,7 @@ import { produto } from "@/config/produto";
 import { obterAcesso } from "@/server/services/acesso";
 import { obterTenant } from "@/server/services/console";
 import { Cabecalho } from "@/components/acesso/cabecalho";
+import { ExigeSegundoFator } from "@/components/acesso/telas";
 import { FormConvidarAdministrador } from "@/components/acesso/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
@@ -15,6 +16,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
   const acesso = await obterAcesso(new Headers(await headers()));
   if (acesso?.area !== "console") redirect("/entrar");
   if (!acesso.usuario.doisFatoresAtivo) redirect("/configurar-2fa");
+  if (!acesso.segundoFatorNaSessao) return <ExigeSegundoFator />;
   const t = await obterTenant(acesso, await id);
   if (!t) notFound();
   const dominio = process.env.APP_DOMINIO ?? "localhost:3000";

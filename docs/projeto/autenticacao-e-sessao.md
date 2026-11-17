@@ -17,8 +17,27 @@ Todas as gratuitas, para todos os usuários:
 
 * E-mail e senha
 * Link mágico (link de uso único enviado por e-mail)
+* Passkey
 * Google
 * Microsoft
+
+## Link mágico (decidido em 2026-11-17)
+
+* **Substitui só a senha:** quem tem segundo fator digita o código (ou usa
+  a passkey) depois do link; o link nunca dispensa o 2FA.
+* Vale **10 minutos** e **uma vez**; só é enviado se a conta tem acesso ao
+  endereço, mas a resposta na tela é sempre a mesma.
+* Abrir o link mostra um botão **"Entrar"**; o login não é automático,
+  porque antivírus de e-mail abrem links sozinhos e gastariam o link.
+
+## Passkey (decidido em 2026-11-17)
+
+* **Login completo:** passkey sozinha já vale como dois fatores (aparelho +
+  digital, rosto ou PIN), sem senha nem código.
+* A sessão registra se foi aberta com dois fatores; áreas que exigem 2FA
+  (o console sempre) recusam sessão aberta só com senha ou só com link.
+* No desenvolvimento local, cada passkey fica presa ao subdomínio
+  (`*.localhost`); na demonstração e na produção, vale em todo o domínio.
 
 ## Senha
 

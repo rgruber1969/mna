@@ -73,6 +73,8 @@ export const sessao = pgTable(
       .references(() => usuario.id, { onDelete: "cascade" }),
     /** "console" ou "tenant:<id>" (ADR-0019, regra 7). */
     area: text("area").notNull(),
+    /** Entrou com dois fatores (senha/link + código, ou passkey). */
+    segundoFator: boolean("segundo_fator").notNull().default(false),
     expiresAt: timestamp("expira_em", { withTimezone: true }).notNull(),
     ipAddress: text("endereco_ip"),
     userAgent: text("navegador"),
@@ -134,6 +136,30 @@ export const doisFatores = pgTable(
     lockedUntil: timestamp("bloqueado_ate", { withTimezone: true }),
   },
   (t) => [index("dois_fatores_usuario_idx").on(t.userId), index("dois_fatores_segredo_idx").on(t.secret)],
+);
+
+/** Passkeys (chaves de acesso) da conta. Só a chave pública fica no servidor. */
+export const chaveDeAcesso = pgTable(
+  "chave_de_acesso",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    name: text("nome"),
+    publicKey: text("chave_publica").notNull(),
+    credentialID: text("id_credencial").notNull(),
+    counter: integer("contador").notNull(),
+    deviceType: text("tipo_dispositivo").notNull(),
+    backedUp: boolean("com_copia").notNull(),
+    transports: text("transportes"),
+    aaguid: text("aaguid"),
+    createdAt: timestamp("criado_em", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("chave_de_acesso_usuario_idx").on(t.userId),
+    index("chave_de_acesso_credencial_idx").on(t.credentialID),
+  ],
 );
 
 /** Limite de tentativas (Better Auth "rateLimit"), compartilhado entre instâncias. */

@@ -14,7 +14,8 @@ import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
 export type AcessoConsole = Extract<Acesso, { area: "console" }>;
 
 export function exigirConsole(acesso: Acesso | null): AcessoConsole {
-  if (acesso?.area !== "console" || !acesso.usuario.doisFatoresAtivo) throw new AcessoNegado();
+  // Exige que ESTA sessão tenha sido aberta com dois fatores, não só que a conta tenha 2FA.
+  if (acesso?.area !== "console" || !acesso.segundoFatorNaSessao) throw new AcessoNegado();
   return acesso;
 }
 

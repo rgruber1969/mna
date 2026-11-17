@@ -7,6 +7,7 @@ import { produto } from "@/config/produto";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarTenants } from "@/server/services/console";
 import { Cabecalho } from "@/components/acesso/cabecalho";
+import { ExigeSegundoFator } from "@/components/acesso/telas";
 import { FormNovoTenant } from "@/components/acesso/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
@@ -15,6 +16,7 @@ async function Painel() {
   const acesso = await obterAcesso(new Headers(await headers()));
   if (acesso?.area !== "console") redirect("/entrar");
   if (!acesso.usuario.doisFatoresAtivo) redirect("/configurar-2fa");
+  if (!acesso.segundoFatorNaSessao) return <ExigeSegundoFator />;
   const tenants = await listarTenants(acesso);
   const dominio = process.env.APP_DOMINIO ?? "localhost:3000";
 

@@ -4,7 +4,14 @@ import { headers } from "next/headers";
 import {
   confirmarAutenticador,
   entrar,
+  entrarComLinkMagico,
+  entrarComPasskey,
   iniciarAutenticador,
+  opcoesParaCriarPasskey,
+  opcoesParaEntrarComPasskey,
+  pedirLinkMagico,
+  salvarPasskey,
+  type OpcoesWebAuthn,
   obterAcesso,
   sair,
   verificarSegundoFator,
@@ -81,6 +88,42 @@ export async function confirmarAutenticadorAcao(_: Estado, f: FormData): Promise
   const r = await confirmarAutenticador(texto(f, "codigo"), await cabecalhos());
   if ("erro" in r) return { erro: r.erro };
   return irPara("/");
+}
+
+// --- Link mágico e passkey ---------------------------------------------------
+
+export async function pedirLinkAcao(_: Estado, f: FormData): Promise<Estado> {
+  await pedirLinkMagico(texto(f, "email"), await cabecalhos());
+  return { ok: "Se este e-mail tiver acesso a este endereço, enviamos um link que vale por 10 minutos." };
+}
+
+export async function entrarComLinkAcao(_: Estado, f: FormData): Promise<Estado> {
+  return seguir(await entrarComLinkMagico(texto(f, "token"), await cabecalhos()));
+}
+
+export async function opcoesEntrarComPasskeyAcao(): Promise<OpcoesWebAuthn | { erro: string }> {
+  return opcoesParaEntrarComPasskey(await cabecalhos());
+}
+
+export async function entrarComPasskeyAcao(resposta: unknown): Promise<Estado> {
+  return seguir(await entrarComPasskey(resposta, await cabecalhos()));
+}
+
+export async function opcoesCriarPasskeyAcao(): Promise<OpcoesWebAuthn | { erro: string }> {
+  return opcoesParaCriarPasskey(await cabecalhos());
+}
+
+/**
+ * Salva a passkey. Com `reentrar`, encerra a sessão atual (aberta só com senha)
+ * para a pessoa entrar de novo já com a passkey, que conta como dois fatores.
+ */
+export async function salvarPasskeyAcao(resposta: unknown, nome: string, reentrar: boolean): Promise<Estado> {
+  const h = await cabecalhos();
+  const r = await salvarPasskey(resposta, nome, h);
+  if ("erro" in r) return { erro: r.erro };
+  if (!reentrar) return { ok: "Passkey cadastrada." };
+  await sair(h);
+  return irPara("/entrar?passkey=cadastrada");
 }
 
 // --- Console -----------------------------------------------------------------

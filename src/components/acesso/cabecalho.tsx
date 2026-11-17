@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FormSair } from "./formularios";
 
 /** Barra superior das áreas logadas: área, usuário e botão de sair. */
@@ -7,6 +8,9 @@ export function Cabecalho({ area, usuario }: { area: string; usuario: string }) 
       <span className="text-primary font-semibold">{area}</span>
       <div className="flex items-center gap-4 text-sm">
         <span className="text-muted">{usuario}</span>
+        <Link href="/seguranca" className="text-primary font-medium">
+          Segurança
+        </Link>
         <FormSair />
       </div>
     </header>

@@ -2,7 +2,14 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { auth, SESSAO_DURACAO_MAXIMA_S } from "@/server/auth/auth";
 import { banco, comTenant } from "@/server/db/cliente";
-import { eventoAuditoria, eventoPlataforma, sessao, tenant, vinculoTenant } from "@/server/db/esquema";
+import {
+  chaveDeAcesso,
+  eventoAuditoria,
+  eventoPlataforma,
+  sessao,
+  tenant,
+  vinculoTenant,
+} from "@/server/db/esquema";
 import { resolverArea } from "@/server/enderecos";
 
 /**
@@ -12,17 +19,26 @@ import { resolverArea } from "@/server/enderecos";
  * endereço e vínculo/papel ainda válidos.
  */
 
-export type UsuarioDoAcesso = { id: string; nome: string; email: string; doisFatoresAtivo: boolean };
+export type UsuarioDoAcesso = {
+  id: string;
+  nome: string;
+  email: string;
+  temAutenticador: boolean;
+  temPasskey: boolean;
+  /** Tem algum segundo fator configurado (autenticador ou passkey). */
+  doisFatoresAtivo: boolean;
+};
 export type TenantDoAcesso = { id: string; slug: string; nome: string };
 
 export type Acesso =
-  | { area: "console"; usuario: UsuarioDoAcesso; sessaoId: string }
+  | { area: "console"; usuario: UsuarioDoAcesso; sessaoId: string; segundoFatorNaSessao: boolean }
   | {
       area: "tenant";
       tenant: TenantDoAcesso;
       usuario: UsuarioDoAcesso;
       administrador: boolean;
       sessaoId: string;
+      segundoFatorNaSessao: boolean;
     };
 
 export class AcessoNegado extends Error {
@@ -86,16 +102,25 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     return null;
   }
 
+  const [chave] = await banco()
+    .select({ id: chaveDeAcesso.id })
+    .from(chaveDeAcesso)
+    .where(eq(chaveDeAcesso.userId, u.id))
+    .limit(1);
+  const temAutenticador = Boolean(u.twoFactorEnabled);
   const usuario: UsuarioDoAcesso = {
     id: u.id,
     nome: u.name,
     email: u.email,
-    doisFatoresAtivo: Boolean(u.twoFactorEnabled),
+    temAutenticador,
+    temPasskey: Boolean(chave),
+    doisFatoresAtivo: temAutenticador || Boolean(chave),
   };
+  const segundoFatorNaSessao = Boolean(s.segundoFator);
 
   if (area.tipo === "console") {
     if (u.papelPlataforma !== "admin") return null;
-    return { area: "console", usuario, sessaoId: s.id };
+    return { area: "console", usuario, sessaoId: s.id, segundoFatorNaSessao };
   }
 
   const [v] = await comTenant(t!.id, (tx) =>
@@ -108,7 +133,14 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     await revogarSessao(s.id);
     return null;
   }
-  return { area: "tenant", tenant: t!, usuario, administrador: v.administrador, sessaoId: s.id };
+  return {
+    area: "tenant",
+    tenant: t!,
+    usuario,
+    administrador: v.administrador,
+    sessaoId: s.id,
+    segundoFatorNaSessao,
+  };
 }
 
 // --- Login, segundo fator e saída ------------------------------------------
@@ -202,5 +234,82 @@ export async function confirmarAutenticador(
     return { ok: true };
   } catch {
     return { erro: "Código inválido. Confira o horário do celular e tente de novo." };
+  }
+}
+
+// --- Link mágico (política 1A: substitui só a senha) --------------------------
+
+/** Pede o link. A resposta é sempre a mesma, exista a conta ou não (ADR-0019, regra 5). */
+export async function pedirLinkMagico(email: string, headers: Headers): Promise<{ ok: true }> {
+  try {
+    await auth.api.signInMagicLink({ body: { email: email.trim().toLowerCase() }, headers });
+  } catch {
+    // Mesmo resultado para quem não tem conta ou acesso.
+  }
+  return { ok: true };
+}
+
+/** Usa o link. Quem tem autenticador segue para o código (etapa "dois-fatores"). */
+export async function entrarComLinkMagico(token: string, headers: Headers): Promise<ResultadoLogin> {
+  try {
+    const r = (await auth.api.magicLinkVerify({ query: { token }, headers })) as {
+      twoFactorRedirect?: boolean;
+      user?: { id: string };
+    };
+    if (r.twoFactorRedirect) return { etapa: "dois-fatores" };
+    if (r.user) await registrarEntrada(headers, r.user.id, "link");
+    return { etapa: "concluido" };
+  } catch {
+    return { erro: "Link inválido, expirado ou já utilizado. Peça um novo na tela de entrada." };
+  }
+}
+
+// --- Passkeys (política 2A: login completo, já com dois fatores) -----------------
+
+export type OpcoesWebAuthn = Record<string, unknown>;
+
+export async function opcoesParaCriarPasskey(headers: Headers): Promise<OpcoesWebAuthn | { erro: string }> {
+  try {
+    return (await auth.api.generatePasskeyRegistrationOptions({ headers })) as unknown as OpcoesWebAuthn;
+  } catch {
+    return { erro: "Não foi possível iniciar o cadastro da passkey. Entre novamente e tente de novo." };
+  }
+}
+
+export async function salvarPasskey(
+  resposta: unknown,
+  nome: string,
+  headers: Headers,
+): Promise<{ ok: true } | { erro: string }> {
+  try {
+    const r = await auth.api.verifyPasskeyRegistration({
+      body: { response: resposta as never, name: nome.trim().slice(0, 60) || undefined },
+      headers,
+    });
+    const usuarioId = (r as { passkey?: { userId?: string } }).passkey?.userId;
+    if (usuarioId) await registrarEntrada(headers, usuarioId, "passkey-cadastrada");
+    return { ok: true };
+  } catch {
+    return { erro: "A passkey não foi cadastrada. Tente de novo." };
+  }
+}
+
+export async function opcoesParaEntrarComPasskey(
+  headers: Headers,
+): Promise<OpcoesWebAuthn | { erro: string }> {
+  try {
+    return (await auth.api.generatePasskeyAuthenticationOptions({ headers })) as unknown as OpcoesWebAuthn;
+  } catch {
+    return { erro: "Não foi possível iniciar o login com passkey." };
+  }
+}
+
+export async function entrarComPasskey(resposta: unknown, headers: Headers): Promise<ResultadoLogin> {
+  try {
+    const r = await auth.api.verifyPasskeyAuthentication({ body: { response: resposta as never }, headers });
+    await registrarEntrada(headers, r.user.id, "passkey");
+    return { etapa: "concluido" };
+  } catch {
+    return { erro: "Passkey não reconhecida ou sem acesso a este endereço." };
   }
 }
