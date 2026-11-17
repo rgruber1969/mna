@@ -356,3 +356,27 @@ Claude Code. Decisões em vigor: [README](README.md).
   a reputação do domínio.
 * **Envio em segundo plano:** a tela registra o pedido e segue; o e-mail é
   enviado logo depois por uma tarefa separada, que tenta de novo se falhar.
+
+## Tarefas em segundo plano (ADR-0015)
+
+* **Síncrono × assíncrono:** síncrono é quando o usuário espera a tarefa
+  terminar; assíncrono é quando a tela responde na hora e a tarefa roda
+  logo depois, mostrando o status (enviando → enviado → falhou).
+* **Por que precisa de peça extra na Vercel:** as funções da Vercel nascem
+  para atender um pedido e terminam; não há programa sempre ligado
+  esperando tarefas.
+* **Inngest:** serviço que funciona como gerente da fila e despertador.
+  Recebe "execute a tarefa X para o convite 123", guarda, agenda e chama de
+  volta a nossa aplicação na hora certa, repetindo se falhar. **Quem
+  executa é o nosso código, na Vercel**; o Inngest não acessa nosso banco.
+* **Fluxo:** MNA envia "convite 123" ao Inngest → Inngest chama o MNA →
+  MNA lê o convite no nosso banco e envia o e-mail → MNA responde
+  "concluído" ou "falhou" → se falhou, o Inngest tenta de novo depois.
+* **Só identificadores:** pelo Inngest passam apenas números de
+  referência e status, nunca nomes, e-mails ou documentos.
+* **Etapas:** tarefas longas (ex.: exportar um deal em PDF) são divididas em
+  partes; se uma parte falhar, retoma-se dali, sem refazer tudo.
+* **Idempotência:** propriedade de uma tarefa que pode rodar duas vezes sem
+  causar efeito duplicado (ex.: o convite não chega em dobro).
+* **Cron / agendamento:** tarefa que roda sozinha em horários definidos
+  (ex.: limpeza diária de auditoria vencida).

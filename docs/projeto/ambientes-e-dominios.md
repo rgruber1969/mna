@@ -23,6 +23,7 @@ ADRs 0011 (endereços), 0012 (arquivos) e 0014 (e-mail).
 | Banco | Postgres no Docker | Neon, qualquer região gratuita | Neon em São Paulo |
 | Arquivos | MinIO no Docker | Cloudflare R2 | AWS S3 São Paulo |
 | E-mail | Mailpit no Docker | Resend | Amazon SES São Paulo |
+| Tarefas | Servidor local do Inngest | Inngest (franquia gratuita) | Inngest |
 | Dados | Fictícios | **Só fictícios** | Reais |
 
 ## Domínio e e-mail da demonstração

@@ -23,6 +23,7 @@ projeto e em `docs/projeto/`.
 | [0012](0012-armazenamento-de-arquivos-s3.md) | Arquivos | Protocolo S3: MinIO / R2 / S3 São Paulo |
 | [0013](0013-modelo-de-permissoes.md) | Permissões | Perfis configuráveis; participação com alcance; negado por padrão |
 | [0014](0014-envio-de-email.md) | E-mail | Mailpit / Resend / SES São Paulo |
+| [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
 
 ## Premissas de arquitetura
 
@@ -36,9 +37,8 @@ projeto e em `docs/projeto/`.
 
 | Tema | Situação |
 |---|---|
-| Tarefas em segundo plano | Fila/agendador compatível com a Vercel |
 | ORM, interface, testes e lint | Na criação do projeto |
-| Antivírus nos uploads | Escanear antes de liberar download |
+| Antivírus nos uploads | Escanear antes de liberar download (produção: avaliar GuardDuty para S3) |
 | Gestão de chaves de criptografia | Guarda, backup e rotação |
 | Checklist ASVS nível 2 | Curadoria; vira skill/rule do template |
 
