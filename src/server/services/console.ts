@@ -1,10 +1,11 @@
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { banco, comTenant } from "@/server/db/cliente";
-import { convite, eventoPlataforma, tenant, vinculoTenant } from "@/server/db/esquema";
+import { convite, eventoPlataforma, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
 import { problemaNoSlug } from "@/server/enderecos";
 import { AcessoNegado, type Acesso } from "./acesso";
 import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
+import { apagarTodosOsFatores, avisarMudancaNosFatores } from "./fatores-da-conta";
 
 /**
  * Console da plataforma (ADR-0011, regra 4; docs/projeto/perfis-e-permissoes.md):
@@ -106,4 +107,48 @@ export async function convidarAdministradorDoTenant(
   const r = await emitirConviteDoTenant(t, { ...dados, administrador: true }, a.usuario.id);
   if ("ok" in r) await auditar(a.usuario.id, "tenant.administrador.convidado", t.id);
   return r;
+}
+
+// --- Redefinição de 2FA pela plataforma -------------------------------------------
+
+/** Motivos fixos: a auditoria não guarda texto livre (sem dados pessoais, ADR-0007). */
+export const MOTIVOS_DE_REDEFINICAO = {
+  "perdeu-aparelho": "Perdeu ou trocou o aparelho e os códigos de recuperação",
+  "aparelho-roubado": "Aparelho roubado ou comprometido",
+  outro: "Outro motivo (detalhado no atendimento)",
+} as const;
+export type MotivoDeRedefinicao = keyof typeof MOTIVOS_DE_REDEFINICAO;
+
+/**
+ * Redefinição completa do 2FA de qualquer conta (autenticacao-e-sessao.md,
+ * "Recuperação"): para quem tem acesso a vários tenants que exigem 2FA. A
+ * identidade da pessoa é confirmada antes, fora do sistema.
+ */
+export async function redefinirDoisFatoresPelaPlataforma(
+  acesso: Acesso | null,
+  dados: { email: string; motivo: string; identidadeConfirmada: boolean },
+): Promise<{ ok: true } | { erro: string }> {
+  const a = exigirConsole(acesso);
+  if (!dados.identidadeConfirmada) return { erro: "Confirme a identidade da pessoa antes de redefinir." };
+  if (!(dados.motivo in MOTIVOS_DE_REDEFINICAO)) return { erro: "Escolha o motivo." };
+  const email = dados.email.trim().toLowerCase();
+  const [u] = await banco().select({ id: usuario.id }).from(usuario).where(eq(usuario.email, email));
+  if (!u) return { erro: "Nenhuma conta com este e-mail." };
+  if (u.id === a.usuario.id) return { erro: "Você não pode redefinir o seu próprio 2FA por aqui." };
+  await apagarTodosOsFatores(u.id);
+  await banco()
+    .insert(eventoPlataforma)
+    .values({
+      tipo: "usuario.2fa.redefinido",
+      atorId: a.usuario.id,
+      alvoTipo: "usuario",
+      alvoId: u.id,
+      detalhes: { motivo: dados.motivo },
+    });
+  await avisarMudancaNosFatores(
+    u.id,
+    "A verificação em duas etapas da sua conta foi redefinida pelo suporte da plataforma",
+    "console da plataforma",
+  );
+  return { ok: true };
 }

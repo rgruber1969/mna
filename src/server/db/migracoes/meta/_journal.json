@@ -43,6 +43,13 @@
       "when": 1794951770966,
       "tag": "0005_privilegios_passkey",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794958065335,
+      "tag": "0006_exigencia_2fa",
+      "breakpoints": true
     }
   ]
 }

@@ -8,8 +8,11 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   reporter: "list",
+  // Em desenvolvimento, a primeira visita a uma página espera a compilação.
+  expect: { timeout: 15_000 },
   use: {
     baseURL: "http://localhost:3000",
+    navigationTimeout: 30_000,
     trace: "retain-on-failure",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

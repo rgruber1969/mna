@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { produto } from "@/config/produto";
-import { obterAcesso } from "@/server/services/acesso";
+import { obterAcesso, pendenciaDeDoisFatores, type Acesso } from "@/server/services/acesso";
 import { obterConvite } from "@/server/services/convites";
 import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
 import { Cabecalho } from "./cabecalho";
@@ -101,6 +101,53 @@ async function TokenDoLink({ token }: { token: Promise<string> }) {
   return <FormUsarLink token={decodeURIComponent(await token)} />;
 }
 
+/**
+ * Portão do 2FA (autenticacao-e-sessao.md, "Exigência no tenant"): sem fator
+ * configurado, vai para a configuração; com fator, mas sessão aberta só com
+ * senha ou link, pede para entrar de novo. Devolve null quando está tudo em dia.
+ */
+export function portaoDeDoisFatores(acesso: Acesso) {
+  const pendencia = pendenciaDeDoisFatores(acesso);
+  if (pendencia === "configurar") redirect("/configurar-2fa");
+  return pendencia === "reentrar" ? <ExigeSegundoFator /> : null;
+}
+
+async function ConteudoConfigurar2fa() {
+  await connection();
+  const acesso = await obterAcesso(new Headers(await headers()));
+  if (!acesso) redirect("/entrar");
+  if (pendenciaDeDoisFatores(acesso) !== "configurar") redirect("/");
+  return (
+    <>
+      <p className="text-muted mb-6 text-sm">
+        {acesso.area === "console"
+          ? "O console exige verificação em duas etapas."
+          : `${acesso.tenant.nome} exige verificação em duas etapas para o seu acesso.`}{" "}
+        Escolha uma das opções para continuar.
+      </p>
+      <h2 className="text-text mb-2 text-sm font-semibold">Opção 1: passkey (recomendada)</h2>
+      <FormCriarPasskey reentrar />
+      <div className="border-border my-6 border-t" />
+      <h2 className="text-text mb-2 text-sm font-semibold">Opção 2: aplicativo autenticador</h2>
+      <FormAutenticador />
+    </>
+  );
+}
+
+/** Configuração obrigatória do 2FA: quando exigido e sem fator, só esta tela fica disponível. */
+export function TelaConfigurar2fa() {
+  return (
+    <Moldura>
+      <Cartao>
+        <Titulo sobre="Segurança">Verificação em duas etapas</Titulo>
+        <Suspense fallback={<Carregando />}>
+          <ConteudoConfigurar2fa />
+        </Suspense>
+      </Cartao>
+    </Moldura>
+  );
+}
+
 /** Aviso para quem precisa entrar de novo com dois fatores (ex.: só usou a senha). */
 export function ExigeSegundoFator() {
   return (
@@ -124,12 +171,19 @@ async function ConteudoSeguranca() {
   const area = acesso.area === "console" ? `${produto.nome} · Console` : acesso.tenant.nome;
   return (
     <>
-      <Cabecalho area={area} usuario={acesso.usuario.nome} />
+      <Cabecalho
+        area={area}
+        usuario={acesso.usuario.nome}
+        administrador={acesso.area === "tenant" && acesso.administrador}
+      />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao>
           <Titulo sobre="Segurança">Passkey</Titulo>
           {acesso.usuario.temPasskey && (
-            <p className="text-success mb-4 text-sm">Você já tem passkey cadastrada. Pode cadastrar outra.</p>
+            <p className="text-success mb-4 text-sm">
+              Você já tem passkey cadastrada. Recomendamos cadastrar uma segunda, em outro aparelho (por
+              exemplo, celular e notebook): se perder um, entra com o outro sem precisar do administrador.
+            </p>
           )}
           <FormCriarPasskey />
         </Cartao>

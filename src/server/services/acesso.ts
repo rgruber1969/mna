@@ -28,7 +28,7 @@ export type UsuarioDoAcesso = {
   /** Tem algum segundo fator configurado (autenticador ou passkey). */
   doisFatoresAtivo: boolean;
 };
-export type TenantDoAcesso = { id: string; slug: string; nome: string };
+export type TenantDoAcesso = { id: string; slug: string; nome: string; exigeDoisFatoresDeTodos: boolean };
 
 export type Acesso =
   | { area: "console"; usuario: UsuarioDoAcesso; sessaoId: string; segundoFatorNaSessao: boolean }
@@ -37,9 +37,13 @@ export type Acesso =
       tenant: TenantDoAcesso;
       usuario: UsuarioDoAcesso;
       administrador: boolean;
+      /** 2FA exigido desta pessoa neste tenant (as regras se somam). */
+      exigeDoisFatores: boolean;
       sessaoId: string;
       segundoFatorNaSessao: boolean;
     };
+
+export type AcessoTenant = Extract<Acesso, { area: "tenant" }>;
 
 export class AcessoNegado extends Error {
   constructor() {
@@ -61,7 +65,12 @@ export function hashDoToken(token: string): string {
 
 export async function tenantPorSlug(slug: string): Promise<TenantDoAcesso | null> {
   const [t] = await banco()
-    .select({ id: tenant.id, slug: tenant.slug, nome: tenant.nome })
+    .select({
+      id: tenant.id,
+      slug: tenant.slug,
+      nome: tenant.nome,
+      exigeDoisFatoresDeTodos: tenant.exigeDoisFatoresDeTodos,
+    })
     .from(tenant)
     .where(eq(tenant.slug, slug));
   return t ?? null;
@@ -125,7 +134,7 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
 
   const [v] = await comTenant(t!.id, (tx) =>
     tx
-      .select({ administrador: vinculoTenant.administrador })
+      .select({ administrador: vinculoTenant.administrador, exige: vinculoTenant.exigeDoisFatores })
       .from(vinculoTenant)
       .where(and(eq(vinculoTenant.usuarioId, u.id), eq(vinculoTenant.situacao, "ativo"))),
   );
@@ -138,10 +147,47 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     tenant: t!,
     usuario,
     administrador: v.administrador,
+    // Regras somadas: administrador sempre, todos do tenant ou marcação individual.
+    exigeDoisFatores: v.administrador || t!.exigeDoisFatoresDeTodos || v.exige,
     sessaoId: s.id,
     segundoFatorNaSessao,
   };
 }
+
+/**
+ * O que falta para a pessoa usar o tenant quando o 2FA é exigido dela:
+ * configurar um fator, ou entrar de novo com dois fatores.
+ */
+export function pendenciaDeDoisFatores(acesso: Acesso): "configurar" | "reentrar" | null {
+  const exige = acesso.area === "console" || acesso.exigeDoisFatores;
+  if (!exige) return null;
+  if (!acesso.usuario.doisFatoresAtivo) return "configurar";
+  return acesso.segundoFatorNaSessao ? null : "reentrar";
+}
+
+/** Acesso de tenant em dia com a exigência de 2FA. Toda operação de tenant passa por aqui. */
+export function exigirTenant(acesso: Acesso | null): AcessoTenant {
+  if (acesso?.area !== "tenant" || pendenciaDeDoisFatores(acesso)) throw new AcessoNegado();
+  return acesso;
+}
+
+/** Administrador do tenant (sempre com sessão de dois fatores). */
+export function exigirAdministrador(acesso: Acesso | null): AcessoTenant {
+  const a = exigirTenant(acesso);
+  if (!a.administrador) throw new AcessoNegado();
+  return a;
+}
+
+/**
+ * Quem já tem um fator só cadastra outro numa sessão aberta com dois fatores;
+ * senão, quem descobrisse só a senha cadastraria a própria passkey.
+ */
+async function podeCadastrarFator(headers: Headers): Promise<boolean> {
+  const a = await obterAcesso(headers);
+  return Boolean(a && (!a.usuario.doisFatoresAtivo || a.segundoFatorNaSessao));
+}
+
+const ENTRE_COM_DOIS_FATORES = "Para cadastrar outro fator, saia e entre de novo com dois fatores.";
 
 // --- Login, segundo fator e saída ------------------------------------------
 
@@ -215,6 +261,7 @@ export async function iniciarAutenticador(
   senha: string,
   headers: Headers,
 ): Promise<{ uri: string; codigosRecuperacao: string[] } | { erro: string }> {
+  if (!(await podeCadastrarFator(headers))) return { erro: ENTRE_COM_DOIS_FATORES };
   try {
     const r = await auth.api.enableTwoFactor({ body: { password: senha }, headers });
     if (r.method !== "totp") return { erro: "Método de 2FA não suportado." };
@@ -269,6 +316,7 @@ export async function entrarComLinkMagico(token: string, headers: Headers): Prom
 export type OpcoesWebAuthn = Record<string, unknown>;
 
 export async function opcoesParaCriarPasskey(headers: Headers): Promise<OpcoesWebAuthn | { erro: string }> {
+  if (!(await podeCadastrarFator(headers))) return { erro: ENTRE_COM_DOIS_FATORES };
   try {
     return (await auth.api.generatePasskeyRegistrationOptions({ headers })) as unknown as OpcoesWebAuthn;
   } catch {

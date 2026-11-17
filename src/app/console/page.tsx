@@ -5,10 +5,11 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { produto } from "@/config/produto";
 import { obterAcesso } from "@/server/services/acesso";
-import { listarTenants } from "@/server/services/console";
+import { listarTenants, MOTIVOS_DE_REDEFINICAO } from "@/server/services/console";
 import { Cabecalho } from "@/components/acesso/cabecalho";
 import { ExigeSegundoFator } from "@/components/acesso/telas";
 import { FormNovoTenant } from "@/components/acesso/formularios";
+import { FormRedefinirPelaPlataforma } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
 async function Painel() {
@@ -43,10 +44,20 @@ async function Painel() {
             </ul>
           )}
         </Cartao>
-        <Cartao largura="max-w-sm">
-          <Titulo sobre="Novo">Cadastrar tenant</Titulo>
-          <FormNovoTenant />
-        </Cartao>
+        <div className="flex w-full max-w-sm flex-col gap-6">
+          <Cartao largura="max-w-sm">
+            <Titulo sobre="Novo">Cadastrar tenant</Titulo>
+            <FormNovoTenant />
+          </Cartao>
+          <Cartao largura="max-w-sm">
+            <Titulo sobre="Suporte">Redefinir 2FA de uma conta</Titulo>
+            <p className="text-muted mb-4 text-sm">
+              Para quem perdeu todos os fatores e tem acesso a mais de um tenant que exige 2FA. Apaga
+              autenticador, códigos e passkeys, encerra as sessões e avisa a pessoa por e-mail.
+            </p>
+            <FormRedefinirPelaPlataforma motivos={{ ...MOTIVOS_DE_REDEFINICAO }} />
+          </Cartao>
+        </div>
       </main>
     </>
   );

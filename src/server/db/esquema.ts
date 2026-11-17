@@ -37,6 +37,8 @@ export const tenant = pgTable("tenant", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   nome: text("nome").notNull(),
+  /** 2FA exigido de todos os usuários do tenant (autenticacao-e-sessao.md). */
+  exigeDoisFatoresDeTodos: boolean("exige_2fa_de_todos").notNull().default(false),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -213,6 +215,8 @@ export const vinculoTenant = pgTable(
       .references(() => usuario.id, { onDelete: "cascade" }),
     situacao: text("situacao").$type<"ativo" | "revogado">().notNull(),
     administrador: boolean("administrador").notNull().default(false),
+    /** 2FA exigido individualmente (soma-se às demais regras). */
+    exigeDoisFatores: boolean("exige_2fa").notNull().default(false),
     criadoEm: criadoEm(),
     atualizadoEm: atualizadoEm(),
   },
