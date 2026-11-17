@@ -6,14 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:gerar": "drizzle-kit generate",
+    "db:preparar": "node scripts/db-preparar-local.mjs",
+    "db:migrar": "node scripts/db-migrar.mjs",
+    "db:migrar:teste": "node scripts/db-migrar.mjs teste",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@hono/swagger-ui": "^0.6.2",
     "@hono/zod-openapi": "^1.6.3",
+    "drizzle-orm": "^0.45.4",
     "hono": "^4.13.19",
     "inngest": "^4.26.2",
     "next": "16.4.6",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4.6.7"
@@ -21,12 +29,15 @@
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@12.21.0"
 }
