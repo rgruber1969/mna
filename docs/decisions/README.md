@@ -24,6 +24,7 @@ projeto e em `docs/projeto/`.
 | [0013](0013-modelo-de-permissoes.md) | Permissões | Perfis configuráveis; participação com alcance; negado por padrão |
 | [0014](0014-envio-de-email.md) | E-mail | Mailpit / Resend / SES São Paulo |
 | [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
+| [0016](0016-antivirus-nos-uploads.md) | Antivírus | Simulado (local/demo), GuardDuty (produção); download só após "Disponível" |
 
 ## Premissas de arquitetura
 
@@ -38,7 +39,6 @@ projeto e em `docs/projeto/`.
 | Tema | Situação |
 |---|---|
 | ORM, interface, testes e lint | Na criação do projeto |
-| Antivírus nos uploads | Escanear antes de liberar download (produção: avaliar GuardDuty para S3) |
 | Gestão de chaves de criptografia | Guarda, backup e rotação |
 | Checklist ASVS nível 2 | Curadoria; vira skill/rule do template |
 

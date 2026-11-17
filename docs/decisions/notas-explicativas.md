@@ -380,3 +380,24 @@ Claude Code. Decisões em vigor: [README](README.md).
   causar efeito duplicado (ex.: o convite não chega em dobro).
 * **Cron / agendamento:** tarefa que roda sozinha em horários definidos
   (ex.: limpeza diária de auditoria vencida).
+
+## Antivírus nos uploads (ADR-0016)
+
+* **AWS GuardDuty Malware Protection:** antivírus da AWS que escaneia
+  automaticamente cada arquivo que chega ao S3, sem servidor nosso, e marca
+  o resultado. O arquivo não sai da AWS.
+* **ClamAV:** antivírus gratuito e de código aberto; exige um servidor
+  sempre ligado. É a alternativa se a produção sair da AWS.
+* **Por que não VirusTotal:** os arquivos enviados ficam acessíveis à
+  comunidade de segurança; documentos confidenciais vazariam.
+* **Arquivo EICAR:** "vírus de mentira" padronizado pela indústria,
+  totalmente inofensivo, que todo antivírus reconhece. Serve para testar o
+  bloqueio sem risco.
+* **Quarentena:** o arquivo suspeito fica guardado, mas inacessível.
+* **Tipo real do arquivo:** todo formato tem uma "assinatura" nos primeiros
+  bytes; conferi-la impede que um programa renomeado para `.pdf` passe.
+* **Macros:** pequenos programas embutidos em planilhas e documentos
+  (`.xlsm`, `.docm`). Úteis em modelos financeiros, mas podem esconder
+  código malicioso; por isso aparecem com aviso.
+* **Download como anexo:** o navegador salva o arquivo em vez de abri-lo
+  dentro do sistema, evitando que algo execute no contexto da aplicação.
