@@ -25,6 +25,7 @@ projeto e em `docs/projeto/`.
 | [0014](0014-envio-de-email.md) | E-mail | Mailpit / Resend / SES São Paulo |
 | [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
 | [0016](0016-antivirus-nos-uploads.md) | Antivírus | Simulado (local/demo), GuardDuty (produção); download só após "Disponível" |
+| [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | `.env` / Vercel (fora da produção); AWS KMS com chave por tenant (produção) |
 
 ## Premissas de arquitetura
 
@@ -39,7 +40,6 @@ projeto e em `docs/projeto/`.
 | Tema | Situação |
 |---|---|
 | ORM, interface, testes e lint | Na criação do projeto |
-| Gestão de chaves de criptografia | Guarda, backup e rotação |
 | Checklist ASVS nível 2 | Curadoria; vira skill/rule do template |
 
 ## Decisões menores (sem ADR próprio)

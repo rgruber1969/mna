@@ -401,3 +401,24 @@ Claude Code. Decisões em vigor: [README](README.md).
   código malicioso; por isso aparecem com aviso.
 * **Download como anexo:** o navegador salva o arquivo em vez de abri-lo
   dentro do sistema, evitando que algo execute no contexto da aplicação.
+
+## Gestão de chaves (ADR-0017)
+
+* **Chave de dados:** a que embaralha e desembaralha os campos sensíveis.
+* **Chave mestra:** a que protege as chaves de dados.
+* **Criptografia em envelope:** o dado vai num "envelope" trancado pela
+  chave de dados; a chave de dados fica guardada trancada pela chave
+  mestra; a chave mestra fica num cofre (KMS) de onde nunca sai.
+* **AWS KMS:** o cofre de chaves da AWS. A aplicação pede "destranque esta
+  chave de dados" e o KMS faz isso sem nunca revelar a chave mestra; todo
+  pedido fica registrado.
+* **Rotação:** troca periódica da chave. Cada dado leva a "etiqueta" da
+  versão da chave usada, então dados antigos continuam legíveis.
+* **Destruição criptográfica:** apagar a chave de um tenant torna ilegíveis
+  todos os dados sensíveis dele, até em backups antigos que não podem ser
+  editados.
+* **Período de espera na exclusão:** no KMS, apagar uma chave leva de 7 a
+  30 dias; nesse prazo, um engano pode ser desfeito.
+* **Segredo × chave de criptografia:** segredos (senhas de serviços, chaves
+  de API) dão acesso a serviços; chaves de criptografia protegem dados.
+  Ambos ficam fora do repositório.
