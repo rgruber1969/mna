@@ -121,4 +121,8 @@ Regras:
 * Relacionado: ADR-0005 (autenticação), ADR-0007 (dados pessoais),
   ADR-0010 (white label), ADR-0012 (padrão de provedor por ambiente).
 * Pendentes: domínio definitivo; tarefas em segundo plano.
+* Adendo (2026-11-17): envio por subdomínio dedicado
+  (`notificacoes.rgruber.com.br` na demonstração), separado do e-mail
+  corporativo, para isolar a reputação; nome do produto no remetente vem de
+  configuração.
 * Backlog: envio pelo domínio do próprio cliente.

@@ -60,7 +60,7 @@ Requisitos que orientam as próximas decisões:
 | ORM, interface, testes e lint | Na criação do projeto |
 | Antivírus nos uploads | Escanear arquivos enviados antes de liberar download (documentos vêm de empresas externas) |
 | Gestão de chaves de criptografia | Guarda, backup e rotação das chaves do ADR-0007 |
-| Domínio | Escolha e compra do domínio definitivo (DNS na Vercel, subdomínio coringa); **pré-requisito já na demonstração** para enviar e-mails (ADR-0014) |
+| Nome comercial, marca (INPI) e domínio do produto | Nome sem registro de marca no INPI, logomarca e domínio definitivo (DNS na Vercel, subdomínio coringa); **definir antes da produção com usuários reais** (trocar de domínio depois exige recadastrar passkeys) |
 | Checklist ASVS nível 2 | Curadoria dos itens aplicáveis; vira skill/rule do template |
 
 ## Notas explicativas
@@ -79,6 +79,10 @@ Escolhas de baixo impacto e fáceis de reverter ficam só aqui.
 | Tema | Decisão | Data |
 |---|---|---|
 | Finais de linha | LF em todos os arquivos (`.gitattributes`) | 2026-11-16 |
+| Nome do produto | "MNA" é codinome interno (pastas, código, banco); nome comercial e logomarca do produto vêm de configuração (`PRODUCT_NAME`), nunca escritos diretamente em telas e e-mails | 2026-11-17 |
+| Endereços da demonstração | Subdomínios de `rgruber.com.br`: `admin.mna.rgruber.com.br`, `<slug>.mna.rgruber.com.br` (registro manual por tenant no Registro.br, sem coringa) | 2026-11-17 |
+| Remetente de e-mail | `nao-responda@notificacoes.rgruber.com.br` (subdomínio dedicado, separado do e-mail corporativo no Zoho), nome de exibição com o tenant | 2026-11-17 |
+| DMARC | Acrescentar registro DMARC em `rgruber.com.br`, começando em `p=none` (tarefa de configuração) | 2026-11-17 |
 | Região do banco | Produção no Neon em São Paulo; demonstração em qualquer região gratuita (ADR-0012) | 2026-11-17 |
 | Tema visual padrão | Identidade RGRUBER: `#123E7A` / `#5E8FD3` / `#5E6470`, Manrope, sem degradês ([docs/marca/rgruber](../marca/rgruber/README.md)) | 2026-11-16 |
 

@@ -35,12 +35,15 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
   inventário em `docs/projeto/dados-pessoais.md` no mesmo commit.
 - **Cores só por tokens semânticos** (`primary`, `surface`, `text-muted`
   etc.); nunca cor fixa em componente.
+- **Nome do produto só por configuração** (`PRODUCT_NAME`): "MNA" é
+  codinome; nunca escrever o nome diretamente em telas, e-mails ou textos.
 - **Fora da versão 1** → registrar em `docs/projeto/backlog-futuro.md`.
 
 ## Endereços
 
 - Console da RGRUBER: `admin.<domínio>` (local: `admin.localhost:3000`).
 - Tenant: `<slug>.<domínio>` (local: `bt.localhost:3000`).
+- Demonstração: `<domínio>` = `mna.rgruber.com.br`; definitivo pendente.
 
 ## Comandos
 

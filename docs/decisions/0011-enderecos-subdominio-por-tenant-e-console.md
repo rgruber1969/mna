@@ -121,3 +121,7 @@ Regras:
   (Better Auth).
 * `mna.com.br` é o domínio de exemplo; o domínio definitivo e sua compra
   ficam pendentes.
+* Adendo (2026-11-17): na demonstração, `<domínio>` = `mna.rgruber.com.br`,
+  com registro DNS manual por tenant no Registro.br (sem coringa). O domínio
+  definitivo depende do nome comercial do produto e deve ser adotado antes
+  da produção com usuários reais, pois passkeys ficam vinculadas ao domínio.
