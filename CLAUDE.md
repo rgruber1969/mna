@@ -48,9 +48,13 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 
 ## Comandos
 
-- Banco local: `docker compose up -d` / parar: `docker compose down`.
-- Variáveis: copiar `.env.example` para `.env` (nunca commitar `.env`).
-- Aplicação, testes e lint: a definir na criação do projeto.
+- Serviços locais (Postgres, Mailpit, Inngest): `docker compose up -d`.
+- Primeira vez: copiar `.env.example` para `.env`; `pnpm install`;
+  `pnpm db:preparar`; `pnpm db:migrar`; `pnpm db:migrar:teste`.
+- Aplicação: `pnpm dev` (http://localhost:3000; API em `/api/docs`).
+- Antes de commitar: `pnpm verificar` (tipos, lint, formatação, testes);
+  navegador: `pnpm test:e2e`.
+- Mudou `src/server/db/esquema.ts`: `pnpm db:gerar` e depois `pnpm db:migrar`.
 
 ## Estrutura
 
@@ -59,6 +63,9 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 - `docs/marca/`: identidade visual e logos.
 - `docs/seguranca/asvs-checklist.md`: checklist ASVS (consultar em trabalho de segurança).
 - `docs/claude/instrucoes-repetidas.md`: registro de repetições.
+- `src/server/services/`: camada de serviços (regras de negócio).
+- `src/server/api/`: rotas Hono; `src/server/db/`: esquema, migrações e acesso;
+  `src/server/tarefas/`: Inngest. `e2e/`: testes no navegador.
 - `.claude/rules/`: regras por área, com `paths:` (a criar com o código).
 
 ## Manutenção deste arquivo
