@@ -11,8 +11,8 @@ registrado.
 - [x] **2. Checklist ASVS nível 2**: aprovado em
       `docs/seguranca/asvs-checklist.md` (215 aplica, 14 n/a, 20 futuro
       MCP, 4 condicionais a WebSocket).
-- [ ] **3. Questionários de definição** (um por tema, no formato de
-      `perguntas-mna.md`):
+- [ ] **3. Questionários de definição**: aguardando respostas em
+      `perguntas-fase2.md`:
   - [ ] 3a. E-book
   - [ ] 3b. Kanban de tarefas
   - [ ] 3c. Mensageria
