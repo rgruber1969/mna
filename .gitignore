@@ -28,3 +28,6 @@ next-env.d.ts
 Thumbs.db
 *.pem
 *.log
+
+# Configurações locais do Claude Code (caminhos desta máquina)
+.claude/settings.local.json

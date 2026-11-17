@@ -11,6 +11,17 @@
             "statusMessage": "Formatando e conferindo regras dos ADRs..."
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/apos-instalar.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Conferindo pacotes bloqueados pelo pnpm..."
+          }
+        ]
       }
     ],
     "PreToolUse": [

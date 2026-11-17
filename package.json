@@ -11,6 +11,7 @@
     "db:migrar:teste": "node scripts/db-migrar.mjs teste",
     "db:preparar": "node scripts/db-preparar-local.mjs",
     "dev": "next dev",
+    "dev:reiniciar": "node scripts/dev-reiniciar.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint",
