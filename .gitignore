@@ -3,15 +3,28 @@
 .env*.local
 !.env.example
 
-# Dependências e builds
-node_modules/
-.next/
-.vercel/
-dist/
-build/
-coverage/
+# Dependências
+/node_modules
+/.pnp
+.pnp.*
 
-# Sistema e editores
+# Next.js e builds
+/.next/
+/out/
+/build
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# Testes
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+
+# Sistema, editores e logs
 .DS_Store
 Thumbs.db
+*.pem
 *.log
