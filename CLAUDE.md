@@ -54,6 +54,8 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
   `pnpm arquivos:preparar`; `pnpm perfis:copiar-padrao` (tenants sem perfis).
 - Aplicação: `pnpm dev` (http://localhost:3000; API em `/api/docs`).
 - Primeiro acesso ao console: `pnpm console:convidar-admin <e-mail> "<Nome>"`.
+- Backup dos dados locais (banco, arquivos, `.env`, criptografado): `pnpm backup:gerar`
+  antes do `git push`; restaurar: `pnpm backup:restaurar -- --confirmar`.
 - Antes de commitar: `pnpm verificar` (tipos, lint, formatação, testes);
   navegador: `pnpm test:e2e`.
 - Mudou `src/server/db/esquema.ts`: `pnpm db:gerar` e depois `pnpm db:migrar`.

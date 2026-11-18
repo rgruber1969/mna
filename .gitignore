@@ -1,6 +1,7 @@
 # Segredos e configuração local
 .env
 .env*.local
+.env.restaurado
 !.env.example
 
 # Dependências

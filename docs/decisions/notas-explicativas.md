@@ -469,3 +469,21 @@ Claude Code. Decisões em vigor: [README](README.md).
   válidos.
 * **Sessão:** o "estou logado" guardado num cookie; aqui ela também
   registra o endereço onde nasceu e não vale em nenhum outro.
+
+## Backup criptografado dos dados locais (adendo ao ADR-0002)
+
+* **O que é:** um "cofre" num único arquivo (`backup/mna-backup.enc`) com o
+  banco local, os arquivos enviados (fotos, documentos) e o `.env`. Quem abrir
+  o GitHub vê só bytes embaralhados.
+* **A tranca:** AES-256-GCM, o mesmo padrão usado por bancos. A senha não
+  vira a chave diretamente: passa pelo *scrypt*, uma "moedora" lenta de
+  propósito, que torna inviável testar milhões de senhas por tentativa e erro.
+  O GCM também percebe se o arquivo foi alterado ou corrompido.
+* **Versões:** o arquivo é sobrescrito a cada backup, mas o Git guarda cada
+  versão enviada; dá para voltar a um backup antigo pelo histórico.
+* **Num computador novo:** instalar Git, Node, pnpm e Docker; `git clone` do
+  repositório; `pnpm install`; `docker compose up -d`; no terminal, definir a
+  senha (`$env:BACKUP_SENHA="..."` no PowerShell); `pnpm backup:restaurar --
+  --confirmar` (recria o `.env` e para); `pnpm db:preparar`; de novo `pnpm
+  backup:restaurar -- --confirmar` (agora com o banco pronto);
+  `pnpm db:migrar:teste`.

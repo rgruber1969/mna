@@ -113,3 +113,16 @@ Convenções:
   GitHub** como remote (`origin`), que vira o backup externo principal.
   Segredos (`.env*`) continuam fora do git. A frequência do envio
   (`git push`) fica a critério do responsável.
+* Adendo (2026-11-18): **backup criptografado dos dados locais**, escolhido
+  pelo responsável entre (A) cópia aberta no repositório, (B) cópia
+  criptografada no repositório e (C) cópia fora do Git (pasta de nuvem).
+  Escolhida a (B): o banco local, os arquivos do armazenamento local e o
+  próprio `.env` vão num único arquivo trancado com senha (AES-256-GCM,
+  chave derivada por scrypt) em `backup/`, que sobe com o `git push` de
+  cada etapa; o histórico do Git guarda as versões anteriores. A senha fica
+  no `.env` (para o script rodar sozinho) e no gerenciador de senhas do
+  responsável (sem ela o backup não abre). Descartadas: (A) deixaria
+  e-mails, hashes de senha e sessões legíveis no repositório, para sempre
+  no histórico; (C) mais um lugar para cuidar. Comandos: `pnpm
+  backup:gerar`, `backup:conferir` e `backup:restaurar -- --confirmar`.
+  Só para o ambiente local; a produção usa o backup do provedor do banco.
