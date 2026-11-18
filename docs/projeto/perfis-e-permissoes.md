@@ -85,6 +85,12 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
 * **Lista de acesso por versão de documento** (áreas restritas):
   * Quem envia uma versão escolhe, por **perfil e/ou usuário**, quem pode
     **ver e baixar** aquela versão.
+  * **Vale para todos os perfis e todas as ações** sobre a versão (ver,
+    editar, excluir, baixar), inclusive o Coordenador do deal (decidido em
+    2026-11-18): sem acesso explícito dado por quem enviou a versão, a
+    pessoa não a vê, qualquer que seja o seu perfil. A matriz do perfil diz
+    o que a pessoa pode fazer nas versões a que tem acesso. Só os
+    administradores do tenant têm acesso a todas.
   * A lista **só restringe**: as opções são os participantes que já têm
     acesso àquela etapa do deal; ninguém ganha acesso além do seu alcance.
   * **Administradores do tenant** veem todas as versões, inclusive as
