@@ -28,7 +28,13 @@ export type UsuarioDoAcesso = {
   /** Tem algum segundo fator configurado (autenticador ou passkey). */
   doisFatoresAtivo: boolean;
 };
-export type TenantDoAcesso = { id: string; slug: string; nome: string; exigeDoisFatoresDeTodos: boolean };
+export type TenantDoAcesso = {
+  id: string;
+  slug: string;
+  nome: string;
+  exigeDoisFatoresDeTodos: boolean;
+  modoPermissoes: "perfil" | "usuario";
+};
 
 export type Acesso =
   | { area: "console"; usuario: UsuarioDoAcesso; sessaoId: string; segundoFatorNaSessao: boolean }
@@ -74,6 +80,7 @@ export async function tenantPorSlug(slug: string): Promise<TenantDoAcesso | null
       slug: tenant.slug,
       nome: tenant.nome,
       exigeDoisFatoresDeTodos: tenant.exigeDoisFatoresDeTodos,
+      modoPermissoes: tenant.modoPermissoes,
     })
     .from(tenant)
     .where(and(eq(tenant.slug, slug), isNull(tenant.suspensoEm)));

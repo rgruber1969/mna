@@ -41,6 +41,8 @@ export const tenant = pgTable("tenant", {
   exigeDoisFatoresDeTodos: boolean("exige_2fa_de_todos").notNull().default(false),
   /** Suspenso pela RGRUBER: ninguém entra; dados preservados (perfis-e-permissoes.md). */
   suspensoEm: timestamp("suspenso_em", { withTimezone: true }),
+  /** Modo de permissões do tenant (ADR-0013, elemento 5). */
+  modoPermissoes: text("modo_permissoes").$type<"perfil" | "usuario">().notNull().default("perfil"),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -244,6 +246,8 @@ export const convite = pgTable(
     email: text("email").notNull(),
     nome: text("nome").notNull(),
     administrador: boolean("administrador").notNull().default(false),
+    /** Perfis do tenant atribuídos ao aceitar (identificadores de `perfil`). */
+    perfis: jsonb("perfis").$type<string[]>().notNull().default([]),
     tokenHash: text("token_hash").notNull().unique(),
     expiraEm: timestamp("expira_em", { withTimezone: true }).notNull(),
     aceitoEm: timestamp("aceito_em", { withTimezone: true }),
@@ -281,6 +285,98 @@ export const eventoAuditoria = pgTable(
   },
   (t) => [
     index("evento_auditoria_tenant_ocorrido_idx").on(t.tenantId, t.ocorridoEm),
+    pgPolicy("isolamento_tenant", {
+      for: "all",
+      to: "mna_app",
+      using: doTenantAtual,
+      withCheck: doTenantAtual,
+    }),
+  ],
+).enableRLS();
+
+// --- Permissões (ADR-0013; docs/projeto/perfis-e-permissoes.md) -------------
+
+/** Matriz recurso × ações (catálogo em src/server/services/permissoes/catalogo.ts). */
+type MatrizGravada = Record<string, string[]>;
+
+/** Perfil do tenant ou de deal, sempre cadastrado no tenant. */
+export const perfil = pgTable(
+  "perfil",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    camada: text("camada").$type<"tenant" | "deal">().notNull(),
+    nome: text("nome").notNull(),
+    matriz: jsonb("matriz").$type<MatrizGravada>().notNull().default({}),
+    /** Código do perfil padrão de origem (só informativo; o perfil é do tenant). */
+    padrao: text("padrao"),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    uniqueIndex("perfil_nome_uq").on(t.tenantId, t.camada, t.nome),
+    pgPolicy("isolamento_tenant", {
+      for: "all",
+      to: "mna_app",
+      using: doTenantAtual,
+      withCheck: doTenantAtual,
+    }),
+  ],
+).enableRLS();
+
+/** Perfis do tenant atribuídos a cada usuário (vários, com soma). */
+export const perfilUsuario = pgTable(
+  "perfil_usuario",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    /** Perfil em uso não pode ser excluído ("no action": apagar o tenant inteiro continua possível). */
+    perfilId: uuid("perfil_id")
+      .notNull()
+      .references(() => perfil.id, { onDelete: "no action" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    uniqueIndex("perfil_usuario_uq").on(t.tenantId, t.usuarioId, t.perfilId),
+    pgPolicy("isolamento_tenant", {
+      for: "all",
+      to: "mna_app",
+      using: doTenantAtual,
+      withCheck: doTenantAtual,
+    }),
+  ],
+).enableRLS();
+
+/**
+ * Matriz individual (modo "por usuário"): usuário × perfil. Guardada mesmo
+ * quando o tenant volta ao modo "por perfil" (ADR-0013, adendo de 2026-11-18).
+ */
+export const matrizUsuario = pgTable(
+  "matriz_usuario",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    perfilId: uuid("perfil_id")
+      .notNull()
+      .references(() => perfil.id, { onDelete: "cascade" }),
+    matriz: jsonb("matriz").$type<MatrizGravada>().notNull().default({}),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    uniqueIndex("matriz_usuario_uq").on(t.tenantId, t.usuarioId, t.perfilId),
     pgPolicy("isolamento_tenant", {
       for: "all",
       to: "mna_app",

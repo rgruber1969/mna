@@ -4,6 +4,7 @@ import { banco, comTenant } from "@/server/db/cliente";
 import { convite, eventoAuditoria, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
 import { exigirAdministrador, type Acesso, type AcessoTenant } from "./acesso";
 import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
+import { filtrarPerfisDoTenant } from "./perfis";
 import {
   apagarTodosOsFatores,
   avisarMudancaNosFatores,
@@ -156,9 +157,10 @@ export async function obterUsuario(
 
 export async function convidarUsuario(
   acesso: Acesso | null,
-  dados: DadosPessoa & { administrador: boolean },
+  dados: DadosPessoa & { administrador: boolean; perfis?: string[] },
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
+  const perfis = await comTenant(a.tenant.id, (tx) => filtrarPerfisDoTenant(tx, dados.perfis ?? []));
   const email = String(dados.email ?? "")
     .trim()
     .toLowerCase();
@@ -177,7 +179,7 @@ export async function convidarUsuario(
       .set({ expiraEm: new Date() })
       .where(and(eq(convite.email, email), isNull(convite.aceitoEm))),
   );
-  return emitirConviteDoTenant(a.tenant, dados, a.usuario.id);
+  return emitirConviteDoTenant(a.tenant, { ...dados, perfis }, a.usuario.id);
 }
 
 async function convitePendente(a: AcessoTenant, conviteId: string) {
@@ -189,6 +191,7 @@ async function convitePendente(a: AcessoTenant, conviteId: string) {
         nome: convite.nome,
         email: convite.email,
         administrador: convite.administrador,
+        perfis: convite.perfis,
       })
       .from(convite)
       .where(and(eq(convite.id, conviteId), isNull(convite.aceitoEm))),
@@ -218,7 +221,7 @@ export async function reenviarConvite(acesso: Acesso | null, conviteId: string):
   );
   return emitirConviteDoTenant(
     a.tenant,
-    { nome: c.nome, email: c.email, administrador: c.administrador },
+    { nome: c.nome, email: c.email, administrador: c.administrador, perfis: c.perfis },
     a.usuario.id,
   );
 }

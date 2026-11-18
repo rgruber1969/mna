@@ -15,6 +15,7 @@ import { enviarEmail } from "@/server/email/enviar";
 import { resolverArea, urlDaArea } from "@/server/enderecos";
 import { produto } from "@/config/produto";
 import { entrar, gerarToken, hashDoToken, tenantPorSlug, type ResultadoLogin } from "./acesso";
+import { atribuirPerfis, filtrarPerfisDoTenant } from "./perfis";
 
 /**
  * Convites (ADR-0019, regra 4; docs/projeto/autenticacao-e-sessao.md):
@@ -86,7 +87,7 @@ export async function convidarUsuarioDaPlataforma(
 /** Convite para um tenant. Só administradores (do tenant ou da plataforma) chamam. */
 export async function emitirConviteDoTenant(
   t: { id: string; slug: string; nome: string },
-  dados: DadosPessoa & { administrador: boolean },
+  dados: DadosPessoa & { administrador: boolean; perfis?: string[] },
   atorId: string,
 ): Promise<{ ok: true } | { erro: string }> {
   const p = validarPessoa(dados);
@@ -100,6 +101,7 @@ export async function emitirConviteDoTenant(
         email: p.email,
         nome: p.nome,
         administrador: dados.administrador,
+        perfis: dados.perfis ?? [],
         tokenHash: hash,
         expiraEm: new Date(Date.now() + VALIDADE_CONVITE_MS),
         criadoPor: atorId,
@@ -130,6 +132,8 @@ type ConviteValido = {
   nome: string;
   email: string;
   administrador: boolean;
+  /** Perfis do tenant a atribuir ao aceitar. */
+  perfis: string[];
   tenant: { id: string; slug: string; nome: string } | null;
 };
 
@@ -148,7 +152,9 @@ async function conviteValido(host: string | null, token: string): Promise<Convit
           gt(convitePlataforma.expiraEm, agora),
         ),
       );
-    return c ? { id: c.id, nome: c.nome, email: c.email, administrador: true, tenant: null } : null;
+    return c
+      ? { id: c.id, nome: c.nome, email: c.email, administrador: true, perfis: [], tenant: null }
+      : null;
   }
   if (area.tipo === "tenant") {
     const t = await tenantPorSlug(area.slug);
@@ -159,7 +165,16 @@ async function conviteValido(host: string | null, token: string): Promise<Convit
         .from(convite)
         .where(and(eq(convite.tokenHash, hash), isNull(convite.aceitoEm), gt(convite.expiraEm, agora))),
     );
-    return c ? { id: c.id, nome: c.nome, email: c.email, administrador: c.administrador, tenant: t } : null;
+    return c
+      ? {
+          id: c.id,
+          nome: c.nome,
+          email: c.email,
+          administrador: c.administrador,
+          perfis: c.perfis,
+          tenant: t,
+        }
+      : null;
   }
   return null;
 }
@@ -235,6 +250,8 @@ export async function aceitarConvite(
           target: [vinculoTenant.tenantId, vinculoTenant.usuarioId],
           set: { situacao: "ativo", administrador: c.administrador, atualizadoEm: new Date() },
         });
+      // Perfis do convite (os que ainda existem) substituem os anteriores.
+      await atribuirPerfis(tx, t.id, usuarioId, await filtrarPerfisDoTenant(tx, c.perfis));
       await tx.update(convite).set({ aceitoEm: new Date() }).where(eq(convite.id, c.id));
       await tx.insert(eventoAuditoria).values({
         tenantId: t.id,

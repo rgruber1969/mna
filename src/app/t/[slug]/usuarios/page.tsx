@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { cancelarConviteAcao, exigirDeTodosAcao, reenviarConviteAcao } from "@/app/acoes/usuarios";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarUsuarios } from "@/server/services/usuarios";
+import { listarPerfis } from "@/server/services/perfis";
 import { Cabecalho } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao, FormConvidarUsuario } from "@/components/usuarios/formularios";
@@ -20,6 +21,7 @@ async function Painel() {
   if (portao) return portao;
   if (!acesso.administrador) notFound();
   const { exigeDeTodos, usuarios, convites } = await listarUsuarios(acesso);
+  const perfisDoTenant = (await listarPerfis(acesso)).perfis.filter((p) => p.camada === "tenant");
 
   return (
     <>
@@ -94,7 +96,7 @@ async function Painel() {
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Cartao largura="max-w-sm">
             <Titulo sobre="Novo">Convidar usuário</Titulo>
-            <FormConvidarUsuario />
+            <FormConvidarUsuario perfis={perfisDoTenant} />
           </Cartao>
           <Cartao largura="max-w-sm">
             <Titulo sobre="Configuração">Verificação em duas etapas</Titulo>

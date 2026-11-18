@@ -40,6 +40,7 @@ export async function convidarUsuarioAcao(_: Estado, f: FormData): Promise<Estad
     nome: texto(f, "nome"),
     email: texto(f, "email"),
     administrador: f.get("administrador") === "on",
+    perfis: f.getAll("perfil").map(String),
   });
   return estado(r, "Convite enviado. Ele vale por 3 dias.");
 }

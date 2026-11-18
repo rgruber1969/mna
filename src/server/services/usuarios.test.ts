@@ -94,7 +94,7 @@ const sessoes = (id: string) => contar(`select count(*) n from sessao where usua
 function acessoAdmin(usuarioId: string, t: "A" | "B" = "A"): AcessoTenant {
   return {
     area: "tenant",
-    tenant: { ...tenants[t], exigeDoisFatoresDeTodos: false },
+    tenant: { ...tenants[t], exigeDoisFatoresDeTodos: false, modoPermissoes: "perfil" },
     usuario: {
       id: usuarioId,
       nome: "Admin",

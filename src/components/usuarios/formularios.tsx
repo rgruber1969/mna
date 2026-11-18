@@ -17,7 +17,7 @@ type Acao = (estado: Estado, dados: FormData) => Promise<Estado>;
  * Executa a ação; com destino, navega no navegador (passa pelo proxy); com
  * sucesso, recarrega os dados da página.
  */
-function useAcaoComAtualizacao(acao: Acao) {
+export function useAcaoComAtualizacao(acao: Acao) {
   const router = useRouter();
   return useActionState(async (anterior: Estado, dados: FormData) => {
     const r = await acao(anterior, dados);
@@ -76,7 +76,7 @@ export function BotaoDeAcao({
   );
 }
 
-export function FormConvidarUsuario() {
+export function FormConvidarUsuario({ perfis }: { perfis: { id: string; nome: string }[] }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(convidarUsuarioAcao);
   return (
     <form action={acao}>
@@ -84,8 +84,20 @@ export function FormConvidarUsuario() {
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
       <Campo rotulo="Nome" name="nome" required />
       <Campo rotulo="E-mail do convidado" name="email" type="email" required />
+      {perfis.length > 0 && (
+        <fieldset className="mb-4">
+          <legend className="text-text mb-1 text-sm font-medium">
+            Perfis no tenant (as permissões se somam)
+          </legend>
+          {perfis.map((p) => (
+            <label key={p.id} className="text-text flex items-center gap-2 text-sm">
+              <input type="checkbox" name="perfil" value={p.id} /> {p.nome}
+            </label>
+          ))}
+        </fieldset>
+      )}
       <label className="text-text mb-4 flex items-center gap-2 text-sm">
-        <input type="checkbox" name="administrador" /> Administrador do tenant
+        <input type="checkbox" name="administrador" /> Administrador do tenant (acesso total)
       </label>
       <Botao disabled={enviando}>{enviando ? "Enviando..." : "Enviar convite"}</Botao>
     </form>

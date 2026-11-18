@@ -13,6 +13,7 @@
     "dev": "next dev",
     "dev:reiniciar": "node scripts/dev-reiniciar.mjs",
     "format": "prettier --write .",
+    "perfis:copiar-padrao": "tsx --env-file=.env scripts/perfis-copiar-padrao.mts",
     "format:check": "prettier --check .",
     "lint": "eslint",
     "start": "next start",

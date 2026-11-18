@@ -165,6 +165,8 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("link", { name: "Usuários" }).click();
   await admin.getByLabel("Nome", { exact: true }).fill("Usuária E2E");
   await admin.getByLabel("E-mail do convidado").fill(emailUsuaria);
+  // O tenant já nasce com os perfis padrão; a usuária entra com "Usuário externo".
+  await admin.getByLabel("Usuário externo").check();
   await admin.getByRole("button", { name: "Enviar convite" }).click();
   await expect(admin.getByText("Convite enviado")).toBeVisible();
   await expect(admin.getByText(emailUsuaria)).toBeVisible();
@@ -198,9 +200,24 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await usuaria.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(usuaria.getByRole("heading", { name: "Olá, Usuária E2E" })).toBeVisible();
 
+  // 3b. Perfis: o convite atribuiu "Usuário externo"; ajustar a matriz muda o resultado na hora.
+  await admin.getByRole("link", { name: "Perfis" }).click();
+  await expect(admin.getByRole("link", { name: "Gestor do contratante" })).toBeVisible();
+  await expect(admin.getByRole("link", { name: "Coordenador do deal" })).toBeVisible();
+  await admin.getByRole("link", { name: "Usuário externo" }).click();
+  const visivel = (l: ReturnType<Page["getByLabel"]>) => l.filter({ visible: true });
+  await expect(visivel(admin.getByLabel("Painel: Ver"))).toBeChecked();
+  await visivel(admin.getByLabel("Auditoria: Ver")).check();
+  await admin.getByRole("button", { name: "Salvar permissões" }).click();
+  await expect(admin.getByText("Permissões salvas.")).toBeVisible();
+  await admin.getByRole("button", { name: "Excluir perfil" }).click();
+  await expect(admin.getByText("Perfil em uso por 1 usuário(s)", { exact: false })).toBeVisible();
+  await admin.getByRole("link", { name: "Usuária E2E" }).click();
+  await expect(visivel(admin.getByLabel("Usuário externo"))).toBeChecked();
+  await expect(visivel(admin.getByLabel("Auditoria: Ver"))).toHaveText("✓");
+
   // 4. O administrador passa a exigir 2FA dela: no próximo acesso, só a configuração.
   await admin.reload();
-  await admin.getByRole("link", { name: "Usuária E2E" }).click();
   await admin.getByRole("button", { name: "Exigir deste usuário" }).click();
   await expect(admin.getByText("Situação: exigida individualmente.")).toBeVisible();
   await usuaria.goto(base);

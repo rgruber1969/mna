@@ -57,6 +57,27 @@
       "when": 1794960994892,
       "tag": "0007_suspensao_tenant",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795006030364,
+      "tag": "0008_permissoes",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795006037780,
+      "tag": "0009_privilegios_permissoes",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795006524321,
+      "tag": "0010_perfil_em_uso",
+      "breakpoints": true
     }
   ]
 }

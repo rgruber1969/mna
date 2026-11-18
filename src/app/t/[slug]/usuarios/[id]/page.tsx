@@ -13,6 +13,9 @@ import {
 } from "@/app/acoes/usuarios";
 import { obterAcesso } from "@/server/services/acesso";
 import { obterUsuario } from "@/server/services/usuarios";
+import { permissoesDoUsuario } from "@/server/services/perfis";
+import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
+import { FormPerfisDoUsuario, GradeDaMatriz } from "@/components/perfis/formularios";
 import { Cabecalho } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
@@ -28,6 +31,8 @@ async function Detalhe({ id }: { id: Promise<string> }) {
   if (!acesso.administrador) notFound();
   const u = await obterUsuario(acesso, await id);
   if (!u) notFound();
+  const permissoes = await permissoesDoUsuario(acesso, u.id);
+  if (!permissoes) notFound();
   const campos = { id: u.id };
   const situacao = u.administrador
     ? "exigida por ser administrador"
@@ -130,6 +135,48 @@ async function Detalhe({ id }: { id: Promise<string> }) {
               />
             </>
           )}
+        </Cartao>
+
+        <Cartao largura="max-w-xl">
+          <Titulo sobre="Permissões">Perfis no tenant</Titulo>
+          {u.administrador && (
+            <p className="text-text mb-4 text-sm">
+              Como administrador, esta pessoa tem acesso total, independentemente dos perfis.
+            </p>
+          )}
+          <FormPerfisDoUsuario
+            usuarioId={u.id}
+            perfis={permissoes.disponiveis}
+            marcados={permissoes.atribuidos.map((p) => p.id)}
+          />
+          {permissoes.modo === "usuario" && permissoes.atribuidos.length > 0 && (
+            <>
+              <h3 className="text-text mt-6 mb-2 text-sm font-semibold">
+                Permissões próprias (modo por usuário)
+              </h3>
+              <ul className="mb-2 text-sm">
+                {permissoes.atribuidos.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between gap-2 py-1">
+                    <span className="text-text">
+                      {p.nome}
+                      <span className="text-muted">
+                        {" "}
+                        · {p.personalizada ? "personalizadas" : "como o perfil"}
+                      </span>
+                    </span>
+                    <Link
+                      href={`/usuarios/${u.id}/permissoes/${p.id}`}
+                      className="text-primary text-xs font-medium"
+                    >
+                      Ajustar
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <h3 className="text-text mt-6 mb-2 text-sm font-semibold">Resultado (soma dos perfis)</h3>
+          <GradeDaMatriz recursos={recursosDaCamada("tenant")} matriz={permissoes.efetiva} />
         </Cartao>
       </main>
     </>

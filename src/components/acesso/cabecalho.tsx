@@ -28,9 +28,14 @@ export function Cabecalho({
           </Link>
         )}
         {administrador && (
-          <Link href="/usuarios" className="text-primary font-medium">
-            Usuários
-          </Link>
+          <>
+            <Link href="/usuarios" className="text-primary font-medium">
+              Usuários
+            </Link>
+            <Link href="/perfis" className="text-primary font-medium">
+              Perfis
+            </Link>
+          </>
         )}
         <Link href="/seguranca" className="text-primary font-medium">
           Segurança
