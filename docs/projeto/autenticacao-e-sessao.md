@@ -18,8 +18,8 @@ Todas as gratuitas, para todos os usuários:
 * E-mail e senha
 * Link mágico (link de uso único enviado por e-mail)
 * Passkey
-* Google
-* Microsoft
+* Google (simulado na V1: escopo-v1.md, item 3)
+* Microsoft (simulado na V1: escopo-v1.md, item 3)
 
 ## Link mágico (decidido em 2026-11-17)
 

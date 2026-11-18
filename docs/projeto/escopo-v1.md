@@ -15,14 +15,14 @@ responsável.
     componentes das telas reais, para ser aproveitada quando a função real
     for construída.
 
-Resumo: **24 reais, 8 simuladas e 1 parcial** (item 33). A ordem de tornar reais as simuladas
+Resumo: **23 reais, 9 simuladas e 1 parcial** (item 33). A ordem de tornar reais as simuladas
 será definida depois da demonstração, conforme a reação do cliente.
 
 | # | Funcionalidade | Valor | Esforço | Depende de | Demonstração |
 |---|---|---|---|---|---|
 | 1 | Console RGRUBER: cadastro de tenants, administradores iniciais, retenção de auditoria | Essencial | M | 2 | Real |
 | 2 | Autenticação: convite com confirmação, e-mail e senha, link mágico, sessão 8 h / 1 h, sessão única | Essencial | M | Envio de e-mail | Real |
-| 3 | Login com Google e Microsoft | Médio | P | 2 | Real |
+| 3 | Login com Google e Microsoft | Médio | P | 2 | Simulado |
 | 4 | 2FA (passkey ou autenticador) configurável por tenant, códigos de recuperação | Alto | M | 2 | Real |
 | 5 | Permissões configuráveis (perfil ou usuário, menu × ações, cópia, escopo por deal) | Essencial | G | ADR de permissões | Real |
 | 6 | White label (logos, nome, cores, fonte, contraste) | Alto | M | Armazenamento de arquivos | Real |
@@ -58,6 +58,7 @@ Como cada item simulado aparece na demonstração:
 
 | # | Simulação |
 |---|---|
+| 3 | Botões "Entrar com Google" e "Entrar com Microsoft" na tela de entrada, com aviso de demonstração; ao clicar, explicam que a função chega numa próxima versão (decidido em 2026-11-18) |
 | 10 | Diagrama visual das etapas do deal de exemplo, navegável, sem edição gráfica (a edição em lista é real) |
 | 13 | Lista de templates e botão "gerar" que devolve um DOCX de exemplo |
 | 18 | Telas com um valuation fictício completo (premissas, métodos, ponderação, rateio entre vendedoras, painel); a comparação com ofertas reais usa esses números, com aviso |

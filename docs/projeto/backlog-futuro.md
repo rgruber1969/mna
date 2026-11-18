@@ -42,6 +42,10 @@ versão 1" é anotado aqui.
 
 ## Identidade visual e acesso
 
+- [ ] Login com Google e Microsoft (item 3 da V1, simulado na demonstração):
+      contas OAuth nos consoles do Google e da Microsoft, só para e-mails
+      já convidados (cadastro continua só por convite)
+
 - [ ] Foto da conta: passar também pelo fluxo de antivírus (ADR-0016)
       quando ele existir; hoje o servidor recusa o que não é imagem real e
       grava uma imagem nova, sem guardar o original
