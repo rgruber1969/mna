@@ -59,8 +59,15 @@ Todas as gratuitas, para todos os usuários:
   de **todos**, **ou** se o **perfil** dela exige, **ou** se ela foi
   **marcada individualmente**. Desligar uma regra não apaga as outras.
 * **Administradores do tenant sempre** precisam de 2FA.
-* O "por perfil" entra junto com o módulo de perfis (ADR-0013); até lá,
-  valem "todos" e "marcado individualmente".
+* **Por perfil** (decidido em 2026-11-18): cada perfil do tenant tem a
+  opção "exige 2FA"; basta um perfil da pessoa exigir.
+* **Seguro por padrão no convite** (decidido em 2026-11-18): o convite vem
+  com "Exigir 2FA" **marcado** (marcação individual); o administrador pode
+  desmarcar. Desmarcar a individual não libera quem é obrigado por perfil,
+  pelo tenant ou por ser administrador: vale sempre a regra mais segura.
+* Depois do convite, a marcação individual muda no detalhe do usuário
+  (Usuários → pessoa); a de perfil, na tela do perfil; a de todos, em
+  Usuários.
 * **Bloqueio imediato:** quem passa a ser obrigado e não tem 2FA só vê a
   tela de configuração no próximo acesso. Quem tem 2FA mas entrou só com
   senha ou só com link precisa entrar de novo com dois fatores.
@@ -84,6 +91,19 @@ Todas as gratuitas, para todos os usuários:
 * Toda redefinição apaga autenticador, códigos e passkeys, encerra todas as
   sessões da pessoa, avisa por e-mail e é auditada.
 * Aprovação da redefinição pelos outros tenants (sem a RGRUBER): backlog.
+
+## Entrada de desenvolvimento (decidido em 2026-11-18)
+
+Só para agilizar testes locais: entrar informando apenas o e-mail.
+
+* Ligada por `DEV_ENTRAR_SO_COM_EMAIL=sim` no `.env` (desligada por
+  padrão) e aceita **somente** em endereços `*.localhost`, fora de produção.
+* A aplicação **recusa iniciar em produção** com a marcação ligada (mesma
+  regra das funcionalidades simuladas).
+* A tela mostra uma faixa de aviso "modo desenvolvimento"; a sessão conta
+  como de dois fatores; cada entrada gera evento de auditoria próprio.
+* Valem as demais regras: vínculo ativo, tenant não suspenso, papel do
+  console.
 
 ## Sessão
 

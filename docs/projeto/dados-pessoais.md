@@ -18,6 +18,7 @@ novo com dado pessoal é registrado aqui no mesmo commit.
 | Usuários | CPF | **Sensível** | Contrato | |
 | Usuários | Endereço IP e navegador da sessão | Pessoal | Legítimo interesse (segurança) | Tabela `sessao`; apagados quando a sessão termina |
 | Usuários | Passkeys: chave pública e nome dado ao aparelho | Pessoal | Contrato | Tabela `chave_de_acesso`; a chave privada nunca sai do aparelho |
+| Usuários | Foto (opcional, enviada pela própria pessoa) | Pessoal | Consentimento (a pessoa envia e remove quando quiser) | Da conta, vale em todos os tenants; guardada no armazenamento de arquivos, reduzida a 256 × 256 px, sem metadados (EXIF); apagada ao ser trocada ou removida |
 | Convidados | Nome e e-mail do convite | Pessoal | Contrato | Tabelas `convite` e `convite_plataforma`; token guardado só como hash |
 | Sócios e partes de contratos | Nome, e-mail, telefone, endereço completo | Pessoal | Contrato | Usados na confecção de contratos |
 | Sócios e partes de contratos | CPF, RG (identidade) | **Sensível** | Contrato | |
