@@ -21,6 +21,26 @@ function seguirDestino(r: Estado) {
 
 const CANCELADO = "A operação foi cancelada ou o tempo acabou. Tente de novo.";
 
+/**
+ * Mensagem para cada motivo de falha da passkey (antes, todos apareciam como
+ * "cancelada", escondendo a causa). O detalhe técnico vai entre parênteses
+ * para facilitar o suporte; nada de dado pessoal.
+ */
+function mensagemDoErro(e: unknown): string {
+  const erro = e as { name?: string; code?: string; message?: string };
+  const codigo = erro?.code ?? "";
+  const nome = erro?.name ?? "";
+  if (codigo === "ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED" || nome === "InvalidStateError")
+    return "Este aparelho já tem uma passkey desta conta. Use-a para entrar ou escolha outro aparelho.";
+  if (codigo === "ERROR_INVALID_DOMAIN" || codigo === "ERROR_INVALID_RP_ID" || nome === "SecurityError")
+    return "Este endereço não aceita passkey. Abra o sistema pelo endereço oficial (ex.: bt.localhost:3000) e tente de novo.";
+  if (/not supported/i.test(erro?.message ?? "") || nome === "NotSupportedError")
+    return "Este navegador não aceita passkey. Use o Chrome, o Edge ou o Safari, ou a opção do aplicativo autenticador.";
+  if (codigo === "ERROR_CEREMONY_ABORTED" || nome === "NotAllowedError" || nome === "AbortError")
+    return `${CANCELADO} Se nenhuma janela do Windows apareceu, confira se o Windows Hello (PIN, rosto ou digital) está configurado, ou escolha "celular" na janela. (${codigo || nome})`;
+  return `Não foi possível concluir a passkey. Tente de novo ou use o aplicativo autenticador. (${codigo || nome || "erro desconhecido"})`;
+}
+
 /** Login completo com passkey (política 2A): o aparelho + digital/rosto/PIN. */
 export function BotaoEntrarComPasskey() {
   const [estado, setEstado] = useState<Estado>();
@@ -34,8 +54,9 @@ export function BotaoEntrarComPasskey() {
       if ("erro" in opcoes) return setEstado({ erro: String(opcoes.erro) });
       const resposta = await startAuthentication({ optionsJSON: opcoes as never });
       setEstado(seguirDestino(await entrarComPasskeyAcao(resposta)));
-    } catch {
-      setEstado({ erro: CANCELADO });
+    } catch (e) {
+      console.error("Passkey:", e);
+      setEstado({ erro: mensagemDoErro(e) });
     } finally {
       setOcupado(false);
     }
@@ -69,8 +90,9 @@ export function FormCriarPasskey({ reentrar = false }: { reentrar?: boolean }) {
       if ("erro" in opcoes) return setEstado({ erro: String(opcoes.erro) });
       const resposta = await startRegistration({ optionsJSON: opcoes as never });
       setEstado(seguirDestino(await salvarPasskeyAcao(resposta, String(dados.get("nome") ?? ""), reentrar)));
-    } catch {
-      setEstado({ erro: CANCELADO });
+    } catch (e) {
+      console.error("Passkey:", e);
+      setEstado({ erro: mensagemDoErro(e) });
     } finally {
       setOcupado(false);
     }
