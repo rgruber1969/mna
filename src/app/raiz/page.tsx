@@ -1,4 +1,5 @@
 import { produto } from "@/config/produto";
+import { AssinaturaRgruber } from "@/components/ui/basicos";
 
 /**
  * Página inicial provisória da fundação técnica. Será substituída pela tela
@@ -22,7 +23,7 @@ export default function Inicio() {
           Documentação da API
         </a>
       </section>
-      <footer className="text-muted fixed bottom-4 text-xs">Desenvolvido por RGRUBER Consultoria</footer>
+      <AssinaturaRgruber className="fixed bottom-4" />
     </main>
   );
 }

@@ -7,6 +7,7 @@ import { produto } from "@/config/produto";
 import { obterAcesso, pendenciaDeDoisFatores, type Acesso } from "@/server/services/acesso";
 import { obterConvite } from "@/server/services/convites";
 import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
+import { FundoDeLinhas } from "@/components/ui/fundo-de-linhas";
 import { Cabecalho } from "./cabecalho";
 import { AvisoDaEntrada } from "./aviso-da-entrada";
 import { FormAutenticador, FormSair } from "./formularios";
@@ -33,9 +34,23 @@ export function LogoRgruber() {
  * Tela de entrada. Com `marca` (console), fundo escuro, logotipo acima do
  * cartão, título próprio em destaque e sem rodapé.
  */
-export function TelaEntrar({ titulo, marca }: { titulo: string; marca?: ReactNode }) {
+export function TelaEntrar({
+  titulo,
+  marca,
+  linhas = false,
+}: {
+  titulo: string;
+  marca?: ReactNode;
+  /** Fundo escuro com linhas animadas (entrada do tenant). */
+  linhas?: boolean;
+}) {
   return (
-    <Moldura destaque={Boolean(marca)} logo={marca} rodape={!marca}>
+    <Moldura
+      destaque={Boolean(marca) || linhas}
+      logo={marca}
+      rodape={!marca}
+      fundo={linhas ? <FundoDeLinhas /> : undefined}
+    >
       <Cartao>
         <header className="mb-6">
           <h1 className="text-primary text-4xl font-bold tracking-tight">{produto.nome}</h1>

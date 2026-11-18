@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ComponentProps, ReactNode } from "react";
 
 /**
@@ -8,30 +9,59 @@ import type { ComponentProps, ReactNode } from "react";
 /**
  * Fundo das telas soltas (login, convite). `destaque`: fundo escuro da marca,
  * com o cartão branco em alto contraste e logotipo opcional acima dele.
+ * `fundo`: decoração atrás do conteúdo (ex.: linhas animadas).
  */
 export function Moldura({
   children,
   rodape = true,
   destaque = false,
   logo,
+  fundo,
 }: {
   children: ReactNode;
   rodape?: boolean;
   destaque?: boolean;
   logo?: ReactNode;
+  fundo?: ReactNode;
 }) {
   return (
     <main
-      className={`${destaque ? "bg-backdrop" : "bg-surface"} flex flex-1 flex-col items-center justify-center px-4 py-10`}
+      className={`${destaque ? "bg-backdrop" : "bg-surface"} relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-10`}
     >
-      {logo && <div className="mb-8">{logo}</div>}
-      {children}
-      {rodape && (
-        <footer className={`${destaque ? "text-backdrop-foreground/70" : "text-muted"} mt-10 text-xs`}>
-          Desenvolvido por RGRUBER Consultoria
-        </footer>
-      )}
+      {fundo}
+      <div className="relative flex w-full flex-col items-center">
+        {logo && <div className="mb-8">{logo}</div>}
+        {children}
+        {rodape && <AssinaturaRgruber escuro={destaque} />}
+      </div>
     </main>
+  );
+}
+
+/**
+ * Assinatura discreta: "Copyright by" + logotipo da RGRUBER, na versão
+ * adequada ao fundo (docs/marca/rgruber; largura mínima de 120 px).
+ */
+export function AssinaturaRgruber({
+  escuro = false,
+  className = "mt-10",
+}: {
+  escuro?: boolean;
+  className?: string;
+}) {
+  return (
+    <footer
+      className={`${escuro ? "text-backdrop-foreground" : "text-muted"} ${className} flex items-center gap-2 text-xs opacity-60`}
+    >
+      <span>Copyright by</span>
+      <Image
+        src={escuro ? "/marca/rgruber-horizontal-negativa.svg" : "/marca/rgruber-horizontal-positiva.svg"}
+        alt="RGRUBER Consultoria"
+        width={120}
+        height={34}
+        unoptimized
+      />
+    </footer>
   );
 }
 

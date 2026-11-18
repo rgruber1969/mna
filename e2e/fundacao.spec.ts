@@ -6,7 +6,8 @@ test("página inicial mostra o nome do produto e o rodapé da RGRUBER", async ({
   await page.goto("/");
   await expect(page).toHaveTitle(nomeDoProduto);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(nomeDoProduto);
-  await expect(page.getByText("Desenvolvido por RGRUBER Consultoria")).toBeVisible();
+  await expect(page.getByText("Copyright by")).toBeVisible();
+  await expect(page.getByRole("img", { name: "RGRUBER Consultoria" })).toBeVisible();
 });
 
 test("API responde e a documentação abre", async ({ page, request }) => {
