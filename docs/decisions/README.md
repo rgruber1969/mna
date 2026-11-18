@@ -10,7 +10,7 @@ projeto e em `docs/projeto/`.
 | ADR | Tema | Decisão |
 |---|---|---|
 | [0001](0001-registrar-decisoes-de-arquitetura-com-adrs.md) | Registro de decisões | ADRs MADR + este resumo |
-| [0002](0002-pasta-de-trabalho-local-e-backup.md) | Pasta e backup | `C:\dev\<nome>`; commits frequentes; backup manual |
+| [0002](0002-pasta-de-trabalho-local-e-backup.md) | Pasta e backup | `C:\dev\<nome>`; commits frequentes; GitHub privado como backup (adendo) |
 | [0003](0003-banco-de-dados-postgresql-neon-docker.md) | Banco | PostgreSQL; Neon (produção), Docker (local) |
 | [0004](0004-linguagem-e-framework-typescript-nextjs-hono.md) | Stack | TypeScript; Next.js + Hono com OpenAPI via Zod; camada de serviços |
 | [0005](0005-autenticacao-better-auth.md) | Autenticação | Better Auth, dados no nosso banco |

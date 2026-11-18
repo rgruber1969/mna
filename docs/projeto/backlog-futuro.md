@@ -16,8 +16,9 @@ versão 1" é anotado aqui.
 
 - [ ] Substituição real em DOCX e PDF (na V1, simulada; em planilhas, real)
 - [ ] Imagens e PDFs escaneados (reconhecimento de texto, OCR)
-- [ ] Reconhecimento de nomes parecidos (abreviações, erros de grafia), com
-      revisão pelo usuário antes de substituir
+- [ ] Reconhecimento automático de nomes parecidos (erros de grafia não
+      cadastrados como variação), com revisão pelo usuário antes de
+      substituir (na V1, só as variações digitadas)
 
 ## Valuation
 

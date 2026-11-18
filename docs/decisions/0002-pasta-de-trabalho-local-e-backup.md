@@ -109,3 +109,7 @@ Convenções:
 * Relacionado: ADR-0001 (registro de decisões).
 * A publicação no GitHub, prevista para depois, encerra a principal
   consequência negativa desta decisão.
+* Adendo (2026-11-18): o MNA passou a ter repositório **privado no
+  GitHub** como remote (`origin`), que vira o backup externo principal.
+  Segredos (`.env*`) continuam fora do git. A frequência do envio
+  (`git push`) fica a critério do responsável.

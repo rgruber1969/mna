@@ -50,27 +50,36 @@ geral do comprador e também faz a diligência jurídica do comprador):
 
 A lista de papéis deve ser um cadastro extensível.
 
-### Clientes e anonimização (incluído na V1 em 2026-11-18)
+### Anonimização de clientes (incluída na V1 em 2026-11-18)
 
-Funcionalidade de venda: a vendedora entrega documentos ao comprador **sem
-revelar quem são os seus clientes**.
+Funcionalidade de venda: quem envia documentos (tipicamente a vendedora ao
+comprador) consegue **não revelar quem são os clientes**.
 
-* **Cliente:** cadastro de clientes de uma empresa (tipicamente a
-  vendedora), com **razão social** e **nome fantasia**, e um **código**
-  gerado em sequência (`C00001`, `C00002`...).
+* **Anonimização** é uma entidade própria. O tenant pode ter **N
+  anonimizações**; cada uma tem a sua lista de clientes e os seus códigos.
+* **Onde vale:** quem cria a anonimização escolhe a quais **deals** ela se
+  aplica (aos documentos desses deals).
+* **Clientes da anonimização:** razão social, nome fantasia, **variações de
+  grafia** (abreviações e outras formas como o nome aparece nos documentos,
+  digitadas pelo usuário para a associação) e o **código**, gerado em
+  sequência e **único dentro da anonimização** (`C00001`, `C00002`...).
 * **Grupo econômico em 2 níveis:** clientes do mesmo grupo compartilham a
   raiz do código e ganham um sufixo (ex.: ABC e XYZ do mesmo grupo:
   `C00087.001` e `C00087.002`).
 * **Importação de planilha** (XLSX ou CSV, modelo padrão) além do cadastro
   manual.
-* **Substituição nos documentos:** ao enviar um documento que contém uma
-  lista de clientes, o sistema pergunta se deseja trocar razão social e
-  nome fantasia pelo código. Vale para **qualquer usuário** com permissão
-  de enviar documentos (inclusive o lado comprador).
+* **Substituição nos documentos:** ao enviar um documento num deal onde há
+  anonimização aplicável, se ele contiver nomes de clientes (razão social,
+  nome fantasia ou uma das variações), o sistema pergunta se deseja trocar
+  pelos códigos. Vale para **qualquer usuário** com permissão de enviar
+  documentos (inclusive o lado comprador).
+* **Original e anonimizado:** os dois ficam guardados. O original tem
+  acesso restrito (lista de acesso definida por quem envia, como nas
+  versões de documento); o anonimizado é o que circula.
+* A **tabela de correspondência** (código × nome) é sigilosa: visível só a
+  quem o criador da anonimização der acesso.
 * **Versão 1:** substituição real em planilhas (XLSX, CSV); em DOCX e PDF,
   simulada (escopo-v1.md, item 33). O restante fica no backlog.
-* A **tabela de correspondência** (código × nome) é sigilosa: visível só a
-  quem tiver permissão no cadastro de clientes.
 
 ### Pessoa e usuário
 
@@ -340,11 +349,5 @@ Etapas padrão:
   módulo de resumo, sem mudar as telas.
 
 ## Pendências de domínio
-
-* **Anonimização de clientes:** os códigos são únicos por empresa
-  vendedora ou por tenant? O documento original (com nomes) fica guardado,
-  com acesso restrito, ou só a versão anonimizada? Como tratar nomes
-  parecidos (abreviações, grafias diferentes)? Definir antes de construir o
-  item 33.
 
 * Gatilhos de tarefas automáticas (a informar).

@@ -52,7 +52,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 30 | Menções (@pessoa) e marcar mensagem como tarefa | Médio | M | 16, 27 | Real |
 | 31 | Resumos automáticos (mensagens e histórico de documento): resumo local sem IA | Médio | M | 11, 16 | Real |
 | 32 | Ofertas recebidas com estrutura de pagamento, rateio entre vendedoras e comparação com o valuation | Alto | M | 8, 18 | Real |
-| 33 | Anonimização de clientes: cadastro de clientes com códigos (C00001) e grupo econômico em 2 níveis (C00087.001), importação de planilha, e substituição dos nomes pelos códigos nos documentos enviados | Alto (venda) | G | 7, 11 | Parcial: real em planilhas (XLSX, CSV); simulado em DOCX e PDF |
+| 33 | Anonimização de clientes: N anonimizações por tenant, aplicadas aos deals escolhidos; clientes com códigos (C00001), variações de grafia e grupo econômico em 2 níveis (C00087.001); importação de planilha; substituição dos nomes pelos códigos nos documentos enviados, guardando original (restrito) e anonimizado | Alto (venda) | G | 7, 11 | Parcial: real em planilhas (XLSX, CSV); simulado em DOCX e PDF |
 
 Como cada item simulado aparece na demonstração:
 

@@ -23,7 +23,7 @@ novo com dado pessoal é registrado aqui no mesmo commit.
 | Sócios e partes de contratos | Nome, e-mail, telefone, endereço completo | Pessoal | Contrato | Usados na confecção de contratos |
 | Sócios e partes de contratos | CPF, RG (identidade) | **Sensível** | Contrato | |
 | Sócios e partes de contratos | Dados do cônjuge | **Sensível** | Contrato | |
-| Clientes das empresas (quando pessoa física) | Nome | Pessoal | Contrato (a validar) | Cadastro de clientes da anonimização (dominio.md); razão social de pessoa jurídica não é dado pessoal |
+| Clientes das empresas (quando pessoa física) | Nome e variações de grafia | Pessoal | Contrato (a validar) | Clientes das anonimizações (dominio.md); razão social de pessoa jurídica não é dado pessoal |
 | Funcionários das empresas-alvo | Nome, cargo, data de admissão | Pessoal | Contrato (a validar) | Circulam sobretudo dentro de arquivos de diligência |
 | Funcionários das empresas-alvo | CPF, salário | **Sensível** | Contrato (a validar) | Idem |
 
