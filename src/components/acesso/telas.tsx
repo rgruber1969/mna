@@ -29,11 +29,15 @@ export function LogoRgruber() {
   );
 }
 
-export function TelaEntrar({ onde, marca }: { onde: string; marca?: ReactNode }) {
+/**
+ * Tela de entrada. Com `marca` (console), fundo escuro, logotipo acima do
+ * cartão, título próprio em destaque e sem rodapé.
+ */
+export function TelaEntrar({ onde, titulo, marca }: { onde?: string; titulo?: string; marca?: ReactNode }) {
   return (
-    <Moldura destaque={Boolean(marca)} logo={marca}>
+    <Moldura destaque={Boolean(marca)} logo={marca} rodape={!marca}>
       <Cartao>
-        <Titulo sobre={produto.nome}>Entrar em {onde}</Titulo>
+        {titulo ? <Titulo grande>{titulo}</Titulo> : <Titulo sobre={produto.nome}>Entrar em {onde}</Titulo>}
         <Suspense>
           <AvisoDaEntrada />
         </Suspense>
