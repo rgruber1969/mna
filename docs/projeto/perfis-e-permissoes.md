@@ -82,6 +82,13 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
   vêm do perfil de cada pessoa. Ao atribuir um papel à empresa, o sistema
   pode sugerir o perfil correspondente para os usuários dela; o
   administrador confirma.
+  * **Confirmado em 2026-11-18:** papel é **da empresa** (quem é a
+    vendedora, a compradora, o advisor; usado no rateio entre vendedoras,
+    ofertas, e-book e anonimização, e vale mesmo para empresa sem nenhum
+    usuário); perfil é **da pessoa** (o que ela pode fazer). Para não
+    confundir os nomes, os perfis padrão "Vendedora" e "Compradora" viraram
+    "Representante da vendedora" e "Representante da compradora", e entrou
+    o perfil "Advisor da compradora".
 * **Auditoria:** consultável por quem tiver essa permissão concedida pelos
   administradores do tenant.
 * **Lista de acesso por versão de documento** (áreas restritas):
@@ -143,8 +150,9 @@ tipos de vínculo entre pessoa e empresa.
 | **Advogado da vendedora** | V | V E | V C E B | V C E | V C | V C E B | V Co | V C E |
 | **Advisor da vendedora** | V | V E | V C E B | V C E | V C | V B | V C E B Li | V C E |
 | **Contador da vendedora** | V | V | V C E B | V C E | V C | — | — | — |
-| **Vendedora** | V | V | V C B | V E | V C | V B | V Co Ap | V |
-| **Compradora** | V | V | V B | V E | V C | — | V³ | — |
+| **Representante da vendedora** | V | V | V C B | V E | V C | V B | V Co Ap | V |
+| **Representante da compradora** | V | V | V B | V E | V C | — | V³ | — |
+| **Advisor da compradora** | V | V | V C B | V C E | V C | — | V³ | — |
 | **Advogado da compradora** | V | V | V C B | V C E | V C | — | V³ | — |
 | **Contador da compradora** | V | V | V C E B | V C E | V C | — | — | — |
 | **Auditor (diligência)** | V | V | V C E B | V C E | V C | — | — | — |

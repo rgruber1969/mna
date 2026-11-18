@@ -57,6 +57,7 @@ projeto e em `docs/projeto/`.
 | Checklist ASVS | 253 requisitos L1/L2 classificados em [docs/seguranca/asvs-checklist.md](../seguranca/asvs-checklist.md) | 2026-11-17 |
 | Entrada de desenvolvimento | Só e-mail, ligada por variável, só em `*.localhost`; a aplicação recusa iniciar em produção com ela ([autenticacao-e-sessao.md](../projeto/autenticacao-e-sessao.md)) | 2026-11-18 |
 | Consulta de CNPJ e CEP | BrasilAPI (CNPJ, com quadro de sócios) e ViaCEP (CEP, com a BrasilAPI de reserva); gratuitos, sem chave; consulta pelo servidor; fora do ar, preenchimento manual | 2026-11-18 |
+| Menu das áreas logadas | Menu lateral à esquerda, com grupos, recolher/expandir, busca nas opções e favoritos guardados no banco por usuário e tenant; no celular, gaveta | 2026-11-18 |
 
 ## Substituídas
 

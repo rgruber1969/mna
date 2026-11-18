@@ -22,7 +22,7 @@ export const PAPEIS_PADRAO: { codigo: string; nome: string; perfil: string | nul
   { codigo: "vendedora", nome: "Vendedora", perfil: "vendedora" },
   { codigo: "compradora", nome: "Compradora", perfil: "compradora" },
   { codigo: "advisor-vendedora", nome: "Advisor da vendedora", perfil: "advisor-vendedora" },
-  { codigo: "advisor-compradora", nome: "Advisor da compradora", perfil: "compradora" },
+  { codigo: "advisor-compradora", nome: "Advisor da compradora", perfil: "advisor-compradora" },
   {
     codigo: "escritorio-vendedora",
     nome: "Escritório de advocacia da vendedora",

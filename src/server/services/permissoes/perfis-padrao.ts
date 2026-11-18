@@ -114,8 +114,8 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "vendedora",
     descricao:
-      "Empresa vendedora: envia documentos, atualiza as próprias tarefas, comenta e aprova o e-book e acompanha as ofertas.",
-    nome: "Vendedora",
+      "Pessoa da empresa vendedora (ex.: sócio ou diretor): envia documentos, atualiza as próprias tarefas, comenta e aprova o e-book e acompanha as ofertas.",
+    nome: "Representante da vendedora",
     camada: "deal",
     matriz: {
       deal: V,
@@ -131,10 +131,18 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "compradora",
     descricao:
-      "Empresa compradora: vê e baixa os documentos liberados, atualiza as próprias tarefas e vê o e-book liberado.",
-    nome: "Compradora",
+      "Pessoa da empresa compradora: vê e baixa os documentos liberados, atualiza as próprias tarefas e vê o e-book liberado.",
+    nome: "Representante da compradora",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VB, tarefas: VE, mensagens: VC, ebook: V },
+  },
+  {
+    codigo: "advisor-compradora",
+    descricao:
+      "Advisor do lado comprador: envia e baixa documentos, cuida das tarefas e vê o e-book depois que o lado vendedor o libera.",
+    nome: "Advisor da compradora",
+    camada: "deal",
+    matriz: { deal: V, etapas: V, documentos: VCB, tarefas: VCE, mensagens: VC, ebook: V },
   },
   {
     codigo: "advogado-compradora",

@@ -120,6 +120,13 @@
       "when": 1795031665074,
       "tag": "0016_empresas_e_pessoas",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795035285873,
+      "tag": "0017_perfis_representante_e_advisor_compradora",
+      "breakpoints": true
     }
   ]
 }
