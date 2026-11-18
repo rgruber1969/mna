@@ -39,6 +39,8 @@ export const tenant = pgTable("tenant", {
   nome: text("nome").notNull(),
   /** 2FA exigido de todos os usuários do tenant (autenticacao-e-sessao.md). */
   exigeDoisFatoresDeTodos: boolean("exige_2fa_de_todos").notNull().default(false),
+  /** Suspenso pela RGRUBER: ninguém entra; dados preservados (perfis-e-permissoes.md). */
+  suspensoEm: timestamp("suspenso_em", { withTimezone: true }),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 

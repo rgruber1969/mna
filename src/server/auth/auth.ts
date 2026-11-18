@@ -62,8 +62,11 @@ export async function areaPermitida(host: string | null, usuarioId: string): Pro
     return u?.papel === "admin" ? "console" : null;
   }
   if (area.tipo === "tenant") {
-    const [t] = await db.select({ id: tenant.id }).from(tenant).where(eq(tenant.slug, area.slug));
-    if (!t) return null;
+    const [t] = await db
+      .select({ id: tenant.id, suspensoEm: tenant.suspensoEm })
+      .from(tenant)
+      .where(eq(tenant.slug, area.slug));
+    if (!t || t.suspensoEm) return null; // tenant suspenso: ninguém entra
     const [v] = await comTenant(t.id, (tx) =>
       tx
         .select({ id: vinculoTenant.id })

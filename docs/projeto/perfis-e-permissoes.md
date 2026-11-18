@@ -17,6 +17,16 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
 ## Administrador geral (RGRUBER)
 
 * Único que cadastra e administra tenants.
+* **Edição do tenant:** o nome pode ser alterado; o **endereço
+  (subdomínio) é fixo** depois de criado (trocar exigiria operação
+  especial: links, convites e passkeys locais dependem dele).
+* **Suspensão do tenant** (ex.: contrato encerrado): ninguém do tenant
+  entra, as sessões são encerradas na hora e convites e links deixam de
+  valer; os dados são preservados; a RGRUBER reativa quando quiser. Ações
+  auditadas.
+* **Equipe da RGRUBER:** convidada e removida pelo console; a remoção tira
+  o acesso ao console na hora e encerra as sessões; ninguém remove o
+  próprio acesso e o último usuário não pode ser removido.
 * Ao criar ou editar um tenant, cadastra os administradores do tenant para
   o primeiro acesso.
 * Define, por tenant, o prazo de retenção da auditoria.

@@ -175,6 +175,7 @@ async function ConteudoSeguranca() {
         area={area}
         usuario={acesso.usuario.nome}
         administrador={acesso.area === "tenant" && acesso.administrador}
+        console={acesso.area === "console"}
       />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao>

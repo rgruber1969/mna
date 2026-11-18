@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import type { Estado } from "@/app/acoes/acesso";
-import { convidarUsuarioAcao, redefinirPelaPlataformaAcao } from "@/app/acoes/usuarios";
+import {
+  convidarParaEquipeAcao,
+  convidarUsuarioAcao,
+  redefinirPelaPlataformaAcao,
+  renomearTenantAcao,
+} from "@/app/acoes/usuarios";
 import { Aviso, Botao, Campo } from "@/components/ui/basicos";
 
 type Acao = (estado: Estado, dados: FormData) => Promise<Estado>;
@@ -122,6 +127,32 @@ export function FormRedefinirPelaPlataforma({ motivos }: { motivos: Record<strin
         Confirmei a identidade da pessoa (por exemplo, com o administrador do tenant dela).
       </label>
       <Botao disabled={enviando}>{enviando ? "Redefinindo..." : "Redefinir 2FA"}</Botao>
+    </form>
+  );
+}
+
+export function FormRenomearTenant({ id, nome }: { id: string; nome: string }) {
+  const [estado, acao, enviando] = useAcaoComAtualizacao(renomearTenantAcao);
+  return (
+    <form action={acao}>
+      {estado?.erro && <Aviso>{estado.erro}</Aviso>}
+      {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
+      <input type="hidden" name="id" value={id} />
+      <Campo rotulo="Nome do tenant" name="nome" defaultValue={nome} required />
+      <Botao disabled={enviando}>{enviando ? "Salvando..." : "Salvar nome"}</Botao>
+    </form>
+  );
+}
+
+export function FormConvidarParaEquipe() {
+  const [estado, acao, enviando] = useAcaoComAtualizacao(convidarParaEquipeAcao);
+  return (
+    <form action={acao}>
+      {estado?.erro && <Aviso>{estado.erro}</Aviso>}
+      {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
+      <Campo rotulo="Nome" name="nome" required />
+      <Campo rotulo="E-mail do convidado" name="email" type="email" required />
+      <Botao disabled={enviando}>{enviando ? "Enviando..." : "Enviar convite"}</Botao>
     </form>
   );
 }

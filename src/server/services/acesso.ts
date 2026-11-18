@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { auth, SESSAO_DURACAO_MAXIMA_S } from "@/server/auth/auth";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
@@ -63,6 +63,10 @@ export function hashDoToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+/**
+ * Tenant ativo pelo endereço. Tenant suspenso conta como inexistente para
+ * sessão e convites (perfis-e-permissoes.md, "Suspensão do tenant").
+ */
 export async function tenantPorSlug(slug: string): Promise<TenantDoAcesso | null> {
   const [t] = await banco()
     .select({
@@ -72,8 +76,17 @@ export async function tenantPorSlug(slug: string): Promise<TenantDoAcesso | null
       exigeDoisFatoresDeTodos: tenant.exigeDoisFatoresDeTodos,
     })
     .from(tenant)
-    .where(eq(tenant.slug, slug));
+    .where(and(eq(tenant.slug, slug), isNull(tenant.suspensoEm)));
   return t ?? null;
+}
+
+/** Para a tela de entrada: o endereço é de um tenant suspenso? */
+export async function tenantSuspenso(slug: string): Promise<boolean> {
+  const [t] = await banco()
+    .select({ suspensoEm: tenant.suspensoEm })
+    .from(tenant)
+    .where(eq(tenant.slug, slug));
+  return Boolean(t?.suspensoEm);
 }
 
 async function revogarSessao(id: string): Promise<void> {

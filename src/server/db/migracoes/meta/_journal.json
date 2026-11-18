@@ -50,6 +50,13 @@
       "when": 1794958065335,
       "tag": "0006_exigencia_2fa",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794960994892,
+      "tag": "0007_suspensao_tenant",
+      "breakpoints": true
     }
   ]
 }

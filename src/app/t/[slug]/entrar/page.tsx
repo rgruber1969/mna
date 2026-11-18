@@ -1,13 +1,25 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { tenantPorSlug } from "@/server/services/acesso";
+import { tenantPorSlug, tenantSuspenso } from "@/server/services/acesso";
 import { TelaEntrar } from "@/components/acesso/telas";
-import { Carregando } from "@/components/ui/basicos";
+import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
 
 async function Conteudo({ slug }: { slug: Promise<string> }) {
   await connection();
-  const t = await tenantPorSlug(await slug);
+  const s = await slug;
+  const t = await tenantPorSlug(s);
+  if (!t && (await tenantSuspenso(s)))
+    return (
+      <Moldura>
+        <Cartao>
+          <Titulo sobre="Acesso">Acesso suspenso</Titulo>
+          <p className="text-muted text-sm">
+            O acesso a este endereço está suspenso no momento. Fale com o responsável pelo contrato.
+          </p>
+        </Cartao>
+      </Moldura>
+    );
   if (!t) notFound();
   return <TelaEntrar onde={t.nome} />;
 }

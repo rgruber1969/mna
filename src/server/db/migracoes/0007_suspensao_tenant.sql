@@ -1,0 +1,1 @@
+ALTER TABLE "tenant" ADD COLUMN "suspenso_em" timestamp with time zone;

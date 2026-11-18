@@ -2,7 +2,14 @@
 
 import { headers } from "next/headers";
 import { obterAcesso } from "@/server/services/acesso";
-import { redefinirDoisFatoresPelaPlataforma } from "@/server/services/console";
+import {
+  cancelarConviteDaEquipe,
+  convidarParaEquipe,
+  definirSuspensao,
+  redefinirDoisFatoresPelaPlataforma,
+  removerDaEquipe,
+  renomearTenant,
+} from "@/server/services/console";
 import {
   cancelarConvite,
   convidarUsuario,
@@ -94,4 +101,33 @@ export async function redefinirPelaPlataformaAcao(_: Estado, f: FormData): Promi
     }),
     "2FA redefinido e pessoa avisada por e-mail.",
   );
+}
+
+// --- Console: tenant e equipe da RGRUBER --------------------------------------------
+
+export async function renomearTenantAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estado(await renomearTenant(await acesso(), texto(f, "id"), texto(f, "nome")), "Nome alterado.");
+}
+
+export async function suspenderTenantAcao(_: Estado, f: FormData): Promise<Estado> {
+  const suspender = sim(f, "valor");
+  return estado(
+    await definirSuspensao(await acesso(), texto(f, "id"), suspender),
+    suspender ? "Tenant suspenso." : "Tenant reativado.",
+  );
+}
+
+export async function convidarParaEquipeAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estado(
+    await convidarParaEquipe(await acesso(), { nome: texto(f, "nome"), email: texto(f, "email") }),
+    "Convite enviado. Ele vale por 3 dias.",
+  );
+}
+
+export async function cancelarConviteDaEquipeAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estado(await cancelarConviteDaEquipe(await acesso(), texto(f, "id")), "Convite cancelado.");
+}
+
+export async function removerDaEquipeAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estado(await removerDaEquipe(await acesso(), texto(f, "id")), "Acesso removido.");
 }

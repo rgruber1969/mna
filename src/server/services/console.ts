@@ -1,10 +1,18 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { banco, comTenant } from "@/server/db/cliente";
-import { convite, eventoPlataforma, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
+import {
+  convite,
+  convitePlataforma,
+  eventoPlataforma,
+  sessao,
+  tenant,
+  usuario,
+  vinculoTenant,
+} from "@/server/db/esquema";
 import { problemaNoSlug } from "@/server/enderecos";
 import { AcessoNegado, type Acesso } from "./acesso";
-import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
+import { convidarUsuarioDaPlataforma, emitirConviteDoTenant, type DadosPessoa } from "./convites";
 import { apagarTodosOsFatores, avisarMudancaNosFatores } from "./fatores-da-conta";
 
 /**
@@ -29,12 +37,24 @@ async function auditar(
   await banco().insert(eventoPlataforma).values({ tipo, atorId, alvoTipo: "tenant", alvoId, detalhes });
 }
 
-export type TenantResumo = { id: string; slug: string; nome: string; criadoEm: Date };
+export type TenantResumo = {
+  id: string;
+  slug: string;
+  nome: string;
+  criadoEm: Date;
+  suspensoEm: Date | null;
+};
 
 export async function listarTenants(acesso: Acesso | null): Promise<TenantResumo[]> {
   exigirConsole(acesso);
   return banco()
-    .select({ id: tenant.id, slug: tenant.slug, nome: tenant.nome, criadoEm: tenant.criadoEm })
+    .select({
+      id: tenant.id,
+      slug: tenant.slug,
+      nome: tenant.nome,
+      criadoEm: tenant.criadoEm,
+      suspensoEm: tenant.suspensoEm,
+    })
     .from(tenant)
     .orderBy(tenant.nome);
 }
@@ -70,7 +90,13 @@ export async function obterTenant(acesso: Acesso | null, id: string): Promise<Te
   const a = exigirConsole(acesso);
   if (!z.uuid().safeParse(id).success) return null;
   const [t] = await banco()
-    .select({ id: tenant.id, slug: tenant.slug, nome: tenant.nome, criadoEm: tenant.criadoEm })
+    .select({
+      id: tenant.id,
+      slug: tenant.slug,
+      nome: tenant.nome,
+      criadoEm: tenant.criadoEm,
+      suspensoEm: tenant.suspensoEm,
+    })
     .from(tenant)
     .where(eq(tenant.id, id));
   if (!t) return null;
@@ -150,5 +176,145 @@ export async function redefinirDoisFatoresPelaPlataforma(
     "A verificação em duas etapas da sua conta foi redefinida pelo suporte da plataforma",
     "console da plataforma",
   );
+  return { ok: true };
+}
+
+// --- Edição e suspensão do tenant ---------------------------------------------------
+
+/** Só o nome muda; o endereço é fixo depois de criado (perfis-e-permissoes.md). */
+export async function renomearTenant(
+  acesso: Acesso | null,
+  tenantId: string,
+  nome: string,
+): Promise<{ ok: true } | { erro: string }> {
+  const a = exigirConsole(acesso);
+  const r = NovoTenant.shape.nome.safeParse(nome);
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Nome inválido." };
+  if (!z.uuid().safeParse(tenantId).success) return { erro: "Tenant não encontrado." };
+  const feito = await banco()
+    .update(tenant)
+    .set({ nome: r.data })
+    .where(eq(tenant.id, tenantId))
+    .returning({ id: tenant.id });
+  if (feito.length === 0) return { erro: "Tenant não encontrado." };
+  await auditar(a.usuario.id, "tenant.renomeado", tenantId);
+  return { ok: true };
+}
+
+/** Suspensão: ninguém do tenant entra, sessões encerradas na hora; dados preservados. */
+export async function definirSuspensao(
+  acesso: Acesso | null,
+  tenantId: string,
+  suspender: boolean,
+): Promise<{ ok: true } | { erro: string }> {
+  const a = exigirConsole(acesso);
+  if (!z.uuid().safeParse(tenantId).success) return { erro: "Tenant não encontrado." };
+  const feito = await banco()
+    .update(tenant)
+    .set({ suspensoEm: suspender ? new Date() : null })
+    .where(eq(tenant.id, tenantId))
+    .returning({ id: tenant.id });
+  if (feito.length === 0) return { erro: "Tenant não encontrado." };
+  if (suspender)
+    await banco()
+      .delete(sessao)
+      .where(eq(sessao.area, `tenant:${tenantId}`));
+  await auditar(a.usuario.id, suspender ? "tenant.suspenso" : "tenant.reativado", tenantId);
+  return { ok: true };
+}
+
+// --- Equipe da RGRUBER (usuários da plataforma) ----------------------------------------
+
+export type EquipeDaPlataforma = {
+  usuarios: { id: string; nome: string; email: string; ehVoce: boolean }[];
+  convites: { id: string; nome: string; email: string; expiraEm: Date }[];
+};
+
+export async function listarEquipe(acesso: Acesso | null): Promise<EquipeDaPlataforma> {
+  const a = exigirConsole(acesso);
+  const usuarios = await banco()
+    .select({ id: usuario.id, nome: usuario.name, email: usuario.email })
+    .from(usuario)
+    .where(eq(usuario.papelPlataforma, "admin"))
+    .orderBy(usuario.name);
+  const convites = await banco()
+    .select({
+      id: convitePlataforma.id,
+      nome: convitePlataforma.nome,
+      email: convitePlataforma.email,
+      expiraEm: convitePlataforma.expiraEm,
+    })
+    .from(convitePlataforma)
+    .where(and(isNull(convitePlataforma.aceitoEm), gt(convitePlataforma.expiraEm, new Date())))
+    .orderBy(desc(convitePlataforma.criadoEm));
+  return { usuarios: usuarios.map((u) => ({ ...u, ehVoce: u.id === a.usuario.id })), convites };
+}
+
+export async function convidarParaEquipe(
+  acesso: Acesso | null,
+  dados: DadosPessoa,
+): Promise<{ ok: true } | { erro: string }> {
+  const a = exigirConsole(acesso);
+  const email = String(dados.email ?? "")
+    .trim()
+    .toLowerCase();
+  const [ja] = await banco()
+    .select({ id: usuario.id })
+    .from(usuario)
+    .where(and(eq(usuario.email, email), eq(usuario.papelPlataforma, "admin")));
+  if (ja) return { erro: "Esta pessoa já faz parte da equipe." };
+  // Um convite novo substitui o pendente para o mesmo e-mail.
+  await banco()
+    .update(convitePlataforma)
+    .set({ expiraEm: new Date() })
+    .where(and(eq(convitePlataforma.email, email), isNull(convitePlataforma.aceitoEm)));
+  return convidarUsuarioDaPlataforma(dados, a.usuario.id);
+}
+
+export async function cancelarConviteDaEquipe(
+  acesso: Acesso | null,
+  conviteId: string,
+): Promise<{ ok: true } | { erro: string }> {
+  const a = exigirConsole(acesso);
+  if (!z.uuid().safeParse(conviteId).success) return { erro: "Convite não encontrado." };
+  const feito = await banco()
+    .update(convitePlataforma)
+    .set({ expiraEm: new Date() })
+    .where(and(eq(convitePlataforma.id, conviteId), isNull(convitePlataforma.aceitoEm)))
+    .returning({ id: convitePlataforma.id });
+  if (feito.length === 0) return { erro: "Convite não encontrado." };
+  await banco().insert(eventoPlataforma).values({
+    tipo: "convite.plataforma.cancelado",
+    atorId: a.usuario.id,
+    alvoTipo: "convite_plataforma",
+    alvoId: conviteId,
+  });
+  return { ok: true };
+}
+
+/** Remove o acesso ao console na hora; nunca o próprio, nunca o último. */
+export async function removerDaEquipe(
+  acesso: Acesso | null,
+  usuarioId: string,
+): Promise<{ ok: true } | { erro: string }> {
+  const a = exigirConsole(acesso);
+  if (!z.uuid().safeParse(usuarioId).success) return { erro: "Usuário não encontrado." };
+  if (usuarioId === a.usuario.id) return { erro: "Você não pode remover o seu próprio acesso." };
+  const equipe = await banco()
+    .select({ id: usuario.id })
+    .from(usuario)
+    .where(eq(usuario.papelPlataforma, "admin"));
+  if (!equipe.some((u) => u.id === usuarioId)) return { erro: "Usuário não encontrado." };
+  if (equipe.length <= 1) return { erro: "O console precisa de pelo menos um usuário." };
+  await banco().update(usuario).set({ papelPlataforma: null }).where(eq(usuario.id, usuarioId));
+  await banco()
+    .delete(sessao)
+    .where(and(eq(sessao.userId, usuarioId), eq(sessao.area, "console")));
+  await banco().insert(eventoPlataforma).values({
+    tipo: "plataforma.usuario.removido",
+    atorId: a.usuario.id,
+    alvoTipo: "usuario",
+    alvoId: usuarioId,
+  });
   return { ok: true };
 }

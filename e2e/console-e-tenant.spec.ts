@@ -81,7 +81,7 @@ test("console: convite, senha e 2FA obrigatório; cadastro de tenant e convite d
   await page.getByRole("button", { name: "Criar tenant" }).click();
   await expect(page.getByRole("heading", { name: "Escritório E2E" })).toBeVisible();
 
-  await page.getByLabel("Nome").fill("Admin do Tenant");
+  await page.getByLabel("Nome", { exact: true }).fill("Admin do Tenant");
   await page.getByLabel("E-mail", { exact: true }).fill(emailTenant);
   await page.getByRole("button", { name: "Enviar convite" }).click();
   await expect(page.getByText("Convite enviado")).toBeVisible();
@@ -163,7 +163,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
 
   // 2. O administrador convida uma usuária pela tela Usuários.
   await admin.getByRole("link", { name: "Usuários" }).click();
-  await admin.getByLabel("Nome").fill("Usuária E2E");
+  await admin.getByLabel("Nome", { exact: true }).fill("Usuária E2E");
   await admin.getByLabel("E-mail do convidado").fill(emailUsuaria);
   await admin.getByRole("button", { name: "Enviar convite" }).click();
   await expect(admin.getByText("Convite enviado")).toBeVisible();
@@ -224,6 +224,43 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Revogar acesso" }).click();
   await expect(admin.getByRole("heading", { name: "Usuários" })).toBeVisible();
   await expect(admin.getByText(emailUsuaria)).toHaveCount(0);
+});
+
+test("console: equipe, renomear, suspender e reativar tenant", async ({ page }) => {
+  test.setTimeout(120_000);
+  page.on("dialog", (d) => d.accept());
+  await page.goto(`http://admin.${dominio}/entrar`);
+  await page.getByLabel("E-mail", { exact: true }).fill(emailConsole);
+  await page.getByLabel("Senha").fill(senha);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.getByLabel("Código do aplicativo autenticador").fill(await novoCodigo(page));
+  await page.getByRole("button", { name: "Verificar" }).click();
+  await expect(page.getByRole("heading", { name: "Tenants" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Equipe" }).click();
+  await expect(page.getByRole("heading", { name: "Equipe da RGRUBER" })).toBeVisible();
+  await expect(page.getByText(`(${emailConsole})`)).toBeVisible();
+
+  await page.goto(`http://admin.${dominio}/`);
+  await page.getByRole("link", { name: "Escritório E2E" }).click();
+  await expect(page.getByRole("heading", { name: "Escritório E2E", exact: true })).toBeVisible();
+  // A página anterior fica escondida no HTML (cache do Next.js): restringe ao formulário de edição.
+  const edicao = page.locator("form").filter({ has: page.getByRole("button", { name: "Salvar nome" }) });
+  await edicao.getByLabel("Nome do tenant").fill("Escritório E2E Renomeado");
+  await page.getByRole("button", { name: "Salvar nome" }).click();
+  await expect(page.getByText("Nome alterado.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Escritório E2E Renomeado" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Suspender tenant" }).click();
+  await expect(page.getByText("Suspenso desde", { exact: false })).toBeVisible();
+  const visitante = await (await page.context().browser()!.newContext()).newPage();
+  await visitante.goto(`http://${slug}.${dominio}/entrar`);
+  await expect(visitante.getByRole("heading", { name: "Acesso suspenso" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Reativar tenant" }).click();
+  await expect(page.getByText("Ativo", { exact: true })).toBeVisible();
+  await visitante.reload();
+  await expect(visitante.getByRole("heading", { name: "Entrar em Escritório E2E Renomeado" })).toBeVisible();
 });
 
 test("rotas do console não respondem em endereço de tenant, e vice-versa", async ({ page }) => {
