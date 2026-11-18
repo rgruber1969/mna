@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import {
   confirmarAutenticador,
   entrar,
+  entrarSoComEmail,
   entrarComLinkMagico,
   entrarComPasskey,
   iniciarAutenticador,
@@ -46,6 +47,10 @@ function seguir(r: ResultadoLogin): Estado {
 
 export async function entrarAcao(_: Estado, f: FormData): Promise<Estado> {
   return seguir(await entrar({ email: texto(f, "email"), senha: texto(f, "senha") }, await cabecalhos()));
+}
+
+export async function entrarSoComEmailAcao(_: Estado, f: FormData): Promise<Estado> {
+  return seguir(await entrarSoComEmail(texto(f, "email"), await cabecalhos()));
 }
 
 export async function segundoFatorAcao(_: Estado, f: FormData): Promise<Estado> {

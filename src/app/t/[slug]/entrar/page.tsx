@@ -1,7 +1,8 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { tenantPorSlug, tenantSuspenso } from "@/server/services/acesso";
+import { headers } from "next/headers";
+import { entradaDeDesenvolvimentoDisponivel, tenantPorSlug, tenantSuspenso } from "@/server/services/acesso";
 import { TelaEntrar } from "@/components/acesso/telas";
 import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
 
@@ -21,7 +22,13 @@ async function Conteudo({ slug }: { slug: Promise<string> }) {
       </Moldura>
     );
   if (!t) notFound();
-  return <TelaEntrar titulo={t.nome} linhas />;
+  return (
+    <TelaEntrar
+      titulo={t.nome}
+      linhas
+      soComEmail={entradaDeDesenvolvimentoDisponivel(new Headers(await headers()))}
+    />
+  );
 }
 
 export default function Page({ params }: PageProps<"/t/[slug]/entrar">) {

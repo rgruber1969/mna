@@ -7,6 +7,7 @@ import {
   convidarAdministradorAcao,
   criarTenantAcao,
   entrarAcao,
+  entrarSoComEmailAcao,
   iniciarAutenticadorAcao,
   sairAcao,
   segundoFatorAcao,
@@ -45,6 +46,21 @@ export function FormEntrar() {
       <Campo rotulo="E-mail" name="email" type="email" autoComplete="username" required />
       <Campo rotulo="Senha" name="senha" type="password" autoComplete="current-password" required />
       <Botao disabled={enviando}>{enviando ? "Entrando..." : "Entrar"}</Botao>
+    </form>
+  );
+}
+
+/** Só no ambiente local, com a entrada de desenvolvimento ligada. */
+export function FormEntrarSoComEmail() {
+  const [estado, acao, enviando] = useAcao(entrarSoComEmailAcao);
+  return (
+    <form action={acao} className="border-warning bg-warning-surface mt-6 rounded-md border p-4">
+      <p className="text-warning mb-3 text-xs font-semibold tracking-wide uppercase">
+        Modo desenvolvimento: entrar só com e-mail
+      </p>
+      {estado?.erro && <Aviso>{estado.erro}</Aviso>}
+      <Campo rotulo="E-mail (desenvolvimento)" name="email" type="email" required />
+      <Botao disabled={enviando}>{enviando ? "Entrando..." : "Entrar sem senha"}</Botao>
     </form>
   );
 }

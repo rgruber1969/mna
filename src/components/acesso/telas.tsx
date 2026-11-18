@@ -12,7 +12,7 @@ import { Cabecalho } from "./cabecalho";
 import { AvisoDaEntrada } from "./aviso-da-entrada";
 import { FormAutenticador, FormSair } from "./formularios";
 import { BotaoEntrarComPasskey, FormCriarPasskey, FormPedirLink, FormUsarLink } from "./passkey-e-link";
-import { FormConvite, FormEntrar, FormSegundoFator } from "./formularios";
+import { FormConvite, FormEntrar, FormEntrarSoComEmail, FormSegundoFator } from "./formularios";
 
 /** Telas de acesso compartilhadas pelo console e pelos tenants. */
 
@@ -38,11 +38,14 @@ export function TelaEntrar({
   titulo,
   marca,
   linhas = false,
+  soComEmail = false,
 }: {
   titulo: string;
   marca?: ReactNode;
   /** Fundo escuro com linhas animadas (entrada do tenant). */
   linhas?: boolean;
+  /** Entrada de desenvolvimento (só e-mail) disponível neste endereço. */
+  soComEmail?: boolean;
 }) {
   return (
     <Moldura
@@ -70,6 +73,7 @@ export function TelaEntrar({
             <FormPedirLink />
           </div>
         </details>
+        {soComEmail && <FormEntrarSoComEmail />}
       </Cartao>
     </Moldura>
   );

@@ -11,6 +11,7 @@ import {
   vinculoTenant,
 } from "@/server/db/esquema";
 import { resolverArea } from "@/server/enderecos";
+import { entradaDeDesenvolvimentoLigada, hostLocal } from "@/server/auth/entrada-de-desenvolvimento";
 
 /**
  * Acesso e sessão (ADR-0011, ADR-0019; docs/projeto/autenticacao-e-sessao.md).
@@ -241,6 +242,26 @@ export async function entrar(
     });
     if ("twoFactorRedirect" in r && r.twoFactorRedirect) return { etapa: "dois-fatores" };
     if ("user" in r && r.user) await registrarEntrada(headers, r.user.id, "senha");
+    return { etapa: "concluido" };
+  } catch {
+    return { erro: ERRO_LOGIN };
+  }
+}
+
+/** Mostrar a entrada só com e-mail neste endereço? (travas em entrada-de-desenvolvimento.ts) */
+export function entradaDeDesenvolvimentoDisponivel(headers: Headers): boolean {
+  return entradaDeDesenvolvimentoLigada() && hostLocal(headers.get("host"));
+}
+
+/**
+ * Entrada de desenvolvimento: só e-mail (autenticacao-e-sessao.md). O
+ * endpoint recusa se as três travas não estiverem satisfeitas.
+ */
+export async function entrarSoComEmail(email: string, headers: Headers): Promise<ResultadoLogin> {
+  try {
+    const r = await auth.api.entrarSoComEmail({ body: { email }, headers });
+    if (!r.ok || !r.usuarioId) return { erro: ERRO_LOGIN };
+    await registrarEntrada(headers, r.usuarioId, "desenvolvimento-so-email");
     return { etapa: "concluido" };
   } catch {
     return { erro: ERRO_LOGIN };

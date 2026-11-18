@@ -21,6 +21,13 @@ import {
 } from "@/server/db/esquema";
 import { enviarEmail } from "@/server/email/enviar";
 import { dominio, hostsPermitidos, protocolo, resolverArea } from "@/server/enderecos";
+import {
+  CAMINHO_ENTRADA_DE_DESENVOLVIMENTO,
+  conferirEntradaDeDesenvolvimento,
+  entradaDeDesenvolvimento,
+} from "./entrada-de-desenvolvimento";
+
+conferirEntradaDeDesenvolvimento();
 
 /**
  * Autenticação (ADR-0005, ADR-0019): o Better Auth cuida só de identidade e
@@ -38,6 +45,7 @@ const CAMINHOS_COM_DOIS_FATORES = new Set([
   "/two-factor/verify-totp",
   "/two-factor/verify-backup-code",
   "/passkey/verify-authentication",
+  CAMINHO_ENTRADA_DE_DESENVOLVIMENTO, // só existe com as três travas (entrada-de-desenvolvimento.ts)
 ]);
 
 type ContextoHook = { headers?: Headers; request?: Request; path?: string } | null | undefined;
@@ -190,6 +198,7 @@ export const auth = betterAuth({
       },
     }),
     doisFatoresNoLinkMagico,
+    entradaDeDesenvolvimento,
     passkey({
       rpID,
       rpName: produto.nome,
