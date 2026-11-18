@@ -56,8 +56,17 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
 * **Granularidade:** cada item de menu × ações **ver, criar, editar, excluir
   e baixar** (quando aplicável).
 * **Duas camadas de perfil:** perfil no tenant (cadastros, configurações,
-  auditoria, lista de deals) e perfil no deal (etapas, documentos, tarefas,
-  contratos).
+  auditoria, lista de deals, valuations avulsos) e perfil no deal (etapas,
+  documentos, tarefas, contratos).
+  * **Todos os perfis são cadastrados no tenant**; o deal não cria perfis,
+    só define qual perfil cada pessoa recebe nele (participação).
+  * **Perfil no tenant:** atribuído uma vez, vale no tenant todo; um usuário
+    pode ter **vários, com permissões somadas**.
+  * **Perfis padrão:** todo tenant novo recebe uma cópia do conjunto padrão
+    (das duas camadas), que passa a ser dele e é editável. Lista e matrizes:
+    a aprovar.
+  * **Administrador do tenant** é uma marcação à parte, não um perfil.
+  * Perfil em uso não pode ser excluído.
 * **Escopo por deal:** o usuário só acessa deals em que foi incluído
   (participação). Um usuário pode ter perfis diferentes em deals
   diferentes.

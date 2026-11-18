@@ -146,3 +146,30 @@ Elementos:
   interseção); administradores do tenant continuam com acesso total,
   auditado; um novo item derivado (ex.: nova versão) herda a lista do
   anterior, ajustável. Conversas ligadas ao item seguem a mesma lista.
+* Adendo (2026-11-18): **detalhes para a implementação**, escolhidos pelo
+  responsável entre alternativas com prós e contras:
+  1. **Onde os perfis nascem:** todos os perfis (das duas camadas) são
+     cadastrados no tenant; não há perfis criados dentro de um processo. O
+     processo só define qual perfil cada pessoa recebe nele (participação).
+  2. **Perfis padrão:** a aplicação define no código um conjunto padrão das
+     duas camadas, **copiado para cada tenant novo**; depois da cópia, os
+     perfis são do tenant e editáveis. Alternativas descartadas: começar
+     sem perfis (primeiro uso trabalhoso) e modelos centralizados com
+     atualização para tenants existentes (mais trabalho; fica para depois).
+  3. **Construção em duas entregas:** primeiro o catálogo, os perfis do
+     tenant, os modos, a cópia de permissões e o verificador único, já
+     preparado para receber o processo; participação e alcance chegam com
+     a funcionalidade de processos, para não construir contra entidades
+     inexistentes.
+  4. **Administrador do tenant é uma marcação no vínculo, fora dos
+     perfis** (sempre ao menos um), para que editar perfis nunca tranque o
+     tenant. Alternativa descartada: perfil especial "Administrador".
+  5. **Vários perfis no tenant por usuário, com soma**, a mesma regra das
+     participações. Alternativa descartada: um perfil só.
+  6. **Permissão calculada a cada requisição**, reaproveitada só dentro da
+     própria requisição; sem cache entre requisições, para que uma
+     revogação valha na hora. Cache só diante de problema de desempenho
+     medido.
+  7. **Perfil em uso não pode ser excluído.** Ao trocar o modo de "por
+     usuário" para "por perfil", as matrizes individuais são guardadas e
+     voltam se o modo for trocado de novo.

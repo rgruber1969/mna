@@ -40,6 +40,9 @@ versão 1" é anotado aqui.
 - [ ] Editor completo de tema ("modo avançado" de white label)
 - [ ] Redefinição de 2FA aprovada pelos administradores dos outros tenants
       que exigem 2FA da pessoa, sem precisar da RGRUBER
+- [ ] Modelos de perfis mantidos pela RGRUBER no console, que os tenants
+      existentes podem importar ou atualizar (na V1, o conjunto padrão só é
+      copiado na criação do tenant)
 
 ## Integrações
 

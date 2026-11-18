@@ -335,6 +335,13 @@ Claude Code. Decisões em vigor: [README](README.md).
   (ex.: uma versão de documento) pode ter sua própria lista de quem o vê.
   Ela só restringe: funciona como uma porta trancada dentro de uma sala em
   que a pessoa já podia entrar.
+* **Onde os perfis nascem:** como num hospital, as funções (cirurgião,
+  anestesista) são definidas uma vez pelo hospital (o tenant); em cada
+  cirurgia (o deal) só se escolhe quem faz o quê. O crachá que dá acesso ao
+  prédio e ao refeitório é o perfil do tenant.
+* **Cache:** memória temporária de um resultado para não recalculá-lo.
+  Rápido, mas, se não for apagado quando algo muda, pode manter um acesso
+  já revogado; por isso as permissões são calculadas a cada requisição.
 
 ## E-mail (ADR-0014)
 
