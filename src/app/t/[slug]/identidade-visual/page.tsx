@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { obterAcesso } from "@/server/services/acesso";
 import { obterIdentidade } from "@/server/services/identidade-visual";
 import { enderecoDaImagem } from "@/config/marca";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormIdentidade, FormImagemDaMarca } from "@/components/identidade/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -22,14 +22,7 @@ async function Painel() {
   const url = (chave: string | null) => enderecoDaImagem(acesso.tenant.id, chave);
 
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-lg">
           <Titulo sobre="Administração">Identidade visual</Titulo>
@@ -68,7 +61,7 @@ async function Painel() {
           />
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

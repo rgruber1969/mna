@@ -7,7 +7,7 @@ import { obterAcesso } from "@/server/services/acesso";
 import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
-import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
@@ -26,8 +26,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
   ]);
 
   return (
-    <>
-      <CabecalhoDoTenant acesso={acesso} />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 justify-center px-4 py-10">
         <Cartao largura="max-w-3xl">
           <div className="flex items-start justify-between gap-4">
@@ -82,7 +81,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
           )}
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

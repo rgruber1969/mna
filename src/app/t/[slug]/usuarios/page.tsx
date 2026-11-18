@@ -7,7 +7,7 @@ import { cancelarConviteAcao, exigirDeTodosAcao, reenviarConviteAcao } from "@/a
 import { obterAcesso } from "@/server/services/acesso";
 import { listarUsuarios } from "@/server/services/usuarios";
 import { listarPerfis } from "@/server/services/perfis";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao, FormConvidarUsuario } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -24,14 +24,7 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
   const perfisDoTenant = (await listarPerfis(acesso)).perfis.filter((p) => p.camada === "tenant");
 
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <Cartao largura="max-w-2xl">
@@ -125,7 +118,7 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
           </Cartao>
         </div>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

@@ -8,7 +8,7 @@ import { obterAcesso, pendenciaDeDoisFatores, type Acesso } from "@/server/servi
 import { obterConvite } from "@/server/services/convites";
 import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
 import { FundoDeLinhas } from "@/components/ui/fundo-de-linhas";
-import { Cabecalho } from "./cabecalho";
+import { Cabecalho, EstruturaDoTenant } from "./cabecalho";
 import { FormFoto } from "@/components/conta/formulario-foto";
 import { AvisoDaEntrada } from "./aviso-da-entrada";
 import { FormAutenticador, FormSair } from "./formularios";
@@ -213,40 +213,38 @@ async function ConteudoSeguranca() {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
   if (!acesso) redirect("/entrar");
-  const area = acesso.area === "console" ? `${produto.nome} · Console` : acesso.tenant.nomeExibido;
+  const conteudo = (
+    <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
+      <Cartao>
+        <Titulo sobre="Minha conta">Foto</Titulo>
+        <FormFoto nome={acesso.usuario.nome} foto={acesso.usuario.foto} />
+      </Cartao>
+      <Cartao>
+        <Titulo sobre="Segurança">Passkey</Titulo>
+        {acesso.usuario.temPasskey && (
+          <p className="text-success mb-4 text-sm">
+            Você já tem passkey cadastrada. Recomendamos cadastrar uma segunda, em outro aparelho (por
+            exemplo, celular e notebook): se perder um, entra com o outro sem precisar do administrador.
+          </p>
+        )}
+        <FormCriarPasskey />
+      </Cartao>
+      <Cartao>
+        <Titulo sobre="Segurança">Aplicativo autenticador</Titulo>
+        {acesso.usuario.temAutenticador ? (
+          <p className="text-success text-sm">Aplicativo autenticador ativo.</p>
+        ) : (
+          <FormAutenticador />
+        )}
+      </Cartao>
+    </main>
+  );
+  // No tenant, o menu lateral; no console, a barra superior.
+  if (acesso.area === "tenant") return <EstruturaDoTenant acesso={acesso}>{conteudo}</EstruturaDoTenant>;
   return (
     <>
-      <Cabecalho
-        area={area}
-        usuario={acesso.usuario}
-        administrador={acesso.area === "tenant" && acesso.administrador}
-        console={acesso.area === "console"}
-        tenant={acesso.area === "tenant" ? acesso : undefined}
-      />
-      <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
-        <Cartao>
-          <Titulo sobre="Minha conta">Foto</Titulo>
-          <FormFoto nome={acesso.usuario.nome} foto={acesso.usuario.foto} />
-        </Cartao>
-        <Cartao>
-          <Titulo sobre="Segurança">Passkey</Titulo>
-          {acesso.usuario.temPasskey && (
-            <p className="text-success mb-4 text-sm">
-              Você já tem passkey cadastrada. Recomendamos cadastrar uma segunda, em outro aparelho (por
-              exemplo, celular e notebook): se perder um, entra com o outro sem precisar do administrador.
-            </p>
-          )}
-          <FormCriarPasskey />
-        </Cartao>
-        <Cartao>
-          <Titulo sobre="Segurança">Aplicativo autenticador</Titulo>
-          {acesso.usuario.temAutenticador ? (
-            <p className="text-success text-sm">Aplicativo autenticador ativo.</p>
-          ) : (
-            <FormAutenticador />
-          )}
-        </Cartao>
-      </main>
+      <Cabecalho area={`${produto.nome} · Console`} usuario={acesso.usuario} console />
+      {conteudo}
     </>
   );
 }

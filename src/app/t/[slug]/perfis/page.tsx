@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { definirModoAcao } from "@/app/acoes/perfis";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarPerfis, type PerfilResumo } from "@/server/services/perfis";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoPerfil } from "@/components/perfis/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
@@ -46,14 +46,7 @@ async function Painel() {
   );
 
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <Cartao largura="max-w-2xl">
@@ -105,7 +98,7 @@ async function Painel() {
           </Cartao>
         </div>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

@@ -127,6 +127,13 @@
       "when": 1795035285873,
       "tag": "0017_perfis_representante_e_advisor_compradora",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1795035709877,
+      "tag": "0018_preferencia_menu",
+      "breakpoints": true
     }
   ]
 }

@@ -16,7 +16,7 @@ import { obterUsuario } from "@/server/services/usuarios";
 import { permissoesDoUsuario } from "@/server/services/perfis";
 import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
 import { FormPerfisDoUsuario, GradeDaMatriz } from "@/components/perfis/formularios";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -44,14 +44,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
   const situacao = motivos.length > 0 ? `exigida ${motivos.join(", ")}` : "não exigida";
 
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-xl">
           <Link href="/usuarios" className="text-primary text-sm">
@@ -186,7 +179,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
           <GradeDaMatriz recursos={recursosDaCamada("tenant")} matriz={permissoes.efetiva} />
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { obterAcesso } from "@/server/services/acesso";
 import { pode } from "@/server/services/permissoes/verificador";
-import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormPessoa } from "@/components/cadastros/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -18,8 +18,7 @@ async function Painel() {
   if (portao) return portao;
   if (!(await pode(acesso, "empresas", "criar"))) notFound();
   return (
-    <>
-      <CabecalhoDoTenant acesso={acesso} />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 justify-center px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Link href="/pessoas" className="text-primary text-sm">
@@ -32,7 +31,7 @@ async function Painel() {
           <FormPessoa inicial={{ pais: "Brasil" }} mascarados={{}} podeSalvar />
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

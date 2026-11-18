@@ -607,3 +607,19 @@ export const vinculoPessoaEmpresa = pgTable(
   },
   (t) => [index("vinculo_pessoa_empresa_empresa_idx").on(t.tenantId, t.empresaId), isolamento()],
 ).enableRLS();
+
+/** Preferências do menu lateral de cada usuário no tenant: favoritos e recolhido. */
+export const preferenciaMenu = pgTable(
+  "preferencia_menu",
+  {
+    tenantId: doTenant(),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    /** Identificadores dos itens favoritos, na ordem em que foram marcados. */
+    favoritos: jsonb("favoritos").$type<string[]>().notNull().default([]),
+    recolhido: boolean("recolhido").notNull().default(false),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [uniqueIndex("preferencia_menu_uq").on(t.tenantId, t.usuarioId), isolamento()],
+).enableRLS();

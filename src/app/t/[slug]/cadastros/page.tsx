@@ -6,7 +6,7 @@ import { excluirPapelAcao, excluirTipoDeVinculoAcao } from "@/app/acoes/cadastro
 import { obterAcesso } from "@/server/services/acesso";
 import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/services/cadastros";
 import { pode } from "@/server/services/permissoes/verificador";
-import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormPapel, FormTipoDeVinculo } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
@@ -30,11 +30,10 @@ async function Painel() {
   ]);
 
   return (
-    <>
-      <CabecalhoDoTenant acesso={acesso} />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
-          <Titulo sobre="Cadastros gerais">Papéis de empresa</Titulo>
+          <Titulo sobre="Cadastros auxiliares">Papéis de empresa</Titulo>
           <p className="text-muted mb-3 text-sm">
             O papel que uma empresa assume em cada deal. O perfil sugerido é proposto às pessoas da empresa
             quando ela entra no deal; o administrador confirma.
@@ -71,7 +70,7 @@ async function Painel() {
           )}
         </Cartao>
         <Cartao largura="max-w-lg">
-          <Titulo sobre="Cadastros gerais">Tipos de vínculo</Titulo>
+          <Titulo sobre="Cadastros auxiliares">Tipos de vínculo</Titulo>
           <p className="text-muted mb-3 text-sm">
             Como uma pessoa se liga a uma empresa. &quot;Com percentual&quot; pede a participação (ex.:
             sócio).
@@ -104,7 +103,7 @@ async function Painel() {
           )}
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

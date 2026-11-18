@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarGrupos } from "@/server/services/empresas";
 import { pode } from "@/server/services/permissoes/verificador";
-import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormEmpresa } from "@/components/cadastros/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -20,8 +20,7 @@ async function Painel() {
   if (!(await pode(acesso, "empresas", "criar"))) notFound();
   const grupos = await listarGrupos(acesso);
   return (
-    <>
-      <CabecalhoDoTenant acesso={acesso} />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 justify-center px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Link href="/empresas" className="text-primary text-sm">
@@ -31,7 +30,7 @@ async function Painel() {
           <FormEmpresa inicial={{ pais: "Brasil" }} grupos={grupos} podeSalvar />
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

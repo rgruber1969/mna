@@ -1,94 +1,70 @@
 import Link from "next/link";
-import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
+import type { ReactNode } from "react";
+import { Avatar } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
+import { CascaDoTenant } from "./casca-do-tenant";
 import type { AcessoTenant } from "@/server/services/acesso";
-import { pode } from "@/server/services/permissoes/verificador";
+import { menuDoUsuario } from "@/server/services/menu";
 
-/** Itens de menu do tenant que a pessoa pode ver (a decisão continua no servidor). */
-async function menuDoTenant(a: AcessoTenant): Promise<{ href: string; rotulo: string }[]> {
-  const itens = [
-    { href: "/empresas", rotulo: "Empresas", recurso: "empresas" as const },
-    { href: "/pessoas", rotulo: "Pessoas", recurso: "empresas" as const },
-    { href: "/cadastros", rotulo: "Cadastros", recurso: "cadastros" as const },
-  ];
-  const visiveis = await Promise.all(itens.map((i) => pode(a, i.recurso, "ver")));
-  return itens.filter((_, i) => visiveis[i]);
+/** Usuário (com foto), "Minha conta" e sair: comum ao console e ao tenant. */
+function Usuario({ usuario }: { usuario: { nome: string; foto?: string | null } }) {
+  return (
+    <div className="flex items-center gap-4 text-sm">
+      <Link href="/seguranca" className="text-muted flex items-center gap-2" title="Minha conta">
+        <Avatar nome={usuario.nome} foto={usuario.foto} />
+        <span className="hidden sm:inline">{usuario.nome}</span>
+      </Link>
+      <Link href="/seguranca" className="text-primary font-medium">
+        Minha conta
+      </Link>
+      <FormSair />
+    </div>
+  );
 }
 
-/** Barra superior das áreas logadas: área, menu, usuário (com foto) e botão de sair. */
-export async function Cabecalho({
+/** Barra superior do console da plataforma (poucos itens: sem menu lateral). */
+export function Cabecalho({
   area,
-  logo,
   usuario,
-  administrador = false,
   console: noConsole = false,
-  tenant,
 }: {
   area: string;
-  /** Logo do tenant (white label): aparece no lugar do nome. */
-  logo?: string | null;
   usuario: { nome: string; foto?: string | null };
-  /** Administrador do tenant: mostra os links de administração. */
-  administrador?: boolean;
   /** Console da plataforma: mostra o link para a equipe da RGRUBER. */
   console?: boolean;
-  /** Acesso no tenant: mostra os itens de menu permitidos. */
-  tenant?: AcessoTenant;
 }) {
-  const menu = tenant ? await menuDoTenant(tenant) : [];
   return (
     <header className="border-border bg-background flex items-center justify-between border-b px-6 py-3">
-      <Link href="/" className="text-primary font-semibold" title={area}>
-        {logo ? <LogoDoTenant src={logo} nome={area} /> : area}
+      <Link href="/" className="text-primary font-semibold">
+        {area}
       </Link>
-      <nav aria-label="Menu" className="flex items-center gap-4 text-sm">
-        {menu.map((m) => (
-          <Link key={m.href} href={m.href} className="text-primary font-medium">
-            {m.rotulo}
-          </Link>
-        ))}
-      </nav>
       <div className="flex items-center gap-4 text-sm">
-        <Link href="/seguranca" className="text-muted flex items-center gap-2" title="Minha conta">
-          <Avatar nome={usuario.nome} foto={usuario.foto} />
-          <span>{usuario.nome}</span>
-        </Link>
         {noConsole && (
           <Link href="/equipe" className="text-primary font-medium">
             Equipe
           </Link>
         )}
-        {administrador && (
-          <>
-            <Link href="/usuarios" className="text-primary font-medium">
-              Usuários
-            </Link>
-            <Link href="/perfis" className="text-primary font-medium">
-              Perfis
-            </Link>
-            <Link href="/identidade-visual" className="text-primary font-medium">
-              Identidade visual
-            </Link>
-          </>
-        )}
-        <Link href="/seguranca" className="text-primary font-medium">
-          Minha conta
-        </Link>
-        <FormSair />
+        <Usuario usuario={usuario} />
       </div>
     </header>
   );
 }
 
-/** Cabeçalho padrão das telas do tenant (marca, menu permitido e links de administração). */
-export function CabecalhoDoTenant({ acesso }: { acesso: AcessoTenant }) {
+/**
+ * Estrutura das telas do tenant: menu lateral com os itens que a pessoa pode
+ * ver (grupos, busca, favoritos, recolher) e a barra superior com o usuário.
+ */
+export async function EstruturaDoTenant({ acesso, children }: { acesso: AcessoTenant; children: ReactNode }) {
+  const menu = await menuDoUsuario(acesso);
   return (
-    <Cabecalho
-      area={acesso.tenant.nomeExibido}
-      logo={acesso.tenant.logo}
-      usuario={acesso.usuario}
-      tenant={acesso}
-      administrador={acesso.administrador}
-    />
+    <CascaDoTenant
+      grupos={menu.grupos}
+      favoritosIniciais={menu.favoritos}
+      recolhidoInicial={menu.recolhido}
+      marca={{ nome: acesso.tenant.nomeExibido, logo: acesso.tenant.logo }}
+      barra={<Usuario usuario={acesso.usuario} />}
+    >
+      {children}
+    </CascaDoTenant>
   );
 }

@@ -199,7 +199,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   };
   await enviarImagem("Logo para fundo claro");
   await enviarImagem("Ícone da aba");
-  await expect(admin.getByRole("banner").getByRole("img", { name: "Bastos E2E" })).toBeVisible();
+  await expect(admin.getByRole("complementary").getByRole("img", { name: "Bastos E2E" })).toBeVisible();
   await expect(admin.locator('link[rel=icon][href*="/api/marca/"]')).toHaveCount(1);
   const visitante = await (await browser.newContext()).newPage();
   await visitante.goto(`${base}/entrar`);
@@ -235,6 +235,23 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(admin.getByText("Sócio · 50%")).toBeVisible();
   await admin.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Cadastros" }).click();
   await expect(admin.getByRole("heading", { name: "Papéis de empresa" })).toBeVisible();
+
+  // Menu lateral: busca nas opções, favoritos e recolher guardados no servidor.
+  const menu = admin.getByRole("navigation", { name: "Menu" });
+  await admin.getByRole("searchbox", { name: "Procurar no menu" }).fill("pess");
+  await expect(menu.getByRole("link", { name: "Pessoas" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Empresas" })).toHaveCount(0);
+  await admin.getByRole("searchbox", { name: "Procurar no menu" }).fill("");
+  await menu.getByRole("link", { name: "Empresas" }).hover();
+  await admin.getByRole("button", { name: "Favoritar Empresas" }).click();
+  await expect(admin.getByRole("button", { name: "Tirar Empresas dos favoritos" })).toBeVisible();
+  await admin.getByRole("button", { name: "Recolher menu" }).click();
+  await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
+  await admin.reload();
+  await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
+  await admin.getByRole("button", { name: "Expandir menu" }).click();
+  await expect(menu.getByText("Favoritos")).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Empresas" })).toHaveCount(2);
   await admin.goto(base);
 
   // Convite já usado não vale de novo.

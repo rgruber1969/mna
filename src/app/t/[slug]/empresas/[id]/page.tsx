@@ -11,7 +11,7 @@ import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCep, formatarCnpj } from "@/config/documentos";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
-import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormEmpresa, FormNovoVinculo, SociosDaReceita } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
@@ -43,8 +43,7 @@ async function Painel({ id }: { id: Promise<string> }) {
   inicial.grupoId = e.grupoId ?? "";
 
   return (
-    <>
-      <CabecalhoDoTenant acesso={acesso} />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Link href="/empresas" className="text-primary text-sm">
@@ -140,7 +139,7 @@ async function Painel({ id }: { id: Promise<string> }) {
           )}
         </div>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

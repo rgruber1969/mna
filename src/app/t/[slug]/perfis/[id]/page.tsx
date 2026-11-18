@@ -7,7 +7,7 @@ import { excluirPerfilAcao, exigirDoPerfilAcao } from "@/app/acoes/perfis";
 import { obterAcesso } from "@/server/services/acesso";
 import { obterPerfil } from "@/server/services/perfis";
 import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormMatrizDoPerfil, FormEditarPerfil } from "@/components/perfis/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
@@ -25,14 +25,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
   if (!p) notFound();
 
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Link href="/perfis" className="text-primary text-sm">
@@ -97,7 +90,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
           </Cartao>
         </div>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

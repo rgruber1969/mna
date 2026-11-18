@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { obterAcesso } from "@/server/services/acesso";
 import { obterMatrizIndividual } from "@/server/services/perfis";
 import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormCopiarMatriz, FormMatrizIndividual } from "@/components/perfis/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -24,14 +24,7 @@ async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }>
   if (!m) notFound();
 
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Link href={`/usuarios/${m.usuario.id}`} className="text-primary text-sm">
@@ -60,7 +53,7 @@ async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }>
           <FormCopiarMatriz usuarioId={m.usuario.id} perfilId={m.perfil.id} outros={m.outros} />
         </Cartao>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

@@ -11,7 +11,7 @@ import { obterPessoa } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCep } from "@/config/documentos";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
-import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoVinculo, FormPessoa, MostrarDadosSensiveis } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
@@ -41,8 +41,7 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
   const temSensiveis = Object.values(p.mascarados).some(Boolean);
 
   return (
-    <>
-      <CabecalhoDoTenant acesso={acesso} />
+    <EstruturaDoTenant acesso={acesso}>
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Link href="/pessoas" className="text-primary text-sm">
@@ -148,7 +147,7 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
           </Cartao>
         </div>
       </main>
-    </>
+    </EstruturaDoTenant>
   );
 }
 

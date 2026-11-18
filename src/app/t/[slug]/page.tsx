@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { obterAcesso } from "@/server/services/acesso";
-import { Cabecalho } from "@/components/acesso/cabecalho";
+import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
 
@@ -15,14 +15,7 @@ async function Inicio() {
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   return (
-    <>
-      <Cabecalho
-        area={acesso.tenant.nomeExibido}
-        logo={acesso.tenant.logo}
-        usuario={acesso.usuario}
-        tenant={acesso}
-        administrador={acesso.administrador}
-      />
+    <EstruturaDoTenant acesso={acesso}>
       <Moldura>
         <Cartao largura="max-w-xl">
           <Titulo sobre={acesso.administrador ? "Administrador" : "Usuário"}>
@@ -33,7 +26,7 @@ async function Inicio() {
           </p>
         </Cartao>
       </Moldura>
-    </>
+    </EstruturaDoTenant>
   );
 }
 
