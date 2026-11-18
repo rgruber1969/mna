@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { Avatar } from "@/components/ui/basicos";
+import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
 
 /** Barra superior das áreas logadas: área, usuário (com foto) e botão de sair. */
 export function Cabecalho({
   area,
+  logo,
   usuario,
   administrador = false,
   console: noConsole = false,
 }: {
   area: string;
+  /** Logo do tenant (white label): aparece no lugar do nome. */
+  logo?: string | null;
   usuario: { nome: string; foto?: string | null };
   /** Administrador do tenant: mostra os links de administração. */
   administrador?: boolean;
@@ -18,8 +21,8 @@ export function Cabecalho({
 }) {
   return (
     <header className="border-border bg-background flex items-center justify-between border-b px-6 py-3">
-      <Link href="/" className="text-primary font-semibold">
-        {area}
+      <Link href="/" className="text-primary font-semibold" title={area}>
+        {logo ? <LogoDoTenant src={logo} nome={area} /> : area}
       </Link>
       <div className="flex items-center gap-4 text-sm">
         <Link href="/seguranca" className="text-muted flex items-center gap-2" title="Minha conta">
@@ -38,6 +41,9 @@ export function Cabecalho({
             </Link>
             <Link href="/perfis" className="text-primary font-medium">
               Perfis
+            </Link>
+            <Link href="/identidade-visual" className="text-primary font-medium">
+              Identidade visual
             </Link>
           </>
         )}

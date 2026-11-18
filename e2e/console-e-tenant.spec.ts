@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
 import pg from "pg";
-import { linkDoEmail as buscarLink, totp } from "../src/testes/apoio";
+import { apagarArquivosDeTeste, linkDoEmail as buscarLink, totp, ultimoEmail } from "../src/testes/apoio";
 
 /**
  * Fluxo completo de acesso (ADR-0011, ADR-0019; autenticacao-e-sessao.md):
@@ -25,6 +25,15 @@ test.describe.configure({ mode: "serial" });
 
 test.afterAll(async () => {
   const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO });
+  // Arquivos do teste (logos do tenant e fotos das contas) também saem do armazenamento.
+  const t = await dono.query(`select id from tenant where slug = $1`, [slug]);
+  const u = await dono.query(`select id from usuario where email = any($1)`, [
+    [emailConsole, emailTenant, emailUsuaria],
+  ]);
+  await apagarArquivosDeTeste([
+    ...t.rows.map((r) => `tenant/${r.id}/`),
+    ...u.rows.map((r) => `conta/${r.id}/`),
+  ]);
   await dono.query(`delete from tenant where slug = $1`, [slug]);
   await dono.query(`delete from usuario where email = any($1)`, [[emailConsole, emailTenant, emailUsuaria]]);
   await dono.query(`delete from convite_plataforma where email = $1`, [emailConsole]);
@@ -165,6 +174,37 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Salvar foto" }).click();
   await expect(admin.getByText("Foto atualizada.")).toBeVisible();
   await expect(admin.getByRole("img", { name: "Foto de Admin do Tenant" }).first()).toBeVisible();
+
+  // Identidade visual (white label, ADR-0010): nome, cores com contraste, fonte, logo e ícone.
+  await admin.getByRole("link", { name: "Identidade visual" }).click();
+  await admin.getByLabel("Nome de exibição").fill("Bastos E2E");
+  await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#ffd60a");
+  await expect(admin.getByText("A cor primária é usada em textos", { exact: false })).toBeVisible();
+  await expect(admin.getByRole("button", { name: "Salvar identidade visual" })).toBeDisabled();
+  await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#7a1238");
+  await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#c2410c");
+  await admin.getByLabel("Fonte").selectOption("inter");
+  await admin.getByRole("button", { name: "Salvar identidade visual" }).click();
+  await expect(admin.getByText("Identidade visual salva.")).toBeVisible();
+  await admin.reload();
+  const variavel = (nome: string) =>
+    admin.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), nome);
+  await expect.poll(() => variavel("--primary")).toBe("#7a1238");
+  expect(await admin.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain("Inter");
+  const enviarImagem = async (rotulo: string) => {
+    const campo = admin.getByLabel(`Arquivo: ${rotulo}`);
+    await campo.setInputFiles({ name: "logo.png", mimeType: "image/png", buffer: png });
+    await admin.locator("form", { has: campo }).getByRole("button", { name: "Enviar" }).click();
+    await expect(admin.getByText("Imagem atualizada.")).toBeVisible();
+  };
+  await enviarImagem("Logo para fundo claro");
+  await enviarImagem("Ícone da aba");
+  await expect(admin.getByRole("banner").getByRole("img", { name: "Bastos E2E" })).toBeVisible();
+  await expect(admin.locator('link[rel=icon][href*="/api/marca/"]')).toHaveCount(1);
+  const visitante = await (await browser.newContext()).newPage();
+  await visitante.goto(`${base}/entrar`);
+  await expect(visitante.getByRole("img", { name: "Bastos E2E" })).toBeVisible();
+  await expect(visitante.getByRole("heading", { level: 2, name: "Bastos E2E" })).toBeVisible();
   await admin.goto(base);
 
   // Convite já usado não vale de novo.
@@ -191,6 +231,11 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Enviar convite" }).click();
   await expect(admin.getByText("Convite enviado")).toBeVisible();
   await expect(admin.getByText(emailUsuaria)).toBeVisible();
+  // O convite sai com a marca do tenant: nome de exibição e logo embutido.
+  const convite = await ultimoEmail(emailUsuaria);
+  expect(convite?.Subject).toBe("Convite para acessar Bastos E2E");
+  expect(convite?.Inline).toHaveLength(1);
+  expect(convite?.HTML).toContain("cid:");
 
   // 3. A usuária aceita; sem exigência de 2FA, entra direto. Depois usa o link mágico.
   const usuaria = await (await browser.newContext()).newPage();
@@ -298,7 +343,9 @@ test("console: equipe, renomear, suspender e reativar tenant", async ({ page }) 
   await page.getByRole("button", { name: "Reativar tenant" }).click();
   await expect(page.getByText("Ativo", { exact: true })).toBeVisible();
   await visitante.reload();
-  await expect(visitante.getByRole("heading", { name: "Escritório E2E Renomeado" })).toBeVisible();
+  // O nome de exibição definido pelo administrador do tenant prevalece sobre o nome do cadastro.
+  await expect(visitante.getByRole("heading", { level: 2, name: "Bastos E2E" })).toBeVisible();
+  await expect(visitante.getByRole("img", { name: "Bastos E2E" })).toBeVisible();
 });
 
 test("rotas do console não respondem em endereço de tenant, e vice-versa", async ({ page }) => {

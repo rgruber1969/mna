@@ -3,6 +3,8 @@ import { banco, comTenant } from "@/server/db/cliente";
 import { chaveDeAcesso, doisFatores, sessao, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
 import { exigidosPorPerfil } from "./exigencia-2fa";
 import { enviarEmail } from "@/server/email/enviar";
+import { montarEmail } from "@/server/email/modelo";
+import { marcaParaEmail } from "./marca";
 import { produto } from "@/config/produto";
 
 /**
@@ -96,23 +98,28 @@ export async function outroTenantExigeDoisFatores(
 }
 
 /** Avisa a pessoa por e-mail sobre mudança nos fatores da conta (sem detalhes sensíveis). */
-export async function avisarMudancaNosFatores(usuarioId: string, oQue: string, onde: string): Promise<void> {
+export async function avisarMudancaNosFatores(
+  usuarioId: string,
+  oQue: string,
+  onde: string,
+  tenantId?: string,
+): Promise<void> {
   const [u] = await banco()
     .select({ nome: usuario.name, email: usuario.email })
     .from(usuario)
     .where(eq(usuario.id, usuarioId));
   if (!u) return;
-  await enviarEmail({
-    para: u.email,
-    assunto: `Mudança na segurança da sua conta no ${produto.nome}`,
-    texto: [
-      `Olá, ${u.nome}.`,
-      "",
-      `${oQue} (${onde}).`,
-      "Suas sessões abertas foram encerradas. No próximo acesso, se a verificação em duas etapas for",
-      "exigida, você vai configurá-la de novo.",
-      "",
-      "Se você não pediu esta mudança, avise o administrador imediatamente.",
-    ].join("\n"),
-  });
+  await enviarEmail(
+    montarEmail({
+      para: u.email,
+      assunto: `Mudança na segurança da sua conta no ${produto.nome}`,
+      saudacao: `Olá, ${u.nome}.`,
+      paragrafos: [
+        `${oQue} (${onde}).`,
+        "Suas sessões abertas foram encerradas. No próximo acesso, se a verificação em duas etapas for exigida, você vai configurá-la de novo.",
+      ],
+      rodape: "Se você não pediu esta mudança, avise o administrador imediatamente.",
+      marca: tenantId ? await marcaParaEmail(tenantId) : null,
+    }),
+  );
 }

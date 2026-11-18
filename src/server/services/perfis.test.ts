@@ -58,6 +58,8 @@ function acesso(
       ...tenants[opcoes.t ?? "A"],
       exigeDoisFatoresDeTodos: false,
       modoPermissoes: opcoes.modo ?? "perfil",
+      nomeExibido: "X",
+      logo: null,
     },
     usuario: {
       id: usuarioId,

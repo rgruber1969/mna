@@ -24,6 +24,8 @@
   /* Fundo de telas de destaque (login), azul noite da marca; texto por cima. */
   --backdrop: #021b3a;
   --backdrop-foreground: #ffffff;
+  /* Fonte: a padrão (Manrope) ou a escolhida pelo tenant (white label). */
+  --fonte-marca: var(--font-manrope);
 }
 
 @theme inline {
@@ -42,7 +44,8 @@
   --color-warning-surface: var(--warning-surface);
   --color-backdrop: var(--backdrop);
   --color-backdrop-foreground: var(--backdrop-foreground);
-  --font-sans: var(--font-manrope);
+  /* Fonte do tenant (white label) ou a padrão. */
+  --font-sans: var(--fonte-marca);
 }
 
 body {

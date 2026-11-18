@@ -43,6 +43,15 @@ export const tenant = pgTable("tenant", {
   suspensoEm: timestamp("suspenso_em", { withTimezone: true }),
   /** Modo de permissões do tenant (ADR-0013, elemento 5). */
   modoPermissoes: text("modo_permissoes").$type<"perfil" | "usuario">().notNull().default("perfil"),
+  // Identidade visual (white label, ADR-0010), editada pelo administrador do
+  // tenant. Vazio = padrão RGRUBER. Imagens: chaves no armazenamento (PNG).
+  nomeExibicao: text("nome_exibicao"),
+  corPrimaria: text("cor_primaria"),
+  corDestaque: text("cor_destaque"),
+  fonte: text("fonte"),
+  logoClaro: text("logo_claro"),
+  logoEscuro: text("logo_escuro"),
+  icone: text("icone"),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 

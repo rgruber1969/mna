@@ -40,9 +40,12 @@ export function TelaEntrar({
   marca,
   linhas = false,
   soComEmail = false,
+  logoDoTenant,
 }: {
   titulo: string;
   marca?: ReactNode;
+  /** Logo do tenant (white label), acima do nome do produto. */
+  logoDoTenant?: ReactNode;
   /** Fundo escuro com linhas animadas (entrada do tenant). */
   linhas?: boolean;
   /** Entrada de desenvolvimento (só e-mail) disponível neste endereço. */
@@ -51,7 +54,7 @@ export function TelaEntrar({
   return (
     <Moldura
       destaque={Boolean(marca) || linhas}
-      logo={marca}
+      logo={marca ?? logoDoTenant}
       rodape={!marca}
       fundo={linhas ? <FundoDeLinhas /> : undefined}
     >
@@ -164,7 +167,7 @@ async function ConteudoConfigurar2fa() {
       <p className="text-muted mb-6 text-sm">
         {acesso.area === "console"
           ? "O console exige verificação em duas etapas."
-          : `${acesso.tenant.nome} exige verificação em duas etapas para o seu acesso.`}{" "}
+          : `${acesso.tenant.nomeExibido} exige verificação em duas etapas para o seu acesso.`}{" "}
         Escolha uma das opções para continuar.
       </p>
       <h2 className="text-text mb-2 text-sm font-semibold">Opção 1: passkey (recomendada)</h2>
@@ -210,7 +213,7 @@ async function ConteudoSeguranca() {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
   if (!acesso) redirect("/entrar");
-  const area = acesso.area === "console" ? `${produto.nome} · Console` : acesso.tenant.nome;
+  const area = acesso.area === "console" ? `${produto.nome} · Console` : acesso.tenant.nomeExibido;
   return (
     <>
       <Cabecalho

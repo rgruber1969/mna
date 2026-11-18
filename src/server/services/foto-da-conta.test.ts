@@ -27,7 +27,15 @@ async function criarConta(nome: string, tenantId: string): Promise<string> {
 function acesso(usuarioId: string, tenantId: string): Acesso {
   return {
     area: "tenant",
-    tenant: { id: tenantId, slug: "x", nome: "X", exigeDoisFatoresDeTodos: false, modoPermissoes: "perfil" },
+    tenant: {
+      id: tenantId,
+      slug: "x",
+      nome: "X",
+      exigeDoisFatoresDeTodos: false,
+      modoPermissoes: "perfil",
+      nomeExibido: "X",
+      logo: null,
+    },
     usuario: {
       id: usuarioId,
       nome: "P",

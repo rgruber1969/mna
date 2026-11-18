@@ -13,6 +13,7 @@ import {
 import { resolverArea } from "@/server/enderecos";
 import { exigidosPorPerfil } from "./exigencia-2fa";
 import { enderecoDaFoto } from "./foto-da-conta";
+import { enderecoDaImagem } from "@/config/marca";
 import { entradaDeDesenvolvimentoLigada, hostLocal } from "@/server/auth/entrada-de-desenvolvimento";
 
 /**
@@ -39,6 +40,9 @@ export type TenantDoAcesso = {
   nome: string;
   exigeDoisFatoresDeTodos: boolean;
   modoPermissoes: "perfil" | "usuario";
+  /** Nome mostrado nas telas (de exibição, ou o do cadastro) e logo (white label). */
+  nomeExibido: string;
+  logo: string | null;
 };
 
 export type Acesso =
@@ -86,10 +90,14 @@ export async function tenantPorSlug(slug: string): Promise<TenantDoAcesso | null
       nome: tenant.nome,
       exigeDoisFatoresDeTodos: tenant.exigeDoisFatoresDeTodos,
       modoPermissoes: tenant.modoPermissoes,
+      nomeExibicao: tenant.nomeExibicao,
+      logoClaro: tenant.logoClaro,
     })
     .from(tenant)
     .where(and(eq(tenant.slug, slug), isNull(tenant.suspensoEm)));
-  return t ?? null;
+  if (!t) return null;
+  const { nomeExibicao, logoClaro, ...resto } = t;
+  return { ...resto, nomeExibido: nomeExibicao || t.nome, logo: enderecoDaImagem(t.id, logoClaro) };
 }
 
 /** Para a tela de entrada: o endereço é de um tenant suspenso? */

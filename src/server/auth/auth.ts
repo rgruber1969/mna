@@ -20,6 +20,8 @@ import {
   vinculoTenant,
 } from "@/server/db/esquema";
 import { enviarEmail } from "@/server/email/enviar";
+import { montarEmail } from "@/server/email/modelo";
+import { marcaParaEmailPorSlug } from "@/server/services/marca";
 import { dominio, hostsPermitidos, protocolo, resolverArea } from "@/server/enderecos";
 import {
   CAMINHO_ENTRADA_DE_DESENVOLVIMENTO,
@@ -183,18 +185,19 @@ export const auth = betterAuth({
           .from(usuario)
           .where(eq(usuario.email, email));
         if (!u || !(await areaPermitida(host, u.id))) return;
-        await enviarEmail({
-          para: email,
-          assunto: `Seu link de acesso ao ${produto.nome}`,
-          texto: [
-            `Olá, ${u.nome}.`,
-            "",
-            "Use o link abaixo para entrar. Ele vale por 10 minutos e só uma vez:",
-            `${protocolo()}://${host}/link/${encodeURIComponent(token)}`,
-            "",
-            "Se não foi você que pediu, ignore este e-mail: sua conta continua protegida.",
-          ].join("\n"),
-        });
+        const area = resolverArea(host);
+        const marca = area.tipo === "tenant" ? await marcaParaEmailPorSlug(area.slug) : null;
+        await enviarEmail(
+          montarEmail({
+            para: email,
+            assunto: `Seu link de acesso ao ${produto.nome}`,
+            saudacao: `Olá, ${u.nome}.`,
+            paragrafos: ["Use o link abaixo para entrar. Ele vale por 10 minutos e só uma vez:"],
+            link: { texto: "Entrar", url: `${protocolo()}://${host}/link/${encodeURIComponent(token)}` },
+            rodape: "Se não foi você que pediu, ignore este e-mail: sua conta continua protegida.",
+            marca,
+          }),
+        );
       },
     }),
     doisFatoresNoLinkMagico,

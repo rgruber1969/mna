@@ -25,7 +25,12 @@ async function Painel() {
 
   return (
     <>
-      <Cabecalho area={acesso.tenant.nome} usuario={acesso.usuario} administrador />
+      <Cabecalho
+        area={acesso.tenant.nomeExibido}
+        logo={acesso.tenant.logo}
+        usuario={acesso.usuario}
+        administrador
+      />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <Cartao largura="max-w-2xl">

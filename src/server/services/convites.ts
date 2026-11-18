@@ -12,6 +12,8 @@ import {
   vinculoTenant,
 } from "@/server/db/esquema";
 import { enviarEmail } from "@/server/email/enviar";
+import { montarEmail, type MarcaDoEmail } from "@/server/email/modelo";
+import { marcaParaEmail } from "./marca";
 import { resolverArea, urlDaArea } from "@/server/enderecos";
 import { produto } from "@/config/produto";
 import { entrar, gerarToken, hashDoToken, tenantPorSlug, type ResultadoLogin } from "./acesso";
@@ -37,20 +39,27 @@ function validarPessoa(dados: DadosPessoa): z.output<typeof Pessoa> | { erro: st
   return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
 }
 
-async function enviarConvite(para: string, nome: string, link: string, onde: string): Promise<void> {
-  await enviarEmail({
-    para,
-    assunto: `Convite para acessar ${onde}`,
-    texto: [
-      `Olá, ${nome}.`,
-      "",
-      `Você foi convidado(a) para acessar ${onde} no ${produto.nome}.`,
-      `Para aceitar, abra o link abaixo em até 3 dias (uso único):`,
-      link,
-      "",
-      "Se você não esperava este convite, ignore este e-mail.",
-    ].join("\n"),
-  });
+async function enviarConvite(
+  para: string,
+  nome: string,
+  link: string,
+  onde: string,
+  marca?: MarcaDoEmail | null,
+): Promise<void> {
+  await enviarEmail(
+    montarEmail({
+      para,
+      assunto: `Convite para acessar ${onde}`,
+      saudacao: `Olá, ${nome}.`,
+      paragrafos: [
+        `Você foi convidado(a) para acessar ${onde} no ${produto.nome}.`,
+        "Para aceitar, abra o link abaixo em até 3 dias (uso único):",
+      ],
+      link: { texto: "Aceitar o convite", url: link },
+      rodape: "Se você não esperava este convite, ignore este e-mail.",
+      marca,
+    }),
+  );
 }
 
 // --- Emissão -----------------------------------------------------------------
@@ -117,11 +126,13 @@ export async function emitirConviteDoTenant(
       detalhes: { administrador: dados.administrador },
     });
   });
+  const marca = await marcaParaEmail(t.id);
   await enviarConvite(
     p.email,
     p.nome,
     urlDaArea({ tipo: "tenant", slug: t.slug }, `/convite/${token}`),
-    t.nome,
+    marca?.nome ?? t.nome,
+    marca,
   );
   return { ok: true };
 }

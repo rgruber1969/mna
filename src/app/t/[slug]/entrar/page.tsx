@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import { headers } from "next/headers";
 import { entradaDeDesenvolvimentoDisponivel, tenantPorSlug, tenantSuspenso } from "@/server/services/acesso";
 import { TelaEntrar } from "@/components/acesso/telas";
-import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
+import { Cartao, Carregando, LogoDoTenant, Moldura, Titulo } from "@/components/ui/basicos";
+import { marcaPorSlug } from "@/server/services/marca";
 
 async function Conteudo({ slug }: { slug: Promise<string> }) {
   await connection();
@@ -22,9 +23,19 @@ async function Conteudo({ slug }: { slug: Promise<string> }) {
       </Moldura>
     );
   if (!t) notFound();
+  const marca = await marcaPorSlug(s);
+  // Fundo escuro: logo para fundo escuro; sem ela, a de fundo claro sobre uma placa clara.
+  const logo = marca?.logoEscuro ? (
+    <LogoDoTenant src={marca.logoEscuro} nome={t.nomeExibido} className="h-16" />
+  ) : marca?.logoClaro ? (
+    <span className="bg-background inline-block rounded-lg px-5 py-3">
+      <LogoDoTenant src={marca.logoClaro} nome={t.nomeExibido} className="h-14" />
+    </span>
+  ) : undefined;
   return (
     <TelaEntrar
-      titulo={t.nome}
+      titulo={t.nomeExibido}
+      logoDoTenant={logo}
       linhas
       soComEmail={entradaDeDesenvolvimentoDisponivel(new Headers(await headers()))}
     />

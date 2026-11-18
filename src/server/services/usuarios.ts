@@ -346,7 +346,8 @@ export async function removerPasskeyDoUsuario(
   await avisarMudancaNosFatores(
     v.id,
     "Uma passkey foi removida da sua conta pelo administrador",
-    a.tenant.nome,
+    a.tenant.nomeExibido,
+    a.tenant.id,
   );
   return { ok: true };
 }
@@ -367,7 +368,8 @@ export async function removerAutenticadorDoUsuario(
   await avisarMudancaNosFatores(
     v.id,
     "O aplicativo autenticador foi removido da sua conta pelo administrador",
-    a.tenant.nome,
+    a.tenant.nomeExibido,
+    a.tenant.id,
   );
   return { ok: true };
 }
@@ -390,7 +392,8 @@ export async function redefinirDoisFatoresDoUsuario(
   await avisarMudancaNosFatores(
     v.id,
     "A verificação em duas etapas da sua conta foi redefinida pelo administrador",
-    a.tenant.nome,
+    a.tenant.nomeExibido,
+    a.tenant.id,
   );
   return { ok: true };
 }

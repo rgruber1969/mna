@@ -5,7 +5,14 @@ import nodemailer, { type Transporter } from "nodemailer";
  * máquina). Demonstração e produção trocam apenas o transporte.
  * Regra: nunca registrar em log o conteúdo nem o destinatário (ADR-0007).
  */
-export type Email = { para: string; assunto: string; texto: string; html?: string };
+export type Email = {
+  para: string;
+  assunto: string;
+  texto: string;
+  html?: string;
+  /** Imagens embutidas no HTML (ex.: logo do tenant), referidas por "cid:<cid>". */
+  anexos?: { nome: string; conteudo: Uint8Array; tipo: string; cid: string }[];
+};
 
 let transporte: Transporter | undefined;
 
@@ -25,5 +32,11 @@ export async function enviarEmail(email: Email): Promise<void> {
     subject: email.assunto,
     text: email.texto,
     html: email.html,
+    attachments: email.anexos?.map((a) => ({
+      filename: a.nome,
+      content: Buffer.from(a.conteudo),
+      contentType: a.tipo,
+      cid: a.cid,
+    })),
   });
 }

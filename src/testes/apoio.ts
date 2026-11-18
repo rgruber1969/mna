@@ -36,3 +36,36 @@ export async function linkDoEmail(para: string, padrao: RegExp, tentativas = 20)
   }
   return null;
 }
+
+/** Último e-mail para o destinatário no Mailpit (assunto, HTML e imagens embutidas). */
+export async function ultimoEmail(
+  para: string,
+  tentativas = 20,
+): Promise<{ Subject: string; HTML: string; Inline: { ContentID: string; ContentType: string }[] } | null> {
+  for (let i = 0; i < tentativas; i++) {
+    const busca = await fetch(
+      `http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:${para}`)}`,
+    );
+    const { messages } = (await busca.json()) as { messages: { ID: string }[] };
+    if (messages?.length)
+      return (await fetch(`http://localhost:8025/api/v1/message/${messages[0].ID}`)).json();
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return null;
+}
+
+/** Apaga do armazenamento local os arquivos sob os prefixos (limpeza dos testes). */
+export async function apagarArquivosDeTeste(prefixos: string[]): Promise<void> {
+  const { S3Client, ListObjectsV2Command, DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+  const s3 = new S3Client({
+    endpoint: process.env.S3_ENDPOINT,
+    region: process.env.S3_REGION ?? "us-east-1",
+    forcePathStyle: true,
+    credentials: { accessKeyId: process.env.S3_ACCESS_KEY!, secretAccessKey: process.env.S3_SECRET_KEY! },
+  });
+  const Bucket = process.env.S3_BUCKET!;
+  for (const Prefix of prefixos) {
+    const lista = await s3.send(new ListObjectsV2Command({ Bucket, Prefix }));
+    for (const o of lista.Contents ?? []) await s3.send(new DeleteObjectCommand({ Bucket, Key: o.Key! }));
+  }
+}

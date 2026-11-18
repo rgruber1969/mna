@@ -4,6 +4,7 @@ import { produto } from "@/config/produto";
 import { obterStatusDoSistema } from "@/server/services/sistema";
 import { obterAcesso } from "@/server/services/acesso";
 import { lerFotoDaConta } from "@/server/services/foto-da-conta";
+import { lerImagemDaMarca } from "@/server/services/marca";
 import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
@@ -51,6 +52,22 @@ api.get("/conta/foto/:usuarioId", async (c) => {
     "content-type": "image/webp",
     "cache-control": "private, max-age=86400",
     "x-content-type-options": "nosniff",
+  });
+});
+
+/**
+ * Imagens da marca do tenant (white label, ADR-0010). Públicas: aparecem na
+ * tela de entrada, antes do login. O nome do arquivo muda a cada envio, por
+ * isso o cache pode ser longo. Não aparece no Swagger.
+ */
+api.get("/marca/:tenantId/:arquivo", async (c) => {
+  const imagem = await lerImagemDaMarca(c.req.param("tenantId"), c.req.param("arquivo"));
+  if (!imagem) return c.body(null, 404);
+  return c.body(imagem as Uint8Array<ArrayBuffer>, 200, {
+    "content-type": "image/png",
+    "cache-control": "public, max-age=31536000, immutable",
+    "x-content-type-options": "nosniff",
+    "content-security-policy": "default-src 'none'",
   });
 });
 

@@ -217,3 +217,20 @@ export function OpcoesDePerfil({
     </fieldset>
   );
 }
+
+/**
+ * Logo do tenant (white label). Proporção livre, por isso <img> com altura
+ * fixa e largura automática; as imagens já vêm reduzidas pelo servidor.
+ */
+export function LogoDoTenant({
+  src,
+  nome,
+  className = "h-8",
+}: {
+  src: string;
+  nome: string;
+  className?: string;
+}) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={nome} className={`${className} w-auto max-w-full object-contain`} />;
+}

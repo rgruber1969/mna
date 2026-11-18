@@ -123,3 +123,28 @@ Regras:
 * Relacionado: ADR-0009 (multi-tenant), ADR-0006 (baseline de segurança),
   identidade padrão em `docs/marca/rgruber/README.md`.
 * Pendente: ADR de armazenamento de arquivos (logos e documentos).
+* Adendo (2026-11-18): **implementação na V1**, com escolhas do responsável
+  entre alternativas com prós e contras:
+  1. **Escopo:** item 6 completo numa etapa (nome de exibição, logos para
+     fundo claro e escuro, ícone da aba, cores com contraste e fonte).
+  2. **Formatos de imagem:** só PNG, JPG ou WebP, decodificados e
+     regravados pelo servidor em PNG (transparência mantida, sem metadados,
+     tamanho limitado). **SVG fica para depois** (backlog), por exigir
+     higienização. PNG porque a imagem também vai embutida nos e-mails.
+  3. **Tela de entrada do tenant:** logo do tenant no topo, nome do produto
+     grande e o nome de exibição menor embaixo. Sem logo para fundo escuro,
+     a de fundo claro aparece sobre uma placa clara.
+  4. **E-mails:** nome de exibição, cor primária no botão e **logo embutido
+     no próprio e-mail** (anexo "inline", sem link externo); sempre com
+     versão em texto puro.
+  * Detalhes: as imagens da marca são públicas (aparecem antes do login),
+    servidas só se forem as atuais de um tenant ativo; o nome de exibição
+    prevalece sobre o nome do cadastro (que só a RGRUBER altera); a cor
+    primária precisa de contraste 4,5:1 sobre o branco e a de destaque,
+    3:1; os demais tons (texto sobre a cor, fundo da tela de entrada) são
+    derivados; a fonte é escolhida entre Manrope (padrão), Inter, Roboto,
+    Open Sans e Montserrat; "restaurar padrão" volta cores e fonte.
+  * Rodapé: a regra 8 foi ajustada em 2026-11-18 para "Copyright by" +
+    logo discreta da RGRUBER, a mesma em todos os tenants.
+  * Fica para depois: título da aba com o nome do tenant (hoje só o ícone
+    muda) e logo em SVG.

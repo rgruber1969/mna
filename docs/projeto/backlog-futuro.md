@@ -50,6 +50,12 @@ versão 1" é anotado aqui.
 - [ ] Envio de e-mails pelo domínio do próprio cliente (exige DNS do lado
       dele)
 - [ ] Editor completo de tema ("modo avançado" de white label)
+- [ ] White label: logo em SVG (higienizado: sem scripts, eventos ou
+      referências externas); na V1 só PNG, JPG ou WebP
+- [ ] White label: título da aba com o nome de exibição do tenant (na V1
+      só o ícone da aba muda)
+- [ ] White label: imagens da marca pelo fluxo de antivírus (ADR-0016)
+      quando ele existir
 - [ ] Redefinição de 2FA aprovada pelos administradores dos outros tenants
       que exigem 2FA da pessoa, sem precisar da RGRUBER
 - [ ] Modelos de perfis mantidos pela RGRUBER no console, que os tenants
