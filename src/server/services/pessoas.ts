@@ -1,11 +1,14 @@
 import { and, asc, eq, ilike, isNull, ne, or } from "drizzle-orm";
 import { z } from "zod";
-import { comTenant, type Banco } from "@/server/db/cliente";
+import { comTenant } from "@/server/db/cliente";
 import { empresa, pessoa, tipoVinculo, vinculoPessoaEmpresa } from "@/server/db/esquema";
 import { cpfValido, mascararCpf, mascararDocumento, soDigitos } from "@/config/documentos";
 import type { Acesso, AcessoTenant } from "./acesso";
 import { criptografar, descriptografar, indiceCego } from "./cripto/cripto";
 import { auditar, CamposEndereco, type ResultadoComId } from "./empresas";
+import { situacoes, type SituacaoDeAcesso, type Tx } from "./situacao-de-acesso";
+
+export type { SituacaoDeAcesso };
 import { exigirPermissao } from "./permissoes/verificador";
 
 /**
@@ -149,6 +152,7 @@ export type PessoaResumo = {
   email: string | null;
   empresas: string[];
   temConta: boolean;
+  acesso: SituacaoDeAcesso;
   inativa: boolean;
 };
 
@@ -179,6 +183,7 @@ export async function listarPessoas(
       .select({ pessoaId: vinculoPessoaEmpresa.pessoaId, empresa: empresa.razaoSocial })
       .from(vinculoPessoaEmpresa)
       .innerJoin(empresa, eq(empresa.id, vinculoPessoaEmpresa.empresaId));
+    const situacao = await situacoes(tx, linhas);
     const empresasDe = new Map<string, Set<string>>();
     for (const v of vinculos)
       (empresasDe.get(v.pessoaId) ?? empresasDe.set(v.pessoaId, new Set()).get(v.pessoaId)!).add(v.empresa);
@@ -188,6 +193,7 @@ export async function listarPessoas(
       email: p.email,
       empresas: [...(empresasDe.get(p.id) ?? [])],
       temConta: Boolean(p.usuarioId),
+      acesso: situacao.get(p.id) ?? "sem-acesso",
       inativa: Boolean(p.inativaEm),
     }));
   });
@@ -206,6 +212,7 @@ type Linha = typeof pessoa.$inferSelect;
 type SemCifrados = Omit<Linha, (typeof coluna)[CampoSensivel] | "cpfIndice">;
 
 export type PessoaDetalhe = SemCifrados & {
+  acesso: SituacaoDeAcesso;
   /** Sensíveis mascarados (null = não preenchido). */
   mascarados: Record<CampoSensivel, string | null>;
   vinculos: VinculoDaPessoa[];
@@ -237,10 +244,11 @@ export async function obterPessoa(acesso: Acesso | null, id: string): Promise<Pe
       .innerJoin(tipoVinculo, eq(tipoVinculo.id, vinculoPessoaEmpresa.tipoId))
       .where(eq(vinculoPessoaEmpresa.pessoaId, id))
       .orderBy(asc(empresa.razaoSocial));
-    return { p, vinculos };
+    const situacao = (await situacoes(tx, [p])).get(p.id) ?? "sem-acesso";
+    return { p, vinculos, situacao };
   });
   if (!dados) return null;
-  const { p, vinculos } = dados;
+  const { p, vinculos, situacao } = dados;
   const mascarados = {} as Record<CampoSensivel, string | null>;
   for (const campo of CAMPOS_SENSIVEIS) {
     const cifrado = p[coluna[campo]];
@@ -257,7 +265,7 @@ export async function obterPessoa(acesso: Acesso | null, id: string): Promise<Pe
     ...comuns
   } = p;
   void [_1, _2, _3, _4, _5, _6, _7];
-  return { ...comuns, mascarados, vinculos };
+  return { ...comuns, acesso: situacao, mascarados, vinculos };
 }
 
 /**
@@ -523,7 +531,7 @@ export const pessoaVazia: DadosPessoa = {
  * transação do aceite.
  */
 export async function ligarContaAPessoa(
-  tx: Parameters<Parameters<Banco["transaction"]>[0]>[0],
+  tx: Tx,
   tenantId: string,
   conta: { usuarioId: string; nome: string; email: string },
 ): Promise<void> {

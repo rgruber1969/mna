@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
+import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -69,9 +70,12 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
                       {[p.email, p.empresas.join(", ")].filter(Boolean).join(" · ")}
                     </span>
                   </span>
-                  {p.temConta && (
-                    <span className="text-success shrink-0 text-xs font-medium">tem acesso</span>
-                  )}
+                  <AcessoDaPessoa
+                    acesso={p.acesso}
+                    nome={p.nome}
+                    email={p.email}
+                    podeConvidar={acesso.administrador}
+                  />
                 </li>
               ))}
             </ul>

@@ -10,6 +10,7 @@ import { listarGrupos, obterEmpresa } from "@/server/services/empresas";
 import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCep, formatarCnpj } from "@/config/documentos";
+import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormEmpresa, FormNovoVinculo, SociosDaReceita } from "@/components/cadastros/formularios";
@@ -96,9 +97,22 @@ async function Painel({ id }: { id: Promise<string> }) {
                           .join(" · ")}
                       </span>
                     </span>
-                    {podeEditar && (
-                      <BotaoDeAcao acao={removerVinculoAcao} campos={{ id: v.id }} rotulo="Remover" perigo />
-                    )}
+                    <span className="flex shrink-0 items-center gap-3">
+                      <AcessoDaPessoa
+                        acesso={v.acesso}
+                        nome={v.pessoa}
+                        email={v.email}
+                        podeConvidar={acesso.administrador}
+                      />
+                      {podeEditar && (
+                        <BotaoDeAcao
+                          acao={removerVinculoAcao}
+                          campos={{ id: v.id }}
+                          rotulo="Remover"
+                          perigo
+                        />
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>

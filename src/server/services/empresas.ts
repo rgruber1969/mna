@@ -12,6 +12,7 @@ import {
 import { cnpjValido, soDigitos } from "@/config/documentos";
 import type { Acesso, AcessoTenant } from "./acesso";
 import { exigirPermissao } from "./permissoes/verificador";
+import { situacoes } from "./situacao-de-acesso";
 
 /**
  * Empresas e grupos econômicos do tenant (dominio.md, "Empresa"). Toda
@@ -158,6 +159,8 @@ export type VinculoDaEmpresa = {
   id: string;
   pessoaId: string;
   pessoa: string;
+  email: string | null;
+  acesso: "usuario" | "convidado" | "sem-acesso";
   tipo: string;
   cargo: string | null;
   percentual: string | null;
@@ -183,6 +186,8 @@ export async function obterEmpresa(acesso: Acesso | null, id: string): Promise<E
         id: vinculoPessoaEmpresa.id,
         pessoaId: pessoa.id,
         pessoa: pessoa.nome,
+        email: pessoa.email,
+        usuarioId: pessoa.usuarioId,
         tipo: tipoVinculo.nome,
         cargo: vinculoPessoaEmpresa.cargo,
         percentual: vinculoPessoaEmpresa.percentual,
@@ -192,7 +197,24 @@ export async function obterEmpresa(acesso: Acesso | null, id: string): Promise<E
       .innerJoin(tipoVinculo, eq(tipoVinculo.id, vinculoPessoaEmpresa.tipoId))
       .where(eq(vinculoPessoaEmpresa.empresaId, id))
       .orderBy(asc(pessoa.nome));
-    return { ...e.e, grupo: e.grupo, vinculos };
+    const situacao = await situacoes(
+      tx,
+      vinculos.map((v) => ({ id: v.pessoaId, usuarioId: v.usuarioId, email: v.email })),
+    );
+    return {
+      ...e.e,
+      grupo: e.grupo,
+      vinculos: vinculos.map((v) => ({
+        id: v.id,
+        pessoaId: v.pessoaId,
+        pessoa: v.pessoa,
+        email: v.email,
+        tipo: v.tipo,
+        cargo: v.cargo,
+        percentual: v.percentual,
+        acesso: situacao.get(v.pessoaId) ?? "sem-acesso",
+      })),
+    };
   });
 }
 

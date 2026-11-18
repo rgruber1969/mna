@@ -10,6 +10,7 @@ import { listarEmpresas } from "@/server/services/empresas";
 import { obterPessoa } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCep } from "@/config/documentos";
+import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { CabecalhoDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoVinculo, FormPessoa, MostrarDadosSensiveis } from "@/components/cadastros/formularios";
@@ -38,7 +39,6 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
   ) as Record<string, string>;
   inicial.cep = p.cep ? formatarCep(p.cep) : "";
   const temSensiveis = Object.values(p.mascarados).some(Boolean);
-  const convite = new URLSearchParams({ nome: p.nome, email: p.email ?? "" });
 
   return (
     <>
@@ -132,26 +132,19 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
           </Cartao>
           <Cartao largura="max-w-md">
             <Titulo sobre="Pessoa">Acesso ao sistema</Titulo>
-            {p.usuarioId ? (
-              <p className="text-sm">
-                Tem acesso.{" "}
-                {acesso.administrador && (
-                  <Link href={`/usuarios/${p.usuarioId}`} className="text-primary font-medium">
-                    Ver usuário
-                  </Link>
-                )}
-              </p>
-            ) : acesso.administrador ? (
-              p.email ? (
-                <Link href={`/usuarios?${convite}`} className="text-primary text-sm font-medium">
-                  Convidar para o sistema
+            <p className="flex items-center gap-3 text-sm">
+              <AcessoDaPessoa
+                acesso={p.acesso}
+                nome={p.nome}
+                email={p.email}
+                podeConvidar={acesso.administrador}
+              />
+              {p.usuarioId && acesso.administrador && (
+                <Link href={`/usuarios/${p.usuarioId}`} className="text-primary text-xs font-medium">
+                  Ver usuário
                 </Link>
-              ) : (
-                <p className="text-muted text-sm">Informe o e-mail para poder convidar.</p>
-              )
-            ) : (
-              <p className="text-muted text-sm">Sem acesso. Só administradores convidam.</p>
-            )}
+              )}
+            </p>
           </Cartao>
         </div>
       </main>
