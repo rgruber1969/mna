@@ -4,6 +4,7 @@ import { banco, comTenant } from "@/server/db/cliente";
 import { convite, eventoAuditoria, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
 import { exigirAdministrador, type Acesso, type AcessoTenant } from "./acesso";
 import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
+import { exigidosPorPerfil } from "./exigencia-2fa";
 import { filtrarPerfisDoTenant } from "./perfis";
 import {
   apagarTodosOsFatores,
@@ -48,6 +49,8 @@ export type UsuarioDoTenant = {
   email: string;
   administrador: boolean;
   exigeIndividual: boolean;
+  /** Algum perfil do tenant da pessoa exige 2FA. */
+  exigePorPerfil: boolean;
   /** Resultado das regras somadas. */
   exigeDoisFatores: boolean;
   temDoisFatores: boolean;
@@ -74,32 +77,41 @@ export async function listarUsuarios(acesso: Acesso | null): Promise<PainelDeUsu
     .from(tenant)
     .where(eq(tenant.id, a.tenant.id));
   const exigeDeTodos = Boolean(t?.exige);
-  const { vinculos, convites } = await comTenant(a.tenant.id, async (tx) => ({
-    vinculos: await tx
-      .select({
-        id: usuario.id,
-        nome: usuario.name,
-        email: usuario.email,
-        autenticador: usuario.twoFactorEnabled,
-        administrador: vinculoTenant.administrador,
-        exigeIndividual: vinculoTenant.exigeDoisFatores,
-      })
-      .from(vinculoTenant)
-      .innerJoin(usuario, eq(usuario.id, vinculoTenant.usuarioId))
-      .where(eq(vinculoTenant.situacao, "ativo"))
-      .orderBy(usuario.name),
-    convites: await tx
-      .select({
-        id: convite.id,
-        nome: convite.nome,
-        email: convite.email,
-        administrador: convite.administrador,
-        expiraEm: convite.expiraEm,
-      })
-      .from(convite)
-      .where(and(isNull(convite.aceitoEm), gt(convite.expiraEm, new Date())))
-      .orderBy(desc(convite.criadoEm)),
-  }));
+  const { vinculos, convites, porPerfil } = await comTenant(a.tenant.id, async (tx) => {
+    const r = {
+      vinculos: await tx
+        .select({
+          id: usuario.id,
+          nome: usuario.name,
+          email: usuario.email,
+          autenticador: usuario.twoFactorEnabled,
+          administrador: vinculoTenant.administrador,
+          exigeIndividual: vinculoTenant.exigeDoisFatores,
+        })
+        .from(vinculoTenant)
+        .innerJoin(usuario, eq(usuario.id, vinculoTenant.usuarioId))
+        .where(eq(vinculoTenant.situacao, "ativo"))
+        .orderBy(usuario.name),
+      convites: await tx
+        .select({
+          id: convite.id,
+          nome: convite.nome,
+          email: convite.email,
+          administrador: convite.administrador,
+          expiraEm: convite.expiraEm,
+        })
+        .from(convite)
+        .where(and(isNull(convite.aceitoEm), gt(convite.expiraEm, new Date())))
+        .orderBy(desc(convite.criadoEm)),
+    };
+    return {
+      ...r,
+      porPerfil: await exigidosPorPerfil(
+        tx,
+        r.vinculos.map((v) => v.id),
+      ),
+    };
+  });
   const usuarios = await Promise.all(
     vinculos.map(async (v) => ({
       id: v.id,
@@ -107,7 +119,8 @@ export async function listarUsuarios(acesso: Acesso | null): Promise<PainelDeUsu
       email: v.email,
       administrador: v.administrador,
       exigeIndividual: v.exigeIndividual,
-      exigeDoisFatores: v.administrador || v.exigeIndividual || exigeDeTodos,
+      exigePorPerfil: porPerfil.has(v.id),
+      exigeDoisFatores: v.administrador || v.exigeIndividual || exigeDeTodos || porPerfil.has(v.id),
       temDoisFatores: quantidadeDeFatores(await fatoresDaConta(v.id)) > 0,
     })),
   );
@@ -143,9 +156,12 @@ export async function obterUsuario(
   const v = await vinculoAtivo(a, usuarioId);
   if (!v) return null;
   const fatores = await fatoresDaConta(v.id);
-  const exigeDoisFatores = v.administrador || v.exigeIndividual || a.tenant.exigeDoisFatoresDeTodos;
+  const exigePorPerfil = (await comTenant(a.tenant.id, (tx) => exigidosPorPerfil(tx, [v.id]))).has(v.id);
+  const exigeDoisFatores =
+    v.administrador || v.exigeIndividual || a.tenant.exigeDoisFatoresDeTodos || exigePorPerfil;
   return {
     ...v,
+    exigePorPerfil,
     exigeDoisFatores,
     temDoisFatores: quantidadeDeFatores(fatores) > 0,
     fatores,
@@ -157,7 +173,7 @@ export async function obterUsuario(
 
 export async function convidarUsuario(
   acesso: Acesso | null,
-  dados: DadosPessoa & { administrador: boolean; perfis?: string[] },
+  dados: DadosPessoa & { administrador: boolean; perfis?: string[]; exigeDoisFatores?: boolean },
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const perfis = await comTenant(a.tenant.id, (tx) => filtrarPerfisDoTenant(tx, dados.perfis ?? []));
@@ -192,6 +208,7 @@ async function convitePendente(a: AcessoTenant, conviteId: string) {
         email: convite.email,
         administrador: convite.administrador,
         perfis: convite.perfis,
+        exigeDoisFatores: convite.exigeDoisFatores,
       })
       .from(convite)
       .where(and(eq(convite.id, conviteId), isNull(convite.aceitoEm))),
@@ -221,7 +238,13 @@ export async function reenviarConvite(acesso: Acesso | null, conviteId: string):
   );
   return emitirConviteDoTenant(
     a.tenant,
-    { nome: c.nome, email: c.email, administrador: c.administrador, perfis: c.perfis },
+    {
+      nome: c.nome,
+      email: c.email,
+      administrador: c.administrador,
+      perfis: c.perfis,
+      exigeDoisFatores: c.exigeDoisFatores,
+    },
     a.usuario.id,
   );
 }

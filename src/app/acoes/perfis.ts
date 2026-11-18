@@ -5,6 +5,7 @@ import { obterAcesso } from "@/server/services/acesso";
 import {
   copiarMatrizIndividual,
   criarPerfil,
+  definirExigenciaDoPerfil,
   definirModoPermissoes,
   definirPerfisDoUsuario,
   excluirPerfil,
@@ -63,6 +64,13 @@ export async function salvarMatrizDoPerfilAcao(_: Estado, f: FormData): Promise<
 
 export async function excluirPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(await excluirPerfil(await acesso(), texto(f, "id")), "", "/perfis");
+}
+
+export async function exigirDoPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estado(
+    await definirExigenciaDoPerfil(await acesso(), texto(f, "id"), texto(f, "valor") === "sim"),
+    "Exigência de 2FA salva.",
+  );
 }
 
 export async function definirModoAcao(_: Estado, f: FormData): Promise<Estado> {

@@ -11,6 +11,7 @@ import {
   vinculoTenant,
 } from "@/server/db/esquema";
 import { resolverArea } from "@/server/enderecos";
+import { exigidosPorPerfil } from "./exigencia-2fa";
 import { entradaDeDesenvolvimentoLigada, hostLocal } from "@/server/auth/entrada-de-desenvolvimento";
 
 /**
@@ -153,12 +154,14 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     return { area: "console", usuario, sessaoId: s.id, segundoFatorNaSessao };
   }
 
-  const [v] = await comTenant(t!.id, (tx) =>
-    tx
+  const [v] = await comTenant(t!.id, async (tx) => {
+    const vinculos = await tx
       .select({ administrador: vinculoTenant.administrador, exige: vinculoTenant.exigeDoisFatores })
       .from(vinculoTenant)
-      .where(and(eq(vinculoTenant.usuarioId, u.id), eq(vinculoTenant.situacao, "ativo"))),
-  );
+      .where(and(eq(vinculoTenant.usuarioId, u.id), eq(vinculoTenant.situacao, "ativo")));
+    const porPerfil = vinculos.length > 0 && (await exigidosPorPerfil(tx, [u.id])).has(u.id);
+    return vinculos.map((x) => ({ ...x, porPerfil }));
+  });
   if (!v) {
     await revogarSessao(s.id);
     return null;
@@ -168,8 +171,8 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     tenant: t!,
     usuario,
     administrador: v.administrador,
-    // Regras somadas: administrador sempre, todos do tenant ou marcação individual.
-    exigeDoisFatores: v.administrador || t!.exigeDoisFatoresDeTodos || v.exige,
+    // Regras somadas: administrador sempre, todos do tenant, perfil ou marcação individual.
+    exigeDoisFatores: v.administrador || t!.exigeDoisFatoresDeTodos || v.porPerfil || v.exige,
     sessaoId: s.id,
     segundoFatorNaSessao,
   };

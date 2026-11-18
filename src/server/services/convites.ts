@@ -87,7 +87,7 @@ export async function convidarUsuarioDaPlataforma(
 /** Convite para um tenant. Só administradores (do tenant ou da plataforma) chamam. */
 export async function emitirConviteDoTenant(
   t: { id: string; slug: string; nome: string },
-  dados: DadosPessoa & { administrador: boolean; perfis?: string[] },
+  dados: DadosPessoa & { administrador: boolean; perfis?: string[]; exigeDoisFatores?: boolean },
   atorId: string,
 ): Promise<{ ok: true } | { erro: string }> {
   const p = validarPessoa(dados);
@@ -102,6 +102,7 @@ export async function emitirConviteDoTenant(
         nome: p.nome,
         administrador: dados.administrador,
         perfis: dados.perfis ?? [],
+        exigeDoisFatores: dados.exigeDoisFatores ?? true,
         tokenHash: hash,
         expiraEm: new Date(Date.now() + VALIDADE_CONVITE_MS),
         criadoPor: atorId,
@@ -134,6 +135,8 @@ type ConviteValido = {
   administrador: boolean;
   /** Perfis do tenant a atribuir ao aceitar. */
   perfis: string[];
+  /** Marcação individual de 2FA a gravar no vínculo. */
+  exigeDoisFatores: boolean;
   tenant: { id: string; slug: string; nome: string } | null;
 };
 
@@ -153,7 +156,15 @@ async function conviteValido(host: string | null, token: string): Promise<Convit
         ),
       );
     return c
-      ? { id: c.id, nome: c.nome, email: c.email, administrador: true, perfis: [], tenant: null }
+      ? {
+          id: c.id,
+          nome: c.nome,
+          email: c.email,
+          administrador: true,
+          perfis: [],
+          exigeDoisFatores: true,
+          tenant: null,
+        }
       : null;
   }
   if (area.tipo === "tenant") {
@@ -172,6 +183,7 @@ async function conviteValido(host: string | null, token: string): Promise<Convit
           email: c.email,
           administrador: c.administrador,
           perfis: c.perfis,
+          exigeDoisFatores: c.exigeDoisFatores,
           tenant: t,
         }
       : null;
@@ -245,10 +257,21 @@ export async function aceitarConvite(
     await comTenant(t.id, async (tx) => {
       await tx
         .insert(vinculoTenant)
-        .values({ tenantId: t.id, usuarioId, situacao: "ativo", administrador: c.administrador })
+        .values({
+          tenantId: t.id,
+          usuarioId,
+          situacao: "ativo",
+          administrador: c.administrador,
+          exigeDoisFatores: c.exigeDoisFatores,
+        })
         .onConflictDoUpdate({
           target: [vinculoTenant.tenantId, vinculoTenant.usuarioId],
-          set: { situacao: "ativo", administrador: c.administrador, atualizadoEm: new Date() },
+          set: {
+            situacao: "ativo",
+            administrador: c.administrador,
+            exigeDoisFatores: c.exigeDoisFatores,
+            atualizadoEm: new Date(),
+          },
         });
       // Perfis do convite (os que ainda existem) substituem os anteriores.
       await atribuirPerfis(tx, t.id, usuarioId, await filtrarPerfisDoTenant(tx, c.perfis));

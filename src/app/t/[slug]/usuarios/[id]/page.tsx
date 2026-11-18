@@ -34,13 +34,14 @@ async function Detalhe({ id }: { id: Promise<string> }) {
   const permissoes = await permissoesDoUsuario(acesso, u.id);
   if (!permissoes) notFound();
   const campos = { id: u.id };
-  const situacao = u.administrador
-    ? "exigida por ser administrador"
-    : acesso.tenant.exigeDoisFatoresDeTodos
-      ? "exigida de todos neste tenant"
-      : u.exigeIndividual
-        ? "exigida individualmente"
-        : "não exigida";
+  // Regras somadas (autenticacao-e-sessao.md): mostra todas as que valem.
+  const motivos = [
+    u.administrador && "por ser administrador",
+    acesso.tenant.exigeDoisFatoresDeTodos && "de todos neste tenant",
+    u.exigePorPerfil && "por perfil",
+    u.exigeIndividual && "individualmente",
+  ].filter(Boolean);
+  const situacao = motivos.length > 0 ? `exigida ${motivos.join(", ")}` : "não exigida";
 
   return (
     <>

@@ -32,6 +32,7 @@ async function Painel() {
               <Link href={`/perfis/${p.id}`} className="text-primary font-medium">
                 {p.nome}
               </Link>
+              {p.exigeDoisFatores && <span className="text-success ml-2 text-xs font-medium">exige 2FA</span>}
               {p.descricao && <span className="text-muted block text-xs">{p.descricao}</span>}
             </span>
             {camada === "tenant" && (

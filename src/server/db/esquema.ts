@@ -248,6 +248,8 @@ export const convite = pgTable(
     administrador: boolean("administrador").notNull().default(false),
     /** Perfis do tenant atribuídos ao aceitar (identificadores de `perfil`). */
     perfis: jsonb("perfis").$type<string[]>().notNull().default([]),
+    /** Marcação individual de 2FA ao aceitar (o convite vem marcado por padrão). */
+    exigeDoisFatores: boolean("exige_2fa").notNull().default(true),
     tokenHash: text("token_hash").notNull().unique(),
     expiraEm: timestamp("expira_em", { withTimezone: true }).notNull(),
     aceitoEm: timestamp("aceito_em", { withTimezone: true }),
@@ -312,6 +314,8 @@ export const perfil = pgTable(
     /** Para que serve o perfil, em linguagem simples (mostrado ao atribuir). */
     descricao: text("descricao").notNull().default(""),
     matriz: jsonb("matriz").$type<MatrizGravada>().notNull().default({}),
+    /** Perfil do tenant que exige 2FA de quem o tem (soma-se às demais regras). */
+    exigeDoisFatores: boolean("exige_2fa").notNull().default(false),
     /** Código do perfil padrão de origem (só informativo; o perfil é do tenant). */
     padrao: text("padrao"),
     criadoEm: criadoEm(),

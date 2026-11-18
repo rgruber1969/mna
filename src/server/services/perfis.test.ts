@@ -5,6 +5,7 @@ import { AcessoNegado, type AcessoTenant } from "./acesso";
 import {
   copiarMatrizIndividual,
   copiarPerfisPadrao,
+  definirExigenciaDoPerfil,
   criarPerfil,
   definirPerfisDoUsuario,
   excluirPerfil,
@@ -17,6 +18,8 @@ import {
 import { normalizarMatriz, somarMatrizes } from "./permissoes/catalogo";
 import { PERFIS_PADRAO } from "./permissoes/perfis-padrao";
 import { exigirPermissao, pode } from "./permissoes/verificador";
+import { outroTenantExigeDoisFatores } from "./fatores-da-conta";
+import { obterUsuario } from "./usuarios";
 
 /**
  * Perfis e permissões (ADR-0013 e adendo de 2026-11-18;
@@ -261,5 +264,27 @@ describe("integridade e isolamento", () => {
     await definirPerfisDoUsuario(acesso(adminB, { t: "B", administrador: true }), gabi, [coordenador]);
     const m = await dono.query(`select count(*)::int n from perfil_usuario where usuario_id = $1`, [gabi]);
     expect(m.rows[0].n).toBe(0);
+  });
+});
+
+describe("2FA por perfil", () => {
+  it("perfil do tenant marcado exige 2FA de quem o tem (soma com as outras regras)", async () => {
+    const adm = acesso(admin, { administrador: true });
+    const hugo = await criarConta("hugo");
+    const externo = await idDoPerfil("A", "Usuário externo");
+    await definirPerfisDoUsuario(adm, hugo, [externo]);
+    expect((await obterUsuario(adm, hugo))?.exigeDoisFatores).toBe(false);
+    expect(await outroTenantExigeDoisFatores(hugo, null)).toBe(false);
+
+    expect(await definirExigenciaDoPerfil(adm, externo, true)).toEqual({ ok: true });
+    const u = await obterUsuario(adm, hugo);
+    expect(u).toMatchObject({ exigePorPerfil: true, exigeIndividual: false, exigeDoisFatores: true });
+    expect(await outroTenantExigeDoisFatores(hugo, tenants.B.id)).toBe(true);
+    expect(await outroTenantExigeDoisFatores(hugo, tenants.A.id)).toBe(false);
+
+    // Perfil de deal não tem esta opção.
+    const coordenador = await idDoPerfil("A", "Coordenador do deal");
+    expect(await definirExigenciaDoPerfil(adm, coordenador, true)).toHaveProperty("erro");
+    await definirExigenciaDoPerfil(adm, externo, false);
   });
 });

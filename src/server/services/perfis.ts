@@ -80,6 +80,8 @@ export type PerfilResumo = {
   nome: string;
   descricao: string;
   camada: Camada;
+  /** Perfil do tenant que exige 2FA de quem o tem. */
+  exigeDoisFatores: boolean;
   /** Usuários com este perfil no tenant (perfis de deal: participações, na 2ª entrega). */
   emUso: number;
 };
@@ -90,7 +92,13 @@ export async function listarPerfis(acesso: Acesso | null): Promise<PainelDePerfi
   const a = exigirAdministrador(acesso);
   const perfis = await comTenant(a.tenant.id, async (tx) => {
     const lista = await tx
-      .select({ id: perfil.id, nome: perfil.nome, descricao: perfil.descricao, camada: perfil.camada })
+      .select({
+        id: perfil.id,
+        nome: perfil.nome,
+        descricao: perfil.descricao,
+        camada: perfil.camada,
+        exigeDoisFatores: perfil.exigeDoisFatores,
+      })
       .from(perfil)
       .orderBy(asc(perfil.camada), asc(perfil.nome));
     const usos = await tx
@@ -113,6 +121,7 @@ async function perfilDoTenant(tx: Transacao, perfilId: string) {
       nome: perfil.nome,
       descricao: perfil.descricao,
       camada: perfil.camada,
+      exigeDoisFatores: perfil.exigeDoisFatores,
       matriz: perfil.matriz,
     })
     .from(perfil)
@@ -215,6 +224,27 @@ export async function salvarMatrizDoPerfil(
     return { ok: true };
   });
   if ("ok" in r) await auditar(a, "perfil.matriz.alterada", "perfil", perfilId);
+  return r;
+}
+
+/** "Exige 2FA" do perfil (só perfis do tenant; autenticacao-e-sessao.md). */
+export async function definirExigenciaDoPerfil(
+  acesso: Acesso | null,
+  perfilId: string,
+  exige: boolean,
+): Promise<Resultado> {
+  const a = exigirAdministrador(acesso);
+  const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
+    const p = await perfilDoTenant(tx, perfilId);
+    if (!p) return { erro: "Perfil não encontrado." };
+    if (p.camada !== "tenant") return { erro: "A exigência de 2FA vale para perfis do tenant." };
+    await tx
+      .update(perfil)
+      .set({ exigeDoisFatores: exige, atualizadoEm: new Date() })
+      .where(eq(perfil.id, p.id));
+    return { ok: true };
+  });
+  if ("ok" in r) await auditar(a, "perfil.2fa.exigencia", "perfil", perfilId, { exige });
   return r;
 }
 

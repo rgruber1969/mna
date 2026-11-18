@@ -3,7 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { excluirPerfilAcao } from "@/app/acoes/perfis";
+import { excluirPerfilAcao, exigirDoPerfilAcao } from "@/app/acoes/perfis";
 import { obterAcesso } from "@/server/services/acesso";
 import { obterPerfil } from "@/server/services/perfis";
 import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
@@ -45,6 +45,21 @@ async function Detalhe({ id }: { id: Promise<string> }) {
             <Titulo sobre="Editar">Nome e descrição</Titulo>
             <FormEditarPerfil id={p.id} nome={p.nome} descricao={p.descricao} />
           </Cartao>
+          {p.camada === "tenant" && (
+            <Cartao largura="max-w-sm">
+              <Titulo sobre="Segurança">Verificação em duas etapas</Titulo>
+              <p className="text-muted mb-4 text-sm">
+                {p.exigeDoisFatores
+                  ? "Exigida de todos com este perfil (soma-se às outras regras: vale sempre a mais segura)."
+                  : "Não exigida por este perfil. Ainda pode ser exigida pelo tenant, individualmente ou por outro perfil."}
+              </p>
+              <BotaoDeAcao
+                acao={exigirDoPerfilAcao}
+                campos={{ id: p.id, valor: p.exigeDoisFatores ? "nao" : "sim" }}
+                rotulo={p.exigeDoisFatores ? "Deixar de exigir por este perfil" : "Exigir 2FA deste perfil"}
+              />
+            </Cartao>
+          )}
           {p.camada === "tenant" && (
             <Cartao largura="max-w-sm">
               <Titulo sobre="Em uso">Usuários com este perfil</Titulo>

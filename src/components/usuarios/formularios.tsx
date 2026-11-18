@@ -104,8 +104,12 @@ export function FormConvidarUsuario({
           ))}
         </fieldset>
       )}
+      <label className="text-text mb-2 flex items-center gap-2 text-sm">
+        <input type="checkbox" name="exige2fa" defaultChecked /> Exigir verificação em duas etapas
+        (recomendado)
+      </label>
       <label className="text-text mb-4 flex items-center gap-2 text-sm">
-        <input type="checkbox" name="administrador" /> Administrador do tenant (acesso total)
+        <input type="checkbox" name="administrador" /> Administrador do tenant (acesso total; sempre com 2FA)
       </label>
       <Botao disabled={enviando}>{enviando ? "Enviando..." : "Enviar convite"}</Botao>
     </form>

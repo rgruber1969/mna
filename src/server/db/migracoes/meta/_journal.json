@@ -85,6 +85,13 @@
       "when": 1795009090524,
       "tag": "0011_descricao_do_perfil",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795010489048,
+      "tag": "0012_exigencia_2fa_perfil_e_convite",
+      "breakpoints": true
     }
   ]
 }

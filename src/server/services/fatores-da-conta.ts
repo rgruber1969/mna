@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { banco, comTenant } from "@/server/db/cliente";
 import { chaveDeAcesso, doisFatores, sessao, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
+import { exigidosPorPerfil } from "./exigencia-2fa";
 import { enviarEmail } from "@/server/email/enviar";
 import { produto } from "@/config/produto";
 
@@ -79,13 +80,17 @@ export async function outroTenantExigeDoisFatores(
     .from(tenant);
   for (const t of tenants) {
     if (t.id === tenantIdIgnorado) continue;
-    const [v] = await comTenant(t.id, (tx) =>
-      tx
+    const exige = await comTenant(t.id, async (tx) => {
+      const [v] = await tx
         .select({ administrador: vinculoTenant.administrador, exige: vinculoTenant.exigeDoisFatores })
         .from(vinculoTenant)
-        .where(and(eq(vinculoTenant.usuarioId, usuarioId), eq(vinculoTenant.situacao, "ativo"))),
-    );
-    if (v && (v.administrador || v.exige || t.deTodos)) return true;
+        .where(and(eq(vinculoTenant.usuarioId, usuarioId), eq(vinculoTenant.situacao, "ativo")));
+      if (!v) return false;
+      return (
+        v.administrador || v.exige || t.deTodos || (await exigidosPorPerfil(tx, [usuarioId])).has(usuarioId)
+      );
+    });
+    if (exige) return true;
   }
   return false;
 }

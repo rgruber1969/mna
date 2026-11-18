@@ -167,6 +167,9 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByLabel("E-mail do convidado").fill(emailUsuaria);
   // O tenant já nasce com os perfis padrão; a usuária entra com "Usuário externo".
   await admin.getByLabel("Usuário externo").check();
+  // 2FA vem marcado por padrão no convite; aqui o administrador desmarca.
+  await expect(admin.getByLabel("Exigir verificação em duas etapas (recomendado)")).toBeChecked();
+  await admin.getByLabel("Exigir verificação em duas etapas (recomendado)").uncheck();
   await admin.getByRole("button", { name: "Enviar convite" }).click();
   await expect(admin.getByText("Convite enviado")).toBeVisible();
   await expect(admin.getByText(emailUsuaria)).toBeVisible();

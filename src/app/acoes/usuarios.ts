@@ -41,6 +41,7 @@ export async function convidarUsuarioAcao(_: Estado, f: FormData): Promise<Estad
     email: texto(f, "email"),
     administrador: f.get("administrador") === "on",
     perfis: f.getAll("perfil").map(String),
+    exigeDoisFatores: f.get("exige2fa") === "on",
   });
   return estado(r, "Convite enviado. Ele vale por 3 dias.");
 }
