@@ -43,21 +43,11 @@ export function Cartao({ children, largura = "max-w-md" }: { children: ReactNode
   );
 }
 
-export function Titulo({
-  sobre,
-  grande = false,
-  children,
-}: {
-  sobre?: string;
-  grande?: boolean;
-  children: ReactNode;
-}) {
+export function Titulo({ sobre, children }: { sobre?: string; children: ReactNode }) {
   return (
     <header className="mb-6">
       {sobre && <p className="text-accent text-xs font-semibold tracking-widest uppercase">{sobre}</p>}
-      <h1 className={`text-primary mt-1 ${grande ? "text-3xl leading-tight" : "text-2xl"} font-semibold`}>
-        {children}
-      </h1>
+      <h1 className="text-primary mt-1 text-2xl font-semibold">{children}</h1>
     </header>
   );
 }

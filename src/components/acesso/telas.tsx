@@ -37,7 +37,14 @@ export function TelaEntrar({ onde, titulo, marca }: { onde?: string; titulo?: st
   return (
     <Moldura destaque={Boolean(marca)} logo={marca} rodape={!marca}>
       <Cartao>
-        {titulo ? <Titulo grande>{titulo}</Titulo> : <Titulo sobre={produto.nome}>Entrar em {onde}</Titulo>}
+        {titulo ? (
+          <header className="mb-6">
+            <h1 className="text-primary text-4xl font-bold tracking-tight">{produto.nome}</h1>
+            <p className="text-text mt-1 text-lg font-medium">{titulo}</p>
+          </header>
+        ) : (
+          <Titulo sobre={produto.nome}>Entrar em {onde}</Titulo>
+        )}
         <Suspense>
           <AvisoDaEntrada />
         </Suspense>
