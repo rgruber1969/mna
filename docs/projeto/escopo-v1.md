@@ -37,7 +37,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 15 | Kanban de deals (funil por etapa principal) + visão em tabela + histórico do deal | Alto | M | 9 | Real |
 | 16 | Mensageria em deal, etapa, versão de documento e tarefa (sem tempo real, imutável, anexos) + configuração de avisos do tenant | Médio | G | 11, 14 | Real |
 | 17 | Contratos de serviço (mandato, honorários) | Médio | M | 7, 11 | Real |
-| 18 | Valuation (com ou sem deal): 5 métodos, ponderação, cenários, sensibilidade, tese do setor, expectativa da vendedora, painel, versões | Alto | G | 7, 11 | Simulado |
+| 18 | Valuation (com ou sem deal, criado por qualquer lado, vários por deal, visibilidade definida pelo criador): 5 métodos, ponderação, cenários, sensibilidade, tese do setor, faixa de valor mínimo–máximo, painel, versões | Alto | G | 7, 11 | Simulado |
 | 19 | E-book e OnePager (teaser e completo) em PDF, com versões, comentários da vendedora, liberação ao comprador e logo da vendedora no deal | Médio | G | 7, 8, 11 | Simulado |
 | 20 | Auditoria de tudo + tela de consulta | Essencial | M | 2 | Real |
 | 21 | Limpeza de auditoria com exportação PDF/XLSX | Baixo no início | M | 20 | Simulado |

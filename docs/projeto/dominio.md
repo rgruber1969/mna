@@ -95,10 +95,9 @@ principalmente pelo advisor.
   a um deal não amplia essa visibilidade. Objetivo: sigilo entre os lados (o
   valuation do comprador revela quanto ele pagaria). Administradores do
   tenant veem todos, com auditoria (`perfis-e-permissoes.md`).
-* **Campos e fluxo conforme o lado:** os itens próprios da vendedora
-  (expectativa da vendedora, aprovação pela vendedora, uso no e-book) só
-  valem no valuation do lado vendedor; no do comprador, o equivalente é o
-  preço máximo, com aprovação interna do próprio lado.
+* **Mesmos campos para os dois lados** (decidido em 2026-11-18): o
+  valuation não tem "lado"; quem cria e a visibilidade escolhida bastam.
+  Campos específicos do comprador ficam no backlog futuro.
 * **Deal com várias vendedoras: um valuation único do conjunto**, com
   DRE e documentos de cada empresa, e o **percentual de cada empresa sobre
   o total** (rateio). O critério do rateio é registrado (ex.: faturamento
@@ -116,17 +115,21 @@ principalmente pelo advisor.
 * **Cenários** (pessimista, base, otimista) e **tabelas de sensibilidade**.
 * **Tese do setor:** campo para os múltiplos de EBITDA e de faturamento
   usados no segmento da vendedora, com documentos ou links que os comprovem.
-* **Expectativa da vendedora:** valor mínimo de venda esperado.
+* **Faixa de valor esperado:** valor **mínimo** e valor **máximo**
+  esperados, opcionais. No lado vendedor: mínimo = abaixo disso não vende
+  (expectativa da vendedora); máximo = preço pedido/ancoragem. No lado
+  comprador: mínimo = oferta inicial; máximo = teto acima do qual desiste.
 * **Painel visual** confrontando todos os números: métodos, valor final,
-  expectativa da vendedora × realidade, ofertas recebidas.
+  faixa mínimo–máximo × realidade, ofertas recebidas.
 * **Dados de entrada (V1):** digitados ou importados por arquivo (modelo
   padrão de planilha). DRE de 3 anos; demais dados conforme o método
   (balanço, projeções, ajustes de EBITDA, dívida líquida, capital de giro,
   contingências, regime tributário). Taxa de desconto (WACC) digitada.
-* **Versões e aprovação**, como o e-book (comentários da vendedora entre
-  versões).
+* **Versões e aprovação**, como o e-book (comentários entre versões). Aprova
+  quem tiver a permissão "aprovar" naquele valuation, de qualquer lado.
 * **No e-book:** inclusão dos números do valuation é **opcional**, porque a
-  vendedora costuma não expô-los até receber ofertas.
+  vendedora costuma não expô-los até receber ofertas. Quem monta o e-book só
+  puxa números dos valuations que pode ver.
 * **Saída na V1:** tela com resumo e gráficos.
 
 ### Ofertas

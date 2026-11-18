@@ -22,6 +22,10 @@ versão 1" é anotado aqui.
 - [ ] Valor presente das ofertas (à vista, parcelas, earnout) para comparação
 - [ ] Saídas além da tela: relatório PDF, exportação Excel, gráfico "campo de
       futebol" comparando faixas dos métodos
+- [ ] Campos específicos do valuation do lado comprador: sinergias, custos de
+      integração, retorno exigido (TIR-alvo, prazo de retorno) e
+      financiamento da compra (capital próprio × dívida e seu custo); na V1
+      o comprador usa os campos comuns, com a faixa mínimo–máximo
 
 ## Tarefas
 
