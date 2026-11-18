@@ -1,7 +1,8 @@
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { Suspense } from "react";
+import Image from "next/image";
+import { Suspense, type ReactNode } from "react";
 import { produto } from "@/config/produto";
 import { obterAcesso, pendenciaDeDoisFatores, type Acesso } from "@/server/services/acesso";
 import { obterConvite } from "@/server/services/convites";
@@ -14,9 +15,23 @@ import { FormConvite, FormEntrar, FormSegundoFator } from "./formularios";
 
 /** Telas de acesso compartilhadas pelo console e pelos tenants. */
 
-export function TelaEntrar({ onde }: { onde: string }) {
+/** Logotipo da RGRUBER para fundo escuro (docs/marca/rgruber; mínimo de 120 px de largura). */
+export function LogoRgruber() {
   return (
-    <Moldura>
+    <Image
+      src="/marca/rgruber-horizontal-negativa.svg"
+      alt="RGRUBER Consultoria"
+      width={200}
+      height={57}
+      priority
+      unoptimized
+    />
+  );
+}
+
+export function TelaEntrar({ onde, marca }: { onde: string; marca?: ReactNode }) {
+  return (
+    <Moldura destaque={Boolean(marca)} logo={marca}>
       <Cartao>
         <Titulo sobre={produto.nome}>Entrar em {onde}</Titulo>
         <Suspense>

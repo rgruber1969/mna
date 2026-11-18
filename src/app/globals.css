@@ -18,6 +18,9 @@
   --border: #e2e8f0;
   --danger: #b42318;
   --success: #067647;
+  /* Fundo de telas de destaque (login), azul noite da marca; texto por cima. */
+  --backdrop: #021b3a;
+  --backdrop-foreground: #ffffff;
 }
 
 @theme inline {
@@ -32,6 +35,8 @@
   --color-border: var(--border);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-backdrop: var(--backdrop);
+  --color-backdrop-foreground: var(--backdrop-foreground);
   --font-sans: var(--font-manrope);
 }
 

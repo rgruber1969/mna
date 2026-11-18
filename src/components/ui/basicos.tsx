@@ -5,11 +5,32 @@ import type { ComponentProps, ReactNode } from "react";
  * adoção dos componentes shadcn/ui (ADR-0018).
  */
 
-export function Moldura({ children, rodape = true }: { children: ReactNode; rodape?: boolean }) {
+/**
+ * Fundo das telas soltas (login, convite). `destaque`: fundo escuro da marca,
+ * com o cartão branco em alto contraste e logotipo opcional acima dele.
+ */
+export function Moldura({
+  children,
+  rodape = true,
+  destaque = false,
+  logo,
+}: {
+  children: ReactNode;
+  rodape?: boolean;
+  destaque?: boolean;
+  logo?: ReactNode;
+}) {
   return (
-    <main className="bg-surface flex flex-1 flex-col items-center justify-center px-4 py-10">
+    <main
+      className={`${destaque ? "bg-backdrop" : "bg-surface"} flex flex-1 flex-col items-center justify-center px-4 py-10`}
+    >
+      {logo && <div className="mb-8">{logo}</div>}
       {children}
-      {rodape && <footer className="text-muted mt-10 text-xs">Desenvolvido por RGRUBER Consultoria</footer>}
+      {rodape && (
+        <footer className={`${destaque ? "text-backdrop-foreground/70" : "text-muted"} mt-10 text-xs`}>
+          Desenvolvido por RGRUBER Consultoria
+        </footer>
+      )}
     </main>
   );
 }
