@@ -183,14 +183,14 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(admin.getByRole("button", { name: "Salvar identidade visual" })).toBeDisabled();
   await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#7a1238");
   await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#c2410c");
-  await admin.getByLabel("Fonte").selectOption("inter");
+  await admin.getByLabel("Fonte").selectOption("lato");
   await admin.getByRole("button", { name: "Salvar identidade visual" }).click();
   await expect(admin.getByText("Identidade visual salva.")).toBeVisible();
   await admin.reload();
   const variavel = (nome: string) =>
     admin.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), nome);
   await expect.poll(() => variavel("--primary")).toBe("#7a1238");
-  expect(await admin.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain("Inter");
+  expect(await admin.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain("Lato");
   const enviarImagem = async (rotulo: string) => {
     const campo = admin.getByLabel(`Arquivo: ${rotulo}`);
     await campo.setInputFiles({ name: "logo.png", mimeType: "image/png", buffer: png });

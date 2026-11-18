@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Manrope, Montserrat, Open_Sans, Roboto } from "next/font/google";
+import { Inter, Lato, Manrope, Montserrat, Open_Sans, Roboto } from "next/font/google";
 import { produto } from "@/config/produto";
 import "./globals.css";
 
@@ -11,7 +11,16 @@ const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], preload: 
 const openSans = Open_Sans({ variable: "--font-open-sans", subsets: ["latin"], preload: false });
 const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], preload: false });
 
-const fontes = [manrope, inter, roboto, openSans, montserrat].map((f) => f.variable).join(" ");
+// Lato não é variável e não tem pesos 500/600: declara 400, 700 e 900; "médio" e
+// "seminegrito" usam o peso mais próximo.
+const lato = Lato({
+  variable: "--font-lato",
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  preload: false,
+});
+
+const fontes = [manrope, inter, roboto, openSans, montserrat, lato].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
   title: produto.nome,

@@ -143,7 +143,8 @@ Regras:
     primária precisa de contraste 4,5:1 sobre o branco e a de destaque,
     3:1; os demais tons (texto sobre a cor, fundo da tela de entrada) são
     derivados; a fonte é escolhida entre Manrope (padrão), Inter, Roboto,
-    Open Sans e Montserrat; "restaurar padrão" volta cores e fonte.
+    Open Sans, Montserrat e Lato
+    (acrescentada a pedido, por ser a do site do tenant piloto); "restaurar padrão" volta cores e fonte.
   * Rodapé: a regra 8 foi ajustada em 2026-11-18 para "Copyright by" +
     logo discreta da RGRUBER, a mesma em todos os tenants.
   * Fica para depois: título da aba com o nome do tenant (hoje só o ícone

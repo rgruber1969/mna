@@ -23,6 +23,7 @@ export const FONTES = [
   { id: "roboto", nome: "Roboto", variavel: "--font-roboto" },
   { id: "open-sans", nome: "Open Sans", variavel: "--font-open-sans" },
   { id: "montserrat", nome: "Montserrat", variavel: "--font-montserrat" },
+  { id: "lato", nome: "Lato", variavel: "--font-lato" },
 ] as const;
 
 export type FonteId = (typeof FONTES)[number]["id"];

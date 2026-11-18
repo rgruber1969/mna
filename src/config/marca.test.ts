@@ -61,6 +61,10 @@ describe("tema gerado", () => {
     expect(contraste(v["--backdrop"], v["--backdrop-foreground"])).toBeGreaterThan(10);
   });
 
+  it("aceita a Lato (fonte do site do tenant piloto)", () => {
+    expect(variaveisDoTema({}, "lato")).toEqual({ "--fonte-marca": "var(--font-lato)" });
+  });
+
   it("ignora valores inválidos: o CSS só leva cores #RRGGBB e fontes da lista", () => {
     expect(cssDoTema({ primaria: "red;}body{display:none" }, "comic-sans")).toBe("");
     expect(cssDoTema({}, null)).toBe("");
