@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 /**
@@ -80,4 +80,44 @@ export async function gerarLinkDeDownload(
     }),
     { expiresIn: validadeSegundos },
   );
+}
+
+/**
+ * Chave de arquivo da conta (não de um tenant): só a foto do usuário, que
+ * vale em todos os tenants (ADR-0019; dados-pessoais.md).
+ */
+export function chaveDaConta(usuarioId: string, ...partes: string[]): string {
+  const seguro = (p: string) => {
+    if (!/^[\w.-]+$/.test(p)) throw new Error(`Parte de chave inválida: ${p}`);
+    return p;
+  };
+  return ["conta", seguro(usuarioId), ...partes.map(seguro)].join("/");
+}
+
+/** Grava um arquivo gerado pelo próprio servidor (ex.: foto já processada). */
+export async function gravarArquivo(
+  chave: string,
+  conteudo: Uint8Array,
+  tipoDeConteudo: string,
+): Promise<void> {
+  const { cliente, bucket } = s3();
+  await cliente.send(
+    new PutObjectCommand({ Bucket: bucket, Key: chave, Body: conteudo, ContentType: tipoDeConteudo }),
+  );
+}
+
+/** Lê um arquivo pelo servidor (para servir com verificação de permissão). */
+export async function lerArquivo(chave: string): Promise<Uint8Array | null> {
+  const { cliente, bucket } = s3();
+  try {
+    const r = await cliente.send(new GetObjectCommand({ Bucket: bucket, Key: chave }));
+    return r.Body ? await r.Body.transformToByteArray() : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function apagarArquivo(chave: string): Promise<void> {
+  const { cliente, bucket } = s3();
+  await cliente.send(new DeleteObjectCommand({ Bucket: bucket, Key: chave }));
 }

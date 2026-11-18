@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { Avatar } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
 
-/** Barra superior das áreas logadas: área, usuário e botão de sair. */
+/** Barra superior das áreas logadas: área, usuário (com foto) e botão de sair. */
 export function Cabecalho({
   area,
   usuario,
@@ -9,8 +10,8 @@ export function Cabecalho({
   console: noConsole = false,
 }: {
   area: string;
-  usuario: string;
-  /** Administrador do tenant: mostra o link para a administração de usuários. */
+  usuario: { nome: string; foto?: string | null };
+  /** Administrador do tenant: mostra os links de administração. */
   administrador?: boolean;
   /** Console da plataforma: mostra o link para a equipe da RGRUBER. */
   console?: boolean;
@@ -21,7 +22,10 @@ export function Cabecalho({
         {area}
       </Link>
       <div className="flex items-center gap-4 text-sm">
-        <span className="text-muted">{usuario}</span>
+        <Link href="/seguranca" className="text-muted flex items-center gap-2" title="Minha conta">
+          <Avatar nome={usuario.nome} foto={usuario.foto} />
+          <span>{usuario.nome}</span>
+        </Link>
         {noConsole && (
           <Link href="/equipe" className="text-primary font-medium">
             Equipe
@@ -38,7 +42,7 @@ export function Cabecalho({
           </>
         )}
         <Link href="/seguranca" className="text-primary font-medium">
-          Segurança
+          Minha conta
         </Link>
         <FormSair />
       </div>

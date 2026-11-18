@@ -45,7 +45,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
 
   return (
     <>
-      <Cabecalho area={acesso.tenant.nome} usuario={acesso.usuario.nome} administrador />
+      <Cabecalho area={acesso.tenant.nome} usuario={acesso.usuario} administrador />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-xl">
           <Link href="/usuarios" className="text-primary text-sm">

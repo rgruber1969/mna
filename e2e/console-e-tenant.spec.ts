@@ -149,6 +149,22 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(admin.getByRole("heading", { name: "Olá, Admin do Tenant" })).toBeVisible();
   expect(await segundoFatorDaUltimaSessao(emailTenant)).toBe(true);
 
+  // Foto da conta: enviada em "Minha conta" e mostrada em miniatura no topo.
+  await admin.getByRole("link", { name: "Minha conta" }).click();
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    "base64",
+  );
+  await admin.locator("input[name=foto]").filter({ visible: true }).setInputFiles({
+    name: "eu.png",
+    mimeType: "image/png",
+    buffer: png,
+  });
+  await admin.getByRole("button", { name: "Salvar foto" }).click();
+  await expect(admin.getByText("Foto atualizada.")).toBeVisible();
+  await expect(admin.getByRole("img", { name: "Foto de Admin do Tenant" }).first()).toBeVisible();
+  await admin.goto(base);
+
   // Convite já usado não vale de novo.
   const outra = await (await browser.newContext()).newPage();
   await outra.goto(link);

@@ -9,6 +9,7 @@ import { obterConvite } from "@/server/services/convites";
 import { Cartao, Carregando, Moldura, Titulo } from "@/components/ui/basicos";
 import { FundoDeLinhas } from "@/components/ui/fundo-de-linhas";
 import { Cabecalho } from "./cabecalho";
+import { FormFoto } from "@/components/conta/formulario-foto";
 import { AvisoDaEntrada } from "./aviso-da-entrada";
 import { FormAutenticador, FormSair } from "./formularios";
 import { BotaoEntrarComPasskey, FormCriarPasskey, FormPedirLink, FormUsarLink } from "./passkey-e-link";
@@ -214,11 +215,15 @@ async function ConteudoSeguranca() {
     <>
       <Cabecalho
         area={area}
-        usuario={acesso.usuario.nome}
+        usuario={acesso.usuario}
         administrador={acesso.area === "tenant" && acesso.administrador}
         console={acesso.area === "console"}
       />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
+        <Cartao>
+          <Titulo sobre="Minha conta">Foto</Titulo>
+          <FormFoto nome={acesso.usuario.nome} foto={acesso.usuario.foto} />
+        </Cartao>
         <Cartao>
           <Titulo sobre="Segurança">Passkey</Titulo>
           {acesso.usuario.temPasskey && (

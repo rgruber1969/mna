@@ -140,3 +140,43 @@ export function CaixaComDescricao({
     </label>
   );
 }
+
+/** Iniciais do nome (até duas letras), para quando não há foto. */
+function iniciais(nome: string): string {
+  const partes = nome.trim().split(/\s+/).filter(Boolean);
+  const letras =
+    partes.length > 1 ? partes[0][0] + partes[partes.length - 1][0] : (partes[0] ?? "?").slice(0, 2);
+  return letras.toUpperCase();
+}
+
+/** Foto da pessoa em miniatura redonda; sem foto, as iniciais. */
+export function Avatar({
+  nome,
+  foto,
+  tamanho = 32,
+}: {
+  nome: string;
+  foto?: string | null;
+  tamanho?: number;
+}) {
+  if (foto)
+    return (
+      <Image
+        src={foto}
+        alt={`Foto de ${nome}`}
+        width={tamanho}
+        height={tamanho}
+        unoptimized
+        className="border-border rounded-full border object-cover"
+      />
+    );
+  return (
+    <span
+      aria-hidden
+      style={{ width: tamanho, height: tamanho }}
+      className="bg-primary text-primary-foreground inline-flex items-center justify-center rounded-full text-xs font-semibold"
+    >
+      {iniciais(nome)}
+    </span>
+  );
+}

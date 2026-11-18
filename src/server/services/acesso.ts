@@ -12,6 +12,7 @@ import {
 } from "@/server/db/esquema";
 import { resolverArea } from "@/server/enderecos";
 import { exigidosPorPerfil } from "./exigencia-2fa";
+import { enderecoDaFoto } from "./foto-da-conta";
 import { entradaDeDesenvolvimentoLigada, hostLocal } from "@/server/auth/entrada-de-desenvolvimento";
 
 /**
@@ -29,6 +30,8 @@ export type UsuarioDoAcesso = {
   temPasskey: boolean;
   /** Tem algum segundo fator configurado (autenticador ou passkey). */
   doisFatoresAtivo: boolean;
+  /** Endereço da foto da conta, se houver (foto-da-conta.ts). */
+  foto?: string | null;
 };
 export type TenantDoAcesso = {
   id: string;
@@ -146,6 +149,7 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     temAutenticador,
     temPasskey: Boolean(chave),
     doisFatoresAtivo: temAutenticador || Boolean(chave),
+    foto: enderecoDaFoto(u.id, u.image),
   };
   const segundoFatorNaSessao = Boolean(s.segundoFator);
 

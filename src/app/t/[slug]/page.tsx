@@ -16,11 +16,7 @@ async function Inicio() {
   if (portao) return portao;
   return (
     <>
-      <Cabecalho
-        area={acesso.tenant.nome}
-        usuario={acesso.usuario.nome}
-        administrador={acesso.administrador}
-      />
+      <Cabecalho area={acesso.tenant.nome} usuario={acesso.usuario} administrador={acesso.administrador} />
       <Moldura>
         <Cartao largura="max-w-xl">
           <Titulo sobre={acesso.administrador ? "Administrador" : "Usuário"}>

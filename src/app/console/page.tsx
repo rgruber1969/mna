@@ -23,7 +23,7 @@ async function Painel() {
 
   return (
     <>
-      <Cabecalho area={`${produto.nome} · Console`} usuario={acesso.usuario.nome} console />
+      <Cabecalho area={`${produto.nome} · Console`} usuario={acesso.usuario} console />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
           <Titulo sobre="Console">Tenants</Titulo>

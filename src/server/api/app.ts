@@ -2,6 +2,8 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { produto } from "@/config/produto";
 import { obterStatusDoSistema } from "@/server/services/sistema";
+import { obterAcesso } from "@/server/services/acesso";
+import { lerFotoDaConta } from "@/server/services/foto-da-conta";
 import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
@@ -36,6 +38,21 @@ const rotaStatus = createRoute({
 });
 
 api.openapi(rotaStatus, (c) => c.json(obterStatusDoSistema(), 200));
+
+/**
+ * Foto da conta (uso interno das telas; fora do Swagger). Exige sessão no
+ * endereço e permissão de ver a pessoa (foto-da-conta.ts).
+ */
+api.get("/conta/foto/:usuarioId", async (c) => {
+  const acesso = await obterAcesso(c.req.raw.headers);
+  const foto = await lerFotoDaConta(acesso, c.req.param("usuarioId"));
+  if (!foto) return c.body(null, 404);
+  return c.body(foto as Uint8Array<ArrayBuffer>, 200, {
+    "content-type": "image/webp",
+    "cache-control": "private, max-age=86400",
+    "x-content-type-options": "nosniff",
+  });
+});
 
 /**
  * Endpoint chamado pelo Inngest para executar as tarefas (ADR-0015).
