@@ -50,6 +50,31 @@ geral do comprador e também faz a diligência jurídica do comprador):
 
 A lista de papéis deve ser um cadastro extensível.
 
+Regras do cadastro (questionário `perguntas-empresas-pessoas.md`, 2026-11-18):
+
+* **Campos:** CNPJ, razão social, nome fantasia, endereço completo,
+  atividade principal (CNAE), site, telefone e e-mail gerais, observações.
+  **Empresa estrangeira:** país + identificador do país de origem, sem CNPJ.
+  Faturamento e dados financeiros ficam no valuation, não no cadastro.
+* **Preenchimento automático:** ao digitar o CNPJ, busca na base pública
+  da Receita (razão social, endereço, CNAE e quadro de sócios); os sócios
+  aparecem como sugestão de pessoas, confirmadas uma a uma. Ao digitar o
+  CEP, o endereço é preenchido (empresas e pessoas).
+* **Grupo econômico:** cadastro simples de grupos (nome); cada empresa pode
+  pertencer a um grupo, sem hierarquia na V1. **Um deal pode estar
+  associado a uma empresa, ao grupo inteiro ou a algumas empresas do
+  grupo** (regra para o item 8).
+* **Sem duplicidade:** CNPJ único por tenant (o sistema avisa e leva ao
+  cadastro existente). Cada tenant tem o seu cadastro.
+* **Empresa do contratante:** criada automaticamente com o tenant, com uma
+  **marcação** (não é perfil nem papel) que impede a exclusão; nos deals,
+  é escolhida e recebe papéis como qualquer outra.
+* **Papéis:** a lista acima é copiada para cada tenant (como os perfis
+  padrão) e é editável; papel em uso não pode ser excluído. Cada papel
+  indica o **perfil de deal sugerido** para as pessoas daquela empresa; no
+  deal, o administrador confirma. O papel é dado à empresa **dentro de
+  cada deal** (item 8).
+
 ### Anonimização de clientes (incluída na V1 em 2026-11-18)
 
 Funcionalidade de venda: quem envia documentos (tipicamente a vendedora ao
@@ -90,6 +115,36 @@ comprador) consegue **não revelar quem são os clientes**.
   convidada; nem toda pessoa é usuária.
 * Cada empresa pode ter N pessoas e N usuários. Um usuário pode ter
   perfis diferentes em deals diferentes.
+* **Campos da pessoa** (qualificação nos contratos): nome completo, e-mail,
+  telefone, nacionalidade, estado civil, profissão, data de nascimento,
+  endereço completo; **sensíveis, criptografados:** CPF, RG (órgão emissor
+  e UF) ou documento estrangeiro. **Cônjuge:** nome, e-mail (para futuras
+  assinaturas eletrônicas e avisos) e, criptografados, CPF, RG e regime de
+  bens.
+* **Vínculos com empresas:** uma pessoa pode ter vários vínculos, inclusive
+  mais de um com a mesma empresa, com cargo (texto livre). Tipos de vínculo
+  num **cadastro do tenant, extensível**, com os padrões: sócio (com
+  percentual de participação), administrador, representante legal,
+  procurador, funcionário e contato.
+* **Pessoa e conta:** o convite pode partir do cadastro da pessoa. Ao
+  aceitar um convite, se já existe pessoa com o mesmo e-mail no tenant, a
+  conta é ligada a ela; senão, a pessoa é criada com nome e e-mail. O CPF só
+  é exigido quando necessário (ex.: contrato).
+* **Sem duplicidade:** CPF único por tenant (verificado por índice cego);
+  **e-mail único por tenant quando preenchido** (pessoa pode não ter
+  e-mail). Sem CPF, o sistema avisa sobre nomes parecidos.
+* **Dados sensíveis mascarados** (ex.: `***.456.789-**`); "mostrar" revela
+  para quem pode editar "Empresas e pessoas" e registra a visualização na
+  auditoria. Exportações e API seguem a mesma regra.
+* **Funcionários das empresas-alvo:** sem salário no cadastro na V1 (fica só
+  nos arquivos de diligência); entram como pessoa comum, se necessário.
+
+#### Exclusão de empresas e pessoas
+
+* Exige a permissão de excluir em "Empresas e pessoas" **e** que o cadastro
+  não esteja em nenhum deal, contrato ou valuation; senão, a opção é
+  **inativar** (some das listas de escolha, o histórico fica). A exclusão
+  definitiva a pedido do titular segue a anonimização (item 23).
 
 ### Deal
 

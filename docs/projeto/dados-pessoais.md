@@ -20,12 +20,13 @@ novo com dado pessoal é registrado aqui no mesmo commit.
 | Usuários | Passkeys: chave pública e nome dado ao aparelho | Pessoal | Contrato | Tabela `chave_de_acesso`; a chave privada nunca sai do aparelho |
 | Usuários | Foto (opcional, enviada pela própria pessoa) | Pessoal | Consentimento (a pessoa envia e remove quando quiser) | Da conta, vale em todos os tenants; guardada no armazenamento de arquivos, reduzida a 256 × 256 px, sem metadados (EXIF); apagada ao ser trocada ou removida |
 | Convidados | Nome e e-mail do convite | Pessoal | Contrato | Tabelas `convite` e `convite_plataforma`; token guardado só como hash |
-| Sócios e partes de contratos | Nome, e-mail, telefone, endereço completo | Pessoal | Contrato | Usados na confecção de contratos |
-| Sócios e partes de contratos | CPF, RG (identidade) | **Sensível** | Contrato | |
-| Sócios e partes de contratos | Dados do cônjuge | **Sensível** | Contrato | |
+| Pessoas do tenant (sócios, partes, representantes, contatos) | Nome, e-mail, telefone, nacionalidade, estado civil, profissão, data de nascimento, endereço completo | Pessoal | Contrato | Qualificação nos contratos (dominio.md, "Pessoa e usuário") |
+| Pessoas do tenant | CPF, RG (órgão emissor e UF) ou documento estrangeiro | **Sensível** | Contrato | Criptografados com a chave do tenant; CPF com índice cego para evitar duplicidade |
+| Cônjuges das pessoas | Nome e e-mail | Pessoal | Contrato | E-mail para futuras assinaturas eletrônicas e avisos |
+| Cônjuges das pessoas | CPF, RG e regime de bens | **Sensível** | Contrato | Criptografados com a chave do tenant |
 | Clientes das empresas (quando pessoa física) | Nome e variações de grafia | Pessoal | Contrato (a validar) | Clientes das anonimizações (dominio.md); razão social de pessoa jurídica não é dado pessoal |
 | Funcionários das empresas-alvo | Nome, cargo, data de admissão | Pessoal | Contrato (a validar) | Circulam sobretudo dentro de arquivos de diligência |
-| Funcionários das empresas-alvo | CPF, salário | **Sensível** | Contrato (a validar) | Idem |
+| Funcionários das empresas-alvo | CPF, salário | **Sensível** | Contrato (a validar) | Idem; salário **não** é cadastrado na V1 (só nos arquivos) |
 
 "A validar": para terceiros que não são parte do contrato (ex.:
 funcionários da empresa-alvo), confirmar com o jurídico se a base é

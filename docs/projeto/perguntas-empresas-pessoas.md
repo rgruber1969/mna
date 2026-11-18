@@ -19,7 +19,7 @@ principal (CNAE), site, telefone e e-mail gerais, observações. Empresa
 país de origem. Faturamento, número de funcionários e dados financeiros
 ficam no valuation, não no cadastro.
 
-**Resposta:**
+**Resposta:** OK para sugestão.
 
 **E2. Preenchimento automático pelo CNPJ.** Ao digitar o CNPJ, o sistema
 busca razão social, endereço, CNAE e o quadro de sócios na base pública da
@@ -28,7 +28,7 @@ Receita (serviço gratuito, sem cadastro; o CNPJ é dado público).
 **Sugestão:** sim, real na V1. Os sócios encontrados aparecem como sugestão
 para cadastrar como pessoas (o usuário confirma cada um).
 
-**Resposta:**
+**Resposta:** OK para sugestão. Dúvida: onde vc consegue esse serviço gratuito? Aproveitando, pode fazer o mesmo com serviços gratuitos de CEP para preenchimento do endereço?
 
 **E3. Grupo econômico.** O domínio já fala em grupo econômico (anonimização
 de clientes e rateio do valuation entre vendedoras). A empresa tem um campo
@@ -37,7 +37,7 @@ de clientes e rateio do valuation entre vendedoras). A empresa tem um campo
 **Sugestão:** sim: cadastro simples de grupos (nome) e cada empresa pode
 pertencer a um grupo. Sem hierarquia (controladora/controlada) na V1.
 
-**Resposta:**
+**Resposta:** OK para sugestão. Importante: um Deal pode estar associado a uma empresa ou ao grupo como um todo ou a algumas empresas do grupo.
 
 **E4. Duplicidade.** A mesma empresa pode ser cadastrada duas vezes no
 tenant?
@@ -46,7 +46,7 @@ tenant?
 existente). Cada tenant tem o seu cadastro, sem compartilhar com outros
 tenants.
 
-**Resposta:**
+**Resposta:** OK para sugestão.
 
 **E5. O próprio contratante como empresa.** O BT também atua nos deals (ex.:
 escritório da vendedora). Ele deve existir como empresa no próprio tenant?
@@ -55,7 +55,7 @@ escritório da vendedora). Ele deve existir como empresa no próprio tenant?
 "empresa do contratante", sem exclusão), para ser escolhido nos deals como
 qualquer outra empresa.
 
-**Resposta:**
+**Resposta:** OK para sugestão. Esse "empresa do contratante" é apenas um flag (marcação) ou é um perfil?
 
 ## 2. Papéis das empresas
 
@@ -69,7 +69,7 @@ indica o **perfil de deal sugerido** para as pessoas daquela empresa (ex.:
 "Escritório da compradora" → "Advogado da compradora"); no deal, o
 administrador confirma.
 
-**Resposta:**
+**Resposta:** ok para a sugestão.
 
 **Pa2. Onde o papel é dado.** O papel é da empresa **dentro de cada deal**
 (a mesma empresa pode ser vendedora num deal e compradora em outro).
@@ -77,7 +77,7 @@ administrador confirma.
 **Sugestão:** sim. Nesta etapa entra só o cadastro de papéis; a atribuição
 aos deals vem com o item 8 (deals).
 
-**Resposta:**
+**Resposta:** ok para a sugestão.
 
 ## 3. Pessoas
 
@@ -91,7 +91,7 @@ brasileiro: "nacionalidade, estado civil, profissão, RG, CPF, endereço").
   passaporte ou documento do país.
 * Cônjuge (sensíveis, criptografados): nome, CPF, RG e regime de bens.
 
-**Resposta:**
+**Resposta:** e-mail do conjuge também, pois en versões posteriores talvez haja assinatura eletrônica e possíveis notificações por e-mail para o conjuge.
 
 **Pe2. Vínculo da pessoa com a empresa.** Uma pessoa pode estar ligada a
 várias empresas, com tipos de vínculo diferentes.
@@ -101,7 +101,7 @@ administrador, representante legal, procurador, funcionário e contato, com
 cargo (texto livre). Uma pessoa pode ter mais de um vínculo com a mesma
 empresa.
 
-**Resposta:**
+**Resposta:** ok para a sugestão. Pode criar um cadastro de vínculos,  para que o adm do tenant possa acrescentar novos tipos de vínculos à lista, além dos que vc sugeriu?
 
 **Pe3. Pessoa e usuário.** Toda pessoa pode virar usuário ao ser convidada.
 
@@ -110,7 +110,9 @@ para o sistema"); quem já é usuário do tenant aparece também como pessoa,
 ligado à sua conta. A conta (login) continua única na plataforma (ADR-0019);
 a pessoa é do tenant.
 
-**Resposta:**
+**Resposta:** ok para a sugestão. Dúvida: quando o adm do tenant cadastra um usuário e o mesmo aceita, o sistema cadastra automaticamente esse novo usuário como pessoa, deixando alguns campos em branco, certo? Enquanto o cpf estiver em branco, sofremos com a possibilidade de duplicidade daquela pessoa ou o sistema vai obrigar o tenant ou o usuário a cadastrar logo o CPF quando esse usuário aceitar o convite do tenant?
+
+**Decidido na conversa (2026-11-18):** ligar pelo e-mail. Ao aceitar o convite, se já existe pessoa com o mesmo e-mail no tenant, a conta é ligada a ela; senão, a pessoa é criada com nome e e-mail. CPF só quando necessário.
 
 **Pe4. Funcionários das empresas-alvo.** O inventário prevê CPF e salário de
 funcionários, que circulam sobretudo dentro dos arquivos de diligência.
@@ -120,7 +122,7 @@ têm acesso controlado); funcionário entra como pessoa comum, se for
 necessário citá-lo. Menos dado sensível guardado = menos risco (LGPD:
 minimização).
 
-**Resposta:**
+**Resposta:** ok para a sugestão.
 
 **Pe5. Quem vê os dados sensíveis.** CPF, RG e dados do cônjuge.
 
@@ -129,7 +131,7 @@ minimização).
 registra a visualização na auditoria. Exportações e API seguem a mesma
 regra.
 
-**Resposta:**
+**Resposta:** ok para a sugestão.
 
 **Pe6. Duplicidade de pessoa.** A mesma pessoa pode ser cadastrada duas
 vezes no tenant?
@@ -138,7 +140,9 @@ vezes no tenant?
 que encontra o CPF repetido sem guardar o CPF legível). Sem CPF, o sistema
 só avisa sobre nome e e-mail parecidos.
 
-**Resposta:**
+**Resposta:** ok para a sugestão. Dúvida, confirmando: o e-mail é único no tenant, correto: Inclusive é o login.
+
+**Decidido na conversa (2026-11-18):** e-mail único por tenant quando preenchido (pessoa pode não ter e-mail); para usuários, é o e-mail de login, único na plataforma.
 
 ## 4. Exclusão
 
@@ -148,4 +152,4 @@ só avisa sobre nome e e-mail parecidos.
 a opção é **inativar** (some das listas de escolha, mas o histórico fica).
 A exclusão definitiva a pedido do titular segue a anonimização do item 23.
 
-**Resposta:**
+**Resposta:** ok para a sugestão. Lembrando que, mesmo que passe pelos critérios acima, depende do usuário ter permissão de exclusão de empresa ou pessoa.
