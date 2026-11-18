@@ -63,8 +63,8 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
   * **Perfil no tenant:** atribuído uma vez, vale no tenant todo; um usuário
     pode ter **vários, com permissões somadas**.
   * **Perfis padrão:** todo tenant novo recebe uma cópia do conjunto padrão
-    (das duas camadas), que passa a ser dele e é editável. Lista e matrizes:
-    a aprovar.
+    (das duas camadas), que passa a ser dele e é editável. Lista e matrizes
+    em "Perfis padrão", abaixo.
   * **Administrador do tenant** é uma marcação à parte, não um perfil.
   * Perfil em uso não pode ser excluído.
 * **Escopo por deal:** o usuário só acessa deals em que foi incluído
@@ -108,12 +108,58 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
 * **O tenant pode ser de qualquer lado** (vendedor ou comprador): nenhuma
   regra de permissão supõe o lado do contratante.
 
-Exemplo ilustrativo (os valores reais são configurados pelo tenant):
+## Perfis padrão (aprovados em 2026-11-18)
 
-| Perfil | Ver deal | Editar deal | Baixar documentos |
-|---|---|---|---|
-| Advisor | sim | sim | sim |
-| Cliente | sim | não | só os liberados |
+Copiados para cada tenant novo; depois da cópia, o tenant renomeia, ajusta,
+cria e exclui à vontade.
+
+**Ações:** V = ver · C = criar · E = editar · X = excluir · B = baixar ·
+Co = comentar (sem editar) · Ap = aprovar uma versão · Li = liberar ao
+comprador · — = sem acesso.
+
+### Perfis do tenant (fora dos deals)
+
+| Perfil | Painel | Deals (lista) | Valuations avulsos | Empresas e pessoas | Cadastros gerais¹ | Auditoria |
+|---|---|---|---|---|---|---|
+| **Gestor do contratante** | V | V C E X | V C E X B | V C E X B | V C E X | V |
+| **Equipe do contratante** | V | V C E | V C E X B | V C E B | V | — |
+| **Usuário externo** | V | V | — | — | — | — |
+
+¹ Etapas padrão, catálogo de documentos, templates e papéis de empresa.
+
+* A lista de deals mostra só os deals em que a pessoa participa; quem cria
+  um deal entra nele como "Coordenador do deal".
+* Usuários, perfis, configurações e chaves de API: só administradores do
+  tenant (fora das matrizes).
+
+### Perfis de deal (escolhidos em cada participação, com alcance)
+
+| Perfil | Deal e participantes | Etapas | Documentos² | Tarefas | Mensagens | Contratos | E-book / OnePager | Ofertas |
+|---|---|---|---|---|---|---|---|---|
+| **Coordenador do deal** | V E | V C E X | V C E X B | V C E X | V C | V C E X B | V C E X B Li | V C E X |
+| **Advogado da vendedora** | V | V E | V C E B | V C E | V C | V C E B | V Co | V C E |
+| **Advisor da vendedora** | V | V E | V C E B | V C E | V C | V B | V C E B Li | V C E |
+| **Contador da vendedora** | V | V | V C E B | V C E | V C | — | — | — |
+| **Vendedora** | V | V | V C B | V E | V C | V B | V Co Ap | V |
+| **Compradora** | V | V | V B | V E | V C | — | V³ | — |
+| **Advogado da compradora** | V | V | V C B | V C E | V C | — | V³ | — |
+| **Contador da compradora** | V | V | V C E B | V C E | V C | — | — | — |
+| **Auditor (diligência)** | V | V | V C E B | V C E | V C | — | — | — |
+| **Somente leitura** | V | V | V | V | V | — | — | — |
+
+² Sempre só nas versões a que a pessoa recebeu acesso de quem as enviou
+(lista de acesso por versão); "C" é enviar documento ou nova versão.
+³ Só depois que o lado vendedor libera (Li).
+
+* Mensagens são imutáveis (sem editar nem excluir).
+* Em Tarefas, "E" da Vendedora e da Compradora serve para atualizar e
+  concluir as próprias tarefas.
+* Valuation no deal segue a visibilidade definida pelo criador (fora da
+  matriz).
+* Incluir e remover pessoas do deal: só administradores do tenant na V1;
+  o "E" do Coordenador em "Deal e participantes" edita os dados do deal.
+* "Auditor" cobre as diligências (contábil, jurídica, trabalhista etc.),
+  normalmente com alcance só na subetapa da sua diligência.
 
 ## Exemplo: escritório com duas funções no mesmo deal
 
