@@ -9,7 +9,7 @@ import {
   redefinirPelaPlataformaAcao,
   renomearTenantAcao,
 } from "@/app/acoes/usuarios";
-import { Aviso, Botao, Campo } from "@/components/ui/basicos";
+import { Aviso, Botao, CaixaComDescricao, Campo } from "@/components/ui/basicos";
 
 type Acao = (estado: Estado, dados: FormData) => Promise<Estado>;
 
@@ -76,7 +76,11 @@ export function BotaoDeAcao({
   );
 }
 
-export function FormConvidarUsuario({ perfis }: { perfis: { id: string; nome: string }[] }) {
+export function FormConvidarUsuario({
+  perfis,
+}: {
+  perfis: { id: string; nome: string; descricao: string }[];
+}) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(convidarUsuarioAcao);
   return (
     <form action={acao}>
@@ -90,9 +94,13 @@ export function FormConvidarUsuario({ perfis }: { perfis: { id: string; nome: st
             Perfis no tenant (as permissões se somam)
           </legend>
           {perfis.map((p) => (
-            <label key={p.id} className="text-text flex items-center gap-2 text-sm">
-              <input type="checkbox" name="perfil" value={p.id} /> {p.nome}
-            </label>
+            <CaixaComDescricao
+              key={p.id}
+              name="perfil"
+              value={p.id}
+              titulo={p.nome}
+              descricao={p.descricao}
+            />
           ))}
         </fieldset>
       )}

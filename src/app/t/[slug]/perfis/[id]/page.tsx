@@ -9,7 +9,7 @@ import { obterPerfil } from "@/server/services/perfis";
 import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
 import { Cabecalho } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { FormMatrizDoPerfil, FormRenomearPerfil } from "@/components/perfis/formularios";
+import { FormMatrizDoPerfil, FormEditarPerfil } from "@/components/perfis/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
@@ -42,8 +42,8 @@ async function Detalhe({ id }: { id: Promise<string> }) {
         </Cartao>
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Editar">Nome</Titulo>
-            <FormRenomearPerfil id={p.id} nome={p.nome} />
+            <Titulo sobre="Editar">Nome e descrição</Titulo>
+            <FormEditarPerfil id={p.id} nome={p.nome} descricao={p.descricao} />
           </Cartao>
           {p.camada === "tenant" && (
             <Cartao largura="max-w-sm">

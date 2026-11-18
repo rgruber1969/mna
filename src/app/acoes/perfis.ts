@@ -8,7 +8,7 @@ import {
   definirModoPermissoes,
   definirPerfisDoUsuario,
   excluirPerfil,
-  renomearPerfil,
+  editarPerfil,
   salvarMatrizDoPerfil,
   salvarMatrizIndividual,
 } from "@/server/services/perfis";
@@ -38,13 +38,20 @@ export async function criarPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
   const r = await criarPerfil(await acesso(), {
     nome: texto(f, "nome"),
     camada: texto(f, "camada"),
+    descricao: texto(f, "descricao"),
     copiarDe: texto(f, "copiarDe") || undefined,
   });
   return "erro" in r ? { erro: r.erro } : { destino: `/perfis/${r.id}` };
 }
 
-export async function renomearPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await renomearPerfil(await acesso(), texto(f, "id"), texto(f, "nome")), "Nome alterado.");
+export async function editarPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estado(
+    await editarPerfil(await acesso(), texto(f, "id"), {
+      nome: texto(f, "nome"),
+      descricao: texto(f, "descricao"),
+    }),
+    "Perfil salvo.",
+  );
 }
 
 export async function salvarMatrizDoPerfilAcao(_: Estado, f: FormData): Promise<Estado> {

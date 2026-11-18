@@ -7,7 +7,13 @@ import type { Acao, Camada, Matriz } from "./catalogo";
  * backlog-futuro.md).
  */
 
-export type PerfilPadrao = { codigo: string; nome: string; camada: Camada; matriz: Matriz };
+export type PerfilPadrao = {
+  codigo: string;
+  nome: string;
+  descricao: string;
+  camada: Camada;
+  matriz: Matriz;
+};
 
 const V: Acao[] = ["ver"];
 const VC: Acao[] = ["ver", "criar"];
@@ -23,18 +29,24 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   // --- Perfis do tenant -------------------------------------------------------
   {
     codigo: "gestor-contratante",
+    descricao:
+      "Para quem coordena o contratante: cria e exclui deals, mantém os cadastros gerais (etapas padrão, catálogo de documentos, templates) e consulta a auditoria.",
     nome: "Gestor do contratante",
     camada: "tenant",
     matriz: { painel: V, deals: VCEX, valuations: VCEXB, empresas: VCEXB, cadastros: VCEX, auditoria: V },
   },
   {
     codigo: "equipe-contratante",
+    descricao:
+      "Para quem trabalha nos deals no dia a dia: cria e edita deals, valuations, empresas e pessoas; só consulta os cadastros gerais e não vê a auditoria.",
     nome: "Equipe do contratante",
     camada: "tenant",
     matriz: { painel: V, deals: VCE, valuations: VCEXB, empresas: VCEB, cadastros: V },
   },
   {
     codigo: "usuario-externo",
+    descricao:
+      "Para clientes, compradores e parceiros: vê o painel e a lista dos deals em que participa; o que faz em cada deal depende do perfil que recebe nele.",
     nome: "Usuário externo",
     camada: "tenant",
     matriz: { painel: V, deals: V },
@@ -43,6 +55,8 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   // --- Perfis de deal ---------------------------------------------------------
   {
     codigo: "coordenador-deal",
+    descricao:
+      "Conduz o deal: edita os dados do deal e tem acesso completo a etapas, documentos, tarefas, contratos, e-book e ofertas.",
     nome: "Coordenador do deal",
     camada: "deal",
     matriz: {
@@ -58,6 +72,8 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   },
   {
     codigo: "advogado-vendedora",
+    descricao:
+      "Advogado do lado vendedor: trabalha em etapas, documentos, tarefas, contratos e ofertas; comenta o e-book.",
     nome: "Advogado da vendedora",
     camada: "deal",
     matriz: {
@@ -73,6 +89,8 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   },
   {
     codigo: "advisor-vendedora",
+    descricao:
+      "Advisor do lado vendedor: trabalha em etapas, documentos, tarefas e ofertas; monta o e-book e o libera ao comprador.",
     nome: "Advisor da vendedora",
     camada: "deal",
     matriz: {
@@ -88,12 +106,15 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   },
   {
     codigo: "contador-vendedora",
+    descricao: "Contador do lado vendedor: envia e edita documentos e cuida das tarefas.",
     nome: "Contador da vendedora",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
     codigo: "vendedora",
+    descricao:
+      "Empresa vendedora: envia documentos, atualiza as próprias tarefas, comenta e aprova o e-book e acompanha as ofertas.",
     nome: "Vendedora",
     camada: "deal",
     matriz: {
@@ -109,30 +130,39 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   },
   {
     codigo: "compradora",
+    descricao:
+      "Empresa compradora: vê e baixa os documentos liberados, atualiza as próprias tarefas e vê o e-book liberado.",
     nome: "Compradora",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VB, tarefas: VE, mensagens: VC, ebook: V },
   },
   {
     codigo: "advogado-compradora",
+    descricao:
+      "Advogado do lado comprador: vê, envia e baixa documentos, cuida de tarefas e vê o e-book liberado.",
     nome: "Advogado da compradora",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VCB, tarefas: VCE, mensagens: VC, ebook: V },
   },
   {
     codigo: "contador-compradora",
+    descricao: "Contador do lado comprador: envia e edita documentos e cuida das tarefas.",
     nome: "Contador da compradora",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
     codigo: "auditor",
+    descricao:
+      "Diligências (contábil, jurídica, trabalhista etc.), normalmente só na subetapa da sua diligência: documentos e tarefas.",
     nome: "Auditor (diligência)",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
     codigo: "somente-leitura",
+    descricao:
+      "Só consulta: vê deal, etapas, documentos liberados, tarefas e mensagens, sem baixar nem alterar.",
     nome: "Somente leitura",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: V, tarefas: V, mensagens: V },

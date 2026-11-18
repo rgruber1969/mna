@@ -27,12 +27,15 @@ async function Painel() {
       {perfis
         .filter((p) => p.camada === camada)
         .map((p: PerfilResumo) => (
-          <li key={p.id} className="flex items-center justify-between gap-2 py-2">
-            <Link href={`/perfis/${p.id}`} className="text-primary font-medium">
-              {p.nome}
-            </Link>
+          <li key={p.id} className="flex items-start justify-between gap-3 py-2">
+            <span>
+              <Link href={`/perfis/${p.id}`} className="text-primary font-medium">
+                {p.nome}
+              </Link>
+              {p.descricao && <span className="text-muted block text-xs">{p.descricao}</span>}
+            </span>
             {camada === "tenant" && (
-              <span className="text-muted text-xs">
+              <span className="text-muted shrink-0 text-xs">
                 {p.emUso === 0 ? "sem usuários" : `${p.emUso} usuário${p.emUso > 1 ? "s" : ""}`}
               </span>
             )}
@@ -77,11 +80,15 @@ async function Painel() {
             <BotaoDeAcao
               acao={definirModoAcao}
               campos={{ modo: modo === "perfil" ? "usuario" : "perfil" }}
-              rotulo={modo === "perfil" ? "Passar para por usuário" : "Voltar para por perfil"}
+              rotulo={
+                modo === "perfil"
+                  ? "Mudar para Modo de permissões por Usuário"
+                  : "Mudar para Modo de permissões por Perfil"
+              }
               confirmar={
                 modo === "perfil"
-                  ? "Passar para o modo por usuário?"
-                  : "Voltar para o modo por perfil? As personalizações ficam guardadas e voltam se o modo for trocado de novo."
+                  ? "Mudar para o modo de permissões por usuário?"
+                  : "Mudar para o modo de permissões por perfil? As personalizações ficam guardadas e voltam se o modo for trocado de novo."
               }
             />
           </Cartao>

@@ -78,6 +78,13 @@
       "when": 1795006524321,
       "tag": "0010_perfil_em_uso",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795009090524,
+      "tag": "0011_descricao_do_perfil",
+      "breakpoints": true
     }
   ]
 }

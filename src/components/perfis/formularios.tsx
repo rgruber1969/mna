@@ -4,12 +4,12 @@ import {
   copiarMatrizIndividualAcao,
   criarPerfilAcao,
   definirPerfisDoUsuarioAcao,
-  renomearPerfilAcao,
+  editarPerfilAcao,
   salvarMatrizDoPerfilAcao,
   salvarMatrizIndividualAcao,
 } from "@/app/acoes/perfis";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
-import { Aviso, Botao, Campo } from "@/components/ui/basicos";
+import { Aviso, Botao, CaixaComDescricao, Campo } from "@/components/ui/basicos";
 import {
   ACOES,
   RECURSOS,
@@ -184,6 +184,7 @@ export function FormNovoPerfil({ perfis }: { perfis: { id: string; nome: string;
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       <Campo rotulo="Nome do perfil" name="nome" required />
+      <CampoDescricao />
       <fieldset className="mb-4">
         <legend className="text-text mb-1 text-sm font-medium">Camada</legend>
         <label className="text-text flex items-center gap-2 text-sm">
@@ -213,39 +214,61 @@ export function FormNovoPerfil({ perfis }: { perfis: { id: string; nome: string;
   );
 }
 
-export function FormRenomearPerfil({ id, nome }: { id: string; nome: string }) {
-  const [estado, acao, enviando] = useAcaoComAtualizacao(renomearPerfilAcao);
+export function FormEditarPerfil({ id, nome, descricao }: { id: string; nome: string; descricao: string }) {
+  const [estado, acao, enviando] = useAcaoComAtualizacao(editarPerfilAcao);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
       <input type="hidden" name="id" value={id} />
       <Campo rotulo="Nome do perfil" name="nome" defaultValue={nome} required />
-      <Botao disabled={enviando}>{enviando ? "Salvando..." : "Salvar nome"}</Botao>
+      <CampoDescricao defaultValue={descricao} />
+      <Botao disabled={enviando}>{enviando ? "Salvando..." : "Salvar"}</Botao>
     </form>
   );
 }
 
-/** Caixas dos perfis do tenant (no convite e no detalhe do usuário). */
+function CampoDescricao({ defaultValue = "" }: { defaultValue?: string }) {
+  return (
+    <label className="mb-4 block">
+      <span className="text-text mb-1 block text-sm font-medium">
+        Para que serve (aparece ao atribuir o perfil)
+      </span>
+      <textarea
+        name="descricao"
+        defaultValue={defaultValue}
+        maxLength={400}
+        rows={3}
+        className="border-border bg-background text-text focus:border-primary w-full rounded-md border px-3 py-2 text-sm outline-none"
+      />
+    </label>
+  );
+}
+
+/** Caixas dos perfis do tenant, com a explicação de cada um. */
 export function CaixasDePerfis({
   perfis,
   marcados = [],
 }: {
-  perfis: { id: string; nome: string }[];
+  perfis: { id: string; nome: string; descricao: string }[];
   marcados?: string[];
 }) {
   if (perfis.length === 0)
     return <p className="text-muted mb-4 text-sm">Nenhum perfil do tenant cadastrado.</p>;
   return (
     <fieldset className="mb-4">
-      <legend className="text-text mb-1 text-sm font-medium">
+      <legend className="text-text mb-2 text-sm font-medium">
         Perfis no tenant (as permissões se somam)
       </legend>
       {perfis.map((p) => (
-        <label key={p.id} className="text-text flex items-center gap-2 text-sm">
-          <input type="checkbox" name="perfil" value={p.id} defaultChecked={marcados.includes(p.id)} />{" "}
-          {p.nome}
-        </label>
+        <CaixaComDescricao
+          key={p.id}
+          name="perfil"
+          value={p.id}
+          titulo={p.nome}
+          descricao={p.descricao}
+          defaultChecked={marcados.includes(p.id)}
+        />
       ))}
     </fieldset>
   );
@@ -257,7 +280,7 @@ export function FormPerfisDoUsuario({
   marcados,
 }: {
   usuarioId: string;
-  perfis: { id: string; nome: string }[];
+  perfis: { id: string; nome: string; descricao: string }[];
   marcados: string[];
 }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(definirPerfisDoUsuarioAcao);

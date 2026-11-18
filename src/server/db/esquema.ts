@@ -309,6 +309,8 @@ export const perfil = pgTable(
       .references(() => tenant.id, { onDelete: "cascade" }),
     camada: text("camada").$type<"tenant" | "deal">().notNull(),
     nome: text("nome").notNull(),
+    /** Para que serve o perfil, em linguagem simples (mostrado ao atribuir). */
+    descricao: text("descricao").notNull().default(""),
     matriz: jsonb("matriz").$type<MatrizGravada>().notNull().default({}),
     /** Código do perfil padrão de origem (só informativo; o perfil é do tenant). */
     padrao: text("padrao"),

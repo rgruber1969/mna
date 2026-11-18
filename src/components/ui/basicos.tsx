@@ -90,3 +90,23 @@ export function Aviso({ tipo = "erro", children }: { tipo?: "erro" | "ok"; child
 export function Carregando() {
   return <p className="text-muted text-sm">Carregando...</p>;
 }
+
+/**
+ * Opção marcável com título e explicação, em cartão (ex.: escolha de perfis).
+ * Destaca a borda quando marcada.
+ */
+export function CaixaComDescricao({
+  titulo,
+  descricao,
+  ...props
+}: { titulo: string; descricao?: string } & ComponentProps<"input">) {
+  return (
+    <label className="border-border has-[:checked]:border-primary has-[:checked]:bg-surface mb-2 flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2">
+      <input type="checkbox" {...props} className="mt-1" aria-label={titulo} />
+      <span>
+        <span className="text-text block text-sm font-medium">{titulo}</span>
+        {descricao && <span className="text-muted block text-xs">{descricao}</span>}
+      </span>
+    </label>
+  );
+}

@@ -25,6 +25,7 @@ type Transacao = Parameters<Parameters<typeof comTenant>[1]>[0];
 
 const uuidValido = (id: string) => z.uuid().safeParse(id).success;
 const Nome = z.string().trim().min(2, "Informe o nome do perfil.").max(80, "Nome muito longo.");
+const Descricao = z.string().trim().max(400, "Descrição muito longa (até 400 caracteres).");
 
 async function auditar(
   a: AcessoTenant,
@@ -55,6 +56,7 @@ export async function copiarPerfisPadrao(tenantId: string): Promise<number> {
         tenantId,
         camada: p.camada,
         nome: p.nome,
+        descricao: p.descricao,
         matriz: p.matriz as Record<string, string[]>,
         padrao: p.codigo,
       })),
@@ -76,6 +78,7 @@ export async function copiarPerfisPadraoParaTodos(): Promise<number> {
 export type PerfilResumo = {
   id: string;
   nome: string;
+  descricao: string;
   camada: Camada;
   /** Usuários com este perfil no tenant (perfis de deal: participações, na 2ª entrega). */
   emUso: number;
@@ -87,7 +90,7 @@ export async function listarPerfis(acesso: Acesso | null): Promise<PainelDePerfi
   const a = exigirAdministrador(acesso);
   const perfis = await comTenant(a.tenant.id, async (tx) => {
     const lista = await tx
-      .select({ id: perfil.id, nome: perfil.nome, camada: perfil.camada })
+      .select({ id: perfil.id, nome: perfil.nome, descricao: perfil.descricao, camada: perfil.camada })
       .from(perfil)
       .orderBy(asc(perfil.camada), asc(perfil.nome));
     const usos = await tx
@@ -105,7 +108,13 @@ export type DetalheDoPerfil = PerfilResumo & { matriz: Matriz; usuarios: { id: s
 async function perfilDoTenant(tx: Transacao, perfilId: string) {
   if (!uuidValido(perfilId)) return null;
   const [p] = await tx
-    .select({ id: perfil.id, nome: perfil.nome, camada: perfil.camada, matriz: perfil.matriz })
+    .select({
+      id: perfil.id,
+      nome: perfil.nome,
+      descricao: perfil.descricao,
+      camada: perfil.camada,
+      matriz: perfil.matriz,
+    })
     .from(perfil)
     .where(eq(perfil.id, perfilId));
   return p ?? null;
@@ -140,12 +149,14 @@ async function nomeLivre(tx: Transacao, camada: Camada, nome: string, ignorar?: 
 
 export async function criarPerfil(
   acesso: Acesso | null,
-  dados: { nome: string; camada: string; copiarDe?: string },
+  dados: { nome: string; camada: string; descricao?: string; copiarDe?: string },
 ): Promise<{ id: string } | { erro: string }> {
   const a = exigirAdministrador(acesso);
   const nome = Nome.safeParse(dados.nome);
   if (!nome.success) return { erro: nome.error.issues[0].message };
   if (dados.camada !== "tenant" && dados.camada !== "deal") return { erro: "Escolha a camada do perfil." };
+  const descricao = Descricao.safeParse(dados.descricao ?? "");
+  if (!descricao.success) return { erro: descricao.error.issues[0].message };
   const camada: Camada = dados.camada;
   const r = await comTenant(a.tenant.id, async (tx): Promise<{ id: string } | { erro: string }> => {
     if (!(await nomeLivre(tx, camada, nome.data))) return { erro: NOME_REPETIDO };
@@ -157,7 +168,7 @@ export async function criarPerfil(
     }
     const [p] = await tx
       .insert(perfil)
-      .values({ tenantId: a.tenant.id, camada, nome: nome.data, matriz })
+      .values({ tenantId: a.tenant.id, camada, nome: nome.data, descricao: descricao.data, matriz })
       .returning({ id: perfil.id });
     return { id: p.id };
   });
@@ -165,22 +176,28 @@ export async function criarPerfil(
   return r;
 }
 
-export async function renomearPerfil(
+/** Edita o nome e a descrição do perfil. */
+export async function editarPerfil(
   acesso: Acesso | null,
   perfilId: string,
-  novo: string,
+  dados: { nome: string; descricao: string },
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
-  const nome = Nome.safeParse(novo);
+  const nome = Nome.safeParse(dados.nome);
   if (!nome.success) return { erro: nome.error.issues[0].message };
+  const descricao = Descricao.safeParse(dados.descricao ?? "");
+  if (!descricao.success) return { erro: descricao.error.issues[0].message };
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const p = await perfilDoTenant(tx, perfilId);
     if (!p) return { erro: "Perfil não encontrado." };
     if (!(await nomeLivre(tx, p.camada, nome.data, p.id))) return { erro: NOME_REPETIDO };
-    await tx.update(perfil).set({ nome: nome.data, atualizadoEm: new Date() }).where(eq(perfil.id, p.id));
+    await tx
+      .update(perfil)
+      .set({ nome: nome.data, descricao: descricao.data, atualizadoEm: new Date() })
+      .where(eq(perfil.id, p.id));
     return { ok: true };
   });
-  if ("ok" in r) await auditar(a, "perfil.renomeado", "perfil", perfilId);
+  if ("ok" in r) await auditar(a, "perfil.editado", "perfil", perfilId);
   return r;
 }
 
@@ -255,7 +272,7 @@ export async function filtrarPerfisDoTenant(tx: Transacao, ids: string[]): Promi
 
 export type PermissoesDoUsuario = {
   modo: "perfil" | "usuario";
-  disponiveis: { id: string; nome: string }[];
+  disponiveis: { id: string; nome: string; descricao: string }[];
   atribuidos: { id: string; nome: string; personalizada: boolean }[];
   /** Soma do que os perfis concedem (administradores têm tudo, fora da matriz). */
   efetiva: Matriz;
@@ -270,7 +287,7 @@ export async function permissoesDoUsuario(
     const u = await usuarioAtivo(tx, usuarioId);
     if (!u) return null;
     const disponiveis = await tx
-      .select({ id: perfil.id, nome: perfil.nome })
+      .select({ id: perfil.id, nome: perfil.nome, descricao: perfil.descricao })
       .from(perfil)
       .where(eq(perfil.camada, "tenant"))
       .orderBy(asc(perfil.nome));

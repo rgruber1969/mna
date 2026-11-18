@@ -21,7 +21,7 @@ async function Conteudo({ slug }: { slug: Promise<string> }) {
       </Moldura>
     );
   if (!t) notFound();
-  return <TelaEntrar onde={t.nome} />;
+  return <TelaEntrar titulo={t.nome} />;
 }
 
 export default function Page({ params }: PageProps<"/t/[slug]/entrar">) {

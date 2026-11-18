@@ -277,7 +277,7 @@ test("console: equipe, renomear, suspender e reativar tenant", async ({ page }) 
   await page.getByRole("button", { name: "Reativar tenant" }).click();
   await expect(page.getByText("Ativo", { exact: true })).toBeVisible();
   await visitante.reload();
-  await expect(visitante.getByRole("heading", { name: "Entrar em Escritório E2E Renomeado" })).toBeVisible();
+  await expect(visitante.getByRole("heading", { name: "Escritório E2E Renomeado" })).toBeVisible();
 });
 
 test("rotas do console não respondem em endereço de tenant, e vice-versa", async ({ page }) => {
