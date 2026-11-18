@@ -401,3 +401,33 @@ export const matrizUsuario = pgTable(
     }),
   ],
 ).enableRLS();
+
+// --- Criptografia (ADR-0007, ADR-0017) --------------------------------------
+
+/**
+ * Chave de dados de cada tenant, guardada TRANCADA pela chave mestra (cofre:
+ * `.env` fora da produção, AWS KMS na produção). Nunca legível no banco.
+ * Excluir o tenant apaga as chaves (destruição criptográfica).
+ */
+export const chaveTenant = pgTable(
+  "chave_tenant",
+  {
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    /** Versão da chave (rotação): gravada em cada dado criptografado. */
+    versao: integer("versao").notNull(),
+    /** Chave de dados trancada pela chave mestra, com a etiqueta do cofre. */
+    chaveTrancada: text("chave_trancada").notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    uniqueIndex("chave_tenant_uq").on(t.tenantId, t.versao),
+    pgPolicy("isolamento_tenant", {
+      for: "all",
+      to: "mna_app",
+      using: doTenantAtual,
+      withCheck: doTenantAtual,
+    }),
+  ],
+).enableRLS();

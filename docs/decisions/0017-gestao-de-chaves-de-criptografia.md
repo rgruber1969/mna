@@ -118,3 +118,15 @@ Regras:
 
 * Relacionado: ADR-0007 (dados pessoais), ADR-0009 (multi-tenant),
   ADR-0012 (AWS São Paulo).
+* Adendo (2026-11-18): **envelope com chave por tenant em todos os
+  ambientes**, escolhido pelo responsável entre (A) o mesmo esquema da
+  produção, com a chave mestra no `.env` (local) e na configuração secreta
+  (demonstração), e (B) uma chave única fora da produção. Escolhida a (A):
+  o código é o mesmo nos três ambientes (só muda o "cofre" da chave
+  mestra), a destruição criptográfica pode ser testada desde já e não há
+  migração de dados ao chegar à produção. Descartada a (B): a parte mais
+  delicada (chave por tenant) só seria escrita e testada perto da
+  produção. Detalhes: cada dado criptografado leva a versão da chave do
+  tenant e fica amarrado ao tenant (não pode ser copiado para outro); o
+  índice cego também é calculado por tenant; as chaves locais são geradas
+  por script direto no `.env`, sem aparecer na tela.

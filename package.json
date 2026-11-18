@@ -9,6 +9,7 @@
     "backup:restaurar": "node scripts/backup-local.mjs restaurar",
     "build": "next build",
     "console:convidar-admin": "tsx --env-file=.env scripts/console-convidar-admin.mts",
+    "cripto:gerar-chaves": "node scripts/cripto-gerar-chaves.mjs",
     "db:gerar": "drizzle-kit generate",
     "db:migrar": "node scripts/db-migrar.mjs",
     "db:migrar:teste": "node scripts/db-migrar.mjs teste",

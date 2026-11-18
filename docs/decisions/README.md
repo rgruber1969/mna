@@ -25,7 +25,7 @@ projeto e em `docs/projeto/`.
 | [0014](0014-envio-de-email.md) | E-mail | Mailpit / Resend / SES São Paulo |
 | [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
 | [0016](0016-antivirus-nos-uploads.md) | Antivírus | Simulado (local/demo), GuardDuty (produção); download só após "Disponível" |
-| [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | `.env` / Vercel (fora da produção); AWS KMS com chave por tenant (produção) |
+| [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | Envelope com chave por tenant em todos os ambientes; chave mestra no `.env` / Vercel (fora da produção) ou AWS KMS (produção) |
 | [0018](0018-ferramentas-de-desenvolvimento.md) | Ferramentas | Drizzle; shadcn/ui + Tailwind; Vitest + Playwright; ESLint + Prettier; pnpm |
 | [0019](0019-identidade-unica-e-vinculo-por-tenant.md) | Identidade | Conta única + vínculo por tenant (tabelas próprias, RLS); sessão única por endereço |
 

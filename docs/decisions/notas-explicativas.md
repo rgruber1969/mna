@@ -487,3 +487,18 @@ Claude Code. Decisões em vigor: [README](README.md).
   --confirmar` (recria o `.env` e para); `pnpm db:preparar`; de novo `pnpm
   backup:restaurar -- --confirmar` (agora com o banco pronto);
   `pnpm db:migrar:teste`.
+
+## Criptografia em envelope e índice cego (ADR-0017, adendo)
+
+* **Envelope:** como um prédio. Cada tenant (apartamento) tem a sua chave,
+  que tranca os dados dele (CPF, RG, cônjuge). As chaves dos apartamentos
+  ficam guardadas trancadas num cofre na portaria: a **chave mestra**. Fora
+  da produção o cofre é o `.env`; na produção, o AWS KMS, onde ninguém vê a
+  chave mestra.
+* **Destruição criptográfica:** jogar fora a chave de um apartamento torna
+  ilegível tudo o que ela trancou, inclusive cópias antigas em backups.
+* **Rotação:** chave nova para os dados novos; cada dado guarda a versão da
+  chave que o trancou, então os antigos continuam abrindo.
+* **Índice cego:** uma "impressão digital" do CPF (HMAC). Dois CPFs iguais
+  dão a mesma impressão, então o sistema acha duplicados sem guardar o CPF
+  legível; pela impressão não dá para voltar ao CPF.

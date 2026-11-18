@@ -49,7 +49,7 @@ Decisões de arquitetura em vigor (stack, segurança, tenants):
 ## Comandos
 
 - Serviços locais (Postgres, RustFS, Mailpit, Inngest): `docker compose up -d`.
-- Primeira vez: copiar `.env.example` para `.env`; `pnpm install`;
+- Primeira vez: copiar `.env.example` para `.env`; `pnpm install`; `pnpm cripto:gerar-chaves`;
   `pnpm db:preparar`; `pnpm db:migrar`; `pnpm db:migrar:teste`;
   `pnpm arquivos:preparar`; `pnpm perfis:copiar-padrao` (tenants sem perfis).
 - Aplicação: `pnpm dev` (http://localhost:3000; API em `/api/docs`).
