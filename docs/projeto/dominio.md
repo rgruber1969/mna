@@ -16,6 +16,11 @@ O MNA controla todas as fases de um processo de M&A, inicialmente
   data room.
 * **Advisor também pode ser contratante**, sobretudo para valuation e
   montagem de e-book para a empresa vendedora.
+* **Qualquer lado pode ser contratante** (decidido em 2026-11-18): a versão 1
+  é construída com foco no lado vendedor, mas o tenant pode ser do lado
+  comprador (ex.: compradora, seu advisor ou escritório). Nada no modelo
+  supõe que o tenant é do lado vendedor: os administradores do tenant, de
+  qualquer lado, definem os poderes de cada usuário.
 * **Tenant piloto:** BT (Bastos Tigre, escritório de advocacia, Rio de
   Janeiro).
 
@@ -73,20 +78,36 @@ Processo de M&A (inicialmente aquisição). Pontos-chave:
 
 ### Valuation
 
-Entidade própria, no mesmo nível do deal, usada principalmente pelo advisor.
+Processo próprio e independente, no mesmo nível do deal, usado
+principalmente pelo advisor.
 
 * **Finalidades:** definir o preço pedido pela vendedora, preparar a
   negociação, avaliar ofertas recebidas e alimentar o e-book.
-* **Pode existir sem deal** (avaliação avulsa de uma empresa); quando há
-  deal, fica ligado a ele e à(s) empresa(s) vendedora(s).
+* **Criado por qualquer usuário com permissão** (menu Valuation × criar),
+  de qualquer lado (vendedor ou comprador). Decidido em 2026-11-18.
+* **Pode existir sem deal** (avaliação avulsa de uma empresa); o **criador**
+  pode ligá-lo a um deal, e então ele fica ligado ao deal e à(s)
+  empresa(s) avaliada(s).
+* **Quantidade livre:** um deal pode ter vários valuations (ex.: um do lado
+  vendedor e outro do lado comprador).
+* **Visibilidade definida pelo criador**, como na lista de acesso por versão
+  de documento: quem cria escolhe, por **usuário e/ou perfil**, quem vê. Ligar
+  a um deal não amplia essa visibilidade. Objetivo: sigilo entre os lados (o
+  valuation do comprador revela quanto ele pagaria). Administradores do
+  tenant veem todos, com auditoria (`perfis-e-permissoes.md`).
+* **Campos e fluxo conforme o lado:** os itens próprios da vendedora
+  (expectativa da vendedora, aprovação pela vendedora, uso no e-book) só
+  valem no valuation do lado vendedor; no do comprador, o equivalente é o
+  preço máximo, com aprovação interna do próprio lado.
 * **Deal com várias vendedoras: um valuation único do conjunto**, com
   DRE e documentos de cada empresa, e o **percentual de cada empresa sobre
   o total** (rateio). O critério do rateio é registrado (ex.: faturamento
   de cada empresa sobre o do grupo) e o percentual pode ser definido em
   qualquer etapa, comumente no QPA.
 * **Acesso:** pelo modelo de permissões (montar, comentar, aprovar e ver são
-  permissões). Padrão: advisor monta, vendedora vê, comenta e aprova; **lado
-  comprador sem acesso**.
+  permissões), dentro da visibilidade definida pelo criador. Padrão no
+  valuation do lado vendedor: advisor monta, vendedora vê, comenta e aprova;
+  **lado comprador sem acesso**.
 * **Métodos:** fluxo de caixa descontado, múltiplos de mercado (EV/EBITDA,
   EV/Receita, EV/ARR), transações comparáveis, patrimonial ajustado e
   múltiplo de faturamento recorrente ou "regra de bolso" do setor.

@@ -9,7 +9,7 @@ configuráveis em duas camadas, com alcance), dentro do isolamento por tenant
 | Nível | Quem | Onde atua |
 |---|---|---|
 | **Plataforma** | Administrador geral da RGRUBER (Ricardo e futuros usuários da RGRUBER) | Console (`admin.<domínio>`) |
-| **Tenant** | Administradores do tenant e demais usuários (advogados, advisors, vendedora, compradora, auditores etc.) | Subdomínio do tenant |
+| **Tenant** | Administradores do tenant (contratante de qualquer lado) e demais usuários (advogados, advisors, vendedora, compradora, auditores etc.) | Subdomínio do tenant |
 
 Não há distinção "interno × externo": dentro do tenant, **as permissões
 determinam o acesso**, inclusive para advogados do próprio contratante.
@@ -85,6 +85,13 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
   * Conversas de uma versão ficam visíveis só para quem tem acesso a ela.
   * Exemplo: notas internas do lado vendedor numa versão visível apenas aos
     usuários da vendedora e do seu advisor.
+* **Visibilidade do valuation** (decidido em 2026-11-18): segue a mesma
+  lógica da lista de acesso por versão. Quem cria o valuation escolhe, por
+  **perfil e/ou usuário**, quem o vê; ligá-lo a um deal não amplia essa
+  lista; administradores do tenant veem todos, com auditoria. Garante o
+  sigilo entre valuations de lados diferentes no mesmo deal (`dominio.md`).
+* **O tenant pode ser de qualquer lado** (vendedor ou comprador): nenhuma
+  regra de permissão supõe o lado do contratante.
 
 Exemplo ilustrativo (os valores reais são configurados pelo tenant):
 
