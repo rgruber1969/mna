@@ -20,6 +20,7 @@ async function Inicio() {
         area={acesso.tenant.nomeExibido}
         logo={acesso.tenant.logo}
         usuario={acesso.usuario}
+        tenant={acesso}
         administrador={acesso.administrador}
       />
       <Moldura>

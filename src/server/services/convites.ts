@@ -18,6 +18,7 @@ import { resolverArea, urlDaArea } from "@/server/enderecos";
 import { produto } from "@/config/produto";
 import { entrar, gerarToken, hashDoToken, tenantPorSlug, type ResultadoLogin } from "./acesso";
 import { atribuirPerfis, filtrarPerfisDoTenant } from "./perfis";
+import { ligarContaAPessoa } from "./pessoas";
 
 /**
  * Convites (ADR-0019, regra 4; docs/projeto/autenticacao-e-sessao.md):
@@ -265,6 +266,7 @@ export async function aceitarConvite(
 
   if (c.tenant) {
     const t = c.tenant;
+    const [u] = await banco().select({ nome: usuario.name }).from(usuario).where(eq(usuario.id, usuarioId));
     await comTenant(t.id, async (tx) => {
       await tx
         .insert(vinculoTenant)
@@ -286,6 +288,8 @@ export async function aceitarConvite(
         });
       // Perfis do convite (os que ainda existem) substituem os anteriores.
       await atribuirPerfis(tx, t.id, usuarioId, await filtrarPerfisDoTenant(tx, c.perfis));
+      // A conta passa a ser uma pessoa do tenant (ligada pelo e-mail, se já cadastrada).
+      await ligarContaAPessoa(tx, t.id, { usuarioId, nome: u?.nome ?? c.nome, email: c.email });
       await tx.update(convite).set({ aceitoEm: new Date() }).where(eq(convite.id, c.id));
       await tx.insert(eventoAuditoria).values({
         tenantId: t.id,

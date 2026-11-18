@@ -78,16 +78,19 @@ export function BotaoDeAcao({
 
 export function FormConvidarUsuario({
   perfis,
+  inicial,
 }: {
   perfis: { id: string; nome: string; descricao: string }[];
+  /** Convite a partir do cadastro de uma pessoa: nome e e-mail já preenchidos. */
+  inicial?: { nome?: string; email?: string };
 }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(convidarUsuarioAcao);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
-      <Campo rotulo="Nome" name="nome" required />
-      <Campo rotulo="E-mail do convidado" name="email" type="email" required />
+      <Campo rotulo="Nome" name="nome" required defaultValue={inicial?.nome} />
+      <Campo rotulo="E-mail do convidado" name="email" type="email" required defaultValue={inicial?.email} />
       {perfis.length > 0 && <OpcoesDePerfil perfis={perfis} />}
       <label className="text-text mb-2 flex items-center gap-2 text-sm">
         <input type="checkbox" name="exige2fa" defaultChecked /> Exigir verificação em duas etapas

@@ -12,7 +12,7 @@ import {
 } from "@/server/db/esquema";
 import { problemaNoSlug } from "@/server/enderecos";
 import { AcessoNegado, type Acesso } from "./acesso";
-import { copiarPerfisPadrao } from "./perfis";
+import { completarCadastrosPadrao } from "./cadastros-padrao";
 import { convidarUsuarioDaPlataforma, emitirConviteDoTenant, type DadosPessoa } from "./convites";
 import { apagarTodosOsFatores, avisarMudancaNosFatores } from "./fatores-da-conta";
 
@@ -77,7 +77,7 @@ export async function criarTenant(
   const [ja] = await banco().select({ id: tenant.id }).from(tenant).where(eq(tenant.slug, r.data.slug));
   if (ja) return { erro: "Já existe um tenant com este endereço." };
   const [t] = await banco().insert(tenant).values(r.data).returning({ id: tenant.id });
-  await copiarPerfisPadrao(t.id);
+  await completarCadastrosPadrao(t.id);
   await auditar(a.usuario.id, "tenant.criado", t.id, { slug: r.data.slug });
   return { id: t.id };
 }

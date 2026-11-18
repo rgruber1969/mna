@@ -205,6 +205,36 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await visitante.goto(`${base}/entrar`);
   await expect(visitante.getByRole("img", { name: "Bastos E2E" })).toBeVisible();
   await expect(visitante.getByRole("heading", { level: 2, name: "Bastos E2E" })).toBeVisible();
+
+  // Empresas e pessoas (item 7), com CPF criptografado e mascarado (item 24). Sem consultas externas.
+  await admin.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Empresas" }).click();
+  await expect(admin.getByRole("heading", { name: "Empresas", exact: true })).toBeVisible();
+  await expect(admin.getByText("contratante", { exact: true })).toBeVisible();
+  await admin.getByRole("link", { name: "Nova empresa" }).click();
+  await admin.getByRole("textbox", { name: "CNPJ" }).fill("11.222.333/0001-81");
+  await admin.getByLabel("Razão social").fill("Alfa E2E Ltda");
+  await admin.getByRole("button", { name: "Cadastrar empresa" }).click();
+  await expect(admin.getByRole("heading", { name: "Alfa E2E Ltda" })).toBeVisible();
+  await admin.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Pessoas" }).click();
+  await admin.getByRole("link", { name: "Nova pessoa" }).click();
+  await admin.getByLabel("Nome completo").fill("Maria E2E");
+  await admin.getByLabel("CPF", { exact: true }).fill("529.982.247-25");
+  await admin.getByRole("button", { name: "Cadastrar pessoa" }).click();
+  await expect(admin.getByRole("heading", { name: "Maria E2E" })).toBeVisible();
+  await expect(admin.getByLabel("CPF", { exact: true })).toHaveAttribute(
+    "placeholder",
+    "Atual: ***.982.247-**",
+  );
+  await admin.getByRole("button", { name: "Mostrar dados sensíveis" }).click();
+  await expect(admin.getByRole("region", { name: "Dados sensíveis" })).toContainText("52998224725");
+  await admin.getByLabel("Empresa", { exact: true }).selectOption({ label: "Alfa E2E Ltda" });
+  await admin.getByLabel("Tipo de vínculo").selectOption({ label: "Sócio" });
+  await admin.getByLabel("Percentual de participação").fill("50");
+  await admin.getByRole("button", { name: "Adicionar vínculo" }).click();
+  await expect(admin.getByText("Vínculo adicionado.")).toBeVisible();
+  await expect(admin.getByText("Sócio · 50%")).toBeVisible();
+  await admin.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Cadastros" }).click();
+  await expect(admin.getByRole("heading", { name: "Papéis de empresa" })).toBeVisible();
   await admin.goto(base);
 
   // Convite já usado não vale de novo.

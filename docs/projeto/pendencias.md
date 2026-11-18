@@ -26,7 +26,17 @@ registrado.
       incorporado a `dominio.md` (valuation, ofertas, catálogo de
       documentos), `escopo-v1.md` (itens 12, 18 e 32) e `backlog-futuro.md`.
 
+## Para completar na V1
+
+- [ ] **API REST de empresas, pessoas e cadastros (item 25):** os serviços
+      já existem e seguem as mesmas regras das telas; falta expor as rotas
+      (OpenAPI), junto com as chaves de API (item 26).
+
 ## Antes da produção
+
+- [ ] **Cofre AWS KMS (ADR-0017):** a criptografia de campos já usa chave
+      por tenant em envelope; falta o cofre de produção (hoje só o local,
+      com a chave mestra no `.env`).
 
 - [ ] **Resumos automáticos com IA ou sem IA** (mensagens e histórico de
       documento): na produção, manter o resumo local sem IA (já usado no

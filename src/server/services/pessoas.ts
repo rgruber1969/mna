@@ -1,0 +1,545 @@
+import { and, asc, eq, ilike, isNull, ne, or } from "drizzle-orm";
+import { z } from "zod";
+import { comTenant, type Banco } from "@/server/db/cliente";
+import { empresa, pessoa, tipoVinculo, vinculoPessoaEmpresa } from "@/server/db/esquema";
+import { cpfValido, mascararCpf, mascararDocumento, soDigitos } from "@/config/documentos";
+import type { Acesso, AcessoTenant } from "./acesso";
+import { criptografar, descriptografar, indiceCego } from "./cripto/cripto";
+import { auditar, CamposEndereco, type ResultadoComId } from "./empresas";
+import { exigirPermissao } from "./permissoes/verificador";
+
+/**
+ * Pessoas do tenant (dominio.md, "Pessoa e usuário"; dados-pessoais.md).
+ *
+ * Dados sensíveis (CPF, RG, documento estrangeiro e CPF, RG e regime de bens
+ * do cônjuge) são criptografados com a chave do tenant antes de gravar e
+ * aparecem mascarados; "mostrar" exige permissão de editar e é auditado.
+ * CPF único no tenant (índice cego); e-mail único quando preenchido.
+ */
+
+type Resultado = { ok: true } | { erro: string };
+
+const uuidValido = (id: string) => z.uuid().safeParse(id).success;
+const opcional = (max = 200) =>
+  z
+    .string()
+    .trim()
+    .max(max, "Texto muito longo.")
+    .transform((v) => v || null);
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .transform((v) => v || null)
+  .refine((v) => v === null || z.email().safeParse(v).success, "E-mail inválido.");
+const cpf = (rotulo: string) =>
+  z
+    .string()
+    .trim()
+    .transform((v) => soDigitos(v) || null)
+    .refine((v) => v === null || cpfValido(v), `${rotulo} inválido. Confira os números.`);
+
+/** Campos sensíveis: gravados criptografados, mostrados mascarados. */
+export const CAMPOS_SENSIVEIS = [
+  "cpf",
+  "rg",
+  "documentoEstrangeiro",
+  "conjugeCpf",
+  "conjugeRg",
+  "conjugeRegime",
+] as const;
+export type CampoSensivel = (typeof CAMPOS_SENSIVEIS)[number];
+
+const coluna = {
+  cpf: "cpfCifrado",
+  rg: "rgCifrado",
+  documentoEstrangeiro: "documentoEstrangeiroCifrado",
+  conjugeCpf: "conjugeCpfCifrado",
+  conjugeRg: "conjugeRgCifrado",
+  conjugeRegime: "conjugeRegimeCifrado",
+} as const satisfies Record<CampoSensivel, keyof typeof pessoa.$inferSelect>;
+
+const DadosPessoa = z.object({
+  nome: z.string().trim().min(2, "Informe o nome completo.").max(200, "Nome muito longo."),
+  email,
+  telefone: opcional(40),
+  nacionalidade: opcional(80),
+  estadoCivil: opcional(40),
+  profissao: opcional(120),
+  dataNascimento: z
+    .string()
+    .trim()
+    .transform((v) => v || null)
+    .refine((v) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v), "Data de nascimento inválida."),
+  ...CamposEndereco,
+  rgOrgao: opcional(20),
+  rgUf: opcional(2).transform((v) => v?.toUpperCase() ?? null),
+  conjugeNome: opcional(),
+  conjugeEmail: email,
+  // Sensíveis: vazio na edição = manter o atual (use `limpar` para apagar).
+  cpf: cpf("CPF"),
+  rg: opcional(30),
+  documentoEstrangeiro: opcional(60),
+  conjugeCpf: cpf("CPF do cônjuge"),
+  conjugeRg: opcional(30),
+  conjugeRegime: opcional(80),
+});
+
+export type DadosPessoa = z.input<typeof DadosPessoa>;
+
+function validar(dados: DadosPessoa) {
+  const r = DadosPessoa.safeParse(dados);
+  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+}
+
+type Validados = z.output<typeof DadosPessoa>;
+
+async function duplicidade(
+  a: AcessoTenant,
+  d: { email: string | null; cpf: string | null },
+  exceto?: string,
+): Promise<{ erro: string; existenteId: string } | null> {
+  return comTenant(a.tenant.id, async (tx) => {
+    const fora = exceto ? ne(pessoa.id, exceto) : undefined;
+    if (d.cpf) {
+      const [p] = await tx
+        .select({ id: pessoa.id })
+        .from(pessoa)
+        .where(and(eq(pessoa.cpfIndice, indiceCego(a.tenant.id, d.cpf)), fora));
+      if (p) return { erro: "Já existe uma pessoa com este CPF.", existenteId: p.id };
+    }
+    if (d.email) {
+      const [p] = await tx
+        .select({ id: pessoa.id })
+        .from(pessoa)
+        .where(and(eq(pessoa.email, d.email), fora));
+      if (p) return { erro: "Já existe uma pessoa com este e-mail.", existenteId: p.id };
+    }
+    return null;
+  });
+}
+
+/** Separa os campos comuns dos sensíveis e criptografa estes (só os preenchidos). */
+async function paraGravar(tenantId: string, d: Validados, limpar: CampoSensivel[] = []) {
+  const { cpf: c, rg, documentoEstrangeiro, conjugeCpf, conjugeRg, conjugeRegime, ...comuns } = d;
+  const sensiveis: Record<CampoSensivel, string | null> = {
+    cpf: c,
+    rg,
+    documentoEstrangeiro,
+    conjugeCpf,
+    conjugeRg,
+    conjugeRegime,
+  };
+  const cifrados: Partial<typeof pessoa.$inferInsert> = {};
+  for (const campo of CAMPOS_SENSIVEIS) {
+    const valor = sensiveis[campo];
+    if (valor) cifrados[coluna[campo]] = await criptografar(tenantId, valor);
+    else if (limpar.includes(campo)) cifrados[coluna[campo]] = null;
+  }
+  if (c) cifrados.cpfIndice = indiceCego(tenantId, c);
+  else if (limpar.includes("cpf")) cifrados.cpfIndice = null;
+  return { ...comuns, ...cifrados };
+}
+
+// --- Consulta --------------------------------------------------------------------
+
+export type PessoaResumo = {
+  id: string;
+  nome: string;
+  email: string | null;
+  empresas: string[];
+  temConta: boolean;
+  inativa: boolean;
+};
+
+export async function listarPessoas(
+  acesso: Acesso | null,
+  filtro: { busca?: string; inativas?: boolean } = {},
+): Promise<PessoaResumo[]> {
+  const a = await exigirPermissao(acesso, "empresas", "ver");
+  const busca = filtro.busca?.trim();
+  return comTenant(a.tenant.id, async (tx) => {
+    const linhas = await tx
+      .select({
+        id: pessoa.id,
+        nome: pessoa.nome,
+        email: pessoa.email,
+        usuarioId: pessoa.usuarioId,
+        inativaEm: pessoa.inativaEm,
+      })
+      .from(pessoa)
+      .where(
+        and(
+          filtro.inativas ? undefined : isNull(pessoa.inativaEm),
+          busca ? or(ilike(pessoa.nome, `%${busca}%`), ilike(pessoa.email, `%${busca}%`)) : undefined,
+        ),
+      )
+      .orderBy(asc(pessoa.nome));
+    const vinculos = await tx
+      .select({ pessoaId: vinculoPessoaEmpresa.pessoaId, empresa: empresa.razaoSocial })
+      .from(vinculoPessoaEmpresa)
+      .innerJoin(empresa, eq(empresa.id, vinculoPessoaEmpresa.empresaId));
+    const empresasDe = new Map<string, Set<string>>();
+    for (const v of vinculos)
+      (empresasDe.get(v.pessoaId) ?? empresasDe.set(v.pessoaId, new Set()).get(v.pessoaId)!).add(v.empresa);
+    return linhas.map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      email: p.email,
+      empresas: [...(empresasDe.get(p.id) ?? [])],
+      temConta: Boolean(p.usuarioId),
+      inativa: Boolean(p.inativaEm),
+    }));
+  });
+}
+
+export type VinculoDaPessoa = {
+  id: string;
+  empresaId: string;
+  empresa: string;
+  tipo: string;
+  cargo: string | null;
+  percentual: string | null;
+};
+
+type Linha = typeof pessoa.$inferSelect;
+type SemCifrados = Omit<Linha, (typeof coluna)[CampoSensivel] | "cpfIndice">;
+
+export type PessoaDetalhe = SemCifrados & {
+  /** Sensíveis mascarados (null = não preenchido). */
+  mascarados: Record<CampoSensivel, string | null>;
+  vinculos: VinculoDaPessoa[];
+};
+
+function mascarar(campo: CampoSensivel, valor: string): string {
+  if (campo === "cpf" || campo === "conjugeCpf") return mascararCpf(valor);
+  if (campo === "conjugeRegime") return "••••••";
+  return mascararDocumento(valor);
+}
+
+export async function obterPessoa(acesso: Acesso | null, id: string): Promise<PessoaDetalhe | null> {
+  const a = await exigirPermissao(acesso, "empresas", "ver");
+  if (!uuidValido(id)) return null;
+  const dados = await comTenant(a.tenant.id, async (tx) => {
+    const [p] = await tx.select().from(pessoa).where(eq(pessoa.id, id));
+    if (!p) return null;
+    const vinculos = await tx
+      .select({
+        id: vinculoPessoaEmpresa.id,
+        empresaId: empresa.id,
+        empresa: empresa.razaoSocial,
+        tipo: tipoVinculo.nome,
+        cargo: vinculoPessoaEmpresa.cargo,
+        percentual: vinculoPessoaEmpresa.percentual,
+      })
+      .from(vinculoPessoaEmpresa)
+      .innerJoin(empresa, eq(empresa.id, vinculoPessoaEmpresa.empresaId))
+      .innerJoin(tipoVinculo, eq(tipoVinculo.id, vinculoPessoaEmpresa.tipoId))
+      .where(eq(vinculoPessoaEmpresa.pessoaId, id))
+      .orderBy(asc(empresa.razaoSocial));
+    return { p, vinculos };
+  });
+  if (!dados) return null;
+  const { p, vinculos } = dados;
+  const mascarados = {} as Record<CampoSensivel, string | null>;
+  for (const campo of CAMPOS_SENSIVEIS) {
+    const cifrado = p[coluna[campo]];
+    mascarados[campo] = cifrado ? mascarar(campo, await descriptografar(a.tenant.id, cifrado)) : null;
+  }
+  const {
+    cpfCifrado: _1,
+    cpfIndice: _2,
+    rgCifrado: _3,
+    documentoEstrangeiroCifrado: _4,
+    conjugeCpfCifrado: _5,
+    conjugeRgCifrado: _6,
+    conjugeRegimeCifrado: _7,
+    ...comuns
+  } = p;
+  void [_1, _2, _3, _4, _5, _6, _7];
+  return { ...comuns, mascarados, vinculos };
+}
+
+/**
+ * Mostra os dados sensíveis legíveis: só para quem pode editar "Empresas e
+ * pessoas"; cada visualização vai para a auditoria (sem os valores).
+ */
+export async function revelarDadosSensiveis(
+  acesso: Acesso | null,
+  id: string,
+): Promise<Record<CampoSensivel, string | null> | null> {
+  const a = await exigirPermissao(acesso, "empresas", "editar");
+  if (!uuidValido(id)) return null;
+  const [p] = await comTenant(a.tenant.id, (tx) => tx.select().from(pessoa).where(eq(pessoa.id, id)));
+  if (!p) return null;
+  const legiveis = {} as Record<CampoSensivel, string | null>;
+  for (const campo of CAMPOS_SENSIVEIS) {
+    const cifrado = p[coluna[campo]];
+    legiveis[campo] = cifrado ? await descriptografar(a.tenant.id, cifrado) : null;
+  }
+  await auditar(a, "pessoa.dados_sensiveis.vistos", "pessoa", id);
+  return legiveis;
+}
+
+// --- Cadastro --------------------------------------------------------------------
+
+export async function criarPessoa(
+  acesso: Acesso | null,
+  dados: DadosPessoa,
+): Promise<ResultadoComId & { parecidas?: string[] }> {
+  const a = await exigirPermissao(acesso, "empresas", "criar");
+  const d = validar(dados);
+  if ("erro" in d) return d;
+  const dup = await duplicidade(a, d);
+  if (dup) return dup;
+  // Sem CPF não há como garantir que é outra pessoa: avisa sobre nomes iguais.
+  const parecidas = d.cpf
+    ? []
+    : (
+        await comTenant(a.tenant.id, (tx) =>
+          tx.select({ nome: pessoa.nome }).from(pessoa).where(ilike(pessoa.nome, d.nome)),
+        )
+      ).map((p) => p.nome);
+  const valores = await paraGravar(a.tenant.id, d);
+  const [p] = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .insert(pessoa)
+      .values({ ...valores, tenantId: a.tenant.id })
+      .returning({ id: pessoa.id }),
+  );
+  await auditar(a, "pessoa.criada", "pessoa", p.id);
+  return parecidas.length ? { id: p.id, parecidas } : { id: p.id };
+}
+
+export async function editarPessoa(
+  acesso: Acesso | null,
+  id: string,
+  dados: DadosPessoa,
+  limpar: string[] = [],
+): Promise<ResultadoComId> {
+  const a = await exigirPermissao(acesso, "empresas", "editar");
+  if (!uuidValido(id)) return { erro: "Pessoa não encontrada." };
+  const d = validar(dados);
+  if ("erro" in d) return d;
+  const dup = await duplicidade(a, d, id);
+  if (dup) return { erro: dup.erro.replace("uma pessoa", "outra pessoa"), existenteId: dup.existenteId };
+  const campos = limpar.filter((c): c is CampoSensivel =>
+    (CAMPOS_SENSIVEIS as readonly string[]).includes(c),
+  );
+  const valores = await paraGravar(a.tenant.id, d, campos);
+  const feito = await comTenant(a.tenant.id, async (tx) => {
+    const [atual] = await tx
+      .select({ usuarioId: pessoa.usuarioId, email: pessoa.email })
+      .from(pessoa)
+      .where(eq(pessoa.id, id));
+    if (!atual) return null;
+    // O e-mail de quem tem conta é o de login: só muda pela própria conta.
+    const email = atual.usuarioId ? atual.email : valores.email;
+    return tx
+      .update(pessoa)
+      .set({ ...valores, email, atualizadoEm: new Date() })
+      .where(eq(pessoa.id, id))
+      .returning({ id: pessoa.id });
+  });
+  if (!feito?.length) return { erro: "Pessoa não encontrada." };
+  await auditar(
+    a,
+    "pessoa.editada",
+    "pessoa",
+    id,
+    campos.length ? { removidos: campos.join(",") } : undefined,
+  );
+  return { id };
+}
+
+export async function definirPessoaInativa(
+  acesso: Acesso | null,
+  id: string,
+  inativa: boolean,
+): Promise<Resultado> {
+  const a = await exigirPermissao(acesso, "empresas", "editar");
+  if (!uuidValido(id)) return { erro: "Pessoa não encontrada." };
+  const feito = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .update(pessoa)
+      .set({ inativaEm: inativa ? new Date() : null })
+      .where(eq(pessoa.id, id))
+      .returning({ id: pessoa.id }),
+  );
+  if (feito.length === 0) return { erro: "Pessoa não encontrada." };
+  await auditar(a, inativa ? "pessoa.inativada" : "pessoa.reativada", "pessoa", id);
+  return { ok: true };
+}
+
+/** Exclusão definitiva: nunca de quem tem conta no tenant (revogue o acesso e inative). */
+export async function excluirPessoa(acesso: Acesso | null, id: string): Promise<Resultado> {
+  const a = await exigirPermissao(acesso, "empresas", "excluir");
+  if (!uuidValido(id)) return { erro: "Pessoa não encontrada." };
+  const [p] = await comTenant(a.tenant.id, (tx) =>
+    tx.select({ usuarioId: pessoa.usuarioId }).from(pessoa).where(eq(pessoa.id, id)),
+  );
+  if (!p) return { erro: "Pessoa não encontrada." };
+  if (p.usuarioId)
+    return { erro: "Esta pessoa tem acesso ao sistema: revogue o acesso e inative o cadastro." };
+  await comTenant(a.tenant.id, (tx) => tx.delete(pessoa).where(eq(pessoa.id, id)));
+  await auditar(a, "pessoa.excluida", "pessoa", id);
+  return { ok: true };
+}
+
+// --- Vínculos com empresas -----------------------------------------------------------
+
+const Vinculo = z.object({
+  pessoaId: z.uuid("Pessoa inválida."),
+  empresaId: z.uuid("Escolha a empresa."),
+  tipoId: z.uuid("Escolha o tipo de vínculo."),
+  cargo: opcional(120),
+  percentual: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(",", ".") || null)
+    .refine(
+      (v) => v === null || (/^\d{1,3}(\.\d{1,4})?$/.test(v) && Number(v) <= 100),
+      "Percentual entre 0 e 100.",
+    ),
+});
+
+export async function adicionarVinculo(
+  acesso: Acesso | null,
+  dados: z.input<typeof Vinculo>,
+): Promise<Resultado> {
+  const a = await exigirPermissao(acesso, "empresas", "editar");
+  const r = Vinculo.safeParse(dados);
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  const v = r.data;
+  const erro = await comTenant(a.tenant.id, async (tx) => {
+    const [t] = await tx
+      .select({ comPercentual: tipoVinculo.comPercentual })
+      .from(tipoVinculo)
+      .where(eq(tipoVinculo.id, v.tipoId));
+    const [e] = await tx.select({ id: empresa.id }).from(empresa).where(eq(empresa.id, v.empresaId));
+    const [p] = await tx.select({ id: pessoa.id }).from(pessoa).where(eq(pessoa.id, v.pessoaId));
+    if (!t || !e || !p) return "Pessoa, empresa ou tipo de vínculo não encontrado.";
+    await tx.insert(vinculoPessoaEmpresa).values({
+      tenantId: a.tenant.id,
+      pessoaId: v.pessoaId,
+      empresaId: v.empresaId,
+      tipoId: v.tipoId,
+      cargo: v.cargo,
+      percentual: t.comPercentual ? v.percentual : null,
+    });
+    return null;
+  });
+  if (erro) return { erro };
+  await auditar(a, "pessoa.vinculo.adicionado", "pessoa", v.pessoaId, { empresaId: v.empresaId });
+  return { ok: true };
+}
+
+export async function removerVinculo(acesso: Acesso | null, vinculoId: string): Promise<Resultado> {
+  const a = await exigirPermissao(acesso, "empresas", "editar");
+  if (!uuidValido(vinculoId)) return { erro: "Vínculo não encontrado." };
+  const [v] = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .delete(vinculoPessoaEmpresa)
+      .where(eq(vinculoPessoaEmpresa.id, vinculoId))
+      .returning({ pessoaId: vinculoPessoaEmpresa.pessoaId, empresaId: vinculoPessoaEmpresa.empresaId }),
+  );
+  if (!v) return { erro: "Vínculo não encontrado." };
+  await auditar(a, "pessoa.vinculo.removido", "pessoa", v.pessoaId, { empresaId: v.empresaId });
+  return { ok: true };
+}
+
+/**
+ * Sócio sugerido pela consulta do CNPJ: cadastra a pessoa (só o nome) e o
+ * vínculo de sócio com a empresa, depois de o usuário confirmar.
+ */
+export async function cadastrarSocioSugerido(
+  acesso: Acesso | null,
+  empresaId: string,
+  nome: string,
+): Promise<ResultadoComId> {
+  const a = await exigirPermissao(acesso, "empresas", "criar");
+  if (!uuidValido(empresaId)) return { erro: "Empresa não encontrada." };
+  const [socio] = await comTenant(a.tenant.id, (tx) =>
+    tx.select({ id: tipoVinculo.id }).from(tipoVinculo).where(eq(tipoVinculo.padrao, "socio")),
+  );
+  if (!socio) return { erro: 'O tipo de vínculo "Sócio" não existe mais nos cadastros.' };
+  const p = await criarPessoa(a, { ...pessoaVazia, nome: nomeProprio(nome) });
+  if ("erro" in p) return p;
+  const v = await adicionarVinculo(a, {
+    pessoaId: p.id,
+    empresaId,
+    tipoId: socio.id,
+    cargo: "",
+    percentual: "",
+  });
+  return "erro" in v ? v : { id: p.id };
+}
+
+/** "FULANO DE TAL" → "Fulano de Tal" (a Receita devolve em maiúsculas). */
+export function nomeProprio(nome: string): string {
+  const minusculas = new Set(["da", "das", "de", "do", "dos", "e"]);
+  return nome
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((p, i) => (i > 0 && minusculas.has(p) ? p : p.charAt(0).toUpperCase() + p.slice(1)))
+    .join(" ");
+}
+
+export const pessoaVazia: DadosPessoa = {
+  nome: "",
+  email: "",
+  telefone: "",
+  nacionalidade: "",
+  estadoCivil: "",
+  profissao: "",
+  dataNascimento: "",
+  cep: "",
+  logradouro: "",
+  numero: "",
+  complemento: "",
+  bairro: "",
+  cidade: "",
+  uf: "",
+  pais: "",
+  rgOrgao: "",
+  rgUf: "",
+  conjugeNome: "",
+  conjugeEmail: "",
+  cpf: "",
+  rg: "",
+  documentoEstrangeiro: "",
+  conjugeCpf: "",
+  conjugeRg: "",
+  conjugeRegime: "",
+};
+
+// --- Conta (convite aceito) -----------------------------------------------------------
+
+/**
+ * Liga a conta à pessoa do tenant ao aceitar um convite (decidido em
+ * 2026-11-18): se já existe pessoa com o mesmo e-mail, liga a ela; senão, cria
+ * a pessoa com nome e e-mail. Operação do sistema (não do usuário), dentro da
+ * transação do aceite.
+ */
+export async function ligarContaAPessoa(
+  tx: Parameters<Parameters<Banco["transaction"]>[0]>[0],
+  tenantId: string,
+  conta: { usuarioId: string; nome: string; email: string },
+): Promise<void> {
+  const email = conta.email.toLowerCase();
+  const [ligada] = await tx
+    .select({ id: pessoa.id })
+    .from(pessoa)
+    .where(eq(pessoa.usuarioId, conta.usuarioId));
+  if (ligada) return;
+  const [mesmoEmail] = await tx.select({ id: pessoa.id }).from(pessoa).where(eq(pessoa.email, email));
+  if (mesmoEmail) {
+    await tx
+      .update(pessoa)
+      .set({ usuarioId: conta.usuarioId, inativaEm: null })
+      .where(eq(pessoa.id, mesmoEmail.id));
+    return;
+  }
+  await tx.insert(pessoa).values({ tenantId, nome: conta.nome, email, usuarioId: conta.usuarioId });
+}

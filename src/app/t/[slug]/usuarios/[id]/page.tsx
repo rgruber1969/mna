@@ -49,6 +49,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
         area={acesso.tenant.nomeExibido}
         logo={acesso.tenant.logo}
         usuario={acesso.usuario}
+        tenant={acesso}
         administrador
       />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">

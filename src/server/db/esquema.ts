@@ -1,10 +1,12 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  date,
   boolean,
   index,
   integer,
   jsonb,
+  numeric,
   pgPolicy,
   pgTable,
   text,
@@ -430,4 +432,178 @@ export const chaveTenant = pgTable(
       withCheck: doTenantAtual,
     }),
   ],
+).enableRLS();
+
+// --- Empresas, papéis e pessoas (dominio.md; item 7 da V1) -----------------------
+
+const isolamento = () =>
+  pgPolicy("isolamento_tenant", {
+    for: "all",
+    to: "mna_app",
+    using: doTenantAtual,
+    withCheck: doTenantAtual,
+  });
+
+const doTenant = () =>
+  uuid("tenant_id")
+    .notNull()
+    .references(() => tenant.id, { onDelete: "cascade" });
+
+/** Endereço completo (empresas e pessoas); preenchível pelo CEP. */
+const endereco = () => ({
+  cep: text("cep"),
+  logradouro: text("logradouro"),
+  numero: text("numero"),
+  complemento: text("complemento"),
+  bairro: text("bairro"),
+  cidade: text("cidade"),
+  uf: text("uf"),
+  pais: text("pais").notNull().default("Brasil"),
+});
+
+/** Grupo econômico: cadastro simples, sem hierarquia na V1. */
+export const grupoEconomico = pgTable(
+  "grupo_economico",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("grupo_economico_nome_uq").on(t.tenantId, t.nome), isolamento()],
+).enableRLS();
+
+/** Empresa (pessoa jurídica) do tenant. Nome e CNPJ de empresa não são dados pessoais. */
+export const empresa = pgTable(
+  "empresa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    /** Só dígitos; vazio em empresa estrangeira. */
+    cnpj: text("cnpj"),
+    /** Empresa estrangeira: identificador do país de origem. */
+    identificadorEstrangeiro: text("identificador_estrangeiro"),
+    razaoSocial: text("razao_social").notNull(),
+    nomeFantasia: text("nome_fantasia"),
+    cnae: text("cnae"),
+    ...endereco(),
+    site: text("site"),
+    telefone: text("telefone"),
+    email: text("email"),
+    observacoes: text("observacoes"),
+    grupoId: uuid("grupo_id").references(() => grupoEconomico.id, { onDelete: "set null" }),
+    /** Empresa do próprio contratante: criada com o tenant, não pode ser excluída. */
+    doContratante: boolean("do_contratante").notNull().default(false),
+    inativaEm: timestamp("inativa_em", { withTimezone: true }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    uniqueIndex("empresa_cnpj_uq")
+      .on(t.tenantId, t.cnpj)
+      .where(sql`cnpj is not null`),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Papel que uma empresa assume num deal (cadastro extensível do tenant). */
+export const papelEmpresa = pgTable(
+  "papel_empresa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    /** Perfil de deal sugerido às pessoas da empresa com este papel. */
+    perfilSugeridoId: uuid("perfil_sugerido_id").references(() => perfil.id, { onDelete: "set null" }),
+    padrao: text("padrao"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("papel_empresa_nome_uq").on(t.tenantId, t.nome), isolamento()],
+).enableRLS();
+
+/** Tipo de vínculo entre pessoa e empresa (cadastro extensível do tenant). */
+export const tipoVinculo = pgTable(
+  "tipo_vinculo",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    /** Pede percentual de participação (ex.: sócio). */
+    comPercentual: boolean("com_percentual").notNull().default(false),
+    padrao: text("padrao"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("tipo_vinculo_nome_uq").on(t.tenantId, t.nome), isolamento()],
+).enableRLS();
+
+/**
+ * Pessoa física do tenant, com ou sem conta (dados-pessoais.md). Campos
+ * terminados em "Cifrado" são sensíveis: criptografados com a chave do tenant
+ * (services/cripto); o CPF tem índice cego para achar duplicidade.
+ */
+export const pessoa = pgTable(
+  "pessoa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    /** Minúsculo; único no tenant quando preenchido. */
+    email: text("email"),
+    telefone: text("telefone"),
+    nacionalidade: text("nacionalidade"),
+    estadoCivil: text("estado_civil"),
+    profissao: text("profissao"),
+    dataNascimento: date("data_nascimento"),
+    ...endereco(),
+    cpfCifrado: text("cpf_cifrado"),
+    cpfIndice: text("cpf_indice"),
+    rgCifrado: text("rg_cifrado"),
+    rgOrgao: text("rg_orgao"),
+    rgUf: text("rg_uf"),
+    documentoEstrangeiroCifrado: text("documento_estrangeiro_cifrado"),
+    conjugeNome: text("conjuge_nome"),
+    conjugeEmail: text("conjuge_email"),
+    conjugeCpfCifrado: text("conjuge_cpf_cifrado"),
+    conjugeRgCifrado: text("conjuge_rg_cifrado"),
+    conjugeRegimeCifrado: text("conjuge_regime_cifrado"),
+    /** Conta ligada (pessoa que é usuária do tenant). */
+    usuarioId: uuid("usuario_id").references(() => usuario.id, { onDelete: "set null" }),
+    inativaEm: timestamp("inativa_em", { withTimezone: true }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    uniqueIndex("pessoa_cpf_uq")
+      .on(t.tenantId, t.cpfIndice)
+      .where(sql`cpf_indice is not null`),
+    uniqueIndex("pessoa_email_uq")
+      .on(t.tenantId, t.email)
+      .where(sql`email is not null`),
+    uniqueIndex("pessoa_usuario_uq")
+      .on(t.tenantId, t.usuarioId)
+      .where(sql`usuario_id is not null`),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Vínculo de uma pessoa com uma empresa (pode haver vários, até com a mesma empresa). */
+export const vinculoPessoaEmpresa = pgTable(
+  "vinculo_pessoa_empresa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    pessoaId: uuid("pessoa_id")
+      .notNull()
+      .references(() => pessoa.id, { onDelete: "cascade" }),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    tipoId: uuid("tipo_id")
+      .notNull()
+      .references(() => tipoVinculo.id),
+    cargo: text("cargo"),
+    percentual: numeric("percentual", { precision: 7, scale: 4 }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("vinculo_pessoa_empresa_empresa_idx").on(t.tenantId, t.empresaId), isolamento()],
 ).enableRLS();

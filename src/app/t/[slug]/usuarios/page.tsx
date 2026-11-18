@@ -13,7 +13,7 @@ import { BotaoDeAcao, FormConvidarUsuario } from "@/components/usuarios/formular
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
 /** Administração de usuários do tenant (só administradores). */
-async function Painel() {
+async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?: string }> }) {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
   if (acesso?.area !== "tenant") redirect("/entrar");
@@ -29,6 +29,7 @@ async function Painel() {
         area={acesso.tenant.nomeExibido}
         logo={acesso.tenant.logo}
         usuario={acesso.usuario}
+        tenant={acesso}
         administrador
       />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
@@ -100,7 +101,7 @@ async function Painel() {
 
         <Cartao largura="max-w-sm">
           <Titulo sobre="Novo">Convidar usuário</Titulo>
-          <FormConvidarUsuario perfis={perfisDoTenant} />
+          <FormConvidarUsuario perfis={perfisDoTenant} inicial={await consulta} />
         </Cartao>
         {/* Coluna própria: em telas largas fica à direita do convite; nas estreitas, abaixo. */}
         <div className="flex w-full max-w-sm flex-col gap-6">
@@ -128,10 +129,10 @@ async function Painel() {
   );
 }
 
-export default function Page() {
+export default function Page({ searchParams }: PageProps<"/t/[slug]/usuarios">) {
   return (
     <Suspense fallback={<Carregando />}>
-      <Painel />
+      <Painel consulta={searchParams as Promise<{ nome?: string; email?: string }>} />
     </Suspense>
   );
 }

@@ -113,6 +113,13 @@
       "when": 1795029825113,
       "tag": "0015_chaves_do_tenant",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1795031665074,
+      "tag": "0016_empresas_e_pessoas",
+      "breakpoints": true
     }
   ]
 }

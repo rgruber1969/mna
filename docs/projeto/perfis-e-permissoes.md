@@ -127,7 +127,8 @@ comprador · — = sem acesso.
 | **Equipe do contratante** | V | V C E | V C E X B | V C E B | V | — |
 | **Usuário externo** | V | V | — | — | — | — |
 
-¹ Etapas padrão, catálogo de documentos, templates e papéis de empresa.
+¹ Etapas padrão, catálogo de documentos, templates, papéis de empresa e
+tipos de vínculo entre pessoa e empresa.
 
 * A lista de deals mostra só os deals em que a pessoa participa; quem cria
   um deal entra nele como "Coordenador do deal".
