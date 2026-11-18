@@ -33,6 +33,9 @@ registrado.
       desenvolvimento e na demonstração) ou adotar IA, decidindo provedor e
       confidencialidade.
 
+- [ ] **Foto da conta na anonimização (item 23 da V1):** ao excluir ou
+      anonimizar uma conta, apagar também a foto do armazenamento.
+
 ## Dependem de terceiros ou de tempo
 
 - [ ] **Nome comercial, marca (INPI) e domínio do produto**: pesquisa do

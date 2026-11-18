@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   copiarMatrizIndividualAcao,
   criarPerfilAcao,
@@ -180,6 +181,9 @@ export function FormCopiarMatriz({
 
 export function FormNovoPerfil({ perfis }: { perfis: { id: string; nome: string; camada: string }[] }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(criarPerfilAcao);
+  const [camada, setCamada] = useState<"tenant" | "deal" | "">("");
+  // Só dá para copiar permissões de um perfil da mesma camada.
+  const opcoes = perfis.filter((p) => p.camada === camada);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
@@ -188,23 +192,27 @@ export function FormNovoPerfil({ perfis }: { perfis: { id: string; nome: string;
       <fieldset className="mb-4">
         <legend className="text-text mb-1 text-sm font-medium">Camada</legend>
         <label className="text-text flex items-center gap-2 text-sm">
-          <input type="radio" name="camada" value="tenant" required /> Perfil do tenant (fora dos deals)
+          <input type="radio" name="camada" value="tenant" required onChange={() => setCamada("tenant")} />{" "}
+          Perfil do tenant (fora dos deals)
         </label>
         <label className="text-text flex items-center gap-2 text-sm">
-          <input type="radio" name="camada" value="deal" /> Perfil de deal (escolhido em cada deal)
+          <input type="radio" name="camada" value="deal" onChange={() => setCamada("deal")} /> Perfil de deal
+          (escolhido em cada deal)
         </label>
       </fieldset>
       <label className="mb-4 block">
         <span className="text-text mb-1 block text-sm font-medium">Começar com as permissões de</span>
         <select
+          key={camada}
           name="copiarDe"
           defaultValue=""
-          className="border-border bg-background text-text w-full rounded-md border px-3 py-2 text-sm"
+          disabled={!camada}
+          className="border-border bg-background text-text w-full rounded-md border px-3 py-2 text-sm disabled:opacity-60"
         >
-          <option value="">Nenhuma (tudo desmarcado)</option>
-          {perfis.map((p) => (
+          <option value="">{camada ? "Nenhuma (tudo desmarcado)" : "Escolha a camada primeiro"}</option>
+          {opcoes.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.nome} ({p.camada === "tenant" ? "tenant" : "deal"})
+              {p.nome}
             </option>
           ))}
         </select>

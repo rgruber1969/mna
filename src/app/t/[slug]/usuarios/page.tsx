@@ -93,11 +93,12 @@ async function Painel() {
           )}
         </div>
 
+        <Cartao largura="max-w-sm">
+          <Titulo sobre="Novo">Convidar usuário</Titulo>
+          <FormConvidarUsuario perfis={perfisDoTenant} />
+        </Cartao>
+        {/* Coluna própria: em telas largas fica à direita do convite; nas estreitas, abaixo. */}
         <div className="flex w-full max-w-sm flex-col gap-6">
-          <Cartao largura="max-w-sm">
-            <Titulo sobre="Novo">Convidar usuário</Titulo>
-            <FormConvidarUsuario perfis={perfisDoTenant} />
-          </Cartao>
           <Cartao largura="max-w-sm">
             <Titulo sobre="Configuração">Verificação em duas etapas</Titulo>
             <p className="text-muted mb-4 text-sm">

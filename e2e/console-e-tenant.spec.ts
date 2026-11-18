@@ -160,6 +160,8 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
     mimeType: "image/png",
     buffer: png,
   });
+  await expect(admin.getByRole("img", { name: "Prévia da foto" })).toBeVisible();
+  await admin.getByLabel("Zoom").fill("2");
   await admin.getByRole("button", { name: "Salvar foto" }).click();
   await expect(admin.getByText("Foto atualizada.")).toBeVisible();
   await expect(admin.getByRole("img", { name: "Foto de Admin do Tenant" }).first()).toBeVisible();

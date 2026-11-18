@@ -12,6 +12,13 @@ versão 1" é anotado aqui.
 - [ ] E-book e OnePager em outros formatos além de PDF: apresentação
       (PPTX) e página web com link privado (o OnePager na V1 é só PDF)
 
+## Anonimização de clientes
+
+- [ ] Substituição real em DOCX e PDF (na V1, simulada; em planilhas, real)
+- [ ] Imagens e PDFs escaneados (reconhecimento de texto, OCR)
+- [ ] Reconhecimento de nomes parecidos (abreviações, erros de grafia), com
+      revisão pelo usuário antes de substituir
+
 ## Valuation
 
 - [ ] Integração direta com sistemas contábeis para importar números
@@ -33,6 +40,10 @@ versão 1" é anotado aqui.
       A fazer → Em andamento → Aguardando terceiros → Concluído
 
 ## Identidade visual e acesso
+
+- [ ] Foto da conta: passar também pelo fluxo de antivírus (ADR-0016)
+      quando ele existir; hoje o servidor recusa o que não é imagem real e
+      grava uma imagem nova, sem guardar o original
 
 - [ ] Domínio próprio do cliente (ex.: `mna.cliente.com.br`)
 - [ ] Envio de e-mails pelo domínio do próprio cliente (exige DNS do lado

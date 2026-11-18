@@ -15,7 +15,7 @@ responsável.
     componentes das telas reais, para ser aproveitada quando a função real
     for construída.
 
-Resumo: **24 reais e 8 simuladas**. A ordem de tornar reais as simuladas
+Resumo: **24 reais, 8 simuladas e 1 parcial** (item 33). A ordem de tornar reais as simuladas
 será definida depois da demonstração, conforme a reação do cliente.
 
 | # | Funcionalidade | Valor | Esforço | Depende de | Demonstração |
@@ -52,6 +52,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 30 | Menções (@pessoa) e marcar mensagem como tarefa | Médio | M | 16, 27 | Real |
 | 31 | Resumos automáticos (mensagens e histórico de documento): resumo local sem IA | Médio | M | 11, 16 | Real |
 | 32 | Ofertas recebidas com estrutura de pagamento, rateio entre vendedoras e comparação com o valuation | Alto | M | 8, 18 | Real |
+| 33 | Anonimização de clientes: cadastro de clientes com códigos (C00001) e grupo econômico em 2 níveis (C00087.001), importação de planilha, e substituição dos nomes pelos códigos nos documentos enviados | Alto (venda) | G | 7, 11 | Parcial: real em planilhas (XLSX, CSV); simulado em DOCX e PDF |
 
 Como cada item simulado aparece na demonstração:
 
@@ -63,6 +64,7 @@ Como cada item simulado aparece na demonstração:
 | 19 | Fluxo real de status (versões, comentários, liberação ao comprador) com PDFs de exemplo, sem geração automática |
 | 21, 22 | Telas com botão de exportação que devolve PDF/XLSX de exemplo |
 | 28, 29 | Tela de configuração de gatilhos com exemplos; tarefas de exemplo marcadas como "geradas automaticamente" |
+| 33 | Em DOCX e PDF: a pergunta "substituir os nomes dos clientes pelos códigos?" aparece e devolve um documento de exemplo já anonimizado (em planilhas, a substituição é real) |
 
 Observações:
 
