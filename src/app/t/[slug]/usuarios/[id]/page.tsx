@@ -139,10 +139,10 @@ async function Detalhe({ id }: { id: Promise<string> }) {
         </Cartao>
 
         <Cartao largura="max-w-xl">
-          <Titulo sobre="Permissões">Perfis no tenant</Titulo>
+          <Titulo sobre="Permissões">Perfil no tenant</Titulo>
           {u.administrador && (
             <p className="text-text mb-4 text-sm">
-              Como administrador, esta pessoa tem acesso total, independentemente dos perfis.
+              Como administrador, esta pessoa tem acesso total, independentemente do perfil.
             </p>
           )}
           <FormPerfisDoUsuario
@@ -176,7 +176,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
               </ul>
             </>
           )}
-          <h3 className="text-text mt-6 mb-2 text-sm font-semibold">Resultado (soma dos perfis)</h3>
+          <h3 className="text-text mt-6 mb-2 text-sm font-semibold">Permissões resultantes</h3>
           <GradeDaMatriz recursos={recursosDaCamada("tenant")} matriz={permissoes.efetiva} />
         </Cartao>
       </main>

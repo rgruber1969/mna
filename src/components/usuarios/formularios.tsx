@@ -9,7 +9,7 @@ import {
   redefinirPelaPlataformaAcao,
   renomearTenantAcao,
 } from "@/app/acoes/usuarios";
-import { Aviso, Botao, CaixaComDescricao, Campo } from "@/components/ui/basicos";
+import { Aviso, Botao, Campo, OpcoesDePerfil } from "@/components/ui/basicos";
 
 type Acao = (estado: Estado, dados: FormData) => Promise<Estado>;
 
@@ -88,22 +88,7 @@ export function FormConvidarUsuario({
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
       <Campo rotulo="Nome" name="nome" required />
       <Campo rotulo="E-mail do convidado" name="email" type="email" required />
-      {perfis.length > 0 && (
-        <fieldset className="mb-4">
-          <legend className="text-text mb-1 text-sm font-medium">
-            Perfis no tenant (as permissões se somam)
-          </legend>
-          {perfis.map((p) => (
-            <CaixaComDescricao
-              key={p.id}
-              name="perfil"
-              value={p.id}
-              titulo={p.nome}
-              descricao={p.descricao}
-            />
-          ))}
-        </fieldset>
-      )}
+      {perfis.length > 0 && <OpcoesDePerfil perfis={perfis} />}
       <label className="text-text mb-2 flex items-center gap-2 text-sm">
         <input type="checkbox" name="exige2fa" defaultChecked /> Exigir verificação em duas etapas
         (recomendado)

@@ -342,12 +342,17 @@ export async function permissoesDoUsuario(
   return { modo: a.tenant.modoPermissoes, ...dados, efetiva };
 }
 
+export const UM_PERFIL_SO = "Escolha um único perfil do tenant.";
+
+/** Define o perfil do tenant da pessoa: um só, ou nenhum (decisão de 2026-11-18). */
 export async function definirPerfisDoUsuario(
   acesso: Acesso | null,
   usuarioId: string,
   perfilIds: string[],
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
+  perfilIds = perfilIds.filter(Boolean);
+  if (perfilIds.length > 1) return { erro: UM_PERFIL_SO };
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const u = await usuarioAtivo(tx, usuarioId);
     if (!u) return { erro: "Usuário não encontrado." };
@@ -360,8 +365,9 @@ export async function definirPerfisDoUsuario(
   return r;
 }
 
-/** Substitui os perfis do tenant da pessoa (usado também ao aceitar convite). */
-export async function atribuirPerfis(tx: Transacao, tenantId: string, usuarioId: string, ids: string[]) {
+/** Substitui o perfil do tenant da pessoa (no máximo um; usado também ao aceitar convite). */
+export async function atribuirPerfis(tx: Transacao, tenantId: string, usuarioId: string, todos: string[]) {
+  const ids = todos.slice(0, 1);
   const atuais = await tx
     .select({ id: perfilUsuario.id, perfilId: perfilUsuario.perfilId })
     .from(perfilUsuario)

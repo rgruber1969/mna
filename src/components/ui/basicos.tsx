@@ -180,3 +180,40 @@ export function Avatar({
     </span>
   );
 }
+
+/**
+ * Escolha de um único perfil do tenant (convite e detalhe do usuário), com a
+ * opção "sem perfil" (a pessoa não vê nada fora dos deals até receber um).
+ */
+export function OpcoesDePerfil({
+  perfis,
+  marcado = "",
+}: {
+  perfis: { id: string; nome: string; descricao: string }[];
+  marcado?: string;
+}) {
+  return (
+    <fieldset className="mb-4">
+      <legend className="text-text mb-2 text-sm font-medium">Perfil no tenant</legend>
+      {perfis.map((p) => (
+        <CaixaComDescricao
+          key={p.id}
+          type="radio"
+          name="perfil"
+          value={p.id}
+          titulo={p.nome}
+          descricao={p.descricao}
+          defaultChecked={marcado === p.id}
+        />
+      ))}
+      <CaixaComDescricao
+        type="radio"
+        name="perfil"
+        value=""
+        titulo="Sem perfil por enquanto"
+        descricao="A pessoa entra, mas não vê nada fora dos deals até receber um perfil."
+        defaultChecked={marcado === ""}
+      />
+    </fieldset>
+  );
+}

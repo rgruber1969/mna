@@ -92,6 +92,13 @@
       "when": 1795010489048,
       "tag": "0012_exigencia_2fa_perfil_e_convite",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795014507329,
+      "tag": "0013_perfil_unico_no_tenant",
+      "breakpoints": true
     }
   ]
 }

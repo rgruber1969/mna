@@ -60,8 +60,10 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
   documentos, tarefas, contratos).
   * **Todos os perfis são cadastrados no tenant**; o deal não cria perfis,
     só define qual perfil cada pessoa recebe nele (participação).
-  * **Perfil no tenant:** atribuído uma vez, vale no tenant todo; um usuário
-    pode ter **vários, com permissões somadas**.
+  * **Perfil no tenant:** atribuído uma vez, vale no tenant todo; **um só
+    por usuário** (ou nenhum), decidido em 2026-11-18. Nos deals, a pessoa
+    recebe um perfil em cada participação (perfis diferentes em deals
+    diferentes; no mesmo deal, participações se somam).
   * **Perfis padrão:** todo tenant novo recebe uma cópia do conjunto padrão
     (das duas camadas), que passa a ser dele e é editável. Lista e matrizes
     em "Perfis padrão", abaixo.

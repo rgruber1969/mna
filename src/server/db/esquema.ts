@@ -332,7 +332,7 @@ export const perfil = pgTable(
   ],
 ).enableRLS();
 
-/** Perfis do tenant atribuídos a cada usuário (vários, com soma). */
+/** Perfil do tenant atribuído a cada usuário (um por pessoa; os de deal ficam nas participações). */
 export const perfilUsuario = pgTable(
   "perfil_usuario",
   {
@@ -350,7 +350,8 @@ export const perfilUsuario = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [
-    uniqueIndex("perfil_usuario_uq").on(t.tenantId, t.usuarioId, t.perfilId),
+    // Um único perfil do tenant por pessoa (decisão de 2026-11-18).
+    uniqueIndex("perfil_usuario_uq").on(t.tenantId, t.usuarioId),
     pgPolicy("isolamento_tenant", {
       for: "all",
       to: "mna_app",

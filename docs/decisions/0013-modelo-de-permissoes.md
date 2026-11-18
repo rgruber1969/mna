@@ -165,7 +165,8 @@ Elementos:
      perfis** (sempre ao menos um), para que editar perfis nunca tranque o
      tenant. Alternativa descartada: perfil especial "Administrador".
   5. **Vários perfis no tenant por usuário, com soma**, a mesma regra das
-     participações. Alternativa descartada: um perfil só.
+     participações. Alternativa descartada: um perfil só. *Revista no
+     mesmo dia: ver adendo seguinte.*
   6. **Permissão calculada a cada requisição**, reaproveitada só dentro da
      própria requisição; sem cache entre requisições, para que uma
      revogação valha na hora. Cache só diante de problema de desempenho
@@ -173,3 +174,10 @@ Elementos:
   7. **Perfil em uso não pode ser excluído.** Ao trocar o modo de "por
      usuário" para "por perfil", as matrizes individuais são guardadas e
      voltam se o modo for trocado de novo.
+* Adendo (2026-11-18, revisão do item 5 acima): **um único perfil do
+  tenant por usuário** (ou nenhum). Com poucos perfis no tenant, um só é
+  mais simples de entender; ajustes finos de uma pessoa ficam no modo por
+  usuário. Nos processos nada muda: a pessoa recebe um perfil em cada
+  participação e pode ter mais de uma participação no mesmo processo
+  (com soma). O banco garante o perfil único (índice único por tenant e
+  usuário).

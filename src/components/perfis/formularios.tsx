@@ -10,7 +10,7 @@ import {
   salvarMatrizIndividualAcao,
 } from "@/app/acoes/perfis";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
-import { Aviso, Botao, CaixaComDescricao, Campo } from "@/components/ui/basicos";
+import { Aviso, Botao, Campo, OpcoesDePerfil } from "@/components/ui/basicos";
 import {
   ACOES,
   RECURSOS,
@@ -253,7 +253,7 @@ function CampoDescricao({ defaultValue = "" }: { defaultValue?: string }) {
   );
 }
 
-/** Caixas dos perfis do tenant, com a explicação de cada um. */
+/** Escolha do perfil do tenant (um por pessoa), com a explicação de cada um. */
 export function CaixasDePerfis({
   perfis,
   marcados = [],
@@ -263,23 +263,7 @@ export function CaixasDePerfis({
 }) {
   if (perfis.length === 0)
     return <p className="text-muted mb-4 text-sm">Nenhum perfil do tenant cadastrado.</p>;
-  return (
-    <fieldset className="mb-4">
-      <legend className="text-text mb-2 text-sm font-medium">
-        Perfis no tenant (as permissões se somam)
-      </legend>
-      {perfis.map((p) => (
-        <CaixaComDescricao
-          key={p.id}
-          name="perfil"
-          value={p.id}
-          titulo={p.nome}
-          descricao={p.descricao}
-          defaultChecked={marcados.includes(p.id)}
-        />
-      ))}
-    </fieldset>
-  );
+  return <OpcoesDePerfil perfis={perfis} marcado={marcados[0] ?? ""} />;
 }
 
 export function FormPerfisDoUsuario({
@@ -298,7 +282,7 @@ export function FormPerfisDoUsuario({
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
       <input type="hidden" name="id" value={usuarioId} />
       <CaixasDePerfis perfis={perfis} marcados={marcados} />
-      <Botao disabled={enviando}>{enviando ? "Salvando..." : "Salvar perfis"}</Botao>
+      <Botao disabled={enviando}>{enviando ? "Salvando..." : "Salvar perfil"}</Botao>
     </form>
   );
 }

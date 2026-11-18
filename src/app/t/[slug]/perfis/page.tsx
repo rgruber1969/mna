@@ -54,7 +54,7 @@ async function Painel() {
             <Titulo sobre="Administração">Perfis do tenant</Titulo>
             <p className="text-muted mb-4 text-sm">
               Valem fora dos deals (painel, lista de deals, valuations avulsos, cadastros, auditoria). Cada
-              usuário pode ter vários; as permissões se somam.
+              usuário tem um só.
             </p>
             {lista("tenant")}
           </Cartao>

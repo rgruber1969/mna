@@ -14,6 +14,7 @@ import {
   permissoesDoUsuario,
   salvarMatrizDoPerfil,
   salvarMatrizIndividual,
+  UM_PERFIL_SO,
 } from "./perfis";
 import { normalizarMatriz, somarMatrizes } from "./permissoes/catalogo";
 import { PERFIS_PADRAO } from "./permissoes/perfis-padrao";
@@ -144,7 +145,7 @@ describe("perfis padrão", () => {
 });
 
 describe("verificador", () => {
-  it("negado por padrão; perfis do tenant somam; administrador pode tudo", async () => {
+  it("negado por padrão; um único perfil do tenant; administrador pode tudo", async () => {
     const ana = await criarConta("ana");
     expect(await pode(acesso(ana), "painel", "ver")).toBe(false);
     expect(await pode(acesso(admin, { administrador: true }), "auditoria", "ver")).toBe(true);
@@ -157,7 +158,13 @@ describe("verificador", () => {
     expect(await pode(acesso(ana), "deals", "ver")).toBe(true);
     expect(await pode(acesso(ana), "deals", "criar")).toBe(false);
 
-    await definirPerfisDoUsuario(acesso(admin, { administrador: true }), ana, [externo, equipe]);
+    // Um só perfil do tenant por pessoa: dois é recusado; trocar substitui.
+    expect(
+      await definirPerfisDoUsuario(acesso(admin, { administrador: true }), ana, [externo, equipe]),
+    ).toEqual({
+      erro: UM_PERFIL_SO,
+    });
+    await definirPerfisDoUsuario(acesso(admin, { administrador: true }), ana, [equipe]);
     expect(await pode(acesso(ana), "deals", "criar")).toBe(true);
     expect(await pode(acesso(ana), "auditoria", "ver")).toBe(false);
     const p = await permissoesDoUsuario(acesso(admin, { administrador: true }), ana);

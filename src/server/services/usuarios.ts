@@ -176,7 +176,9 @@ export async function convidarUsuario(
   dados: DadosPessoa & { administrador: boolean; perfis?: string[]; exigeDoisFatores?: boolean },
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
-  const perfis = await comTenant(a.tenant.id, (tx) => filtrarPerfisDoTenant(tx, dados.perfis ?? []));
+  const pedidos = (dados.perfis ?? []).filter(Boolean);
+  if (pedidos.length > 1) return { erro: "Escolha um único perfil do tenant." };
+  const perfis = await comTenant(a.tenant.id, (tx) => filtrarPerfisDoTenant(tx, pedidos));
   const email = String(dados.email ?? "")
     .trim()
     .toLowerCase();
