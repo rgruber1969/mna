@@ -66,7 +66,7 @@
     "auxiliares": {
       "sobre": "Cadastros auxiliares",
       "papeisTitulo": "Papéis de empresa",
-      "papeisExplicacao": "O papel que uma empresa assume em cada deal. O perfil sugerido é proposto às pessoas da empresa quando ela entra no deal; o administrador confirma.",
+      "papeisExplicacao": "O papel que uma empresa assume em cada negócio. O perfil sugerido é proposto às pessoas da empresa quando ela entra no negócio; o administrador confirma.",
       "semPerfilSugerido": "Sem perfil sugerido",
       "confirmarExcluirPapel": "Excluir o papel {nome}?",
       "tiposTitulo": "Tipos de vínculo",
@@ -232,7 +232,7 @@
       "vinculoReferenciaNaoEncontrada": "Pessoa, empresa ou tipo de vínculo não encontrado.",
       "vinculoNaoEncontrado": "Vínculo não encontrado.",
       "tipoSocioInexistente": "O tipo de vínculo \"Sócio\" não existe mais nos cadastros.",
-      "perfilDeDealInvalido": "Escolha um perfil de deal.",
+      "perfilDeDealInvalido": "Escolha um perfil de negócio.",
       "papelJaExiste": "Já existe um papel com este nome.",
       "papelNaoEncontrado": "Papel não encontrado.",
       "tipoJaExiste": "Já existe um tipo de vínculo com este nome.",

@@ -146,9 +146,11 @@ comprador) consegue **não revelar quem são os clientes**.
   **inativar** (some das listas de escolha, o histórico fica). A exclusão
   definitiva a pedido do titular segue a anonimização (item 23).
 
-### Deal
+### Deal (Negócio)
 
-Processo de M&A (inicialmente aquisição). Pontos-chave:
+Processo de M&A (inicialmente aquisição). **Nas telas, e-mails e textos em
+PT-BR chama-se "Negócio"**; "deal" fica só como nome interno (código,
+banco e estes documentos). Pontos-chave:
 
 * Uma compradora pode adquirir **mais de uma vendedora** (N CNPJs) no mesmo
   deal.

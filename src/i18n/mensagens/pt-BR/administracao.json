@@ -152,9 +152,9 @@
     "perfis": {
       "sobre": "Administração",
       "tituloTenant": "Perfis do tenant",
-      "textoTenant": "Valem fora dos deals (painel, lista de deals, valuations avulsos, cadastros, auditoria). Cada usuário tem um só.",
-      "tituloDeal": "Perfis de deal",
-      "textoDeal": "Escolhidos para cada pessoa em cada deal em que ela participa, com o alcance (deal inteiro ou etapas). A participação nos deals chega junto com o cadastro de deals.",
+      "textoTenant": "Valem fora dos negócios (painel, lista de negócios, valuations avulsos, cadastros, auditoria). Cada usuário tem um só.",
+      "tituloDeal": "Perfis de negócio",
+      "textoDeal": "Escolhidos para cada pessoa em cada negócio em que ela participa, com o alcance (negócio inteiro ou etapas). A participação nos negócios chega junto com o cadastro de negócios.",
       "exige2fa": "exige 2FA",
       "usuariosEmUso": "{n, plural, =0 {sem usuários} one {# usuário} other {# usuários}}",
       "configuracaoSobre": "Configuração",
@@ -173,7 +173,7 @@
       "detalhe": {
         "voltar": "← Perfis",
         "sobreTenant": "Perfil do tenant",
-        "sobreDeal": "Perfil de deal",
+        "sobreDeal": "Perfil de negócio",
         "marque": "Marque o que este perfil pode fazer em cada menu. O que não estiver marcado é negado.",
         "notaModoUsuario": "No modo por usuário, quem tiver permissões personalizadas não muda com esta matriz.",
         "editarSobre": "Editar",
@@ -196,8 +196,8 @@
         "nome": "Nome do perfil",
         "descricao": "Para que serve (aparece ao atribuir o perfil)",
         "camada": "Camada",
-        "camadaTenant": "Perfil do tenant (fora dos deals)",
-        "camadaDeal": "Perfil de deal (escolhido em cada deal)",
+        "camadaTenant": "Perfil do tenant (fora dos negócios)",
+        "camadaDeal": "Perfil de negócio (escolhido em cada negócio)",
         "comecarCom": "Começar com as permissões de",
         "nenhuma": "Nenhuma (tudo desmarcado)",
         "escolhaACamada": "Escolha a camada primeiro",
@@ -240,12 +240,12 @@
       },
       "recursos": {
         "painel": "Painel",
-        "deals": "Deals (lista)",
+        "deals": "Negócios (lista)",
         "valuations": "Valuations avulsos",
         "empresas": "Empresas e pessoas",
         "cadastros": "Cadastros gerais",
         "auditoria": "Auditoria",
-        "deal": "Deal e participantes",
+        "deal": "Negócio e participantes",
         "etapas": "Etapas",
         "documentos": "Documentos",
         "tarefas": "Tarefas",
@@ -255,7 +255,7 @@
         "ofertas": "Ofertas"
       },
       "notas": {
-        "deals": "A lista mostra só os deals em que a pessoa participa.",
+        "deals": "A lista mostra só os negócios em que a pessoa participa.",
         "cadastros": "Etapas padrão, catálogo de documentos, templates e papéis de empresa.",
         "documentos": "Só nas versões a que a pessoa recebeu acesso de quem as enviou.",
         "mensagens": "Mensagens são imutáveis."

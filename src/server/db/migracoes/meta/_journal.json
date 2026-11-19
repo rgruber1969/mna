@@ -148,6 +148,13 @@
       "when": 1795049134159,
       "tag": "0020_notificacoes",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795073204884,
+      "tag": "0021_nomenclatura_negocio",
+      "breakpoints": true
     }
   ]
 }

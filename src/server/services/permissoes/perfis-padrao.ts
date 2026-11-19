@@ -30,7 +30,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "gestor-contratante",
     descricao:
-      "Para quem coordena o contratante: cria e exclui deals, mantém os cadastros gerais (etapas padrão, catálogo de documentos, templates) e consulta a auditoria.",
+      "Para quem coordena o contratante: cria e exclui negócios, mantém os cadastros gerais (etapas padrão, catálogo de documentos, templates) e consulta a auditoria.",
     nome: "Gestor do contratante",
     camada: "tenant",
     matriz: { painel: V, deals: VCEX, valuations: VCEXB, empresas: VCEXB, cadastros: VCEX, auditoria: V },
@@ -38,7 +38,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "equipe-contratante",
     descricao:
-      "Para quem trabalha nos deals no dia a dia: cria e edita deals, valuations, empresas e pessoas; só consulta os cadastros gerais e não vê a auditoria.",
+      "Para quem trabalha nos negócios no dia a dia: cria e edita negócios, valuations, empresas e pessoas; só consulta os cadastros gerais e não vê a auditoria.",
     nome: "Equipe do contratante",
     camada: "tenant",
     matriz: { painel: V, deals: VCE, valuations: VCEXB, empresas: VCEB, cadastros: V },
@@ -46,18 +46,18 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "usuario-externo",
     descricao:
-      "Para clientes, compradores e parceiros: vê o painel e a lista dos deals em que participa; o que faz em cada deal depende do perfil que recebe nele.",
+      "Para clientes, compradores e parceiros: vê o painel e a lista dos negócios em que participa; o que faz em cada negócio depende do perfil que recebe nele.",
     nome: "Usuário externo",
     camada: "tenant",
     matriz: { painel: V, deals: V },
   },
 
-  // --- Perfis de deal ---------------------------------------------------------
+  // --- Perfis de negócio (camada "deal" no código) ----------------------------
   {
     codigo: "coordenador-deal",
     descricao:
-      "Conduz o deal: edita os dados do deal e tem acesso completo a etapas, documentos, tarefas, contratos, e-book e ofertas.",
-    nome: "Coordenador do deal",
+      "Conduz o negócio: edita os dados do negócio e tem acesso completo a etapas, documentos, tarefas, contratos, e-book e ofertas.",
+    nome: "Coordenador do negócio",
     camada: "deal",
     matriz: {
       deal: VE,
@@ -170,7 +170,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "somente-leitura",
     descricao:
-      "Só consulta: vê deal, etapas, documentos liberados, tarefas e mensagens, sem baixar nem alterar.",
+      "Só consulta: vê negócio, etapas, documentos liberados, tarefas e mensagens, sem baixar nem alterar.",
     nome: "Somente leitura",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: V, tarefas: V, mensagens: V },

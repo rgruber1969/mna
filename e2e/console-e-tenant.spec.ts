@@ -319,7 +319,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   // 3b. Perfis: o convite atribuiu "Usuário externo"; ajustar a matriz muda o resultado na hora.
   await admin.getByRole("link", { name: "Perfis" }).click();
   await expect(admin.getByRole("link", { name: "Gestor do contratante" })).toBeVisible();
-  await expect(admin.getByRole("link", { name: "Coordenador do deal" })).toBeVisible();
+  await expect(admin.getByRole("link", { name: "Coordenador do negócio" })).toBeVisible();
   await admin.getByRole("link", { name: "Usuário externo" }).click();
   const visivel = (l: ReturnType<Page["getByLabel"]>) => l.filter({ visible: true });
   await expect(visivel(admin.getByLabel("Painel: Ver"))).toBeChecked();

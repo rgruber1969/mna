@@ -269,7 +269,7 @@ describe("integridade e isolamento", () => {
     const n = await dono.query(`select count(*)::int n from perfil_usuario where usuario_id = $1`, [gabi]);
     expect(n.rows[0].n).toBe(0);
     // Perfil de deal também não entra como perfil do tenant.
-    const coordenador = await idDoPerfil("B", "Coordenador do deal");
+    const coordenador = await idDoPerfil("B", "Coordenador do negócio");
     await definirPerfisDoUsuario(acesso(adminB, { t: "B", administrador: true }), gabi, [coordenador]);
     const m = await dono.query(`select count(*)::int n from perfil_usuario where usuario_id = $1`, [gabi]);
     expect(m.rows[0].n).toBe(0);
@@ -292,7 +292,7 @@ describe("2FA por perfil", () => {
     expect(await outroTenantExigeDoisFatores(hugo, tenants.A.id)).toBe(false);
 
     // Perfil de deal não tem esta opção.
-    const coordenador = await idDoPerfil("A", "Coordenador do deal");
+    const coordenador = await idDoPerfil("A", "Coordenador do negócio");
     expect(await definirExigenciaDoPerfil(adm, coordenador, true)).toHaveProperty("erro");
     await definirExigenciaDoPerfil(adm, externo, false);
   });

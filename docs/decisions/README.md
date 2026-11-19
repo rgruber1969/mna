@@ -59,6 +59,7 @@ projeto e em `docs/projeto/`.
 | Entrada de desenvolvimento | Só e-mail, ligada por variável, só em `*.localhost`; a aplicação recusa iniciar em produção com ela ([autenticacao-e-sessao.md](../projeto/autenticacao-e-sessao.md)) | 2026-11-18 |
 | Consulta de CNPJ e CEP | BrasilAPI (CNPJ, com quadro de sócios) e ViaCEP (CEP, com a BrasilAPI de reserva); gratuitos, sem chave; consulta pelo servidor; fora do ar, preenchimento manual | 2026-11-18 |
 | Layout das áreas logadas | Inspirado no tema de referência indicado pelo responsável: menu lateral recolhível, cabeçalho flutuante com busca, sino de notificações e menu do usuário, rodapé em cartão; modo claro e escuro por usuário; menu lateral com grupos e favoritos guardados no banco | 2026-11-19 |
+| Nome do processo em PT-BR | "Negócio" nas telas, e-mails e textos; "deal" só como nome interno (código, banco, documentação) | 2026-11-19 |
 
 ## Substituídas
 
