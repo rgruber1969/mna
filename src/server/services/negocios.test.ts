@@ -43,6 +43,7 @@ import {
 import { moverNegocioParaEtapa, quadroDeNegocios } from "./negocios-kanban";
 import { concluirEnvio, dataRoomDoNegocio, excluirVersao, iniciarEnvio, linkDeDownload } from "./documentos";
 import { pdfComTexto } from "@/testes/pdf-de-teste";
+import { painelDoUsuario } from "./painel";
 import { criarTarefa, marcarItem, mudarSituacaoDaTarefa, tarefasDoNegocio } from "./tarefas";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
@@ -924,5 +925,30 @@ describe("tarefas", () => {
     expect((await tarefasDoNegocio(g, negocioId))!.tarefas.find((x) => x.id === r2.id)?.semResponsavel).toBe(
       true,
     );
+  });
+});
+
+describe("tela principal", () => {
+  it("números, meus negócios, prazos (tarefas e exclusividade) e negócios por etapa", async () => {
+    const g = acesso("gestor");
+    const amanha = new Date(Date.now() + 86_400_000).toLocaleDateString("sv-SE", {
+      timeZone: "America/Sao_Paulo",
+    });
+    await criarTarefa(g, negocioId, {
+      titulo: "Ligar para a compradora",
+      descricao: "",
+      etapaId: "",
+      prioridade: "normal",
+      prazo: amanha,
+      usuarios: [contas.gestor],
+    });
+    const p = await painelDoUsuario(g);
+    expect(p.numeros.negocios).toBeGreaterThanOrEqual(1);
+    expect(p.numeros.minhasTarefas).toBeGreaterThanOrEqual(1);
+    expect(p.negocios.map((n) => n.nome)).toContain("N-0001 Projeto Gadol");
+    expect(p.prazos.some((z) => z.tipo === "tarefa" && z.texto === "Ligar para a compradora")).toBe(true);
+    expect(p.porEtapa.reduce((s, e) => s + e.total, 0)).toBe(p.numeros.negocios);
+    // Quem não participa de negócio nenhum vê o painel vazio.
+    expect((await painelDoUsuario(acesso("curioso"))).numeros.negocios).toBe(0);
   });
 });

@@ -304,7 +304,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await usuaria.getByRole("button", { name: "Aceitar convite" }).click();
   // A página do convite também diz "Olá, ..."; espera a navegação para a tela inicial.
   await expect(usuaria).toHaveURL(`${base}/`);
-  await expect(usuaria.getByText("Acesso confirmado")).toBeVisible();
+  await expect(usuaria.getByRole("heading", { name: "Meus negócios" })).toBeVisible();
   await expect(usuaria.getByRole("link", { name: "Usuários" })).toHaveCount(0);
   // Quem não é administrador vê a página de "não encontrado" (com streaming, o status HTTP fica 200).
   await usuaria.goto(`${base}/usuarios`);

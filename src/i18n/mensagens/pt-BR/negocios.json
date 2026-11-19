@@ -330,5 +330,29 @@
       "verHistorico": "Ver o histórico completo",
       "documentos": "Documentos"
     }
+  },
+  "painel": {
+    "numeros": {
+      "negocios": "Negócios em aberto",
+      "minhasTarefas": "Minhas tarefas abertas",
+      "atrasadas": "Tarefas atrasadas",
+      "prazosDaSemana": "Prazos nos próximos 7 dias"
+    },
+    "meusNegocios": "Meus negócios",
+    "verKanban": "Ver no kanban",
+    "semNegocios": "Nenhum negócio em aberto.",
+    "alertas": "Últimas mensagens e alertas",
+    "alertasAjuda": "Por enquanto, os alertas do sino; as mensagens entram quando a mensageria estiver pronta.",
+    "verTodos": "Ver todos",
+    "semAlertas": "Nenhum alerta.",
+    "prazos": "Prazos",
+    "semPrazos": "Nenhum prazo nos próximos 30 dias.",
+    "atrasado": "atrasado",
+    "tipos": {
+      "tarefa": "Tarefa: {texto}",
+      "exclusividade": "Fim da exclusividade",
+      "participacao": "Fim do acesso de {texto}"
+    },
+    "porEtapa": "Negócios por etapa"
   }
 }

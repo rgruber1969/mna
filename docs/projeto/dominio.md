@@ -607,6 +607,14 @@ Etapas padrão:
 
 ### Tela principal
 
+* **Construída (item 14, 2026-11-19, layout P1):** números (negócios em
+  aberto, minhas tarefas abertas, atrasadas, prazos dos próximos 7 dias);
+  três áreas lado a lado: Meus negócios (com a etapa), Últimas mensagens e
+  alertas (por enquanto, os alertas do sino) e Prazos em linha do tempo
+  (tarefas, fim da exclusividade para o lado vendedor e fim de acessos,
+  próximos 30 dias); embaixo, negócios por etapa. Ainda não: as mensagens
+  (mensageria) e o exemplo de demonstração (P2).
+
 * **Topo:** gráficos e KPIs (deals por etapa, do usuário e gerais se tiver
   permissão; tarefas pendentes etc.).
 * Minhas tarefas, tarefas que aguardam outros, prazos da semana, status de
