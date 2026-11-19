@@ -565,6 +565,14 @@ Etapas padrão:
   visíveis), coordenador, situação, etapas em paralelo e o funil por
   situação com o nome das compradoras (lado vendedor). Clicar abre um painel lateral com as etapas (editáveis)
   e os últimos eventos.
+* **Visual (ajuste de 2026-11-19, modelo de kanban indicado pelo
+  responsável):** colunas com ícone colorido, total e atrasados; busca no
+  topo; cartão com faixa de cor pelo prazo estimado (fim previsto da etapa
+  atual ou previsão de fechamento: em dia, atenção até 15 dias, próximo até
+  7 dias, atrasado), progresso das etapas, fotos das pessoas e menu "⋮"
+  (detalhes, tarefas, documentos, abrir, mover para); painel do cartão em
+  abas (Resumo, Etapas, Empresas, Participantes, Tarefas, Documentos,
+  Histórico). Quem vê só o codinome não vê as pessoas no cartão.
 * **Pedido de 2026-11-19:** um kanban com todos os negócios que o usuário
   vê, colunas = etapas, com ações direto no cartão (editar a etapa, mover
   de etapa e, depois do data room, ligar documentos) sem abrir o negócio.

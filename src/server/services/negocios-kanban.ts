@@ -2,7 +2,18 @@ import { and, asc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { comTenant } from "@/server/db/cliente";
-import { dealEmpresa, dealEtapa, empresa, etapaPadrao } from "@/server/db/esquema";
+import {
+  deal,
+  dealEmpresa,
+  dealEtapa,
+  empresa,
+  etapaPadrao,
+  participacaoDeal,
+  pessoa,
+  usuario,
+} from "@/server/db/esquema";
+import { enderecoDaFoto } from "./foto-da-conta";
+import { hojeEmSaoPaulo } from "./negocios-andamento";
 import type { Acesso } from "./acesso";
 import { mudarSituacaoDaEtapa } from "./etapas";
 import { paginaDeNegocios, visaoDoNegocio, type FiltroDeNegocios, type NegocioResumo } from "./negocios";
@@ -19,9 +30,16 @@ import { exigirPermissao, permissoesNoDeal } from "./permissoes/verificador";
 export type CartaoDoQuadro = NegocioResumo & {
   colunaId: string;
   podeMover: boolean;
-  /** Resumo do funil de compradoras (só para quem o vê). */
   /** Compradoras por situação do funil (só para quem o vê). */
   funil: Record<string, string[]> | null;
+  /** Pessoas envolvidas (miniaturas no cartão). */
+  pessoas: { nome: string; foto: string | null }[];
+  /** Prazo estimado: fim previsto da etapa atual (ou a previsão de fechamento). */
+  prazo: string | null;
+  /** Cor pelo prazo: atrasado, próximo (até 7 dias), atenção (até 15), em dia; null = sem prazo. */
+  nivelDoPrazo: "atrasado" | "proximo" | "atencao" | "emDia" | null;
+  /** Etapas concluídas ou puladas / total (sem as subetapas). */
+  progresso: { feitas: number; total: number };
 };
 
 export type Quadro = { colunas: { id: string; nome: string }[]; cartoes: CartaoDoQuadro[] };
@@ -51,6 +69,7 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
             ordem: dealEtapa.ordem,
             situacao: dealEtapa.situacao,
             etapaPadraoId: dealEtapa.etapaPadraoId,
+            fimPrevisto: dealEtapa.fimPrevisto,
           })
           .from(dealEtapa)
           .where(and(inArray(dealEtapa.dealId, ids), isNull(dealEtapa.paiId)))
@@ -68,6 +87,35 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
           .where(and(inArray(dealEmpresa.dealId, ids), isNotNull(dealEmpresa.situacaoFunil)))
       : [],
   ]);
+  const [pessoasDosNegocios, previsoes] = ids.length
+    ? await comTenant(a.tenant.id, async (tx) => [
+        await tx
+          .selectDistinct({
+            dealId: participacaoDeal.dealId,
+            nome: pessoa.nome,
+            usuarioId: pessoa.usuarioId,
+            imagem: usuario.image,
+          })
+          .from(participacaoDeal)
+          .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
+          .leftJoin(usuario, eq(usuario.id, pessoa.usuarioId))
+          .where(and(inArray(participacaoDeal.dealId, ids), isNull(participacaoDeal.cortadaEm))),
+        await tx
+          .select({ id: deal.id, previsao: deal.previsaoFechamento })
+          .from(deal)
+          .where(inArray(deal.id, ids)),
+      ])
+    : [[], []];
+  const pessoasPor = Map.groupBy(pessoasDosNegocios, (p) => p.dealId);
+  const previsaoDe = new Map(previsoes.map((p) => [p.id, p.previsao]));
+  const hoje = hojeEmSaoPaulo();
+  const nivel = (prazo: string | null): CartaoDoQuadro["nivelDoPrazo"] => {
+    if (!prazo) return null;
+    const dias = Math.round(
+      (Date.parse(`${prazo}T12:00:00Z`) - Date.parse(`${hoje}T12:00:00Z`)) / 86_400_000,
+    );
+    return dias < 0 ? "atrasado" : dias <= 7 ? "proximo" : dias <= 15 ? "atencao" : "emDia";
+  };
   const ativas = new Set(padroes.map((p) => p.id));
   const etapasPor = Map.groupBy(etapas, (e) => e.dealId);
   const funilPor = Map.groupBy(compradoras, (c) => c.dealId);
@@ -95,9 +143,25 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
         for (const c of doFunil) (funil[c.situacao!] ??= []).push(c.nome);
       }
     }
+    // Para quem vê só o codinome (antes do NDA), o cartão não mostra as pessoas.
+    const pessoas =
+      n.nomeInterno === null && !a.administrador
+        ? []
+        : (pessoasPor.get(n.id) ?? []).map((p) => ({
+            nome: p.nome,
+            foto: p.usuarioId ? enderecoDaFoto(p.usuarioId, p.imagem) : null,
+          }));
+    const prazo = emAndamento?.fimPrevisto ?? previsaoDe.get(n.id) ?? null;
     cartoes.push({
       ...n,
       colunaId,
+      pessoas,
+      prazo,
+      nivelDoPrazo: n.situacao === "andamento" ? nivel(prazo) : null,
+      progresso: {
+        feitas: doNegocio.filter((e) => e.situacao === "concluida" || e.situacao === "pulada").length,
+        total: doNegocio.length,
+      },
       podeMover:
         (n.situacao === "andamento" || n.situacao === "suspenso") &&
         (a.administrador ||

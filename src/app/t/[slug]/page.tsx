@@ -25,7 +25,7 @@ function Bloco({
   children: ReactNode;
 }) {
   return (
-    <section className="bg-surface shadow-cartao border-border rounded-xl border p-4">
+    <section className="bg-background shadow-cartao rounded-xl p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-accent text-xs font-semibold tracking-widest uppercase">{titulo}</h2>
         {link && (
@@ -67,7 +67,7 @@ async function Inicio() {
         </Titulo>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {numeros.map((n) => (
-            <div key={n.rotulo} className="bg-surface shadow-cartao border-border rounded-xl border p-4">
+            <div key={n.rotulo} className="bg-background shadow-cartao rounded-xl p-4">
               <p className="text-muted text-xs">{n.rotulo}</p>
               <p className={`text-2xl font-bold ${n.destaque ? "text-danger" : "text-text"}`}>{n.valor}</p>
             </div>

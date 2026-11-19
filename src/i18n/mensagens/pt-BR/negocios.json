@@ -316,19 +316,55 @@
     "kanban": {
       "aIniciar": "A iniciar",
       "confirmarMover": "Mover {negocio} para \"{etapa}\"? A etapa atual é concluída (ou volta a não iniciada, se a nova estiver antes) e a nova é iniciada.",
-      "moverPara": "Mover {negocio} para",
       "moverParaCurto": "Mover para…",
-      "emParalelo": "+{n} etapa(s) em paralelo",
       "etapa": "Etapa: {etapa}",
       "abrirNegocio": "Abrir o negócio",
       "fechar": "Fechar",
       "carregando": "Carregando…",
       "semAcesso": "Você não tem acesso a este negócio.",
-      "etapas": "Etapas",
-      "ultimosEventos": "Últimos eventos",
       "semEventos": "Nenhum evento.",
-      "verHistorico": "Ver o histórico completo",
-      "documentos": "Documentos"
+      "buscar": "Procurar nos negócios…",
+      "legenda": "Cores pelo prazo estimado",
+      "niveis": {
+        "emDia": "Em dia",
+        "atencao": "Atenção (até 15 dias)",
+        "proximo": "Próximo (até 7 dias)",
+        "atrasado": "Atrasado"
+      },
+      "atrasados": "{n, plural, one {# atrasado} other {# atrasados}}",
+      "negocios": "{n, plural, =0 {nenhum negócio} one {# negócio} other {# negócios}}",
+      "progresso": "Etapas {feitas}/{total}",
+      "prazo": "Prazo: {data}",
+      "pessoas": "Pessoas: {nomes}",
+      "maisAcoes": "Mais ações de {negocio}",
+      "detalhes": "Ver detalhes",
+      "verTarefas": "Ver tarefas",
+      "verDocumentos": "Ver documentos",
+      "abas": {
+        "resumo": "Resumo",
+        "etapas": "Etapas",
+        "empresas": "Empresas",
+        "participantes": "Participantes",
+        "tarefas": "Tarefas",
+        "documentos": "Documentos",
+        "historico": "Histórico"
+      },
+      "resumo": {
+        "nomeInterno": "Nome interno",
+        "tipo": "Tipo de operação",
+        "situacao": "Situação",
+        "etapa": "Etapa atual",
+        "inicio": "Início",
+        "previsao": "Previsão de fechamento",
+        "prazo": "Prazo estimado",
+        "valor": "Valor estimado",
+        "coordenador": "Coordenador",
+        "funil": "Funil de compradoras",
+        "descricao": "Descrição"
+      },
+      "trabalhaPara": "trabalha para {nome}",
+      "contato": "Contato (sem acesso)",
+      "ate": "até {data}"
     }
   },
   "painel": {

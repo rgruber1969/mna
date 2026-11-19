@@ -142,21 +142,28 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(
     page.getByRole("region", { name: "Prospecção" }).getByText("N-0001 Projeto Teste"),
   ).toBeVisible();
+  // Menu ⋮ do cartão → Mover para → Term Sheet (com confirmação).
   page.once("dialog", (d) => d.accept());
-  await page.getByLabel("Mover N-0001 Projeto Teste para").selectOption({ label: "Term Sheet" });
+  await page.getByRole("button", { name: "Mais ações de N-0001 Projeto Teste" }).click();
+  await page.getByRole("menuitem", { name: /Mover para/ }).click();
+  await page.getByRole("menuitem", { name: "Term Sheet" }).click();
   await expect(
     page.getByRole("region", { name: "Term Sheet" }).getByText("N-0001 Projeto Teste"),
   ).toBeVisible({
     timeout: 30_000,
   });
-  await page.getByRole("button", { name: "N-0001 Projeto Teste" }).click();
-  await expect(
-    page.getByRole("dialog", { name: "N-0001 Projeto Teste" }).getByText("Últimos eventos"),
-  ).toBeVisible();
-  // O painel do cartão também mostra os documentos do negócio.
-  await expect(
-    page
-      .getByRole("dialog", { name: "N-0001 Projeto Teste" })
-      .getByRole("button", { name: /Contrato social/ }),
-  ).toBeVisible();
+  // Busca no topo do kanban.
+  await page.getByRole("searchbox", { name: "Procurar nos negócios…" }).fill("inexistente");
+  await expect(page.getByText("N-0001 Projeto Teste")).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Procurar nos negócios…" }).fill("teste");
+  // Capturas para revisão visual (só quando CAPTURAS aponta para uma pasta).
+  if (process.env.CAPTURAS)
+    await page.screenshot({ path: `${process.env.CAPTURAS}/kanban.png`, fullPage: true });
+  // Painel do cartão em abas: Resumo e Documentos.
+  await page.getByRole("button", { name: "N-0001 Projeto Teste", exact: true }).click();
+  const painel = page.getByRole("dialog", { name: "N-0001 Projeto Teste" });
+  await expect(painel.getByRole("tab", { name: "Resumo" })).toBeVisible();
+  await painel.getByRole("tab", { name: "Documentos" }).click();
+  await expect(painel.getByRole("button", { name: /Contrato social/ })).toBeVisible();
+  if (process.env.CAPTURAS) await page.screenshot({ path: `${process.env.CAPTURAS}/kanban-painel.png` });
 });

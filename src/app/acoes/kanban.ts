@@ -6,6 +6,8 @@ import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import { etapasDoNegocio } from "@/server/services/etapas";
 import { dataRoomDoNegocio } from "@/server/services/documentos";
+import { obterNegocio } from "@/server/services/negocios";
+import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { andamentoDoNegocio } from "@/server/services/negocios-andamento";
 import { moverNegocioParaEtapa } from "@/server/services/negocios-kanban";
 
@@ -24,10 +26,12 @@ export async function moverNegocioParaEtapaAcao(
 /** Dados do painel lateral do cartão: etapas do negócio e os últimos eventos. */
 export async function painelDoNegocioAcao(dealId: string) {
   const a = await acesso();
-  const [etapas, andamento, dataRoom] = await Promise.all([
+  const [etapas, andamento, dataRoom, negocio, tarefas] = await Promise.all([
     etapasDoNegocio(a, dealId),
     andamentoDoNegocio(a, dealId),
     dataRoomDoNegocio(a, dealId),
+    obterNegocio(a, dealId).catch(() => null),
+    tarefasDoNegocio(a, dealId),
   ]);
   if (!andamento) return null;
   // Chave montada em tempo de execução (tipo do evento): tradutor sem tipagem estrita.
@@ -37,7 +41,7 @@ export async function painelDoNegocioAcao(dealId: string) {
   };
   const ts = await getTranslations("negocios.situacoes");
   const tf = await getTranslations("negocios.funil");
-  const historico = andamento.historico.slice(0, 8).map((h) => {
+  const historico = andamento.historico.slice(0, 30).map((h) => {
     const chave = `tipos.${h.tipo.replaceAll(".", "_")}`;
     const p: Record<string, string> = { ...h.parametros };
     if (h.tipo === "negocio.situacao" && p.para) p.para = ts(p.para as never);
@@ -49,5 +53,20 @@ export async function painelDoNegocioAcao(dealId: string) {
         .join(" · "),
     };
   });
-  return { etapas, historico, dataRoom };
+  return {
+    etapas,
+    historico,
+    dataRoom,
+    tarefas,
+    resumo: negocio && {
+      nomeInterno: negocio.nomeInterno,
+      tipo: negocio.tipo,
+      dataInicio: negocio.dataInicio,
+      previsaoFechamento: negocio.previsaoFechamento,
+      valorEstimado: negocio.valorEstimado,
+      descricao: negocio.descricao,
+    },
+    empresas: negocio?.empresas ?? [],
+    participantes: negocio?.participantes ?? [],
+  };
 }

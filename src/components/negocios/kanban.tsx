@@ -1,21 +1,23 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { moverNegocioParaEtapaAcao, painelDoNegocioAcao } from "@/app/acoes/kanban";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
-import { Aviso } from "@/components/ui/basicos";
+import { TarefasDoNegocio } from "@/components/negocios/tarefas";
+import { Avatar, Aviso } from "@/components/ui/basicos";
 
 /**
- * Kanban de negócios (item 15): colunas = etapas padrão; cartão = negócio, na
- * coluna da etapa atual. Arrastar (ou "Mover para") muda a etapa, depois de
- * confirmar; clicar abre o painel lateral com as etapas e o histórico, sem
- * sair do quadro.
+ * Kanban de negócios (item 15): colunas = etapas padrão, com ícone, total e
+ * atrasados; cartão com faixa de cor pelo prazo estimado, progresso das
+ * etapas, fotos das pessoas e menu "…"; busca no topo. Arrastar (ou "Mover
+ * para") muda a etapa. Clicar abre o painel em abas, sem sair do quadro.
  */
 
+type Nivel = "atrasado" | "proximo" | "atencao" | "emDia" | null;
 type Cartao = {
   id: string;
   nome: string;
@@ -28,10 +30,211 @@ type Cartao = {
   colunaId: string;
   podeMover: boolean;
   funil: Record<string, string[]> | null;
+  pessoas: { nome: string; foto: string | null }[];
+  prazo: string | null;
+  nivelDoPrazo: Nivel;
+  progresso: { feitas: number; total: number };
 };
 type Painel = Awaited<ReturnType<typeof painelDoNegocioAcao>>;
 
 const FUNIL = ["prospectada", "teaser", "nda", "proposta", "escolhida"] as const;
+const br = (d: string | null) => (d ? d.split("-").reverse().join("/") : null);
+const semAcento = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/** Cor da faixa e do prazo (tokens semânticos). */
+const corDoNivel: Record<Exclude<Nivel, null>, { faixa: string; texto: string }> = {
+  emDia: { faixa: "bg-success", texto: "text-success" },
+  atencao: { faixa: "bg-warning opacity-60", texto: "text-warning" },
+  proximo: { faixa: "bg-warning", texto: "text-warning" },
+  atrasado: { faixa: "bg-danger", texto: "text-danger" },
+};
+/** Ícone colorido de cada coluna (cores alternadas). */
+const coresDasColunas = [
+  "bg-primary/15 text-primary",
+  "bg-accent/20 text-accent",
+  "bg-success/15 text-success",
+  "bg-warning/20 text-warning",
+];
+const desenhos = ["M4 6h16M4 12h10M4 18h6", "M12 3v18M3 12h18", "M4 17l5-5 4 4 7-7", "M5 12l4 4 10-10"];
+
+function IconeDaColuna({ indice }: { indice: number }) {
+  return (
+    <span
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${coresDasColunas[indice % coresDasColunas.length]}`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        className="h-5 w-5"
+        aria-hidden="true"
+      >
+        <path d={desenhos[indice % desenhos.length]} />
+      </svg>
+    </span>
+  );
+}
+
+/** Menu "…" do cartão. */
+function MenuDoCartao({
+  cartao,
+  colunas,
+  abrir,
+  mover,
+}: {
+  cartao: Cartao;
+  colunas: { id: string; nome: string }[];
+  abrir: (aba?: string) => void;
+  mover: (colunaId: string) => void;
+}) {
+  const t = useTranslations("negocios.kanban");
+  const [aberto, setAberto] = useState(false);
+  const [moverAberto, setMoverAberto] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setAberto(false);
+    };
+    document.addEventListener("mousedown", fora);
+    return () => document.removeEventListener("mousedown", fora);
+  }, [aberto]);
+  const item = (rotulo: string, acao: () => void) => (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={() => {
+        setAberto(false);
+        acao();
+      }}
+      className="hover:bg-surface text-text block w-full px-3 py-1.5 text-left text-xs"
+    >
+      {rotulo}
+    </button>
+  );
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={aberto}
+        aria-label={t("maisAcoes", { negocio: cartao.nome })}
+        onClick={() => setAberto((x) => !x)}
+        className="text-muted hover:text-text rounded px-1 text-base leading-none"
+      >
+        ⋮
+      </button>
+      {aberto && (
+        <div
+          role="menu"
+          className="bg-background border-border absolute top-6 right-0 z-20 w-48 rounded-md border py-1 shadow-lg"
+        >
+          {item(t("detalhes"), () => abrir())}
+          {item(t("verTarefas"), () => abrir("tarefas"))}
+          {item(t("verDocumentos"), () => abrir("documentos"))}
+          <Link
+            href={`/negocios/${cartao.id}`}
+            role="menuitem"
+            className="hover:bg-surface text-text block px-3 py-1.5 text-xs"
+          >
+            {t("abrirNegocio")}
+          </Link>
+          {cartao.podeMover && (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                aria-expanded={moverAberto}
+                onClick={() => setMoverAberto((x) => !x)}
+                className="hover:bg-surface text-text border-border block w-full border-t px-3 py-1.5 text-left text-xs"
+              >
+                {t("moverParaCurto")} {moverAberto ? "▾" : "▸"}
+              </button>
+              {moverAberto &&
+                colunas
+                  .filter((c) => c.id !== cartao.colunaId)
+                  .map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setAberto(false);
+                        mover(c.id);
+                      }}
+                      className="hover:bg-surface text-muted block w-full py-1 pr-3 pl-6 text-left text-xs"
+                    >
+                      {c.nome}
+                    </button>
+                  ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Fotos({ pessoas }: { pessoas: { nome: string; foto: string | null }[] }) {
+  const t = useTranslations("negocios.kanban");
+  if (pessoas.length === 0) return null;
+  const nomes = pessoas.map((p) => p.nome).join(", ");
+  return (
+    <span className="flex items-center" title={nomes} aria-label={t("pessoas", { nomes })}>
+      {pessoas.slice(0, 3).map((p, i) => (
+        <span key={i} className={i > 0 ? "-ml-2" : ""}>
+          <Avatar nome={p.nome} foto={p.foto} tamanho={22} />
+        </span>
+      ))}
+      {pessoas.length > 3 && (
+        <span className="bg-success/15 text-success -ml-2 flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1 text-[10px] font-semibold">
+          +{pessoas.length - 3}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function AbasDoPainel({
+  abas,
+  ativa,
+  mudar,
+}: {
+  abas: { id: string; rotulo: string }[];
+  ativa: string;
+  mudar: (id: string) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      className="border-border mb-3 flex shrink-0 gap-1 overflow-x-auto overflow-y-hidden border-b"
+    >
+      {abas.map((a) => (
+        <button
+          key={a.id}
+          type="button"
+          role="tab"
+          aria-selected={ativa === a.id}
+          onClick={() => mudar(a.id)}
+          className={`-mb-px border-b-2 px-3 py-2 text-sm whitespace-nowrap ${ativa === a.id ? "border-primary text-primary font-medium" : "text-muted border-transparent"}`}
+        >
+          {a.rotulo}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
+  return (
+    <div className="border-border flex gap-3 border-b py-1.5 text-sm last:border-0">
+      <span className="text-muted w-40 shrink-0">{rotulo}</span>
+      <span className="text-text">{children}</span>
+    </div>
+  );
+}
 
 export function KanbanDeNegocios({
   colunas,
@@ -48,10 +251,25 @@ export function KanbanDeNegocios({
   const router = useRouter();
   const [movendo, iniciar] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
+  const [busca, setBusca] = useState("");
   const [arrastado, setArrastado] = useState<string | null>(null);
   const [sobre, setSobre] = useState<string | null>(null);
-  const [aberto, setAberto] = useState<{ cartao: Cartao; painel: Painel | undefined } | null>(null);
+  const [aberto, setAberto] = useState<{ cartao: Cartao; painel: Painel | undefined; aba: string } | null>(
+    null,
+  );
   const todas = [{ id: "a-iniciar", nome: t("aIniciar") }, ...colunas];
+  const termo = semAcento(busca.trim());
+  const visiveis = termo
+    ? cartoes.filter((c) =>
+        [
+          c.nome,
+          c.nomeInterno ?? "",
+          ...(c.vendedoras ?? []),
+          ...c.coordenadores,
+          ...c.pessoas.map((p) => p.nome),
+        ].some((x) => semAcento(x).includes(termo)),
+      )
+    : cartoes;
 
   function mover(id: string, colunaId: string) {
     const c = cartoes.find((x) => x.id === id);
@@ -65,20 +283,51 @@ export function KanbanDeNegocios({
     });
   }
 
-  async function abrir(c: Cartao) {
-    setAberto({ cartao: c, painel: undefined });
+  async function abrir(c: Cartao, aba = "resumo") {
+    setAberto({ cartao: c, painel: undefined, aba });
     const painel = await painelDoNegocioAcao(c.id);
-    setAberto({ cartao: c, painel });
+    setAberto((x) => (x?.cartao.id === c.id ? { ...x, painel } : x));
   }
+
+  const p = aberto?.painel;
+  const c0 = aberto?.cartao;
+  const abasDoPainel = [
+    { id: "resumo", rotulo: t("abas.resumo") },
+    ...(p?.etapas ? [{ id: "etapas", rotulo: t("abas.etapas") }] : []),
+    { id: "empresas", rotulo: `${t("abas.empresas")} (${p?.empresas.length ?? 0})` },
+    { id: "participantes", rotulo: `${t("abas.participantes")} (${p?.participantes.length ?? 0})` },
+    ...(p?.tarefas ? [{ id: "tarefas", rotulo: t("abas.tarefas") }] : []),
+    ...(p?.dataRoom ? [{ id: "documentos", rotulo: t("abas.documentos") }] : []),
+    { id: "historico", rotulo: t("abas.historico") },
+  ];
 
   return (
     <div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder={t("buscar")}
+          aria-label={t("buscar")}
+          className="border-border bg-background text-text focus:border-primary w-full max-w-xs rounded-full border px-4 py-2 text-sm outline-none"
+        />
+        <span className="text-muted flex flex-wrap items-center gap-3 text-xs" aria-label={t("legenda")}>
+          {(["emDia", "atencao", "proximo", "atrasado"] as const).map((n) => (
+            <span key={n} className="flex items-center gap-1">
+              <span className={`inline-block h-2.5 w-2.5 rounded-full ${corDoNivel[n].faixa}`} />{" "}
+              {t(`niveis.${n}`)}
+            </span>
+          ))}
+        </span>
+      </div>
       {erro && <Aviso>{erro}</Aviso>}
       <div
-        className={`grid auto-cols-[minmax(10rem,1fr)] grid-flow-col gap-2 overflow-x-auto pb-2 ${movendo ? "opacity-70" : ""}`}
+        className={`grid auto-cols-[minmax(13rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 ${movendo ? "opacity-70" : ""}`}
       >
-        {todas.map((coluna) => {
-          const daColuna = cartoes.filter((c) => c.colunaId === coluna.id);
+        {todas.map((coluna, i) => {
+          const daColuna = visiveis.filter((c) => c.colunaId === coluna.id);
+          const atrasados = daColuna.filter((c) => c.nivelDoPrazo === "atrasado").length;
           return (
             <section
               key={coluna.id}
@@ -95,14 +344,22 @@ export function KanbanDeNegocios({
                 if (arrastado) mover(arrastado, coluna.id);
                 setArrastado(null);
               }}
-              className={`bg-background min-w-0 rounded-lg border p-2 ${sobre === coluna.id ? "border-primary" : "border-border"}`}
+              className={`bg-surface min-w-0 rounded-xl border p-3 ${sobre === coluna.id ? "border-primary" : "border-transparent"}`}
             >
-              <h3 className="text-muted mb-2 flex items-center justify-between gap-1 px-1 text-xs font-semibold tracking-wide uppercase">
-                <span className="truncate" title={coluna.nome}>
+              <header className="mb-3">
+                <h3 className="text-text truncate text-sm font-semibold" title={coluna.nome}>
                   {coluna.nome}
-                </span>
-                <span className="font-normal">{daColuna.length}</span>
-              </h3>
+                </h3>
+                <div className="mt-2 flex items-center gap-2">
+                  <IconeDaColuna indice={i} />
+                  <span>
+                    <span className="text-text block text-xl leading-none font-bold">{daColuna.length}</span>
+                    <span className={`text-xs ${atrasados ? "text-danger" : "text-muted"}`}>
+                      {atrasados ? t("atrasados", { n: atrasados }) : t("negocios", { n: daColuna.length })}
+                    </span>
+                  </span>
+                </div>
+              </header>
               <ul className="flex min-h-16 flex-col gap-2">
                 {daColuna.map((c) => (
                   <li
@@ -113,24 +370,35 @@ export function KanbanDeNegocios({
                       e.dataTransfer.effectAllowed = "move";
                     }}
                     onDragEnd={() => setArrastado(null)}
-                    className={`border-border bg-surface rounded-md border p-2 text-xs shadow-sm ${c.podeMover ? "cursor-grab" : ""}`}
+                    className={`bg-background relative rounded-lg p-3 pl-4 text-xs shadow-sm ${c.podeMover ? "cursor-grab" : ""}`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => abrir(c)}
-                      className="text-text block w-full text-left font-semibold break-words"
-                    >
-                      {c.nome}
-                    </button>
+                    {c.nivelDoPrazo && (
+                      <span
+                        className={`absolute inset-y-0 left-0 w-1.5 rounded-l-lg ${corDoNivel[c.nivelDoPrazo].faixa}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <div className="flex items-start justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => abrir(c)}
+                        className="text-text text-left text-sm font-semibold break-words"
+                      >
+                        {c.nome}
+                      </button>
+                      <MenuDoCartao
+                        cartao={c}
+                        colunas={colunas}
+                        abrir={(aba) => abrir(c, aba)}
+                        mover={(col) => mover(c.id, col)}
+                      />
+                    </div>
                     {c.nomeInterno && <p className="text-muted break-words">{c.nomeInterno}</p>}
                     {c.vendedoras && c.vendedoras.length > 0 && (
-                      <p className="text-muted mt-1 break-words">{c.vendedoras.join(", ")}</p>
+                      <p className="text-muted mt-0.5 break-words">{c.vendedoras.join(", ")}</p>
                     )}
                     {c.situacao !== "andamento" && (
                       <p className="text-warning mt-1 font-medium">{ts(c.situacao as never)}</p>
-                    )}
-                    {c.etapasEmParalelo > 0 && (
-                      <p className="text-muted mt-1">{t("emParalelo", { n: c.etapasEmParalelo })}</p>
                     )}
                     {c.funil && (
                       <ul className="mt-1 space-y-0.5">
@@ -141,26 +409,27 @@ export function KanbanDeNegocios({
                         ))}
                       </ul>
                     )}
-                    {c.coordenadores.length > 0 && (
-                      <p className="text-muted mt-1">{c.coordenadores.join(", ")}</p>
+                    {c.progresso.total > 0 && (
+                      <div className="bg-surface mt-2 h-1.5 overflow-hidden rounded-full">
+                        <div
+                          className="bg-primary h-full rounded-full"
+                          style={{ width: `${(c.progresso.feitas / c.progresso.total) * 100}%` }}
+                        />
+                      </div>
                     )}
-                    {c.podeMover && (
-                      <select
-                        value=""
-                        onChange={(e) => e.target.value && mover(c.id, e.target.value)}
-                        aria-label={t("moverPara", { negocio: c.nome })}
-                        className="border-border bg-background text-muted mt-2 w-full rounded border px-1 py-0.5 text-xs"
-                      >
-                        <option value="">{t("moverParaCurto")}</option>
-                        {colunas
-                          .filter((x) => x.id !== c.colunaId)
-                          .map((x) => (
-                            <option key={x.id} value={x.id}>
-                              {x.nome}
-                            </option>
-                          ))}
-                      </select>
-                    )}
+                    <div className="mt-2 flex items-end justify-between gap-2">
+                      <span className="text-muted">
+                        {t("progresso", { feitas: c.progresso.feitas, total: c.progresso.total })}
+                        {c.prazo && (
+                          <span
+                            className={`block font-medium ${c.nivelDoPrazo ? corDoNivel[c.nivelDoPrazo].texto : ""}`}
+                          >
+                            {t("prazo", { data: br(c.prazo) ?? "" })}
+                          </span>
+                        )}
+                      </span>
+                      <Fotos pessoas={c.pessoas} />
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -168,12 +437,12 @@ export function KanbanDeNegocios({
           );
         })}
       </div>
-      {aberto && (
+      {aberto && c0 && (
         <div
           className="fixed inset-0 z-40 flex justify-end"
           role="dialog"
           aria-modal="true"
-          aria-label={aberto.cartao.nome}
+          aria-label={c0.nome}
         >
           <button
             type="button"
@@ -181,24 +450,18 @@ export function KanbanDeNegocios({
             onClick={() => setAberto(null)}
             className="bg-backdrop/40 absolute inset-0"
           />
-          <aside className="bg-surface relative h-full w-full max-w-2xl overflow-y-auto p-5 shadow-xl">
-            <div className="mb-3 flex items-start justify-between gap-3">
+          <aside className="bg-background relative flex h-full w-full max-w-3xl flex-col p-5 shadow-xl">
+            <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
               <div>
-                <h2 className="text-text text-lg font-bold">{aberto.cartao.nome}</h2>
-                {aberto.cartao.nomeInterno && (
-                  <p className="text-muted text-sm">{aberto.cartao.nomeInterno}</p>
-                )}
+                <h2 className="text-text text-lg font-bold">{c0.nome}</h2>
                 <p className="text-muted text-sm">
-                  {[
-                    ts(aberto.cartao.situacao as never),
-                    aberto.cartao.etapa && t("etapa", { etapa: aberto.cartao.etapa }),
-                  ]
+                  {[c0.nomeInterno, ts(c0.situacao as never), c0.etapa && t("etapa", { etapa: c0.etapa })]
                     .filter(Boolean)
                     .join(" · ")}
                 </p>
               </div>
               <span className="flex items-center gap-3">
-                <Link href={`/negocios/${aberto.cartao.id}`} className="text-primary text-sm font-medium">
+                <Link href={`/negocios/${c0.id}`} className="text-primary text-sm font-medium">
                   {t("abrirNegocio")}
                 </Link>
                 <button type="button" onClick={() => setAberto(null)} className="text-muted text-sm">
@@ -206,62 +469,131 @@ export function KanbanDeNegocios({
                 </button>
               </span>
             </div>
-            {aberto.painel === undefined ? (
+            {p === undefined ? (
               <p className="text-muted text-sm">{t("carregando")}</p>
-            ) : aberto.painel === null ? (
+            ) : p === null ? (
               <p className="text-muted text-sm">{t("semAcesso")}</p>
             ) : (
               <>
-                {aberto.painel.etapas && (
-                  <section className="mb-5">
-                    <h3 className="text-accent mb-2 text-xs font-semibold tracking-widest uppercase">
-                      {t("etapas")}
-                    </h3>
+                <AbasDoPainel
+                  abas={abasDoPainel}
+                  ativa={aberto.aba}
+                  mudar={(aba) => setAberto((x) => (x ? { ...x, aba } : x))}
+                />
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                  {aberto.aba === "resumo" && (
+                    <div>
+                      {p.resumo?.nomeInterno && (
+                        <Linha rotulo={t("resumo.nomeInterno")}>{p.resumo.nomeInterno}</Linha>
+                      )}
+                      {p.resumo?.tipo && <Linha rotulo={t("resumo.tipo")}>{p.resumo.tipo}</Linha>}
+                      <Linha rotulo={t("resumo.situacao")}>{ts(c0.situacao as never)}</Linha>
+                      <Linha rotulo={t("resumo.etapa")}>{c0.etapa ?? t("aIniciar")}</Linha>
+                      {p.resumo && <Linha rotulo={t("resumo.inicio")}>{br(p.resumo.dataInicio)}</Linha>}
+                      {p.resumo?.previsaoFechamento && (
+                        <Linha rotulo={t("resumo.previsao")}>{br(p.resumo.previsaoFechamento)}</Linha>
+                      )}
+                      {c0.prazo && (
+                        <Linha rotulo={t("resumo.prazo")}>
+                          <span className={c0.nivelDoPrazo ? corDoNivel[c0.nivelDoPrazo].texto : ""}>
+                            {br(c0.prazo)}
+                            {c0.nivelDoPrazo && ` · ${t(`niveis.${c0.nivelDoPrazo}`)}`}
+                          </span>
+                        </Linha>
+                      )}
+                      {p.resumo?.valorEstimado && (
+                        <Linha rotulo={t("resumo.valor")}>
+                          {Number(p.resumo.valorEstimado).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })}
+                        </Linha>
+                      )}
+                      {c0.coordenadores.length > 0 && (
+                        <Linha rotulo={t("resumo.coordenador")}>{c0.coordenadores.join(", ")}</Linha>
+                      )}
+                      {c0.funil && (
+                        <Linha rotulo={t("resumo.funil")}>
+                          {FUNIL.filter((s) => c0.funil![s]?.length)
+                            .map((s) => `${tf(s)}: ${c0.funil![s].join(", ")}`)
+                            .join(" · ")}
+                        </Linha>
+                      )}
+                      {p.resumo?.descricao && (
+                        <Linha rotulo={t("resumo.descricao")}>{p.resumo.descricao}</Linha>
+                      )}
+                    </div>
+                  )}
+                  {aberto.aba === "etapas" && p.etapas && (
                     <EtapasDoNegocio
-                      dealId={aberto.cartao.id}
-                      etapas={aberto.painel.etapas.etapas}
-                      podeIncluir={aberto.painel.etapas.podeIncluir}
-                      podeExcluir={aberto.painel.etapas.podeExcluir}
+                      dealId={c0.id}
+                      etapas={p.etapas.etapas}
+                      podeIncluir={p.etapas.podeIncluir}
+                      podeExcluir={p.etapas.podeExcluir}
                       hoje={hoje}
                     />
-                  </section>
-                )}
-                {aberto.painel.dataRoom && (
-                  <section className="mb-5">
-                    <h3 className="text-accent mb-2 text-xs font-semibold tracking-widest uppercase">
-                      {t("documentos")}
-                    </h3>
-                    <DataRoomDoNegocio
-                      dealId={aberto.cartao.id}
-                      dr={aberto.painel.dataRoom}
-                      etapaFiltro=""
-                      aoMudar={() => abrir(aberto.cartao)}
-                    />
-                  </section>
-                )}
-                <section>
-                  <h3 className="text-accent mb-2 text-xs font-semibold tracking-widest uppercase">
-                    {t("ultimosEventos")}
-                  </h3>
-                  {aberto.painel.historico.length === 0 ? (
-                    <p className="text-muted text-sm">{t("semEventos")}</p>
-                  ) : (
+                  )}
+                  {aberto.aba === "empresas" && (
                     <ul className="divide-border divide-y text-sm">
-                      {aberto.painel.historico.map((h, i) => (
-                        <li key={i} className="py-1.5">
-                          {h.texto}
-                          <span className="text-muted block text-xs">{h.detalhe}</span>
+                      {p.empresas.map((e) => (
+                        <li key={e.id} className="py-2">
+                          <span className="text-text font-medium">{e.nome}</span>
+                          <span className="text-muted block text-xs">
+                            {[
+                              e.papel,
+                              e.situacaoFunil && tf(e.situacaoFunil as never),
+                              e.atuaPara && t("trabalhaPara", { nome: e.atuaPara }),
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   )}
-                  <Link
-                    href={`/negocios/${aberto.cartao.id}?aba=historico`}
-                    className="text-primary mt-2 inline-block text-xs"
-                  >
-                    {t("verHistorico")}
-                  </Link>
-                </section>
+                  {aberto.aba === "participantes" && (
+                    <ul className="divide-border divide-y text-sm">
+                      {p.participantes.map((x) => (
+                        <li key={x.id} className="py-2">
+                          <span className="text-text font-medium">{x.nome}</span>
+                          <span className="text-muted block text-xs">
+                            {[
+                              x.perfil ?? t("contato"),
+                              x.empresa,
+                              x.prazo && t("ate", { data: br(x.prazo) ?? "" }),
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {aberto.aba === "tarefas" && p.tarefas && (
+                    <TarefasDoNegocio dealId={c0.id} quadro={p.tarefas} etapaFiltro="" />
+                  )}
+                  {aberto.aba === "documentos" && p.dataRoom && (
+                    <DataRoomDoNegocio
+                      dealId={c0.id}
+                      dr={p.dataRoom}
+                      etapaFiltro=""
+                      aoMudar={() => abrir(c0, "documentos")}
+                    />
+                  )}
+                  {aberto.aba === "historico" &&
+                    (p.historico.length === 0 ? (
+                      <p className="text-muted text-sm">{t("semEventos")}</p>
+                    ) : (
+                      <ul className="divide-border divide-y text-sm">
+                        {p.historico.map((h, k) => (
+                          <li key={k} className="py-1.5">
+                            {h.texto}
+                            <span className="text-muted block text-xs">{h.detalhe}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ))}
+                </div>
               </>
             )}
           </aside>
