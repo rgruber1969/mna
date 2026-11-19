@@ -70,6 +70,8 @@
     },
     "escala": "Escala na linha do tempo (%)",
     "escalaCurta": "escala {n}%",
-    "avisoEscala": "Etapas longas aparecem encolhidas pela escala definida (ex.: pós-closing a 20%)."
+    "avisoEscala": "Etapas longas aparecem encolhidas pela escala definida (ex.: pós-closing a 20%).",
+    "emAndamento": "em andamento",
+    "duracao": "{dias, plural, one {# dia} other {# dias}}"
   }
 }

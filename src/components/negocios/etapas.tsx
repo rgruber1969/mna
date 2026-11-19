@@ -439,10 +439,36 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
                 )}
                 {i && f ? (
                   <span
-                    className={`absolute top-0.5 bottom-0.5 rounded ${corBarra[e.situacao]}`}
+                    tabIndex={0}
+                    aria-label={`${e.nome}: ${br(i)} – ${br(f)}`}
+                    className={`group hover:ring-primary focus-visible:ring-primary absolute top-0.5 bottom-0.5 cursor-default rounded outline-none hover:ring-1 focus-visible:ring-2 ${corBarra[e.situacao]}`}
                     style={{ left: `${pos(i)}%`, width: `${Math.max(pos(f) - pos(i), 0.8)}%` }}
-                    title={`${t(`situacoes.${e.situacao}`)}: ${br(i)} – ${br(f)}`}
-                  />
+                  >
+                    {/* Balão com os detalhes da etapa (passar o mouse ou focar com Tab). */}
+                    <span
+                      role="tooltip"
+                      className={`bg-surface text-text border-border pointer-events-none absolute bottom-full z-10 mb-1 hidden w-56 rounded-md border p-2 text-xs shadow-lg group-hover:block group-focus-visible:block ${pos(i) > 60 ? "right-0" : "left-0"}`}
+                    >
+                      <span className="block font-semibold">{e.nome}</span>
+                      <span className="text-muted block">{t(`situacoes.${e.situacao}`)}</span>
+                      {(e.inicioPrevisto || e.fimPrevisto) && (
+                        <span className="block">
+                          {t("previsto", { de: br(e.inicioPrevisto) ?? "…", ate: br(e.fimPrevisto) ?? "…" })}
+                        </span>
+                      )}
+                      {(e.inicioReal || e.fimReal) && (
+                        <span className="block">
+                          {t("real", {
+                            de: br(e.inicioReal) ?? "…",
+                            ate: br(e.fimReal) ?? (e.situacao === "andamento" ? t("emAndamento") : "…"),
+                          })}
+                        </span>
+                      )}
+                      <span className="text-muted block">
+                        {t("duracao", { dias: Math.max(1, Math.round((dia(f) - dia(i)) / 86_400_000)) })}
+                      </span>
+                    </span>
+                  </span>
                 ) : (
                   <span className="text-muted absolute inset-0 pl-1 leading-4">{t("semDatasCurto")}</span>
                 )}
