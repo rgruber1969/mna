@@ -536,6 +536,18 @@ Etapas padrão:
 * Sem marca d'água ou bloqueio de download: vale a permissão do usuário.
 * O conjunto de documentos do deal, filtrado por permissão, funciona como
   **data room**.
+* **Construído (item 11, primeira entrega, 2026-11-19):** aba Documentos
+  no negócio (filtro por etapa; "Geral" = negócio todo), documento com
+  versões (a mais recente primeiro), categoria (cadastro em Configurações),
+  lista de acesso por versão (perfis e/ou pessoas, pré-marcada com o próprio
+  lado ou com a versão anterior; quem enviou e administradores sempre veem),
+  envio direto do navegador ao armazenamento com barra de progresso, até 200
+  MB, tipo real e antivírus antes de liberar; download por link temporário,
+  auditado; excluir versão em até 24 h se ninguém mais baixou (quem enviou ou
+  o Coordenador). Cada etapa mostra "Documentos (n)", com link para a lista
+  filtrada. Ainda não: baixar em ZIP (D6), comentários por versão (com a
+  mensageria), pedidos de documentos (aguarda o recorte) e ligar documentos
+  pelo cartão do kanban.
 * **Documentos por etapa** (pedido de 2026-11-19): cada etapa do negócio
   mostra e liga facilmente os documentos daquela etapa; uma tela lista
   todos os documentos do negócio com a etapa a que cada um está ligado

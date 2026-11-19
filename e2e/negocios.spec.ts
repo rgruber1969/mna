@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import pg from "pg";
+import { pdfComTexto } from "../src/testes/pdf-de-teste";
 
 /**
  * Negócios (item 8), pela tela: criar, ver as abas, incluir empresa e
@@ -108,6 +109,17 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(page.getByText(/Etapa: Prospecção/)).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Linha do tempo" }).click();
   await expect(page.getByText(/edição gráfica/)).toBeVisible();
+  // Data room: enviar um PDF (direto ao armazenamento) e vê-lo na lista.
+  await page.getByRole("tab", { name: /^Documentos/ }).click();
+  await page.getByRole("button", { name: "Enviar documento" }).click();
+  await page.getByLabel("Título").fill("Contrato social");
+  await page.getByLabel("Arquivo").setInputFiles({
+    name: "contrato.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from(pdfComTexto(["CONTRATO SOCIAL DE TESTE"])),
+  });
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(page.getByRole("button", { name: /Contrato social/ })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByText("Negócio criado")).toBeVisible();
   await page.getByRole("tab", { name: /Participantes/ }).click();

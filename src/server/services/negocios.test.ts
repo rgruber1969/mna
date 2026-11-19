@@ -41,6 +41,8 @@ import {
   salvarEtapaPadrao,
 } from "./etapas";
 import { moverNegocioParaEtapa, quadroDeNegocios } from "./negocios-kanban";
+import { concluirEnvio, dataRoomDoNegocio, excluirVersao, iniciarEnvio, linkDeDownload } from "./documentos";
+import { pdfComTexto } from "@/testes/pdf-de-teste";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -786,5 +788,83 @@ describe("etapas: proteção do lado comprador", () => {
       [tenantId],
     );
     expect((await etapasDoNegocio(acesso("adva"), negocioId))?.etapas.some((e) => e.podeEditar)).toBe(true);
+  });
+});
+
+describe("data room", () => {
+  const enviar = async (
+    nome: string,
+    conteudo: Uint8Array,
+    quem: string,
+    dados: Record<string, unknown> = {},
+  ) => {
+    const r = await iniciarEnvio(acesso(quem), negocioId, {
+      titulo: "Contrato social",
+      etapaId: null,
+      nomeArquivo: nome,
+      tamanho: conteudo.length,
+      perfis: [],
+      usuarios: [],
+      ...dados,
+    });
+    if (!("url" in r)) return r;
+    const put = await fetch(r.url, {
+      method: "PUT",
+      body: Buffer.from(conteudo),
+      headers: { "content-type": "application/octet-stream" },
+    });
+    expect(put.ok).toBe(true);
+    const fim = await concluirEnvio(acesso(quem), r.versaoId);
+    return "erro" in fim ? fim : { versaoId: r.versaoId };
+  };
+
+  it("versões, lista de acesso por versão, download e exclusão em 24 h", async () => {
+    const pdf = pdfComTexto(["CONTRATO SOCIAL DE TESTE"]);
+    const v1 = await enviar("contrato.pdf", pdf, "gestor");
+    if (!("versaoId" in v1)) throw new Error(v1.erro);
+    const doGestor = await dataRoomDoNegocio(acesso("gestor"), negocioId);
+    const doc = doGestor!.documentos.find((d) => d.titulo === "Contrato social")!;
+    expect(doc.versoes).toHaveLength(1);
+    // Sem lista de acesso, outro participante do mesmo lado não vê.
+    expect(
+      (await dataRoomDoNegocio(acesso("advv"), negocioId))!.documentos.some((d) => d.id === doc.id),
+    ).toBe(false);
+    const v2 = await enviar("contrato-v2.pdf", pdf, "gestor", {
+      documentoId: doc.id,
+      usuarios: [contas.advv],
+    });
+    if (!("versaoId" in v2)) throw new Error(v2.erro);
+    const doAdvv = (await dataRoomDoNegocio(acesso("advv"), negocioId))!.documentos.find(
+      (d) => d.id === doc.id,
+    )!;
+    expect(doAdvv.versoes.map((v) => v.numero)).toEqual([2]);
+    expect(await linkDeDownload(acesso("advv"), v2.versaoId)).toMatchObject({
+      url: expect.stringContaining("http"),
+    });
+    expect(await excluirVersao(acesso("gestor"), v2.versaoId)).toMatchObject({
+      erro: "documentos.erros.naoExcluivel",
+    });
+    expect(await excluirVersao(acesso("gestor"), v1.versaoId)).toEqual({ ok: true });
+  });
+
+  it("recusa formato falso e bloqueia vírus (EICAR); alcance por etapa limita onde enviar", async () => {
+    expect(await enviar("falso.pdf", new TextEncoder().encode("isto não é um PDF"), "gestor")).toMatchObject({
+      erro: "documentos.erros.formato",
+    });
+    const eicar = new TextEncoder().encode(
+      "X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*",
+    );
+    expect(await enviar("teste.txt", eicar, "gestor", { titulo: "Vírus" })).toMatchObject({
+      erro: "documentos.erros.bloqueado",
+    });
+    const juridica = (await etapasDoNegocio(acesso("audj"), negocioId))!.etapas[0].subetapas[0];
+    const ok = await enviar("relatorio.pdf", pdfComTexto(["RELATÓRIO"]), "audj", {
+      titulo: "Relatório jurídico",
+      etapaId: juridica.id,
+    });
+    expect(ok).toMatchObject({ versaoId: expect.any(String) });
+    await expect(enviar("geral.pdf", pdfComTexto(["X"]), "audj", { titulo: "Geral" })).rejects.toBeInstanceOf(
+      AcessoNegado,
+    );
   });
 });

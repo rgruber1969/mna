@@ -9,6 +9,7 @@ import {
   salvarTipoDeVinculoAcao,
 } from "@/app/acoes/cadastros";
 import { excluirTipoDeOperacaoAcao, salvarTipoDeOperacaoAcao } from "@/app/acoes/negocios";
+import { excluirCategoriaAcao, salvarCategoriaAcao } from "@/app/acoes/documentos";
 import {
   definirEtapaPadraoAtivaAcao,
   excluirEtapaPadraoAcao,
@@ -238,7 +239,9 @@ function LinhaTipo({
   podeEditar,
   podeExcluir,
   rotuloNovo,
+  semPercentual = false,
 }: {
+  semPercentual?: boolean;
   tipo?: Tipo;
   salvar: Acao;
   excluir: Acao;
@@ -267,17 +270,19 @@ function LinhaTipo({
             className={campo}
           />
         </td>
-        <td className={`${estiloTabela.td} text-center`}>
-          <input
-            form={l.id}
-            type="checkbox"
-            name="comPercentual"
-            value="sim"
-            defaultChecked={tipo?.comPercentual}
-            disabled={!editavel}
-            aria-label={t("pedePercentual")}
-          />
-        </td>
+        {!semPercentual && (
+          <td className={`${estiloTabela.td} text-center`}>
+            <input
+              form={l.id}
+              type="checkbox"
+              name="comPercentual"
+              value="sim"
+              defaultChecked={tipo?.comPercentual}
+              disabled={!editavel}
+              aria-label={t("pedePercentual")}
+            />
+          </td>
+        )}
         <td className={`${estiloTabela.td} text-muted text-xs`}>{tipo ? t("uso", { n: tipo.emUso }) : ""}</td>
         <td className={`${estiloTabela.td} whitespace-nowrap`}>
           <span className="flex gap-2">
@@ -311,7 +316,7 @@ export function TabelaDeTipos({
   podeExcluir,
 }: {
   tipos: Tipo[];
-  qual: "vinculo" | "operacao";
+  qual: "vinculo" | "operacao" | "categoria";
   podeCriar: boolean;
   podeEditar: boolean;
   podeExcluir: boolean;
@@ -320,14 +325,28 @@ export function TabelaDeTipos({
   const [salvar, excluir] =
     qual === "vinculo"
       ? [salvarTipoDeVinculoAcao, excluirTipoDeVinculoAcao]
-      : [salvarTipoDeOperacaoAcao, excluirTipoDeOperacaoAcao];
-  const novo = qual === "vinculo" ? t("novoVinculo") : t("novaOperacao");
+      : qual === "operacao"
+        ? [salvarTipoDeOperacaoAcao, excluirTipoDeOperacaoAcao]
+        : [salvarCategoriaAcao, excluirCategoriaAcao];
+  const novo =
+    qual === "vinculo" ? t("novoVinculo") : qual === "operacao" ? t("novaOperacao") : t("novaCategoria");
+  const semPercentual = qual === "categoria";
   return (
     <div>
       <p className="text-muted mb-3 text-sm">
-        {qual === "vinculo" ? t("vinculosExplicacao") : t("operacoesExplicacao")}
+        {qual === "vinculo"
+          ? t("vinculosExplicacao")
+          : qual === "operacao"
+            ? t("operacoesExplicacao")
+            : t("categoriasExplicacao")}
       </p>
-      <Tabela colunas={[t("nome"), t("pedePercentual"), t("emUso"), t("acoes")]}>
+      <Tabela
+        colunas={
+          semPercentual
+            ? [t("nome"), t("emUso"), t("acoes")]
+            : [t("nome"), t("pedePercentual"), t("emUso"), t("acoes")]
+        }
+      >
         {tipos.map((x) => (
           <LinhaTipo
             key={x.id}
@@ -337,10 +356,18 @@ export function TabelaDeTipos({
             podeEditar={podeEditar}
             podeExcluir={podeExcluir}
             rotuloNovo={novo}
+            semPercentual={semPercentual}
           />
         ))}
         {podeCriar && (
-          <LinhaTipo salvar={salvar} excluir={excluir} podeEditar podeExcluir={false} rotuloNovo={novo} />
+          <LinhaTipo
+            salvar={salvar}
+            excluir={excluir}
+            podeEditar
+            podeExcluir={false}
+            rotuloNovo={novo}
+            semPercentual={semPercentual}
+          />
         )}
       </Tabela>
     </div>

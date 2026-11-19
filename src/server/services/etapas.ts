@@ -265,7 +265,7 @@ export async function definirEtapaPadraoAtiva(
 type Linha = typeof dealEtapa.$inferSelect;
 
 /** Matriz da pessoa numa etapa: soma das participações que alcançam a etapa (ou a etapa-mãe). */
-async function contextoDeEtapas(a: AcessoTenant, dealId: string) {
+export async function contextoDeEtapas(a: AcessoTenant, dealId: string) {
   const [etapas, minhas] = await comTenant(a.tenant.id, async (tx) => [
     await tx.select().from(dealEtapa).where(eq(dealEtapa.dealId, dealId)).orderBy(asc(dealEtapa.ordem)),
     a.administrador

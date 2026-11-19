@@ -96,7 +96,8 @@
       "abaFunil": "Funil de compradoras",
       "abaEtapas": "Etapas",
       "etapaAtual": "Etapa: {etapa}",
-      "etapaComParalelas": "Etapa: {etapa} (+{n} em paralelo)"
+      "etapaComParalelas": "Etapa: {etapa} (+{n} em paralelo)",
+      "abaDocumentos": "Documentos"
     },
     "empresas": {
       "contratante": "contratante",
@@ -286,7 +287,9 @@
         "negocio_etapa_situacao": "Etapa \"{etapa}\": {para}",
         "negocio_etapa_editada": "Etapa \"{etapa}\" alterada",
         "negocio_etapa_incluida": "Etapa \"{etapa}\" incluída",
-        "negocio_etapa_removida": "Etapa \"{etapa}\" removida"
+        "negocio_etapa_removida": "Etapa \"{etapa}\" removida",
+        "documento_enviado": "Documento \"{titulo}\" enviado (versão {versao})",
+        "documento_versao_excluida": "Versão {versao} de \"{titulo}\" excluída"
       },
       "paginas": "Páginas do histórico",
       "intervalo": "{de}–{ate} de {total}",

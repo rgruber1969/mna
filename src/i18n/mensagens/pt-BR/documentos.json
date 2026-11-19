@@ -1,0 +1,68 @@
+{
+  "documentos": {
+    "filtrarEtapa": "Etapa:",
+    "todas": "Todas",
+    "geral": "Geral (negócio todo)",
+    "enviarDocumento": "Enviar documento",
+    "nenhum": "Nenhum documento aqui.",
+    "documento": "Documento",
+    "categoria": "Categoria",
+    "semCategoria": "Sem categoria",
+    "etapa": "Etapa",
+    "ultimaVersao": "Última versão",
+    "acoes": "Ações",
+    "versaoResumo": "v{n} · {data} · {autor}",
+    "versaoN": "Versão {n}",
+    "baixar": "Baixar",
+    "novaVersao": "Nova versão",
+    "excluir": "Excluir",
+    "confirmarExcluir": "Excluir a versão {n}? (Só é possível em até 24 h e se ninguém mais a baixou.)",
+    "acessoDaVersao": "Quem vê: {lista}",
+    "soQuemEnviou": "só quem enviou e os administradores",
+    "novoDocumento": "Novo documento",
+    "novaVersaoDe": "Nova versão de \"{titulo}\"",
+    "titulo": "Título",
+    "arquivo": "Arquivo",
+    "arquivoAjuda": "Até 200 MB: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem.",
+    "comentario": "Comentário (opcional)",
+    "quemVe": "Quem pode ver esta versão",
+    "quemVeAjuda": "Já vem marcado com o seu lado (ou com a lista da versão anterior). Você e os administradores sempre veem.",
+    "porPerfil": "Por perfil",
+    "porPessoa": "Por pessoa",
+    "lados": {
+      "vendedor": "vendedor",
+      "comprador": "comprador"
+    },
+    "enviando": "Enviando… {p}%",
+    "enviar": "Enviar",
+    "cancelar": "Cancelar",
+    "situacoes": {
+      "enviando": "envio não concluído",
+      "disponivel": "disponível",
+      "bloqueado": "bloqueado pelo antivírus"
+    },
+    "mensagens": {
+      "versaoExcluida": "Versão excluída.",
+      "categoriaSalva": "Categoria salva.",
+      "categoriaExcluida": "Categoria excluída."
+    },
+    "erros": {
+      "escolhaArquivo": "Escolha o arquivo.",
+      "envio": "Não foi possível enviar o arquivo. Tente de novo.",
+      "download": "Não foi possível baixar o arquivo.",
+      "naoEncontrado": "Documento não encontrado.",
+      "dadosInvalidos": "Dados inválidos.",
+      "grande": "Arquivo grande demais (até 200 MB).",
+      "formato": "Formato não aceito: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem.",
+      "tituloObrigatorio": "Informe o título do documento.",
+      "etapaInvalida": "Etapa inválida.",
+      "envioIncompleto": "O envio não chegou completo. Tente de novo.",
+      "bloqueado": "O arquivo foi bloqueado pelo antivírus.",
+      "naoExcluivel": "Esta versão não pode mais ser excluída (passou de 24 h ou alguém já a baixou).",
+      "nomeCategoria": "Informe o nome da categoria.",
+      "categoriaJaExiste": "Já existe uma categoria com este nome.",
+      "categoriaNaoEncontrada": "Categoria não encontrada.",
+      "categoriaEmUso": "Esta categoria está em uso e não pode ser excluída."
+    }
+  }
+}

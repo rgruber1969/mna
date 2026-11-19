@@ -1,6 +1,7 @@
 import { and, count, eq, inArray } from "drizzle-orm";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
+  categoriaDocumento,
   empresa,
   papelEmpresa,
   perfil,
@@ -11,6 +12,7 @@ import {
   vinculoTenant,
 } from "@/server/db/esquema";
 import { completarEtapasPadrao } from "./etapas";
+import { CATEGORIAS_PADRAO } from "./documentos";
 import { copiarPerfisPadrao } from "./perfis";
 import { ligarContaAPessoa } from "./pessoas";
 
@@ -128,6 +130,11 @@ export async function completarCadastrosPadrao(tenantId: string): Promise<void> 
         })),
       );
     await completarEtapasPadrao(tx, tenantId);
+    const [{ categorias }] = await tx.select({ categorias: count() }).from(categoriaDocumento);
+    if (categorias === 0)
+      await tx
+        .insert(categoriaDocumento)
+        .values(CATEGORIAS_PADRAO.map(([padrao, nome]) => ({ tenantId, nome, padrao })));
     const [doContratante] = await tx
       .select({ id: empresa.id })
       .from(empresa)

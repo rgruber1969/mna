@@ -961,3 +961,84 @@ export const dealEtapa = pgTable(
   },
   (t) => [index("deal_etapa_deal_idx").on(t.tenantId, t.dealId, t.paiId, t.ordem), isolamento()],
 ).enableRLS();
+
+// --- Data room (item 11; dominio.md, "Documentos"; respostas D1–D8) --------
+
+/** Categoria de documento (cadastro auxiliar do tenant). */
+export const categoriaDocumento = pgTable(
+  "categoria_documento",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    padrao: text("padrao"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("categoria_documento_nome_uq").on(t.tenantId, t.nome), isolamento()],
+).enableRLS();
+
+/** Documento do negócio (entidade com versões); `etapaId` vazio = geral (vale para o negócio todo). */
+export const documento = pgTable(
+  "documento",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    etapaId: uuid("etapa_id").references(() => dealEtapa.id, { onDelete: "set null" }),
+    categoriaId: uuid("categoria_id").references(() => categoriaDocumento.id, { onDelete: "set null" }),
+    titulo: text("titulo").notNull(),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("documento_deal_idx").on(t.tenantId, t.dealId, t.etapaId), isolamento()],
+).enableRLS();
+
+/**
+ * Versão de um documento: o arquivo vai direto do navegador ao armazenamento
+ * (link temporário) e só fica "disponível" depois da verificação (ADR-0016).
+ */
+export const documentoVersao = pgTable(
+  "documento_versao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    documentoId: uuid("documento_id")
+      .notNull()
+      .references(() => documento.id, { onDelete: "cascade" }),
+    numero: integer("numero").notNull(),
+    nomeArquivo: text("nome_arquivo").notNull(),
+    tipoDeConteudo: text("tipo_de_conteudo"),
+    tamanho: bigint("tamanho", { mode: "number" }).notNull(),
+    chave: text("chave").notNull(),
+    /** enviando, disponivel ou bloqueado. */
+    situacao: text("situacao").$type<"enviando" | "disponivel" | "bloqueado">().notNull().default("enviando"),
+    comentario: text("comentario"),
+    enviadoPor: uuid("enviado_por").references(() => usuario.id, { onDelete: "set null" }),
+    /** Alguém além de quem enviou já baixou (depois disso a versão não pode ser excluída). */
+    baixadaPorOutros: boolean("baixada_por_outros").notNull().default(false),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("documento_versao_uq").on(t.tenantId, t.documentoId, t.numero), isolamento()],
+).enableRLS();
+
+/** Lista de acesso de uma versão: por perfil e/ou usuário (quem enviou e administradores sempre veem). */
+export const versaoAcesso = pgTable(
+  "versao_acesso",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    versaoId: uuid("versao_id")
+      .notNull()
+      .references(() => documentoVersao.id, { onDelete: "cascade" }),
+    perfilId: uuid("perfil_id").references(() => perfil.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id").references(() => usuario.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    check("versao_acesso_alvo_ck", sql`(perfil_id is null) <> (usuario_id is null)`),
+    index("versao_acesso_versao_idx").on(t.tenantId, t.versaoId),
+    isolamento(),
+  ],
+).enableRLS();

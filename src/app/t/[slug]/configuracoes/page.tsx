@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/services/cadastros";
 import { listarEtapasPadrao } from "@/server/services/etapas";
+import { listarCategorias } from "@/server/services/documentos";
 import { listarTiposDeOperacao } from "@/server/services/negocios";
 import { obterDiasDeAviso } from "@/server/services/negocios-andamento";
 import { pode } from "@/server/services/permissoes/verificador";
@@ -34,13 +35,14 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     pode(acesso, "cadastros", "editar"),
     pode(acesso, "cadastros", "excluir"),
   ]);
-  const [dias, papeis, perfis, vinculos, operacoes, etapas] = await Promise.all([
+  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias] = await Promise.all([
     acesso.administrador ? obterDiasDeAviso(acesso) : null,
     verCadastros ? listarPapeis(acesso) : [],
     verCadastros ? perfisDeDeal(acesso) : [],
     verCadastros ? listarTiposDeVinculo(acesso) : [],
     verCadastros ? listarTiposDeOperacao(acesso) : [],
     verCadastros ? listarEtapasPadrao(acesso) : [],
+    verCadastros ? listarCategorias(acesso) : [],
   ]);
   const permissoes = { podeCriar, podeEditar, podeExcluir };
   return (
@@ -60,6 +62,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                     { id: "vinculos", rotulo: t("abaVinculos") },
                     { id: "operacoes", rotulo: t("abaOperacoes") },
                     { id: "etapas", rotulo: t("abaEtapas") },
+                    { id: "categorias", rotulo: t("abaCategorias") },
                   ]
                 : []),
             ]}
@@ -82,6 +85,13 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                 </PainelDeAba>
                 <PainelDeAba id="etapas">
                   <TabelaDeEtapas etapas={etapas} {...permissoes} />
+                </PainelDeAba>
+                <PainelDeAba id="categorias">
+                  <TabelaDeTipos
+                    tipos={categorias.map((c) => ({ ...c, comPercentual: false }))}
+                    qual="categoria"
+                    {...permissoes}
+                  />
                 </PainelDeAba>
               </>
             )}

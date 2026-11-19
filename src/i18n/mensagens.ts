@@ -13,6 +13,7 @@ export const AREAS = [
   "cadastros",
   "negocios",
   "etapas",
+  "documentos",
   "administracao",
   "emails",
 ] as const;

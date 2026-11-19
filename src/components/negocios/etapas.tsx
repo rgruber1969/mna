@@ -153,6 +153,7 @@ function LinhaDaEtapa({
   podeExcluir,
   podeIncluir,
   sub = false,
+  documentos,
 }: {
   dealId: string;
   etapa: Etapa;
@@ -160,6 +161,7 @@ function LinhaDaEtapa({
   podeExcluir: boolean;
   podeIncluir: boolean;
   sub?: boolean;
+  documentos?: Record<string, number>;
 }) {
   const t = useTranslations("etapas");
   const router = useRouter();
@@ -210,6 +212,11 @@ function LinhaDaEtapa({
             <span className={`text-text ${sub ? "text-sm" : "font-medium"}`}>{etapa.nome}</span>
           </span>
           {datas.length > 0 && <span className="text-muted mt-0.5 block text-xs">{datas.join(" · ")}</span>}
+          {documentos && (
+            <a href={`?aba=documentos&etapa=${etapa.id}`} className="text-primary block text-xs">
+              {t("documentosDaEtapa", { n: documentos[etapa.id] ?? 0 })}
+            </a>
+          )}
           {etapa.observacoes && (
             <span className="text-muted block text-xs whitespace-pre-line">{etapa.observacoes}</span>
           )}
@@ -275,6 +282,7 @@ function LinhaDaEtapa({
           {etapa.subetapas.map((s) => (
             <LinhaDaEtapa
               key={s.id}
+              documentos={documentos}
               dealId={dealId}
               etapa={s}
               irmas={etapa.subetapas}
@@ -491,12 +499,15 @@ export function EtapasDoNegocio({
   podeIncluir,
   podeExcluir,
   hoje,
+  documentosPorEtapa,
 }: {
   dealId: string;
   etapas: Etapa[];
   podeIncluir: boolean;
   podeExcluir: boolean;
   hoje: string;
+  /** Quantos documentos cada etapa tem (link para a aba Documentos já filtrada). */
+  documentosPorEtapa?: Record<string, number>;
 }) {
   const t = useTranslations("etapas");
   const [vista, setVista] = useState<"lista" | "tempo">("lista");
@@ -522,6 +533,7 @@ export function EtapasDoNegocio({
           {etapas.map((e) => (
             <LinhaDaEtapa
               key={e.id}
+              documentos={documentosPorEtapa}
               dealId={dealId}
               etapa={e}
               irmas={etapas}
