@@ -9,7 +9,7 @@ import { pode } from "@/server/services/permissoes/verificador";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
 
 /** Pessoas do tenant, com ou sem acesso ao sistema (dominio.md, "Pessoa e usuário"). */
 async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: string }> }) {
@@ -57,27 +57,54 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
           {pessoas.length === 0 ? (
             <p className="text-muted text-sm">Nenhuma pessoa encontrada.</p>
           ) : (
-            <ul className="divide-border divide-y text-sm">
-              {pessoas.map((p) => (
-                <li key={p.id} className="flex items-start justify-between gap-3 py-2">
-                  <span>
-                    <Link href={`/pessoas/${p.id}`} className="text-primary font-medium">
-                      {p.nome}
-                    </Link>
-                    {p.inativa && <span className="text-muted ml-2 text-xs">inativa</span>}
-                    <span className="text-muted block text-xs">
-                      {[p.email, p.empresas.join(", ")].filter(Boolean).join(" · ")}
-                    </span>
-                  </span>
-                  <AcessoDaPessoa
-                    acesso={p.acesso}
-                    nome={p.nome}
-                    email={p.email}
-                    podeConvidar={acesso.administrador}
-                  />
-                </li>
-              ))}
-            </ul>
+            <div className="-mx-2 overflow-x-auto">
+              <table className={estiloTabela.tabela}>
+                <thead className={estiloTabela.cabecalho}>
+                  <tr>
+                    <th className={estiloTabela.th}>Nome</th>
+                    <th className={estiloTabela.th}>Empresas</th>
+                    <th className={`${estiloTabela.th} text-right`}>Acesso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pessoas.map((p) => (
+                    <tr key={p.id} className={estiloTabela.linha}>
+                      <td className={estiloTabela.td}>
+                        <span className="flex items-center gap-3">
+                          <Avatar nome={p.nome} foto={p.foto} tamanho={40} />
+                          <span className="min-w-0">
+                            <Link href={`/pessoas/${p.id}`} className="text-text block font-semibold">
+                              {p.nome}
+                              {p.inativa && (
+                                <span className="text-muted ml-2 text-xs font-normal">inativa</span>
+                              )}
+                            </Link>
+                            {p.email && <span className="text-muted block truncate text-xs">{p.email}</span>}
+                          </span>
+                        </span>
+                      </td>
+                      <td className={estiloTabela.td}>
+                        <span className="flex flex-wrap gap-1">
+                          {p.empresas.length === 0 ? (
+                            <span className="text-muted text-xs">—</span>
+                          ) : (
+                            p.empresas.map((e) => <Etiqueta key={e}>{e}</Etiqueta>)
+                          )}
+                        </span>
+                      </td>
+                      <td className={`${estiloTabela.td} text-right`}>
+                        <AcessoDaPessoa
+                          acesso={p.acesso}
+                          nome={p.nome}
+                          email={p.email}
+                          podeConvidar={acesso.administrador}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Cartao>
       </main>

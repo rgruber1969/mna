@@ -351,3 +351,29 @@ describe("menu lateral", () => {
     expect(await alternarFavorito(a, "pessoas")).toEqual([]);
   });
 });
+
+describe("notificações", () => {
+  it("cada pessoa vê só as suas; marcar todas e remover", async () => {
+    const { marcarTodasComoLidas, minhasNotificacoes, notificar, removerNotificacao } =
+      await import("./notificacoes");
+    await comTenant(tenantId, async (tx) => {
+      await notificar(tx, tenantId, adminId, "convite_aceito", { nome: "Fulana" }, "/usuarios");
+      await notificar(tx, tenantId, adminId, "perfil_alterado");
+      await notificar(tx, tenantId, semPerfilId, "dois_fatores_redefinido");
+    });
+    const minhas = await minhasNotificacoes(acesso(adminId, true));
+    expect(minhas.naoLidas).toBe(2);
+    expect(minhas.itens.map((n) => n.tipo).sort()).toEqual(["convite_aceito", "perfil_alterado"]);
+    expect(minhas.itens.find((n) => n.tipo === "convite_aceito")?.parametros).toEqual({ nome: "Fulana" });
+
+    // Não remove a notificação de outra pessoa.
+    const deOutro = (await minhasNotificacoes(acesso(semPerfilId, false))).itens[0];
+    await removerNotificacao(acesso(adminId, true), deOutro.id);
+    expect((await minhasNotificacoes(acesso(semPerfilId, false))).itens).toHaveLength(1);
+
+    await marcarTodasComoLidas(acesso(adminId, true));
+    expect((await minhasNotificacoes(acesso(adminId, true))).naoLidas).toBe(0);
+    await removerNotificacao(acesso(adminId, true), minhas.itens[0].id);
+    expect((await minhasNotificacoes(acesso(adminId, true))).itens).toHaveLength(1);
+  });
+});

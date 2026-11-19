@@ -246,3 +246,29 @@ export function LogoDoTenant({
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt={nome} className={`${className} w-auto max-w-full object-contain`} />;
 }
+
+/** Etiqueta suave (perfil, situação, tags), na cor primária ou de um estado. */
+export function Etiqueta({
+  children,
+  tom = "primaria",
+}: {
+  children: ReactNode;
+  tom?: "primaria" | "sucesso" | "perigo" | "neutra";
+}) {
+  const cores = {
+    primaria: "bg-primary-soft text-primary",
+    sucesso: "bg-success/10 text-success",
+    perigo: "bg-danger/10 text-danger",
+    neutra: "bg-surface text-muted",
+  }[tom];
+  return <span className={`${cores} inline-block rounded px-2 py-0.5 text-xs font-medium`}>{children}</span>;
+}
+
+/** Cabeçalho e corpo de tabela no estilo das listas (cabeçalho suave, linhas espaçadas). */
+export const estiloTabela = {
+  tabela: "w-full text-left text-sm",
+  cabecalho: "bg-primary-soft text-primary",
+  th: "px-4 py-3 font-semibold first:rounded-l-md last:rounded-r-md",
+  linha: "border-border border-b last:border-0",
+  td: "px-4 py-3 align-middle",
+};

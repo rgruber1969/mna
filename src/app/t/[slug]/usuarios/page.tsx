@@ -10,7 +10,7 @@ import { listarPerfis } from "@/server/services/perfis";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao, FormConvidarUsuario } from "@/components/usuarios/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
 
 /** Administração de usuários do tenant (só administradores). */
 async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?: string }> }) {
@@ -26,40 +26,68 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
-        <div className="flex w-full max-w-2xl flex-col gap-6">
-          <Cartao largura="max-w-2xl">
+        <div className="flex w-full max-w-3xl flex-col gap-6">
+          <Cartao largura="max-w-3xl">
             <Titulo sobre="Administração">Usuários</Titulo>
-            <table className="w-full text-left text-sm">
-              <thead className="text-muted">
-                <tr>
-                  <th className="py-2 font-medium">Nome</th>
-                  <th className="py-2 font-medium">Papel</th>
-                  <th className="py-2 font-medium">2FA</th>
-                </tr>
-              </thead>
-              <tbody className="divide-border divide-y">
-                {usuarios.map((u) => (
-                  <tr key={u.id}>
-                    <td className="py-2">
-                      <Link href={`/usuarios/${u.id}`} className="text-primary font-medium">
-                        {u.nome}
-                      </Link>
-                      <span className="text-muted block text-xs">{u.email}</span>
-                    </td>
-                    <td className="text-text py-2">{u.administrador ? "Administrador" : "Usuário"}</td>
-                    <td className="py-2">
-                      {u.temDoisFatores ? (
-                        <span className="text-success">Ativo</span>
-                      ) : u.exigeDoisFatores ? (
-                        <span className="text-danger">Exigido, não configurado</span>
-                      ) : (
-                        <span className="text-muted">Não configurado</span>
-                      )}
-                    </td>
+            <div className="-mx-2 overflow-x-auto">
+              <table className={estiloTabela.tabela}>
+                <thead className={estiloTabela.cabecalho}>
+                  <tr>
+                    <th className={estiloTabela.th}>Nome</th>
+                    <th className={estiloTabela.th}>Perfil</th>
+                    <th className={estiloTabela.th}>2FA</th>
+                    <th className={`${estiloTabela.th} text-right`}>
+                      <span className="sr-only">Ações</span>
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {usuarios.map((u) => (
+                    <tr key={u.id} className={estiloTabela.linha}>
+                      <td className={estiloTabela.td}>
+                        <span className="flex items-center gap-3">
+                          <Avatar nome={u.nome} foto={u.foto} tamanho={40} />
+                          <span className="min-w-0">
+                            <Link href={`/usuarios/${u.id}`} className="text-text block font-semibold">
+                              {u.nome}
+                            </Link>
+                            <span className="text-muted block truncate text-xs">{u.email}</span>
+                          </span>
+                        </span>
+                      </td>
+                      <td className={estiloTabela.td}>
+                        <span className="flex flex-wrap gap-1">
+                          {u.administrador && <Etiqueta>Administrador</Etiqueta>}
+                          {u.perfil ? (
+                            <Etiqueta tom="neutra">{u.perfil}</Etiqueta>
+                          ) : (
+                            !u.administrador && <span className="text-muted text-xs">Sem perfil</span>
+                          )}
+                        </span>
+                      </td>
+                      <td className={estiloTabela.td}>
+                        {u.temDoisFatores ? (
+                          <Etiqueta tom="sucesso">Ativo</Etiqueta>
+                        ) : u.exigeDoisFatores ? (
+                          <Etiqueta tom="perigo">Exigido, não configurado</Etiqueta>
+                        ) : (
+                          <Etiqueta tom="neutra">Não configurado</Etiqueta>
+                        )}
+                      </td>
+                      <td className={`${estiloTabela.td} text-right`}>
+                        <Link
+                          href={`/usuarios/${u.id}`}
+                          aria-label={`Abrir ${u.nome}`}
+                          className="bg-surface text-text hover:text-primary inline-flex h-8 w-8 items-center justify-center rounded-md font-bold"
+                        >
+                          ···
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Cartao>
 
           {convites.length > 0 && (

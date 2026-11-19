@@ -1,7 +1,8 @@
 import { and, asc, eq, ilike, isNull, ne, or } from "drizzle-orm";
 import { z } from "zod";
 import { comTenant } from "@/server/db/cliente";
-import { empresa, pessoa, tipoVinculo, vinculoPessoaEmpresa } from "@/server/db/esquema";
+import { empresa, pessoa, tipoVinculo, usuario, vinculoPessoaEmpresa } from "@/server/db/esquema";
+import { enderecoDaFoto } from "./foto-da-conta";
 import { cpfValido, mascararCpf, mascararDocumento, soDigitos } from "@/config/documentos";
 import type { Acesso, AcessoTenant } from "./acesso";
 import { criptografar, descriptografar, indiceCego } from "./cripto/cripto";
@@ -154,6 +155,8 @@ export type PessoaResumo = {
   temConta: boolean;
   acesso: SituacaoDeAcesso;
   inativa: boolean;
+  /** Foto da conta, se a pessoa for usuária. */
+  foto: string | null;
 };
 
 export async function listarPessoas(
@@ -170,8 +173,10 @@ export async function listarPessoas(
         email: pessoa.email,
         usuarioId: pessoa.usuarioId,
         inativaEm: pessoa.inativaEm,
+        imagem: usuario.image,
       })
       .from(pessoa)
+      .leftJoin(usuario, eq(usuario.id, pessoa.usuarioId))
       .where(
         and(
           filtro.inativas ? undefined : isNull(pessoa.inativaEm),
@@ -195,6 +200,7 @@ export async function listarPessoas(
       temConta: Boolean(p.usuarioId),
       acesso: situacao.get(p.id) ?? "sem-acesso",
       inativa: Boolean(p.inativaEm),
+      foto: p.usuarioId ? enderecoDaFoto(p.usuarioId, p.imagem) : null,
     }));
   });
 }

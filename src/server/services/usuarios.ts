@@ -2,10 +2,19 @@ import { notificar } from "./notificacoes";
 import { and, desc, eq, gt, isNull, ne } from "drizzle-orm";
 import { z } from "zod";
 import { banco, comTenant } from "@/server/db/cliente";
-import { convite, eventoAuditoria, tenant, usuario, vinculoTenant } from "@/server/db/esquema";
+import {
+  convite,
+  eventoAuditoria,
+  perfil,
+  perfilUsuario,
+  tenant,
+  usuario,
+  vinculoTenant,
+} from "@/server/db/esquema";
 import { exigirAdministrador, type Acesso, type AcessoTenant } from "./acesso";
 import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
 import { exigidosPorPerfil } from "./exigencia-2fa";
+import { enderecoDaFoto } from "./foto-da-conta";
 import { filtrarPerfisDoTenant } from "./perfis";
 import {
   apagarTodosOsFatores,
@@ -55,6 +64,10 @@ export type UsuarioDoTenant = {
   /** Resultado das regras somadas. */
   exigeDoisFatores: boolean;
   temDoisFatores: boolean;
+  /** Endereço da foto da conta (lista de usuários). */
+  foto?: string | null;
+  /** Perfil do tenant (um por pessoa), para a lista. */
+  perfil?: string | null;
 };
 
 export type ConvitePendente = {
@@ -78,7 +91,7 @@ export async function listarUsuarios(acesso: Acesso | null): Promise<PainelDeUsu
     .from(tenant)
     .where(eq(tenant.id, a.tenant.id));
   const exigeDeTodos = Boolean(t?.exige);
-  const { vinculos, convites, porPerfil } = await comTenant(a.tenant.id, async (tx) => {
+  const { vinculos, convites, porPerfil, perfis } = await comTenant(a.tenant.id, async (tx) => {
     const r = {
       vinculos: await tx
         .select({
@@ -88,11 +101,17 @@ export async function listarUsuarios(acesso: Acesso | null): Promise<PainelDeUsu
           autenticador: usuario.twoFactorEnabled,
           administrador: vinculoTenant.administrador,
           exigeIndividual: vinculoTenant.exigeDoisFatores,
+          imagem: usuario.image,
         })
         .from(vinculoTenant)
         .innerJoin(usuario, eq(usuario.id, vinculoTenant.usuarioId))
         .where(eq(vinculoTenant.situacao, "ativo"))
         .orderBy(usuario.name),
+      perfis: await tx
+        .select({ usuarioId: perfilUsuario.usuarioId, nome: perfil.nome })
+        .from(perfilUsuario)
+        .innerJoin(perfil, eq(perfil.id, perfilUsuario.perfilId))
+        .where(eq(perfil.camada, "tenant")),
       convites: await tx
         .select({
           id: convite.id,
@@ -123,6 +142,8 @@ export async function listarUsuarios(acesso: Acesso | null): Promise<PainelDeUsu
       exigePorPerfil: porPerfil.has(v.id),
       exigeDoisFatores: v.administrador || v.exigeIndividual || exigeDeTodos || porPerfil.has(v.id),
       temDoisFatores: quantidadeDeFatores(await fatoresDaConta(v.id)) > 0,
+      foto: enderecoDaFoto(v.id, v.imagem),
+      perfil: perfis.find((p) => p.usuarioId === v.id)?.nome ?? null,
     })),
   );
   return { exigeDeTodos, usuarios, convites };
