@@ -5,7 +5,9 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { obterAcesso } from "@/server/services/acesso";
-import { listarPessoas } from "@/server/services/pessoas";
+import { ORDENS_DE_PESSOAS, paginaDePessoas } from "@/server/services/pessoas";
+import { lerPedido } from "@/config/paginacao";
+import { Paginacao, TituloOrdenavel } from "@/components/ui/lista";
 import { pode } from "@/server/services/permissoes/verificador";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
@@ -13,7 +15,7 @@ import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
 
 /** Pessoas do tenant, com ou sem acesso ao sistema (dominio.md, "Pessoa e usuário"). */
-async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: string }> }) {
+async function Painel({ busca }: { busca: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
   if (acesso?.area !== "tenant") redirect("/entrar");
@@ -22,9 +24,14 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
   if (!(await pode(acesso, "empresas", "ver"))) notFound();
   const t = await getTranslations("cadastros.pessoas");
   const tDoc = await getTranslations("cadastros.porDocumento");
-  const filtro = await busca;
-  const [pessoas, podeCriar] = await Promise.all([
-    listarPessoas(acesso, { busca: filtro.busca, inativas: filtro.inativas === "sim" }),
+  const parametros = await busca;
+  const filtro = {
+    busca: typeof parametros.busca === "string" ? parametros.busca : "",
+    inativas: typeof parametros.inativas === "string" ? parametros.inativas : "",
+  };
+  const pedido = lerPedido(parametros, ORDENS_DE_PESSOAS, "nome");
+  const [pagina, podeCriar] = await Promise.all([
+    paginaDePessoas(acesso, { busca: filtro.busca, inativas: filtro.inativas === "sim" }, pedido),
     pode(acesso, "empresas", "criar"),
   ]);
 
@@ -65,20 +72,27 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
             </label>
             <button className="text-primary text-sm font-medium">{t("buscar")}</button>
           </form>
-          {pessoas.length === 0 ? (
+          {pagina.total === 0 ? (
             <p className="text-muted text-sm">{t("nenhuma")}</p>
           ) : (
             <div className="-mx-2 overflow-x-auto">
               <table className={estiloTabela.tabela}>
                 <thead className={estiloTabela.cabecalho}>
                   <tr>
-                    <th className={estiloTabela.th}>{t("colNome")}</th>
+                    <TituloOrdenavel
+                      rotulo={t("colNome")}
+                      campo="nome"
+                      pedido={pedido}
+                      caminho="/pessoas"
+                      parametros={parametros}
+                      className={estiloTabela.th}
+                    />
                     <th className={estiloTabela.th}>{t("colEmpresas")}</th>
                     <th className={`${estiloTabela.th} text-right`}>{t("colAcesso")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pessoas.map((p) => (
+                  {pagina.itens.map((p) => (
                     <tr key={p.id} className={estiloTabela.linha}>
                       <td className={estiloTabela.td}>
                         <span className="flex items-center gap-3">
@@ -115,6 +129,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
                   ))}
                 </tbody>
               </table>
+              <Paginacao pagina={pagina} caminho="/pessoas" parametros={parametros} />
             </div>
           )}
         </Cartao>
@@ -126,7 +141,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
 export default function Page({ searchParams }: PageProps<"/t/[slug]/pessoas">) {
   return (
     <Suspense fallback={<Carregando />}>
-      <Painel busca={searchParams as Promise<{ busca?: string; inativas?: string }>} />
+      <Painel busca={searchParams as Promise<Record<string, string | string[] | undefined>>} />
     </Suspense>
   );
 }

@@ -31,7 +31,11 @@
       "receitaFederal": "Receita Federal",
       "quadroDeSocios": "Quadro de sócios",
       "sociosExplicacao": "Os sócios informados pela Receita podem ser cadastrados como pessoas, um a um.",
-      "avisoContratanteSemCnpj": "Esta é a empresa do contratante e está sem CNPJ. Preencha o CNPJ para evitar que ela seja cadastrada de novo."
+      "avisoContratanteSemCnpj": "Esta é a empresa do contratante e está sem CNPJ. Preencha o CNPJ para evitar que ela seja cadastrada de novo.",
+      "colRazaoSocial": "Razão social",
+      "colCnpj": "CNPJ",
+      "colGrupo": "Grupo",
+      "colPessoas": "Pessoas"
     },
     "pessoas": {
       "sobre": "Cadastro",

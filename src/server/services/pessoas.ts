@@ -1,4 +1,5 @@
-import { and, asc, eq, ilike, isNull, ne, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull, ne, or } from "drizzle-orm";
+import { limites, type Pagina, type PedidoDePagina } from "@/config/paginacao";
 import { z } from "zod";
 import { comTenant } from "@/server/db/cliente";
 import { apagarArquivo } from "@/server/arquivos/armazenamento";
@@ -181,6 +182,71 @@ export type PessoaResumo = {
   foto: string | null;
 };
 
+export const ORDENS_DE_PESSOAS = ["nome", "email", "criadoEm"] as const;
+export type OrdemDePessoas = (typeof ORDENS_DE_PESSOAS)[number];
+
+/** Lista paginada no banco (tela de pessoas). */
+export async function paginaDePessoas(
+  acesso: Acesso | null,
+  filtro: { busca?: string; inativas?: boolean },
+  pedido: PedidoDePagina<OrdemDePessoas>,
+): Promise<Pagina<PessoaResumo>> {
+  const a = await exigirPermissao(acesso, "empresas", "ver");
+  const busca = filtro.busca?.trim();
+  const onde = and(
+    filtro.inativas ? undefined : isNull(pessoa.inativaEm),
+    busca ? or(ilike(pessoa.nome, `%${busca}%`), ilike(pessoa.email, `%${busca}%`)) : undefined,
+  );
+  return comTenant(a.tenant.id, async (tx) => {
+    const [{ total }] = await tx.select({ total: count() }).from(pessoa).where(onde);
+    const { limite, deslocamento, pagina } = limites(pedido, total);
+    const coluna = { nome: pessoa.nome, email: pessoa.email, criadoEm: pessoa.criadoEm }[pedido.ordem];
+    const linhas = await tx
+      .select({
+        id: pessoa.id,
+        nome: pessoa.nome,
+        email: pessoa.email,
+        usuarioId: pessoa.usuarioId,
+        inativaEm: pessoa.inativaEm,
+        imagem: usuario.image,
+      })
+      .from(pessoa)
+      .leftJoin(usuario, eq(usuario.id, pessoa.usuarioId))
+      .where(onde)
+      .orderBy(pedido.direcao === "desc" ? desc(coluna) : asc(coluna), asc(pessoa.id))
+      .limit(limite)
+      .offset(deslocamento);
+    const ids = linhas.map((l) => l.id);
+    const vinculos = ids.length
+      ? await tx
+          .select({ pessoaId: vinculoPessoaEmpresa.pessoaId, empresa: empresa.razaoSocial })
+          .from(vinculoPessoaEmpresa)
+          .innerJoin(empresa, eq(empresa.id, vinculoPessoaEmpresa.empresaId))
+          .where(inArray(vinculoPessoaEmpresa.pessoaId, ids))
+      : [];
+    const situacao = await situacoes(tx, linhas);
+    const empresasDe = new Map<string, Set<string>>();
+    for (const v of vinculos)
+      (empresasDe.get(v.pessoaId) ?? empresasDe.set(v.pessoaId, new Set()).get(v.pessoaId)!).add(v.empresa);
+    return {
+      itens: linhas.map((p) => ({
+        id: p.id,
+        nome: p.nome,
+        email: p.email,
+        empresas: [...(empresasDe.get(p.id) ?? [])],
+        temConta: Boolean(p.usuarioId),
+        acesso: situacao.get(p.id) ?? "sem-acesso",
+        inativa: Boolean(p.inativaEm),
+        foto: p.usuarioId ? enderecoDaFoto(p.usuarioId, p.imagem) : null,
+      })),
+      total,
+      pagina,
+      porPagina: limite,
+    };
+  });
+}
+
+/** Lista completa (para escolher numa caixa de seleção). */
 export async function listarPessoas(
   acesso: Acesso | null,
   filtro: { busca?: string; inativas?: boolean } = {},

@@ -6,17 +6,19 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { excluirGrupoAcao } from "@/app/acoes/cadastros";
 import { obterAcesso } from "@/server/services/acesso";
-import { listarEmpresas, listarGrupos } from "@/server/services/empresas";
+import { listarGrupos, ORDENS_DE_EMPRESAS, paginaDeEmpresas } from "@/server/services/empresas";
+import { lerPedido } from "@/config/paginacao";
+import { Paginacao, TituloOrdenavel } from "@/components/ui/lista";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCnpj } from "@/config/documentos";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoGrupo } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Carregando, estiloTabela, Titulo } from "@/components/ui/basicos";
 
 /** Empresas e grupos econômicos do tenant (dominio.md, "Empresa"). */
-async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: string }> }) {
+async function Painel({ busca }: { busca: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
   if (acesso?.area !== "tenant") redirect("/entrar");
@@ -26,9 +28,14 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
   const t = await getTranslations("cadastros.empresas");
   const tDoc = await getTranslations("cadastros.porDocumento");
   const tc = await getTranslations("comum");
-  const filtro = await busca;
-  const [empresas, grupos, podeCriar, podeExcluir] = await Promise.all([
-    listarEmpresas(acesso, { busca: filtro.busca, inativas: filtro.inativas === "sim" }),
+  const parametros = await busca;
+  const filtro = {
+    busca: typeof parametros.busca === "string" ? parametros.busca : "",
+    inativas: typeof parametros.inativas === "string" ? parametros.inativas : "",
+  };
+  const pedido = lerPedido(parametros, ORDENS_DE_EMPRESAS, "razaoSocial");
+  const [pagina, grupos, podeCriar, podeExcluir] = await Promise.all([
+    paginaDeEmpresas(acesso, { busca: filtro.busca, inativas: filtro.inativas === "sim" }, pedido),
     listarGrupos(acesso),
     pode(acesso, "empresas", "criar"),
     pode(acesso, "empresas", "excluir"),
@@ -71,34 +78,70 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
             </label>
             <button className="text-primary text-sm font-medium">{t("buscar")}</button>
           </form>
-          {empresas.length === 0 ? (
+          {pagina.total === 0 ? (
             <p className="text-muted text-sm">{t("nenhuma")}</p>
           ) : (
-            <ul className="divide-border divide-y text-sm">
-              {empresas.map((e) => (
-                <li key={e.id} className="flex items-start justify-between gap-3 py-2">
-                  <span>
-                    <Link href={`/empresas/${e.id}`} className="text-primary font-medium">
-                      {e.razaoSocial}
-                    </Link>
-                    {e.doContratante && (
-                      <span className="text-accent ml-2 text-xs font-medium">{t("contratante")}</span>
-                    )}
-                    {e.inativa && <span className="text-muted ml-2 text-xs">{t("inativa")}</span>}
-                    <span className="text-muted block text-xs">
-                      {[
-                        e.nomeFantasia,
-                        e.cnpj ? formatarCnpj(e.cnpj) : e.pais !== "Brasil" ? e.pais : null,
-                        e.grupo && t("grupo", { nome: e.grupo }),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                  </span>
-                  <span className="text-muted shrink-0 text-xs">{t("pessoas", { n: e.pessoas })}</span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <div className="-mx-2 overflow-x-auto">
+                <table className={estiloTabela.tabela}>
+                  <thead className={estiloTabela.cabecalho}>
+                    <tr>
+                      <TituloOrdenavel
+                        rotulo={t("colRazaoSocial")}
+                        campo="razaoSocial"
+                        pedido={pedido}
+                        caminho="/empresas"
+                        parametros={parametros}
+                        className={estiloTabela.th}
+                      />
+                      <TituloOrdenavel
+                        rotulo={t("colCnpj")}
+                        campo="cnpj"
+                        pedido={pedido}
+                        caminho="/empresas"
+                        parametros={parametros}
+                        className={estiloTabela.th}
+                      />
+                      <TituloOrdenavel
+                        rotulo={t("colGrupo")}
+                        campo="grupo"
+                        pedido={pedido}
+                        caminho="/empresas"
+                        parametros={parametros}
+                        className={estiloTabela.th}
+                      />
+                      <th className={`${estiloTabela.th} text-right`}>{t("colPessoas")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagina.itens.map((e) => (
+                      <tr key={e.id} className={estiloTabela.linha}>
+                        <td className={estiloTabela.td}>
+                          <Link href={`/empresas/${e.id}`} className="text-text font-semibold">
+                            {e.razaoSocial}
+                          </Link>
+                          {e.doContratante && (
+                            <span className="text-accent ml-2 text-xs font-medium">{t("contratante")}</span>
+                          )}
+                          {e.inativa && <span className="text-muted ml-2 text-xs">{t("inativa")}</span>}
+                          {e.nomeFantasia && (
+                            <span className="text-muted block text-xs">{e.nomeFantasia}</span>
+                          )}
+                        </td>
+                        <td className={`${estiloTabela.td} text-muted text-xs whitespace-nowrap`}>
+                          {e.cnpj ? formatarCnpj(e.cnpj) : e.pais !== "Brasil" ? e.pais : "—"}
+                        </td>
+                        <td className={`${estiloTabela.td} text-muted text-xs`}>{e.grupo ?? "—"}</td>
+                        <td className={`${estiloTabela.td} text-muted text-right text-xs`}>
+                          {t("pessoas", { n: e.pessoas })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Paginacao pagina={pagina} caminho="/empresas" parametros={parametros} />
+            </>
           )}
         </Cartao>
         <Cartao largura="max-w-sm">
@@ -138,7 +181,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
 export default function Page({ searchParams }: PageProps<"/t/[slug]/empresas">) {
   return (
     <Suspense fallback={<Carregando />}>
-      <Painel busca={searchParams as Promise<{ busca?: string; inativas?: string }>} />
+      <Painel busca={searchParams as Promise<Record<string, string | string[] | undefined>>} />
     </Suspense>
   );
 }

@@ -1,4 +1,5 @@
-import { and, asc, count, eq, ilike, isNotNull, isNull, ne, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, ne, or } from "drizzle-orm";
+import { limites, type Pagina, type PedidoDePagina } from "@/config/paginacao";
 import { z } from "zod";
 import { comTenant } from "@/server/db/cliente";
 import { apagarArquivo } from "@/server/arquivos/armazenamento";
@@ -117,6 +118,80 @@ export type EmpresaResumo = {
   pessoas: number;
 };
 
+export const ORDENS_DE_EMPRESAS = ["razaoSocial", "cnpj", "grupo", "criadoEm"] as const;
+export type OrdemDeEmpresas = (typeof ORDENS_DE_EMPRESAS)[number];
+
+function filtroDeEmpresas(filtro: { busca?: string; inativas?: boolean }) {
+  const busca = filtro.busca?.trim();
+  return and(
+    filtro.inativas ? undefined : isNull(empresa.inativaEm),
+    busca
+      ? or(
+          ilike(empresa.razaoSocial, `%${busca}%`),
+          ilike(empresa.nomeFantasia, `%${busca}%`),
+          eq(empresa.cnpj, soDigitos(busca) || "-"),
+        )
+      : undefined,
+  );
+}
+
+/** Lista paginada no banco (tela de empresas). */
+export async function paginaDeEmpresas(
+  acesso: Acesso | null,
+  filtro: { busca?: string; inativas?: boolean },
+  pedido: PedidoDePagina<OrdemDeEmpresas>,
+): Promise<Pagina<EmpresaResumo>> {
+  const a = await exigirPermissao(acesso, "empresas", "ver");
+  const onde = filtroDeEmpresas(filtro);
+  return comTenant(a.tenant.id, async (tx) => {
+    const [{ total }] = await tx.select({ total: count() }).from(empresa).where(onde);
+    const { limite, deslocamento, pagina } = limites(pedido, total);
+    const coluna = {
+      razaoSocial: empresa.razaoSocial,
+      cnpj: empresa.cnpj,
+      grupo: grupoEconomico.nome,
+      criadoEm: empresa.criadoEm,
+    }[pedido.ordem];
+    const linhas = await tx
+      .select({
+        id: empresa.id,
+        razaoSocial: empresa.razaoSocial,
+        nomeFantasia: empresa.nomeFantasia,
+        cnpj: empresa.cnpj,
+        pais: empresa.pais,
+        grupo: grupoEconomico.nome,
+        doContratante: empresa.doContratante,
+        inativaEm: empresa.inativaEm,
+      })
+      .from(empresa)
+      .leftJoin(grupoEconomico, eq(grupoEconomico.id, empresa.grupoId))
+      .where(onde)
+      .orderBy(pedido.direcao === "desc" ? desc(coluna) : asc(coluna), asc(empresa.id))
+      .limit(limite)
+      .offset(deslocamento);
+    const ids = linhas.map((l) => l.id);
+    const contagem = ids.length
+      ? await tx
+          .select({ empresaId: vinculoPessoaEmpresa.empresaId, n: count() })
+          .from(vinculoPessoaEmpresa)
+          .where(inArray(vinculoPessoaEmpresa.empresaId, ids))
+          .groupBy(vinculoPessoaEmpresa.empresaId)
+      : [];
+    const n = new Map(contagem.map((c) => [c.empresaId, c.n]));
+    return {
+      itens: linhas.map(({ inativaEm, ...l }) => ({
+        ...l,
+        inativa: Boolean(inativaEm),
+        pessoas: n.get(l.id) ?? 0,
+      })),
+      total,
+      pagina,
+      porPagina: limite,
+    };
+  });
+}
+
+/** Lista completa (para escolher numa caixa de seleção). */
 export async function listarEmpresas(
   acesso: Acesso | null,
   filtro: { busca?: string; inativas?: boolean } = {},

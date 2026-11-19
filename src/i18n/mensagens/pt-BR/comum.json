@@ -17,6 +17,15 @@
     },
     "metadados": {
       "descricao": "{produto}: gestão de processos de M&A"
+    },
+    "lista": {
+      "ordenarPor": "Ordenar por {coluna}",
+      "paginacao": "Páginas da lista",
+      "intervalo": "{total, plural, =0 {Nenhum registro} other {{de}–{ate} de {total}}}",
+      "anterior": "Página anterior",
+      "proxima": "Próxima página",
+      "pagina": "Página {n}",
+      "porPagina": "Por página:"
     }
   }
 }

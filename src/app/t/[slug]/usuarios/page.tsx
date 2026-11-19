@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import { cancelarConviteAcao, exigirDeTodosAcao, reenviarConviteAcao } from "@/app/acoes/usuarios";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarUsuarios } from "@/server/services/usuarios";
+import { lerPedido, paginarEmMemoria } from "@/config/paginacao";
+import { Paginacao, TituloOrdenavel } from "@/components/ui/lista";
 import { listarPerfis } from "@/server/services/perfis";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
@@ -16,14 +18,24 @@ import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/co
 const DATA_E_HORA = { dateStyle: "short", timeStyle: "medium" } as const;
 
 /** Administração de usuários do tenant (só administradores). */
-async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?: string }> }) {
+async function Painel({ consulta }: { consulta: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
   if (acesso?.area !== "tenant") redirect("/entrar");
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   if (!acesso.administrador) notFound();
-  const { exigeDeTodos, usuarios, convites } = await listarUsuarios(acesso);
+  const parametros = await consulta;
+  const { exigeDeTodos, usuarios: todos, convites } = await listarUsuarios(acesso);
+  // Usuários do tenant são poucos por natureza: paginados no servidor, em memória.
+  const pedido = lerPedido(parametros, ["nome", "email"] as const, "nome");
+  const fator = pedido.direcao === "desc" ? -1 : 1;
+  const ordenados = [...todos].sort(
+    (a, b) =>
+      fator * (a[pedido.ordem] ?? "").localeCompare(b[pedido.ordem] ?? "", "pt-BR", { sensitivity: "base" }),
+  );
+  const pagina = paginarEmMemoria(ordenados, pedido);
+  const usuarios = pagina.itens;
   const perfisDoTenant = (await listarPerfis(acesso)).perfis.filter((p) => p.camada === "tenant");
   const t = await getTranslations("administracao.usuarios");
   const formatar = await getFormatter();
@@ -38,7 +50,14 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
               <table className={estiloTabela.tabela}>
                 <thead className={estiloTabela.cabecalho}>
                   <tr>
-                    <th className={estiloTabela.th}>{t("colunaNome")}</th>
+                    <TituloOrdenavel
+                      rotulo={t("colunaNome")}
+                      campo="nome"
+                      pedido={pedido}
+                      caminho="/usuarios"
+                      parametros={parametros}
+                      className={estiloTabela.th}
+                    />
                     <th className={estiloTabela.th}>{t("colunaPerfil")}</th>
                     <th className={estiloTabela.th}>{t("colunaDoisFatores")}</th>
                     <th className={`${estiloTabela.th} text-right`}>
@@ -93,6 +112,7 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
                 </tbody>
               </table>
             </div>
+            <Paginacao pagina={pagina} caminho="/usuarios" parametros={parametros} />
           </Cartao>
 
           {convites.length > 0 && (
@@ -154,7 +174,7 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
 export default function Page({ searchParams }: PageProps<"/t/[slug]/usuarios">) {
   return (
     <Suspense fallback={<Carregando />}>
-      <Painel consulta={searchParams as Promise<{ nome?: string; email?: string }>} />
+      <Painel consulta={searchParams as Promise<Record<string, string | string[] | undefined>>} />
     </Suspense>
   );
 }
