@@ -63,6 +63,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     camada: "deal",
     matriz: {
       deal: VE,
+      funil: VE,
       etapas: VCEX,
       documentos: VCEXB,
       tarefas: VCEX,
@@ -80,6 +81,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     camada: "deal",
     matriz: {
       deal: V,
+      funil: VE,
       etapas: VE,
       documentos: VCEB,
       tarefas: VCE,
@@ -97,6 +99,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     camada: "deal",
     matriz: {
       deal: V,
+      funil: VE,
       etapas: VE,
       documentos: VCEB,
       tarefas: VCE,
@@ -121,6 +124,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     camada: "deal",
     matriz: {
       deal: V,
+      funil: V,
       etapas: V,
       documentos: VCB,
       tarefas: VE,

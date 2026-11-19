@@ -100,7 +100,100 @@ async function devolverAcessos(tx: Tx, dealId: string, empresaIds: string[]) {
 // --- Funil das compradoras (N1–N3) --------------------------------------------------------
 
 /**
- * Muda a situação de uma compradora no funil (Coordenador e administradores).
+ * O funil é ferramenta do lado vendedor: só quem está do lado vendedor (ou
+ * administra o tenant) e tem "Funil de compradoras" no perfil vê e mexe.
+ */
+async function exigirFunil(acesso: Acesso | null, dealId: string, acao: "ver" | "editar") {
+  const a = await exigirPermissao(acesso, "funil", acao, { dealId });
+  if (!a.administrador) {
+    const { visao } = await visaoDoNegocio(a, dealId);
+    if (!visao.lados.has("vendedor")) throw new AcessoNegado();
+  }
+  return a;
+}
+
+/** Pode ver o funil? (para mostrar a aba sem registrar negação). */
+async function podeVerFunil(acesso: Acesso | null, dealId: string): Promise<boolean> {
+  try {
+    const a = exigirTenant(acesso);
+    if (a.administrador) return true;
+    const { visao } = await visaoDoNegocio(a, dealId);
+    return visao.lados.has("vendedor") && (visao.matriz.funil ?? []).includes("ver");
+  } catch {
+    return false;
+  }
+}
+
+export type CartaoDoFunil = {
+  id: string;
+  empresaId: string;
+  nome: string;
+  situacao: SituacaoNoFunil;
+  /** Escritórios, advisors etc. que trabalham para esta compradora. */
+  equipe: string[];
+  historico: { de: string; para: string; quando: Date; ator: string | null }[];
+};
+
+/** Funil de compradoras do negócio (aba kanban), ou null se a pessoa não o vê. */
+export async function funilDoNegocio(
+  acesso: Acesso | null,
+  dealId: string,
+): Promise<{ cartoes: CartaoDoFunil[]; podeEditar: boolean } | null> {
+  if (!uuidValido(dealId) || !(await podeVerFunil(acesso, dealId))) return null;
+  const a = exigirTenant(acesso);
+  const { visao } = await visaoDoNegocio(a, dealId);
+  const empresas = await empresasDoNegocio(a, dealId);
+  return comTenant(a.tenant.id, async (tx) => {
+    const n = await dadosDoNegocio(tx, dealId);
+    const nomes = new Map(
+      (
+        await tx
+          .select({ id: empresa.id, nome: empresa.razaoSocial })
+          .from(empresa)
+          .where(inArray(empresa.id, [...new Set(empresas.map((e) => e.empresaId))]))
+      ).map((e) => [e.id, e.nome]),
+    );
+    const eventos = await tx
+      .select({ quando: eventoAuditoria.ocorridoEm, ator: usuario.name, detalhes: eventoAuditoria.detalhes })
+      .from(eventoAuditoria)
+      .leftJoin(usuario, eq(usuario.id, eventoAuditoria.atorId))
+      .where(
+        and(
+          eq(eventoAuditoria.alvoTipo, "deal"),
+          eq(eventoAuditoria.alvoId, dealId),
+          eq(eventoAuditoria.tipo, "negocio.funil"),
+        ),
+      )
+      .orderBy(desc(eventoAuditoria.ocorridoEm));
+    const fechado = n?.situacao === "concluido" || n?.situacao === "encerrado";
+    return {
+      podeEditar: !fechado && (a.administrador || (visao.matriz.funil ?? []).includes("editar")),
+      cartoes: empresas
+        .filter((e) => e.compradora && e.situacaoFunil)
+        .map((e) => ({
+          id: e.id,
+          empresaId: e.empresaId,
+          nome: nomes.get(e.empresaId) ?? "—",
+          situacao: e.situacaoFunil!,
+          equipe: empresas
+            .filter((x) => x.atuaParaId === e.empresaId)
+            .map((x) => nomes.get(x.empresaId) ?? "—"),
+          historico: eventos
+            .filter((ev) => ev.detalhes?.empresaId === e.empresaId)
+            .map((ev) => ({
+              de: String(ev.detalhes?.de ?? ""),
+              para: String(ev.detalhes?.para ?? ""),
+              quando: ev.quando,
+              ator: ev.ator,
+            })),
+        })),
+    };
+  });
+}
+
+/**
+ * Muda a situação de uma compradora no funil (lado vendedor, com "Funil de
+ * compradoras × editar"; administradores).
  * Descartada perde o acesso na hora, com a sua equipe (N3); se voltar, os
  * acessos voltam. Escolhida: `descartarOutras` descarta as demais (N2).
  */
@@ -109,7 +202,7 @@ export async function alterarSituacaoNoFunil(
   dealId: string,
   dados: { dealEmpresaId: string; situacao: string; descartarOutras?: boolean },
 ): Promise<Resultado> {
-  const a = await exigirPermissao(acesso, "deal", "editar", { dealId });
+  const a = await exigirFunil(acesso, dealId, "editar");
   const fechado = await negocioFechado(a, dealId);
   if (fechado) return fechado;
   const situacoes: SituacaoNoFunil[] = [

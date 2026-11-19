@@ -25,6 +25,7 @@ import {
   andamentoDoNegocio,
   definirExclusividade,
   enviarAvisosDePrazo,
+  funilDoNegocio,
   obterDiasDeAviso,
   prorrogarExclusividade,
   salvarDiasDeAviso,
@@ -592,5 +593,49 @@ describe("andamento: funil, exclusividade, situação e histórico", () => {
     });
     expect(await salvarDiasDeAviso(acesso("admin", true), "3, 10")).toEqual({ ok: true });
     expect(await obterDiasDeAviso(acesso("gestor"))).toEqual([10, 3]);
+  });
+});
+
+describe("permissão do funil de compradoras", () => {
+  it("advogado do lado vendedor move o funil; o da compradora nem vê", async () => {
+    const a = acesso("admin", true);
+    const g = acesso("gestor");
+    await criarConta("advv", "usuario-externo");
+    const [{ id: contratante }] = (
+      await dono.query(`select id from empresa where tenant_id = $1 and do_contratante`, [tenantId])
+    ).rows as { id: string }[];
+    const [{ id: contato }] = (
+      await dono.query(`select id from tipo_vinculo where tenant_id = $1 and padrao = 'contato'`, [tenantId])
+    ).rows as { id: string }[];
+    await adicionarVinculo(a, {
+      pessoaId: await pessoaDe("advv"),
+      empresaId: contratante,
+      tipoId: contato,
+      cargo: "",
+      percentual: "",
+    });
+    expect(
+      await adicionarParticipante(g, negocioId, {
+        pessoaId: await pessoaDe("advv"),
+        perfilId: await perfilDeDeal("advogado"),
+        empresaId: "",
+        lado: "",
+        prazo: "",
+      }),
+    ).toEqual({ ok: true });
+    const funil = await funilDoNegocio(acesso("advv"), negocioId);
+    expect(funil?.podeEditar).toBe(true);
+    const b = funil!.cartoes.find((c) => c.nome === "Compradora B S.A.")!;
+    expect(b.historico.length).toBeGreaterThan(0);
+    expect(
+      await alterarSituacaoNoFunil(acesso("advv"), negocioId, { dealEmpresaId: b.id, situacao: "proposta" }),
+    ).toEqual({
+      ok: true,
+    });
+    // Advogado da compradora (mesmo perfil, outro lado): sem funil.
+    expect(await funilDoNegocio(acesso("adva"), negocioId)).toBeNull();
+    await expect(
+      alterarSituacaoNoFunil(acesso("adva"), negocioId, { dealEmpresaId: b.id, situacao: "descartada" }),
+    ).rejects.toBeInstanceOf(AcessoNegado);
   });
 });

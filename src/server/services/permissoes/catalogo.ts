@@ -51,6 +51,7 @@ export const RECURSOS = {
 
   // --- Camada do deal (dentro de cada deal, conforme a participação) ---------
   deal: { camada: "deal", acoes: ["ver", "editar"] },
+  funil: { camada: "deal", acoes: ["ver", "editar"], nota: true },
   etapas: { camada: "deal", acoes: VCEX },
   documentos: {
     camada: "deal",

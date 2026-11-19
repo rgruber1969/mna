@@ -175,6 +175,9 @@ tipos de vínculo entre pessoa e empresa.
 (lista de acesso); vale também para contratos, e-book e ofertas. "C" é
 enviar documento ou nova versão.
 
+* **Funil de compradoras** (2026-11-19): ver e editar; padrão V E para
+  Coordenador, Advogado e Advisor e V para Representante da empresa. Só vale
+  para quem está do lado vendedor do negócio.
 * Mensagens são imutáveis (sem editar nem excluir).
 * Em Tarefas, "E" do Representante da empresa serve para atualizar e
   concluir as próprias tarefas.

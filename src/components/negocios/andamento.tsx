@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   alterarSituacaoDoNegocioAcao,
@@ -28,54 +29,193 @@ function Mensagem({ estado }: { estado?: { erro?: string; ok?: string } }) {
 
 const FUNIL = ["prospectada", "teaser", "nda", "proposta", "escolhida", "descartada"] as const;
 
-/** Situação de uma compradora no funil (Coordenador e administradores). */
-export function FormFunil({
+type Cartao = {
+  id: string;
+  nome: string;
+  situacao: string;
+  equipe: string[];
+  historico: { de: string; para: string; quando: Date; ator: string | null }[];
+};
+
+/**
+ * Funil de compradoras em kanban: arrastar o cartão muda a situação. Para
+ * teclado e celular, cada cartão também tem "Mover para". Escolher pergunta
+ * se descarta as demais; descartar avisa que o acesso acaba na hora.
+ */
+export function KanbanDoFunil({
   dealId,
-  id,
-  situacao,
-  nome,
+  cartoes,
+  podeEditar,
 }: {
   dealId: string;
-  id: string;
-  situacao: string;
-  nome: string;
+  cartoes: Cartao[];
+  podeEditar: boolean;
 }) {
   const t = useTranslations("negocios.andamento");
   const tf = useTranslations("negocios.funil");
-  const [estado, salvar, salvando] = useAcaoComAtualizacao(alterarSituacaoNoFunilAcao);
-  const [nova, setNova] = useState(situacao);
+  const router = useRouter();
+  const [movendo, iniciar] = useTransition();
+  const [erro, setErro] = useState<string | null>(null);
+  const [arrastado, setArrastado] = useState<string | null>(null);
+  const [sobre, setSobre] = useState<string | null>(null);
+  const [escolha, setEscolha] = useState<string | null>(null);
+  const [aberto, setAberto] = useState<string | null>(null);
+
+  function enviar(id: string, para: string, descartarOutras = false) {
+    const f = new FormData();
+    f.set("dealId", dealId);
+    f.set("id", id);
+    f.set("situacao", para);
+    if (descartarOutras) f.set("descartarOutras", "sim");
+    iniciar(async () => {
+      const r = await alterarSituacaoNoFunilAcao(undefined, f);
+      setErro(r?.erro ?? null);
+      if (!r?.erro) router.refresh();
+    });
+  }
+
+  function mover(id: string, para: string) {
+    const c = cartoes.find((x) => x.id === id);
+    if (!c || c.situacao === para) return;
+    const outras = cartoes.some((x) => x.id !== id && x.situacao !== "descartada");
+    if (para === "escolhida" && outras) return setEscolha(id);
+    if (para === "descartada" && !window.confirm(t("confirmarDescarte", { nome: c.nome }))) return;
+    enviar(id, para);
+  }
+
+  const escolhida = cartoes.find((c) => c.id === escolha);
   return (
-    <form action={salvar} className="mt-1 flex flex-wrap items-center gap-2">
-      <input type="hidden" name="dealId" value={dealId} />
-      <input type="hidden" name="id" value={id} />
-      <select
-        name="situacao"
-        value={nova}
-        onChange={(e) => setNova(e.target.value)}
-        aria-label={t("situacaoNoFunilDe", { nome })}
-        className={`${estiloCampo} py-1 text-xs`}
-      >
-        {FUNIL.map((s) => (
-          <option key={s} value={s}>
-            {tf(s)}
-          </option>
-        ))}
-      </select>
-      {nova === "escolhida" && situacao !== "escolhida" && (
-        <label className="text-text flex items-center gap-1 text-xs">
-          <input type="checkbox" name="descartarOutras" value="sim" /> {t("descartarOutras")}
-        </label>
+    <div>
+      <p className="text-muted mb-3 text-sm">{podeEditar ? t("funilExplicacao") : t("funilSoLeitura")}</p>
+      {erro && <Aviso>{erro}</Aviso>}
+      {escolhida && (
+        <div
+          role="dialog"
+          aria-label={t("escolherTitulo")}
+          className="border-primary bg-surface mb-3 rounded-md border p-3 text-sm"
+        >
+          <p className="text-text mb-2">{t("escolherPergunta", { nome: escolhida.nome })}</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={estiloBotao}
+              onClick={() => (enviar(escolhida.id, "escolhida", true), setEscolha(null))}
+            >
+              {t("escolherEDescartar")}
+            </button>
+            <button
+              type="button"
+              className="border-border text-text rounded-md border px-3 py-2 text-sm"
+              onClick={() => (enviar(escolhida.id, "escolhida"), setEscolha(null))}
+            >
+              {t("escolherEManter")}
+            </button>
+            <button type="button" className="text-muted text-sm" onClick={() => setEscolha(null)}>
+              {t("cancelar")}
+            </button>
+          </div>
+        </div>
       )}
-      {nova === "descartada" && situacao !== "descartada" && (
-        <span className="text-warning text-xs">{t("avisoDescarte")}</span>
+      {cartoes.length === 0 ? (
+        <p className="text-muted text-sm">{t("funilVazio")}</p>
+      ) : (
+        <div className={`-mx-1 flex gap-3 overflow-x-auto pb-2 ${movendo ? "opacity-70" : ""}`}>
+          {FUNIL.map((coluna) => {
+            const daColuna = cartoes.filter((c) => c.situacao === coluna);
+            return (
+              <section
+                key={coluna}
+                aria-label={tf(coluna)}
+                onDragOver={(e) => {
+                  if (!podeEditar || !arrastado) return;
+                  e.preventDefault();
+                  setSobre(coluna);
+                }}
+                onDragLeave={() => setSobre((x) => (x === coluna ? null : x))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setSobre(null);
+                  if (arrastado) mover(arrastado, coluna);
+                  setArrastado(null);
+                }}
+                className={`bg-background w-56 shrink-0 rounded-lg border p-2 ${sobre === coluna ? "border-primary" : "border-border"}`}
+              >
+                <h3 className="text-muted mb-2 flex items-center justify-between px-1 text-xs font-semibold tracking-wide uppercase">
+                  {tf(coluna)}
+                  <span className="text-muted font-normal">{daColuna.length}</span>
+                </h3>
+                <ul className="flex min-h-16 flex-col gap-2">
+                  {daColuna.map((c) => (
+                    <li
+                      key={c.id}
+                      draggable={podeEditar}
+                      onDragStart={(e) => {
+                        setArrastado(c.id);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragEnd={() => setArrastado(null)}
+                      className={`border-border bg-surface rounded-md border p-2 text-sm shadow-sm ${podeEditar ? "cursor-grab" : ""}`}
+                    >
+                      <p className="text-text font-medium">{c.nome}</p>
+                      {c.equipe.length > 0 && (
+                        <p className="text-muted text-xs">{t("equipe", { nomes: c.equipe.join(", ") })}</p>
+                      )}
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        {podeEditar && (
+                          <select
+                            value=""
+                            onChange={(e) => e.target.value && mover(c.id, e.target.value)}
+                            aria-label={t("moverPara", { nome: c.nome })}
+                            className="border-border bg-background text-muted rounded border px-1 py-0.5 text-xs"
+                          >
+                            <option value="">{t("moverParaCurto")}</option>
+                            {FUNIL.filter((x) => x !== c.situacao).map((x) => (
+                              <option key={x} value={x}>
+                                {tf(x)}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {c.historico.length > 0 && (
+                          <button
+                            type="button"
+                            aria-expanded={aberto === c.id}
+                            onClick={() => setAberto((x) => (x === c.id ? null : c.id))}
+                            className="text-primary text-xs"
+                          >
+                            {t("historicoDoCartao", { n: c.historico.length })}
+                          </button>
+                        )}
+                      </div>
+                      {aberto === c.id && (
+                        <ol className="border-border text-muted mt-2 border-t pt-1 text-xs">
+                          {c.historico.map((h, i) => (
+                            <li key={i} className="py-0.5">
+                              {h.de ? `${tf(h.de)} → ` : ""}
+                              {tf(h.para)}
+                              <span className="block">
+                                {[
+                                  h.ator,
+                                  new Date(h.quando).toLocaleString("pt-BR", {
+                                    timeZone: "America/Sao_Paulo",
+                                  }),
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
       )}
-      {nova !== situacao && (
-        <button type="submit" disabled={salvando} className="text-primary text-xs font-medium">
-          {t("aplicar")}
-        </button>
-      )}
-      <Mensagem estado={estado} />
-    </form>
+    </div>
   );
 }
 

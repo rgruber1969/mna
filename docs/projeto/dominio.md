@@ -283,10 +283,15 @@ Regras do item 8 (questionário `perguntas-negocios.md`, respondido em
   participantes só sai depois deles; papel e tipo de operação em uso não
   podem ser excluídos.
 * **Andamento do negócio** (respostas N1–N6, 2026-11-19):
-  * **Funil:** Coordenador e administradores mudam a situação de cada
-    compradora; ao marcar "Escolhida", o sistema oferece descartar as
-    demais. **Descartada perde o acesso na hora**, com a sua equipe; se
-    voltar ao funil, os acessos voltam como estavam.
+  * **Funil de compradoras** (ajuste de 2026-11-19): aba em kanban no
+    negócio (colunas = situações; arrastar o cartão muda a situação; cada
+    cartão mostra a equipe e o histórico de mudanças). Move o funil quem
+    está do **lado vendedor** e tem a permissão "Funil de compradoras ×
+    editar" (padrão: Coordenador, Advogado e Advisor; Representante só vê).
+    Ao escolher, o sistema oferece descartar as demais. **Descartada perde o
+    acesso na hora**, com a sua equipe; se voltar ao funil, os acessos
+    voltam como estavam. No kanban de negócios (item 15), o cartão na etapa
+    Prospecção mostrará o resumo do funil.
   * **Exclusividade:** com a compradora escolhida; início e duração (ou
     data de fim); **prorrogações** com histórico (de, para, motivo). Avisos
     (sino e e-mail) ao lado vendedor no início, no último dia e com as

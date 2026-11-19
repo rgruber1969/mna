@@ -246,6 +246,7 @@
         "cadastros": "Cadastros gerais",
         "auditoria": "Auditoria",
         "deal": "Negócio e participantes",
+        "funil": "Funil de compradoras",
         "etapas": "Etapas",
         "documentos": "Documentos",
         "tarefas": "Tarefas",
@@ -258,7 +259,8 @@
         "deals": "A lista mostra só os negócios em que a pessoa participa.",
         "cadastros": "Etapas padrão, catálogo de documentos, templates e papéis de empresa.",
         "documentos": "Só nas versões a que a pessoa recebeu acesso de quem as enviou.",
-        "mensagens": "Mensagens são imutáveis."
+        "mensagens": "Mensagens são imutáveis.",
+        "funil": "Só para quem está do lado vendedor do negócio."
       }
     },
     "identidade": {

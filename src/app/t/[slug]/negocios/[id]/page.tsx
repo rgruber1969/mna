@@ -26,8 +26,8 @@ import {
   FormIncluirParticipante,
 } from "@/components/negocios/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { FormFunil, PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
-import { andamentoDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
+import { KanbanDoFunil, PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
+import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
@@ -74,6 +74,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
     n.podeGerirParticipantes ? opcoesDeParticipantes(acesso, n.id) : null,
     andamentoDoNegocio(acesso, n.id),
   ]);
+  const funil = await funilDoNegocio(acesso, n.id);
   if (!andamento) notFound();
   const hoje = hojeEmSaoPaulo();
   const temEscolhida = n.empresas.some((e) => e.situacaoFunil === "escolhida");
@@ -119,6 +120,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
             inicial={await aba}
             abas={[
               { id: "resumo", rotulo: t("abaResumo") },
+              ...(funil ? [{ id: "funil", rotulo: `${t("abaFunil")} (${funil.cartoes.length})` }] : []),
               { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
               { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
               ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)
@@ -179,9 +181,6 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
-                      {n.podeEditar && e.situacaoFunil && (
-                        <FormFunil dealId={n.id} id={e.id} situacao={e.situacaoFunil} nome={e.nome} />
-                      )}
                     </span>
                     {n.podeEditar && (
                       <BotaoDeAcao
@@ -241,6 +240,11 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                 />
               )}
             </PainelDeAba>
+            {funil && (
+              <PainelDeAba id="funil">
+                <KanbanDoFunil dealId={n.id} cartoes={funil.cartoes} podeEditar={funil.podeEditar} />
+              </PainelDeAba>
+            )}
             <PainelDeAba id="exclusividade">
               <PainelExclusividade
                 dealId={n.id}

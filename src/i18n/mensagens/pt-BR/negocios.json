@@ -86,7 +86,8 @@
       "confirmarExcluir": "Excluir o negócio {nome}? Esta ação não pode ser desfeita.",
       "ajuda": "Dados, empresas e participantes do negócio. As demais abas (etapas, documentos, tarefas etc.) aparecem quando existirem.",
       "abaExclusividade": "Exclusividade",
-      "abaHistorico": "Histórico"
+      "abaHistorico": "Histórico",
+      "abaFunil": "Funil de compradoras"
     },
     "empresas": {
       "contratante": "contratante",
@@ -202,10 +203,6 @@
       "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula."
     },
     "andamento": {
-      "situacaoNoFunilDe": "Situação de {nome} no funil",
-      "descartarOutras": "Marcar as demais compradoras como Descartadas?",
-      "avisoDescarte": "A compradora e a equipe dela perdem o acesso na hora.",
-      "aplicar": "Aplicar",
       "situacaoTitulo": "Situação do negócio",
       "soConsulta": "Negócio concluído ou encerrado: só para consulta.",
       "suspender": "Suspender",
@@ -238,7 +235,19 @@
       "prorrogada": "Prorrogada de {de} para {para}",
       "prorrogar": "Prorrogar",
       "novoFim": "Novo fim",
-      "motivoOpcional": "Motivo (opcional)"
+      "motivoOpcional": "Motivo (opcional)",
+      "funilExplicacao": "Arraste cada compradora para a coluna da situação dela (ou use \"Mover para\"). Descartada perde o acesso na hora, com a equipe dela.",
+      "funilSoLeitura": "Situação de cada compradora no funil.",
+      "funilVazio": "Nenhuma compradora no negócio. Inclua empresas com o papel \"Compradora\" na aba Empresas.",
+      "confirmarDescarte": "Descartar {nome}? A compradora e a equipe dela perdem o acesso na hora.",
+      "escolherTitulo": "Compradora escolhida",
+      "escolherPergunta": "{nome} passa a ser a escolhida. Marcar as demais compradoras como Descartadas?",
+      "escolherEDescartar": "Sim, descartar as demais",
+      "escolherEManter": "Não, manter as demais",
+      "equipe": "Equipe: {nomes}",
+      "moverPara": "Mover {nome} para",
+      "moverParaCurto": "Mover para…",
+      "historicoDoCartao": "Histórico ({n})"
     },
     "historico": {
       "nenhum": "Nenhum evento registrado.",
