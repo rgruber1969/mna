@@ -25,6 +25,9 @@ registrado.
 - [x] **6. Valuation**: respondido em `perguntas-valuation.md` e
       incorporado a `dominio.md` (valuation, ofertas, catálogo de
       documentos), `escopo-v1.md` (itens 12, 18 e 32) e `backlog-futuro.md`.
+- [x] **7. Negócios (item 8)**: respondido em `perguntas-negocios.md` e
+      incorporado a `dominio.md` (negócio, empresa, tela principal) e
+      `perfis-e-permissoes.md` (coordenador inclui pessoas).
 
 ## Para completar na V1
 

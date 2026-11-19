@@ -60,10 +60,16 @@ Regras do cadastro (questionário `perguntas-empresas-pessoas.md`, 2026-11-18):
   da Receita (razão social, endereço, CNAE e quadro de sócios); os sócios
   aparecem como sugestão de pessoas, confirmadas uma a uma. Ao digitar o
   CEP, o endereço é preenchido (empresas e pessoas).
-* **Grupo econômico:** cadastro simples de grupos (nome); cada empresa pode
-  pertencer a um grupo, sem hierarquia na V1. **Um deal pode estar
-  associado a uma empresa, ao grupo inteiro ou a algumas empresas do
-  grupo** (regra para o item 8).
+* **Grupo econômico:** cadastro simples de grupos (nome e **logo**); cada
+  empresa pode pertencer a um grupo, sem hierarquia na V1. **Um deal pode
+  estar associado a uma empresa, ao grupo inteiro ou a algumas empresas do
+  grupo** (campo "Objeto" do deal, abaixo).
+* **Logo da empresa** (decidido em 2026-11-19): no cadastro da empresa, não
+  no deal; o grupo econômico também tem logo (ex.: RGBsys e HTEC, sem logo
+  próprio, vendidas juntas usam o logo do Grupo RGBtec).
+* **Anexos e cadastro a partir de documento** (item 34, ADR-0021):
+  documentos da empresa e da pessoa anexados ao cadastro, criptografados;
+  um PDF pode ser lido para propor empresas, sócios e vínculos.
 * **Sem duplicidade:** CNPJ único por tenant (o sistema avisa e leva ao
   cadastro existente). Cada tenant tem o seu cadastro.
 * **Empresa do contratante:** criada automaticamente com o tenant, com uma
@@ -169,12 +175,87 @@ banco e estes documentos). Pontos-chave:
   * **Mesma empresa nos dois lados do mesmo deal** (conflito de interesse):
     **bloqueado**: uma empresa só pode estar em um dos lados de cada deal.
 * Contém etapas, documentos, tarefas e contratos de serviço.
-* **Logomarca da empresa vendedora** pode ser enviada no próprio deal (usada
-  no e-book e no OnePager). A marca do sistema continua a do tenant (white
-  label).
 * Deal encerrado continua acessível para consulta.
 * **Histórico do deal** visível a partir do cartão (kanban) ou da linha
   (tabela).
+
+Regras do item 8 (questionário `perguntas-negocios.md`, respondido em
+2026-11-19):
+
+* **Campos:** número, nome interno, **codinome**, tipo de operação, lado do
+  contratante (vendedor ou comprador), **objeto**, data de início, previsão
+  de fechamento (opcional), valor estimado (opcional, em reais) e descrição.
+* **Número:** sequencial e automático por tenant (N-0001, N-0002…).
+* **Nome que aparece:** todos veem **número + codinome** (ex.: "N-0001
+  Projeto Gadol"); o nome interno, que pode citar a vendedora, só para quem
+  já pode ver a vendedora. **E-mails sempre com número + codinome.**
+* **Tipo de operação:** cadastro auxiliar editável pelo tenant, começando
+  com aquisição total, aquisição parcial (com percentual), fusão,
+  incorporação e investimento (aporte); serve para filtro, relatório e
+  e-book.
+* **Objeto:** "Empresas específicas" ou "Grupo econômico" (escolhendo o
+  grupo, que entra com as suas empresas; cada uma mantém papel e rateio).
+  **Logo usado no deal** (e-book, OnePager): o do grupo, quando o objeto é
+  o grupo; senão, o da vendedora (com várias, escolhe-se qual). Vem do
+  cadastro, não é enviado no deal. A marca do sistema continua a do tenant.
+* **Quem cria:** quem tem "Negócios × criar" (perfis Gestor e Equipe do
+  contratante), e entra como Coordenador do deal; usuários externos nunca
+  criam deals. A empresa do contratante entra automaticamente, com o papel
+  vindo do lado do contratante, e quem criou entra representando-a.
+* **Situação:** Em andamento, Suspenso, Concluído e Encerrado sem conclusão
+  (com motivo: desistência da vendedora, da compradora, preço, diligência,
+  outro). Concluído e encerrado ficam só para consulta; reabrir só por
+  administradores do tenant, com auditoria. A etapa vem das etapas (item
+  9), não da situação.
+* **Exclusão:** só sem documentos, tarefas e mensagens, por quem tem
+  "Negócios × excluir", com auditoria; depois disso, só encerrar.
+* **Compradoras potenciais:** o papel "Compradora" pode ser dado a várias
+  empresas, cada uma com a **situação no funil**: Prospectada → Teaser
+  enviado → NDA assinado → Proposta recebida → **Escolhida** ou Descartada.
+  Cada uma só vê o que lhe for liberado, nunca as outras compradoras.
+  * **Descartada que volta** com nova proposta: volta para "Proposta
+    recebida" **no mesmo deal**; cada proposta é um registro próprio em
+    Ofertas e o histórico guarda as mudanças de situação.
+  * **Antes do NDA** (Prospectada, Teaser enviado), as pessoas da
+    compradora entram no sistema, mas veem o deal **só pelo codinome**, sem
+    nome, CNPJ nem logo da vendedora; depois do NDA, passam a ver.
+* **Período de exclusividade da escolhida:** início e duração em dias (ou
+  data de fim); alertas ao lado vendedor (coordenador e participantes da
+  vendedora) no início, no fim e com antecedência configurada pelo
+  administrador do tenant nas configurações gerais (padrão: 15 e 5 dias
+  antes); **linha do tempo do período na tela principal** para o lado
+  vendedor.
+* **Participantes:** incluir e remover pessoas do deal: administradores do
+  tenant e o **Coordenador do deal**, com auditoria e aviso por e-mail. (No
+  cadastro geral de pessoas, vale a permissão "Empresas e pessoas".)
+  * **Pessoa sem usuário** participa como **contato** (sem perfil; pode ser
+    responsável por tarefa fora do sistema); ao aceitar convite, recebe o
+    perfil sugerido pelo papel, confirmado pelo administrador ou
+    coordenador.
+  * **Alcance:** nesta entrega só "deal inteiro"; por etapas com o item 9.
+  * **Prazo da participação** (opcional): ao vencer, o acesso acaba sozinho
+    e o coordenador é avisado; prazos aparecem no painel de alertas da tela
+    principal.
+  * **Ao remover:** o que a pessoa fez continua, com o nome dela; tarefas
+    abertas dela ficam "sem responsável" para o coordenador redistribuir; o
+    acesso acaba na hora.
+* **Lista:** número, codinome (ou nome interno, para quem pode ver),
+  vendedora(s), compradora escolhida, papel do contratante, situação, etapa,
+  coordenador e início; filtros por situação, lado e tipo; busca por nome,
+  codinome, número ou empresa. Cada pessoa vê só os deals em que participa
+  (administradores veem todos).
+* **Tela do deal:** cabeçalho (número, nome, situação, etapa) e abas
+  Resumo, Empresas e Participantes; as demais (Etapas, Documentos, Tarefas,
+  Mensagens, Contratos, Valuation, E-book, Ofertas, Histórico) aparecem
+  quando existirem. Entra na busca do cabeçalho.
+* **Histórico:** eventos de auditoria do deal em linguagem simples,
+  respeitando o que a pessoa pode ver.
+* **Avisos** (sino e e-mail): pessoa incluída (com link); pessoa removida
+  (só no sino); mudança de situação para Suspenso, Concluído ou Encerrado;
+  **troca de etapa**; e eventos de prazo: início e fim da exclusividade,
+  vencimento do prazo de participação etc.
+* **API:** junto com as chaves de API (itens 25 e 26). **Sem dados de
+  demonstração** por enquanto (o responsável cadastra um caso real).
 
 ### Valuation
 
@@ -395,6 +476,9 @@ Etapas padrão:
 * Minhas tarefas, tarefas que aguardam outros, prazos da semana, status de
   cada deal em que participo.
 * **Bloco com as últimas mensagens** do usuário.
+* **Painel de alertas de prazo** (decidido em 2026-11-19): prazos de
+  participação (ex.: acesso do auditor), período de exclusividade (com
+  linha do tempo para o lado vendedor) e demais prazos.
 
 ### Mensageria e avisos
 

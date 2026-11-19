@@ -180,8 +180,10 @@ enviar documento ou nova versão.
   concluir as próprias tarefas.
 * Valuation no deal segue a visibilidade definida pelo criador (fora da
   matriz).
-* Incluir e remover pessoas do deal: só administradores do tenant na V1;
-  o "E" do Coordenador em "Deal e participantes" edita os dados do deal.
+* Incluir e remover pessoas do deal: administradores do tenant e o
+  **Coordenador do deal** (decidido em 2026-11-19), com auditoria e aviso;
+  o "E" do Coordenador em "Deal e participantes" também edita os dados do
+  deal.
 * "Auditor" cobre as diligências (contábil, jurídica, trabalhista etc.),
   normalmente com alcance só na subetapa da sua diligência.
 

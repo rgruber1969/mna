@@ -48,7 +48,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
   {
     codigo: "usuario-externo",
     descricao:
-      "Para clientes, compradores e parceiros: vê o painel e a lista dos negócios em que participa; o que faz em cada negócio depende do perfil que recebe nele.",
+      "Para clientes, compradores e parceiros: vê o painel e a lista dos negócios em que participa, sem criar negócios; o que faz em cada negócio depende do perfil que recebe nele.",
     nome: "Usuário externo",
     camada: "tenant",
     matriz: { painel: V, deals: V },

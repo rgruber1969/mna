@@ -169,6 +169,13 @@
       "when": 1795078253173,
       "tag": "0023_anexos_do_cadastro",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795080089394,
+      "tag": "0024_perfil_externo_sem_criar",
+      "breakpoints": true
     }
   ]
 }
