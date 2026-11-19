@@ -1,12 +1,4 @@
 {
-  "comum": {
-    "salvar": "Salvar",
-    "cancelar": "Cancelar",
-    "excluir": "Excluir",
-    "fechar": "Fechar",
-    "verTodas": "Ver todas",
-    "nadaEncontrado": "Nada encontrado."
-  },
   "menu": {
     "rotulo": "Menu",
     "grupos": {
