@@ -29,6 +29,7 @@ import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { KanbanDoFunil, PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
 import { etapasDoNegocio, opcoesDeAlcance } from "@/server/services/etapas";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
+import { HistoricoPaginado } from "@/components/negocios/historico";
 import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -278,29 +279,19 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
               />
             </PainelDeAba>
             <PainelDeAba id="historico">
-              {andamento.historico.length === 0 ? (
-                <p className="text-muted text-sm">{th("nenhum")}</p>
-              ) : (
-                <ul className="divide-border divide-y text-sm">
-                  {andamento.historico.map((h, i) => (
-                    <li key={i} className="py-2">
-                      <span>
-                        {th.has(`tipos.${h.tipo.replaceAll(".", "_")}`)
-                          ? th(
-                              `tipos.${h.tipo.replaceAll(".", "_")}`,
-                              traduzirParametros(h.tipo, h.parametros, ts, tf),
-                            )
-                          : h.tipo}
-                      </span>
-                      <span className="text-muted block text-xs">
-                        {[h.ator, h.quando.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <HistoricoPaginado
+                eventos={andamento.historico.map((h) => ({
+                  texto: th.has(`tipos.${h.tipo.replaceAll(".", "_")}`)
+                    ? th(
+                        `tipos.${h.tipo.replaceAll(".", "_")}`,
+                        traduzirParametros(h.tipo, h.parametros, ts, tf),
+                      )
+                    : h.tipo,
+                  detalhe: [h.ator, h.quando.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })]
+                    .filter(Boolean)
+                    .join(" · "),
+                }))}
+              />
             </PainelDeAba>
           </Abas>
         </Cartao>

@@ -738,5 +738,12 @@ describe("etapas padrão", () => {
     });
     expect(await excluirEtapaPadrao(a, criada.id)).toEqual({ ok: true });
     expect((await listarEtapasPadrao(a)).some((e) => e.nome === "Diligência → QPA")).toBe(false);
+    // Nova escala no padrão vale nos negócios em que a etapa não foi ajustada à mão.
+    const pos = (await listarEtapasPadrao(a)).find((e) => e.nome === "Pós-closing")!;
+    expect(await salvarEtapaPadrao(a, { id: pos.id, nome: pos.nome, escala: "10" })).toEqual({ ok: true });
+    const doNegocio = (await etapasDoNegocio(acesso("gestor"), negocioId))!.etapas.find(
+      (e) => e.nome === "Pós-closing",
+    );
+    expect(doNegocio?.escala).toBe(10);
   });
 });

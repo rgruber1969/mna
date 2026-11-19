@@ -373,11 +373,40 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
   };
   const hojeEmPos = dia(hoje) >= min && dia(hoje) <= max ? pos(hoje) : null;
   const brDe = (x: number) => br(new Date(x).toISOString().slice(0, 10));
+  // Marcas do eixo: início e fim, o início de cada etapa e hoje, sem sobrepor (8% de folga).
+  const candidatas = [
+    min,
+    max,
+    ...etapas
+      .map((e) => inicio(e))
+      .filter((d): d is string => Boolean(d))
+      .map(dia),
+  ];
+  const marcas: { x: number; p: number }[] = [];
+  for (const x of [...new Set(candidatas)].sort((a, b) => a - b)) {
+    const p = (visual(x) / total) * 100;
+    const ultima = marcas[marcas.length - 1];
+    if (ultima && p - ultima.p < 8) {
+      if (x === max) marcas[marcas.length - 1] = { x, p };
+      continue;
+    }
+    marcas.push({ x, p });
+  }
   return (
     <div>
-      <div className="text-muted mb-1 flex justify-between pl-[38%] text-xs">
-        <span>{brDe(min)}</span>
-        <span>{brDe(max)}</span>
+      <div className="flex gap-2 text-xs">
+        <span className="w-[38%] shrink-0" />
+        <span className="text-muted relative mb-1 h-4 flex-1">
+          {marcas.map(({ x, p }) => (
+            <span
+              key={x}
+              className="absolute whitespace-nowrap"
+              style={{ left: `${p}%`, transform: `translateX(${p > 92 ? "-100%" : p < 8 ? "0" : "-50%"})` }}
+            >
+              {brDe(x)}
+            </span>
+          ))}
+        </span>
       </div>
       <ul className="space-y-1.5">
         {linhas.map(({ e, sub }) => {
@@ -395,6 +424,13 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
                 )}
               </span>
               <span className="bg-background relative h-4 flex-1 rounded">
+                {marcas.map(({ x, p }) => (
+                  <span
+                    key={x}
+                    className="bg-border absolute top-0 bottom-0 w-px opacity-60"
+                    style={{ left: `${p}%` }}
+                  />
+                ))}
                 {hojeEmPos !== null && (
                   <span
                     className="bg-accent absolute top-0 bottom-0 w-px"

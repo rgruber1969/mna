@@ -153,12 +153,22 @@ export async function salvarEtapaPadrao(
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     if (dados.id) {
       if (!uuidValido(dados.id)) return { erro: "etapas.erros.naoEncontrada" };
-      const feito = await tx
+      const [antes] = await tx
+        .select({ escala: etapaPadrao.escala })
+        .from(etapaPadrao)
+        .where(eq(etapaPadrao.id, dados.id));
+      if (!antes) return { erro: "etapas.erros.naoEncontrada" };
+      await tx
         .update(etapaPadrao)
         .set({ nome: nome.data, ...(escala !== undefined ? { escala } : {}) })
-        .where(eq(etapaPadrao.id, dados.id))
-        .returning({ id: etapaPadrao.id });
-      return feito.length ? { ok: true } : { erro: "etapas.erros.naoEncontrada" };
+        .where(eq(etapaPadrao.id, dados.id));
+      // A nova escala vale também nos negócios em que ela não foi ajustada à mão.
+      if (escala !== undefined && escala !== antes.escala)
+        await tx
+          .update(dealEtapa)
+          .set({ escala })
+          .where(and(eq(dealEtapa.etapaPadraoId, dados.id), eq(dealEtapa.escala, antes.escala)));
+      return { ok: true };
     }
     if (paiId) {
       const [pai] = await tx

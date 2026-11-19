@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useId, type ReactNode } from "react";
+import { Fragment, useId, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
   excluirPapelAcao,
@@ -186,33 +186,43 @@ export function TabelaDePapeis({
     { lado: "comprador", titulo: t("ladoComprador") },
     { lado: "", titulo: t("semLado") },
   ];
+  const [lado, setLado] = useState("vendedor");
+  const doGrupo = papeis.filter((p) => (p.lado ?? "") === lado);
   return (
     <div>
       <p className="text-muted mb-3 text-sm">{t("papeisExplicacao")}</p>
-      {grupos.map((g) => {
-        const doGrupo = papeis.filter((p) => (p.lado ?? "") === g.lado);
-        if (doGrupo.length === 0 && g.lado === "") return null;
-        return (
-          <section key={g.lado}>
-            <h3 className="text-accent mb-1 text-xs font-semibold tracking-widest uppercase">{g.titulo}</h3>
-            <Tabela colunas={[t("nome"), t("perfilSugerido"), t("lado"), t("acoes")]}>
-              {doGrupo.map((p) => (
-                <LinhaPapel
-                  key={p.id}
-                  papel={p}
-                  perfis={perfis}
-                  podeEditar={podeEditar}
-                  podeExcluir={podeExcluir}
-                  lado={g.lado}
-                />
-              ))}
-              {podeCriar && g.lado !== "" && (
-                <LinhaPapel perfis={perfis} podeEditar podeExcluir={false} lado={g.lado} />
-              )}
-            </Tabela>
-          </section>
-        );
-      })}
+      <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label={t("lado")}>
+        {grupos.map((g) => {
+          const n = papeis.filter((p) => (p.lado ?? "") === g.lado).length;
+          return (
+            <button
+              key={g.lado}
+              type="button"
+              role="tab"
+              aria-selected={lado === g.lado}
+              onClick={() => setLado(g.lado)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${lado === g.lado ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted"}`}
+            >
+              {g.titulo} ({n})
+            </button>
+          );
+        })}
+      </div>
+      <Tabela colunas={[t("nome"), t("perfilSugerido"), t("lado"), t("acoes")]}>
+        {doGrupo.map((p) => (
+          <LinhaPapel
+            key={p.id}
+            papel={p}
+            perfis={perfis}
+            podeEditar={podeEditar}
+            podeExcluir={podeExcluir}
+            lado={lado}
+          />
+        ))}
+        {podeCriar && (
+          <LinhaPapel key={`novo-${lado}`} perfis={perfis} podeEditar podeExcluir={false} lado={lado} />
+        )}
+      </Tabela>
     </div>
   );
 }

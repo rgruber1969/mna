@@ -283,7 +283,12 @@
         "negocio_etapa_editada": "Etapa \"{etapa}\" alterada",
         "negocio_etapa_incluida": "Etapa \"{etapa}\" incluída",
         "negocio_etapa_removida": "Etapa \"{etapa}\" removida"
-      }
+      },
+      "paginas": "Páginas do histórico",
+      "intervalo": "{de}–{ate} de {total}",
+      "anterior": "‹ Anterior",
+      "proxima": "Próxima ›",
+      "paginaDe": "Página {pagina} de {paginas}"
     },
     "configuracoes": {
       "titulo": "Configurações gerais",
