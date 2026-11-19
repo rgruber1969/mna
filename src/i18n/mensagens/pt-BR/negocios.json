@@ -97,7 +97,8 @@
       "abaEtapas": "Etapas",
       "etapaAtual": "Etapa: {etapa}",
       "etapaComParalelas": "Etapa: {etapa} (+{n} em paralelo)",
-      "abaDocumentos": "Documentos"
+      "abaDocumentos": "Documentos",
+      "abaTarefas": "Tarefas"
     },
     "empresas": {
       "contratante": "contratante",
@@ -216,7 +217,8 @@
       "semExclusividade": "Este negócio não tem exclusividade definida.",
       "prorrogacaoAntes": "A nova data precisa ser depois do fim atual.",
       "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula.",
-      "escolhaEtapas": "Escolha ao menos uma etapa para o alcance."
+      "escolhaEtapas": "Escolha ao menos uma etapa para o alcance.",
+      "diasDeLembreteInvalidos": "Informe de 1 a 5 números de dias, entre 0 e 60, separados por vírgula."
     },
     "andamento": {
       "situacaoTitulo": "Situação do negócio",
@@ -289,7 +291,11 @@
         "negocio_etapa_incluida": "Etapa \"{etapa}\" incluída",
         "negocio_etapa_removida": "Etapa \"{etapa}\" removida",
         "documento_enviado": "Documento \"{titulo}\" enviado (versão {versao})",
-        "documento_versao_excluida": "Versão {versao} de \"{titulo}\" excluída"
+        "documento_versao_excluida": "Versão {versao} de \"{titulo}\" excluída",
+        "negocio_tarefa_criada": "Tarefa \"{titulo}\" criada",
+        "negocio_tarefa_editada": "Tarefa \"{titulo}\" alterada",
+        "negocio_tarefa_situacao": "Tarefa \"{titulo}\": {para}",
+        "negocio_tarefa_excluida": "Tarefa \"{titulo}\" excluída"
       },
       "paginas": "Páginas do histórico",
       "intervalo": "{de}–{ate} de {total}",
@@ -301,9 +307,11 @@
       "titulo": "Configurações gerais",
       "sobre": "Administração",
       "ajuda": "Regras gerais do tenant, definidas pelos administradores.",
-      "diasAviso": "Avisos antes do fim da exclusividade (dias)",
+      "diasAviso": "Prazos de notificações — avisos antes do fim da exclusividade (dias)",
       "diasAvisoAjuda": "Ex.: \"15, 5\": o lado vendedor é avisado 15 e 5 dias antes do fim, além do início e do último dia.",
-      "salvar": "Salvar"
+      "salvar": "Salvar",
+      "diasTarefa": "Lembretes de tarefa (dias antes do prazo)",
+      "diasTarefaAjuda": "Ex.: \"2, 0\": os responsáveis são lembrados 2 dias antes e no dia do prazo."
     },
     "kanban": {
       "aIniciar": "A iniciar",

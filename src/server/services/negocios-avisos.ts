@@ -19,7 +19,8 @@ export type TipoDeAvisoPorEmail =
   | "exclusividadeInicio"
   | "exclusividadeAviso"
   | "exclusividadeFim"
-  | "participacaoVencida";
+  | "participacaoVencida"
+  | "tarefaPrazo";
 
 export async function avisarPorEmail(
   a: { tenant: { id: string; slug: string } },

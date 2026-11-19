@@ -57,6 +57,8 @@ export const tenant = pgTable("tenant", {
   icone: text("icone"),
   /** Configurações gerais do tenant: dias de antecedência dos avisos de fim da exclusividade. */
   diasAvisoExclusividade: jsonb("dias_aviso_exclusividade").$type<number[]>().notNull().default([15, 5]),
+  /** Dias antes do prazo para lembrar os responsáveis por uma tarefa (0 = no dia). */
+  diasLembreteTarefa: jsonb("dias_lembrete_tarefa").$type<number[]>().notNull().default([2, 0]),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -1041,4 +1043,93 @@ export const versaoAcesso = pgTable(
     index("versao_acesso_versao_idx").on(t.tenantId, t.versaoId),
     isolamento(),
   ],
+).enableRLS();
+
+// --- Tarefas (item 27; dominio.md, "Tarefas e pendências"; respostas T1–T5) ---
+
+/** Tarefa de um negócio (opcionalmente de uma etapa ou subetapa). */
+export const tarefa = pgTable(
+  "tarefa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    etapaId: uuid("etapa_id").references(() => dealEtapa.id, { onDelete: "set null" }),
+    titulo: text("titulo").notNull(),
+    descricao: text("descricao"),
+    /** baixa, normal, alta ou urgente (só para ordenar e filtrar). */
+    prioridade: text("prioridade")
+      .$type<"baixa" | "normal" | "alta" | "urgente">()
+      .notNull()
+      .default("normal"),
+    prazo: date("prazo"),
+    situacao: text("situacao")
+      .$type<"a_fazer" | "andamento" | "aguardando" | "concluida" | "cancelada">()
+      .notNull()
+      .default("a_fazer"),
+    /** Lado de quem criou: a tarefa é vista por esse lado, pelos responsáveis e pelos administradores. */
+    lado: text("lado").$type<"vendedor" | "comprador">(),
+    concluidaPor: uuid("concluida_por").references(() => usuario.id, { onDelete: "set null" }),
+    concluidaEm: timestamp("concluida_em", { withTimezone: true }),
+    /** Gerada por gatilho automático (simulado na V1). */
+    automatica: boolean("automatica").notNull().default(false),
+    lembretesEnviados: jsonb("lembretes_enviados").$type<string[]>().notNull().default([]),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("tarefa_deal_idx").on(t.tenantId, t.dealId, t.situacao), isolamento()],
+).enableRLS();
+
+/** Responsável pela tarefa: um usuário ou um perfil (todos com aquele perfil no negócio). */
+export const tarefaResponsavel = pgTable(
+  "tarefa_responsavel",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    tarefaId: uuid("tarefa_id")
+      .notNull()
+      .references(() => tarefa.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id").references(() => usuario.id, { onDelete: "cascade" }),
+    perfilId: uuid("perfil_id").references(() => perfil.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    check("tarefa_responsavel_alvo_ck", sql`(usuario_id is null) <> (perfil_id is null)`),
+    index("tarefa_responsavel_tarefa_idx").on(t.tenantId, t.tarefaId),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Item do checklist da tarefa. */
+export const tarefaItem = pgTable(
+  "tarefa_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    tarefaId: uuid("tarefa_id")
+      .notNull()
+      .references(() => tarefa.id, { onDelete: "cascade" }),
+    texto: text("texto").notNull(),
+    feito: boolean("feito").notNull().default(false),
+    ordem: integer("ordem").notNull(),
+  },
+  (t) => [index("tarefa_item_tarefa_idx").on(t.tenantId, t.tarefaId), isolamento()],
+).enableRLS();
+
+/** Documento do data room ligado à tarefa. */
+export const tarefaDocumento = pgTable(
+  "tarefa_documento",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    tarefaId: uuid("tarefa_id")
+      .notNull()
+      .references(() => tarefa.id, { onDelete: "cascade" }),
+    documentoId: uuid("documento_id")
+      .notNull()
+      .references(() => documento.id, { onDelete: "cascade" }),
+  },
+  (t) => [uniqueIndex("tarefa_documento_uq").on(t.tenantId, t.tarefaId, t.documentoId), isolamento()],
 ).enableRLS();

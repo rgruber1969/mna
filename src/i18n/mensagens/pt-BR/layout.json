@@ -66,7 +66,8 @@
       "exclusividade_aviso": "Negócio {negocio}: a exclusividade termina em {dias} dias ({fim})",
       "exclusividade_fim": "Negócio {negocio}: a exclusividade termina hoje",
       "participacao_vencida": "Negócio {negocio}: venceu o prazo de acesso de {pessoa}",
-      "negocio_etapa": "Negócio {negocio}: agora na etapa \"{etapa}\""
+      "negocio_etapa": "Negócio {negocio}: agora na etapa \"{etapa}\"",
+      "tarefa_prazo": "Negócio {negocio}: a tarefa \"{tarefa}\" vence em {prazo}"
     }
   },
   "rodape": {

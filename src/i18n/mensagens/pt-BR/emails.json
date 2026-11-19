@@ -56,6 +56,10 @@
       "participacaoVencida": {
         "assunto": "Negócio {negocio}: venceu o prazo de acesso de {pessoa}",
         "paragrafo": "O prazo de participação de {pessoa} no negócio {negocio} venceu, e o acesso dessa pessoa terminou."
+      },
+      "tarefaPrazo": {
+        "assunto": "Negócio {negocio}: tarefa \"{tarefa}\" vence em {prazo}",
+        "paragrafo": "A tarefa \"{tarefa}\" do negócio {negocio}, de que você é responsável, vence em {prazo}."
       }
     }
   }

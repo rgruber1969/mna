@@ -120,6 +120,12 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   });
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(page.getByRole("button", { name: /Contrato social/ })).toBeVisible({ timeout: 30_000 });
+  // Tarefas: criar uma tarefa e vê-la na lista de abertas.
+  await page.getByRole("tab", { name: /^Tarefas/ }).click();
+  await page.getByRole("button", { name: "Nova tarefa" }).click();
+  await page.getByLabel("Título").fill("Revisar minuta");
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await expect(page.getByRole("button", { name: /Revisar minuta/ })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByText("Negócio criado")).toBeVisible();
   await page.getByRole("tab", { name: /Participantes/ }).click();

@@ -1299,6 +1299,13 @@ export async function removerParticipante(
     )
       return { erro: "negocios.erros.ultimoCoordenador" };
     await tx.delete(participacaoDeal).where(eq(participacaoDeal.id, id));
+    // Sem outra participação no negócio, deixa de ser responsável pelas tarefas dele
+    // (as tarefas ficam "sem responsável" para o Coordenador redistribuir).
+    if (alvo.usuarioId && !todas.some((p) => p.id !== id && p.pessoaId === alvo.pessoaId))
+      await tx.execute(
+        sql`delete from tarefa_responsavel tr using tarefa t
+            where t.id = tr.tarefa_id and t.deal_id = ${dealId} and tr.usuario_id = ${alvo.usuarioId}`,
+      );
     const [n] = await tx
       .select({ numero: deal.numero, codinome: deal.codinome })
       .from(deal)

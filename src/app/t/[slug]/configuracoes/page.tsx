@@ -8,7 +8,7 @@ import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/servi
 import { listarEtapasPadrao } from "@/server/services/etapas";
 import { listarCategorias } from "@/server/services/documentos";
 import { listarTiposDeOperacao } from "@/server/services/negocios";
-import { obterDiasDeAviso } from "@/server/services/negocios-andamento";
+import { obterDiasDeAviso, obterDiasDeLembreteDeTarefa } from "@/server/services/negocios-andamento";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
@@ -35,7 +35,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     pode(acesso, "cadastros", "editar"),
     pode(acesso, "cadastros", "excluir"),
   ]);
-  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias] = await Promise.all([
+  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias, diasTarefa] = await Promise.all([
     acesso.administrador ? obterDiasDeAviso(acesso) : null,
     verCadastros ? listarPapeis(acesso) : [],
     verCadastros ? perfisDeDeal(acesso) : [],
@@ -43,6 +43,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     verCadastros ? listarTiposDeOperacao(acesso) : [],
     verCadastros ? listarEtapasPadrao(acesso) : [],
     verCadastros ? listarCategorias(acesso) : [],
+    acesso.administrador ? obterDiasDeLembreteDeTarefa(acesso) : [],
   ]);
   const permissoes = { podeCriar, podeEditar, podeExcluir };
   return (
@@ -69,7 +70,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
           >
             {dias && (
               <PainelDeAba id="geral">
-                <FormConfiguracoes dias={dias} />
+                <FormConfiguracoes dias={dias} diasTarefa={diasTarefa} />
               </PainelDeAba>
             )}
             {verCadastros && (

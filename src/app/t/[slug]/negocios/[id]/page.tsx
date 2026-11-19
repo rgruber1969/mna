@@ -30,6 +30,8 @@ import { KanbanDoFunil, PainelExclusividade, PainelSituacao } from "@/components
 import { etapasDoNegocio, opcoesDeAlcance } from "@/server/services/etapas";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
+import { TarefasDoNegocio } from "@/components/negocios/tarefas";
+import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { dataRoomDoNegocio } from "@/server/services/documentos";
 import { HistoricoPaginado } from "@/components/negocios/historico";
 import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
@@ -88,11 +90,18 @@ async function Painel({
     andamentoDoNegocio(acesso, n.id),
   ]);
   const funil = await funilDoNegocio(acesso, n.id);
-  const [etapas, alcances, dataRoom] = await Promise.all([
+  const [etapas, alcances, dataRoom, tarefas] = await Promise.all([
     etapasDoNegocio(acesso, n.id),
     n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
     dataRoomDoNegocio(acesso, n.id),
+    tarefasDoNegocio(acesso, n.id),
   ]);
+  const tarefasAbertas = (tarefas?.tarefas ?? []).filter(
+    (x) => !["concluida", "cancelada"].includes(x.situacao),
+  );
+  const tarefasPorEtapa: Record<string, number> = {};
+  for (const x of tarefasAbertas)
+    if (x.etapaId) tarefasPorEtapa[x.etapaId] = (tarefasPorEtapa[x.etapaId] ?? 0) + 1;
   const documentosPorEtapa: Record<string, number> = {};
   for (const d of dataRoom?.documentos ?? [])
     if (d.etapaId) documentosPorEtapa[d.etapaId] = (documentosPorEtapa[d.etapaId] ?? 0) + 1;
@@ -146,6 +155,9 @@ async function Painel({
             abas={[
               { id: "resumo", rotulo: t("abaResumo") },
               ...(etapas ? [{ id: "etapas", rotulo: t("abaEtapas") }] : []),
+              ...(tarefas
+                ? [{ id: "tarefas", rotulo: `${t("abaTarefas")} (${tarefasAbertas.length})` }]
+                : []),
               ...(dataRoom
                 ? [{ id: "documentos", rotulo: `${t("abaDocumentos")} (${dataRoom.documentos.length})` }]
                 : []),
@@ -285,7 +297,13 @@ async function Painel({
                   podeExcluir={etapas.podeExcluir}
                   hoje={hoje}
                   documentosPorEtapa={documentosPorEtapa}
+                  tarefasPorEtapa={tarefasPorEtapa}
                 />
+              </PainelDeAba>
+            )}
+            {tarefas && (
+              <PainelDeAba id="tarefas">
+                <TarefasDoNegocio dealId={n.id} quadro={tarefas} etapaFiltro={(await etapa) ?? ""} />
               </PainelDeAba>
             )}
             {dataRoom && (

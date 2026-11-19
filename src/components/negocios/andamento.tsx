@@ -467,7 +467,7 @@ export function PainelExclusividade({
 }
 
 /** Configurações gerais do tenant: antecedência dos avisos da exclusividade. */
-export function FormConfiguracoes({ dias }: { dias: number[] }) {
+export function FormConfiguracoes({ dias, diasTarefa }: { dias: number[]; diasTarefa: number[] }) {
   const t = useTranslations("negocios.configuracoes");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarDiasDeAvisoAcao);
   return (
@@ -477,6 +477,16 @@ export function FormConfiguracoes({ dias }: { dias: number[] }) {
         <span className="text-text mb-1 block text-sm font-medium">{t("diasAviso")}</span>
         <input name="dias" defaultValue={dias.join(", ")} required className={`${estiloCampo} w-full`} />
         <span className="text-muted mt-1 block text-xs">{t("diasAvisoAjuda")}</span>
+      </label>
+      <label className="mb-3 block">
+        <span className="text-text mb-1 block text-sm font-medium">{t("diasTarefa")}</span>
+        <input
+          name="diasTarefa"
+          defaultValue={diasTarefa.join(", ")}
+          required
+          className={`${estiloCampo} w-full`}
+        />
+        <span className="text-muted mt-1 block text-xs">{t("diasTarefaAjuda")}</span>
       </label>
       <button type="submit" disabled={salvando} className={estiloBotao}>
         {t("salvar")}

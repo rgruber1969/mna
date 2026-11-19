@@ -154,6 +154,7 @@ function LinhaDaEtapa({
   podeIncluir,
   sub = false,
   documentos,
+  tarefas,
 }: {
   dealId: string;
   etapa: Etapa;
@@ -162,6 +163,7 @@ function LinhaDaEtapa({
   podeIncluir: boolean;
   sub?: boolean;
   documentos?: Record<string, number>;
+  tarefas?: Record<string, number>;
 }) {
   const t = useTranslations("etapas");
   const router = useRouter();
@@ -212,11 +214,18 @@ function LinhaDaEtapa({
             <span className={`text-text ${sub ? "text-sm" : "font-medium"}`}>{etapa.nome}</span>
           </span>
           {datas.length > 0 && <span className="text-muted mt-0.5 block text-xs">{datas.join(" · ")}</span>}
-          {documentos && (
-            <a href={`?aba=documentos&etapa=${etapa.id}`} className="text-primary block text-xs">
-              {t("documentosDaEtapa", { n: documentos[etapa.id] ?? 0 })}
-            </a>
-          )}
+          <span className="flex gap-3">
+            {documentos && (
+              <a href={`?aba=documentos&etapa=${etapa.id}`} className="text-primary block text-xs">
+                {t("documentosDaEtapa", { n: documentos[etapa.id] ?? 0 })}
+              </a>
+            )}
+            {tarefas && (
+              <a href={`?aba=tarefas&etapa=${etapa.id}`} className="text-primary block text-xs">
+                {t("tarefasDaEtapa", { n: tarefas[etapa.id] ?? 0 })}
+              </a>
+            )}
+          </span>
           {etapa.observacoes && (
             <span className="text-muted block text-xs whitespace-pre-line">{etapa.observacoes}</span>
           )}
@@ -283,6 +292,7 @@ function LinhaDaEtapa({
             <LinhaDaEtapa
               key={s.id}
               documentos={documentos}
+              tarefas={tarefas}
               dealId={dealId}
               etapa={s}
               irmas={etapa.subetapas}
@@ -500,6 +510,7 @@ export function EtapasDoNegocio({
   podeExcluir,
   hoje,
   documentosPorEtapa,
+  tarefasPorEtapa,
 }: {
   dealId: string;
   etapas: Etapa[];
@@ -508,6 +519,8 @@ export function EtapasDoNegocio({
   hoje: string;
   /** Quantos documentos cada etapa tem (link para a aba Documentos já filtrada). */
   documentosPorEtapa?: Record<string, number>;
+  /** Quantas tarefas abertas cada etapa tem (link para a aba Tarefas já filtrada). */
+  tarefasPorEtapa?: Record<string, number>;
 }) {
   const t = useTranslations("etapas");
   const [vista, setVista] = useState<"lista" | "tempo">("lista");
@@ -534,6 +547,7 @@ export function EtapasDoNegocio({
             <LinhaDaEtapa
               key={e.id}
               documentos={documentosPorEtapa}
+              tarefas={tarefasPorEtapa}
               dealId={dealId}
               etapa={e}
               irmas={etapas}

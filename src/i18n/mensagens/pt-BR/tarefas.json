@@ -1,0 +1,64 @@
+{
+  "tarefas": {
+    "filtros": {
+      "abertas": "Abertas",
+      "minhas": "Minhas",
+      "todas": "Todas"
+    },
+    "todasEtapas": "Todas as etapas",
+    "geral": "Geral (negócio todo)",
+    "novaTarefa": "Nova tarefa",
+    "editarTarefa": "Editar tarefa",
+    "nenhuma": "Nenhuma tarefa aqui.",
+    "tarefa": "Tarefa",
+    "titulo": "Título",
+    "etapa": "Etapa",
+    "prioridade": "Prioridade",
+    "prioridades": {
+      "baixa": "Baixa",
+      "normal": "Normal",
+      "alta": "Alta",
+      "urgente": "Urgente"
+    },
+    "prazo": "Prazo",
+    "descricao": "Descrição (opcional)",
+    "responsaveis": "Responsáveis",
+    "responsaveisAjuda": "Pessoas e/ou perfis. Com um perfil, qualquer pessoa com aquele perfil no negócio pode concluir; fica registrado quem concluiu.",
+    "pessoas": "Pessoas",
+    "perfis": "Perfis",
+    "checklist": "Checklist (opcional)",
+    "checklistAjuda": "Um item por linha.",
+    "checklistResumo": "checklist {feitos}/{total}",
+    "documentosLigados": "Documentos ligados",
+    "situacao": "Situação",
+    "situacaoDe": "Situação de {titulo}",
+    "situacoes": {
+      "a_fazer": "A fazer",
+      "andamento": "Em andamento",
+      "aguardando": "Aguardando terceiros",
+      "concluida": "Concluída",
+      "cancelada": "Cancelada"
+    },
+    "concluidaPor": "por {nome}",
+    "semResponsavel": "Sem responsável",
+    "atrasada": "atrasada",
+    "automatica": "gerada automaticamente",
+    "editar": "Editar",
+    "excluir": "Excluir",
+    "confirmarExcluir": "Excluir a tarefa \"{titulo}\"?",
+    "mensagens": {
+      "criada": "Tarefa criada.",
+      "salva": "Tarefa salva.",
+      "excluida": "Tarefa excluída."
+    },
+    "erros": {
+      "tituloObrigatorio": "Informe o título da tarefa.",
+      "textoLongo": "Texto longo demais.",
+      "dataInvalida": "Data inválida.",
+      "dadosInvalidos": "Dados inválidos.",
+      "naoEncontrada": "Tarefa não encontrada.",
+      "etapaInvalida": "Etapa inválida.",
+      "situacaoInvalida": "Situação inválida."
+    }
+  }
+}

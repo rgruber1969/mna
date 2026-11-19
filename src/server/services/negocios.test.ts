@@ -43,6 +43,7 @@ import {
 import { moverNegocioParaEtapa, quadroDeNegocios } from "./negocios-kanban";
 import { concluirEnvio, dataRoomDoNegocio, excluirVersao, iniciarEnvio, linkDeDownload } from "./documentos";
 import { pdfComTexto } from "@/testes/pdf-de-teste";
+import { criarTarefa, marcarItem, mudarSituacaoDaTarefa, tarefasDoNegocio } from "./tarefas";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -865,6 +866,63 @@ describe("data room", () => {
     expect(ok).toMatchObject({ versaoId: expect.any(String) });
     await expect(enviar("geral.pdf", pdfComTexto(["X"]), "audj", { titulo: "Geral" })).rejects.toBeInstanceOf(
       AcessoNegado,
+    );
+  });
+});
+
+describe("tarefas", () => {
+  it("responsável por perfil só do mesmo lado; checklist; concluir registra quem; lembrete; sem responsável ao remover", async () => {
+    const g = acesso("gestor");
+    const amanha = new Date(Date.now() + 86_400_000).toLocaleDateString("sv-SE", {
+      timeZone: "America/Sao_Paulo",
+    });
+    const advogado = await perfilDeDeal("advogado");
+    const r = await criarTarefa(g, negocioId, {
+      titulo: "Revisar minuta do QPA",
+      descricao: "",
+      etapaId: "",
+      prioridade: "alta",
+      prazo: amanha,
+      perfis: [advogado],
+      checklist: ["Revisar cláusulas", "Enviar comentários"],
+    });
+    if (!("id" in r)) throw new Error(r.erro);
+    const doAdvv = (await tarefasDoNegocio(acesso("advv"), negocioId))!.tarefas.find((x) => x.id === r.id)!;
+    expect(doAdvv.souResponsavel).toBe(true);
+    // O advogado da compradora tem o mesmo perfil, mas a tarefa é do lado vendedor.
+    expect((await tarefasDoNegocio(acesso("adva"), negocioId))!.tarefas.some((x) => x.id === r.id)).toBe(
+      false,
+    );
+    expect(await marcarItem(acesso("advv"), doAdvv.checklist[0].id, true)).toEqual({ ok: true });
+    expect(await mudarSituacaoDaTarefa(acesso("advv"), r.id, "concluida")).toEqual({ ok: true });
+    const concluida = (await tarefasDoNegocio(g, negocioId))!.tarefas.find((x) => x.id === r.id)!;
+    expect(concluida.concluidaPor).toBe("advv");
+    expect(concluida.checklist.map((i) => i.feito)).toEqual([true, false]);
+    // Lembrete: tarefa aberta com prazo amanhã, responsável advv (antecedência padrão 2 e 0 dias).
+    const r2 = await criarTarefa(g, negocioId, {
+      titulo: "Enviar certidões",
+      descricao: "",
+      etapaId: "",
+      prioridade: "normal",
+      prazo: amanha,
+      usuarios: [contas.advv],
+    });
+    if (!("id" in r2)) throw new Error(r2.erro);
+    await enviarAvisosDePrazo({ id: tenantId, slug: `ng-${sufixo}` });
+    const lembretes = async (u: string) =>
+      (
+        await dono.query(
+          `select count(*)::int n from notificacao where usuario_id = $1 and tipo = 'tarefa_prazo'`,
+          [u],
+        )
+      ).rows[0].n;
+    expect(await lembretes(contas.advv)).toBe(1);
+    expect(await lembretes(contas.adva)).toBe(0);
+    // Removido do negócio, deixa de ser responsável: a tarefa fica "sem responsável".
+    const part = (await obterNegocio(g, negocioId))!.participantes.find((p) => p.nome === "advv")!;
+    expect(await removerParticipante(g, negocioId, part.id)).toEqual({ ok: true });
+    expect((await tarefasDoNegocio(g, negocioId))!.tarefas.find((x) => x.id === r2.id)?.semResponsavel).toBe(
+      true,
     );
   });
 });

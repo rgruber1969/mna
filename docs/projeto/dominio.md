@@ -581,6 +581,21 @@ Etapas padrão:
 
 ### Tarefas e pendências
 
+* **Construído (item 27, 2026-11-19):** aba Tarefas no negócio (filtros
+  Abertas, Minhas, Todas e por etapa); título, descrição, etapa ou geral,
+  prioridade, prazo, responsáveis (pessoas e/ou perfis), checklist e
+  documentos do data room ligados; situação (T1) pelo responsável ou por
+  quem edita tarefas na etapa; "concluída por" registrado (T3); atrasada
+  destacada; cada etapa mostra "Tarefas (n abertas)". Lembretes no sino e
+  por e-mail com antecedência configurável (padrão 2 dias e no dia) no bloco
+  de prazos das Configurações (T4). Removido do negócio, a pessoa deixa de
+  ser responsável (a tarefa fica "sem responsável").
+* **Assumido, a confirmar:** a tarefa é vista pelo lado de quem a criou,
+  pelos responsáveis e pelos administradores; responsável por perfil vale
+  só para quem tem o perfil do mesmo lado da tarefa (o perfil "Advogado" do
+  lado vendedor não inclui o advogado da compradora). Ainda não: comentários
+  (com a mensageria) e tarefas automáticas (item 28, simulado).
+
 * Campos: título, descrição, responsáveis, prazo, prioridade,
   etapa/subetapa, documentos ligados, checklist e comentários; atributos
   específicos de deal podem surgir depois.

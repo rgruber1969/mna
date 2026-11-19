@@ -12,6 +12,8 @@ import {
   perfil,
   pessoa,
   prorrogacaoExclusividade,
+  tarefa,
+  tarefaResponsavel,
   tenant,
   usuario,
 } from "@/server/db/esquema";
@@ -300,7 +302,7 @@ export const MOTIVOS_DE_ENCERRAMENTO = [
 async function usuariosDoNegocio(
   tx: Tx,
   dealId: string,
-  filtro?: (p: { lado: string | null; padrao: string | null }) => boolean,
+  filtro?: (p: { lado: string | null; padrao: string | null; perfilId: string }) => boolean,
 ) {
   const linhas = await tx
     .select({
@@ -308,6 +310,7 @@ async function usuariosDoNegocio(
       empresaId: participacaoDeal.empresaId,
       lado: participacaoDeal.lado,
       padrao: perfil.padrao,
+      perfilId: perfil.id,
     })
     .from(participacaoDeal)
     .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
@@ -329,7 +332,10 @@ async function usuariosDoNegocio(
   return [
     ...new Set(
       linhas
-        .filter((l) => !filtro || filtro({ lado: ladoDe(l.empresaId, l.lado), padrao: l.padrao }))
+        .filter(
+          (l) =>
+            !filtro || filtro({ lado: ladoDe(l.empresaId, l.lado), padrao: l.padrao, perfilId: l.perfilId }),
+        )
         .map((l) => l.usuarioId!),
     ),
   ];
@@ -532,13 +538,19 @@ export async function enviarAvisosDePrazo(
 ): Promise<number> {
   const hoje = opcoes.hoje ?? hojeEmSaoPaulo();
   const [conf] = await banco()
-    .select({ dias: tenant.diasAvisoExclusividade })
+    .select({ dias: tenant.diasAvisoExclusividade, diasTarefa: tenant.diasLembreteTarefa })
     .from(tenant)
     .where(eq(tenant.id, t.id));
   const antecedencias = [...(conf?.dias ?? [15, 5])].sort((x, y) => y - x);
+  const antecedenciasTarefa = [...(conf?.diasTarefa ?? [2, 0])].sort((x, y) => y - x);
   const emails: {
     usuarios: string[];
-    tipo: "exclusividadeInicio" | "exclusividadeAviso" | "exclusividadeFim" | "participacaoVencida";
+    tipo:
+      | "exclusividadeInicio"
+      | "exclusividadeAviso"
+      | "exclusividadeFim"
+      | "participacaoVencida"
+      | "tarefaPrazo";
     negocio: string;
     dealId: string;
     p: Record<string, string | number>;
@@ -617,6 +629,67 @@ export async function enviarAvisosDePrazo(
           .update(deal)
           .set({ avisosEnviados: [...n.avisosEnviados, ...novos] })
           .where(eq(deal.id, n.id));
+      // Tarefas abertas com prazo: lembra os responsáveis (o lembrete mais próximo, uma vez).
+      const abertas = await tx
+        .select({
+          id: tarefa.id,
+          titulo: tarefa.titulo,
+          prazo: tarefa.prazo,
+          lado: tarefa.lado,
+          enviados: tarefa.lembretesEnviados,
+        })
+        .from(tarefa)
+        .where(
+          and(
+            eq(tarefa.dealId, n.id),
+            inArray(tarefa.situacao, ["a_fazer", "andamento", "aguardando"]),
+            isNotNull(tarefa.prazo),
+          ),
+        );
+      for (const tf of abertas) {
+        const faltam = diasEntre(hoje, tf.prazo!);
+        const devidos = antecedenciasTarefa.filter(
+          (d) => faltam >= 0 && faltam <= d && !tf.enviados.includes(`d${d}:${tf.prazo}`),
+        );
+        if (!devidos.length) continue;
+        const resp = await tx
+          .select({ usuarioId: tarefaResponsavel.usuarioId, perfilId: tarefaResponsavel.perfilId })
+          .from(tarefaResponsavel)
+          .where(eq(tarefaResponsavel.tarefaId, tf.id));
+        const perfis = resp.flatMap((r) => (r.perfilId ? [r.perfilId] : []));
+        // Por perfil: só quem tem o perfil do mesmo lado da tarefa.
+        const porPerfil = perfis.length
+          ? (
+              await usuariosDoNegocio(
+                tx,
+                n.id,
+                (p) => perfis.includes(p.perfilId) && (tf.lado === null || p.lado === tf.lado),
+              )
+            ).map((usuarioId) => ({ usuarioId }))
+          : [];
+        const usuarios = [
+          ...new Set([
+            ...resp.flatMap((r) => (r.usuarioId ? [r.usuarioId] : [])),
+            ...porPerfil.map((p) => p.usuarioId!),
+          ]),
+        ];
+        const p = { tarefa: tf.titulo, prazo: dataBr(tf.prazo!), dias: String(faltam) };
+        for (const u of usuarios)
+          await notificar(
+            tx,
+            t.id,
+            u,
+            "tarefa_prazo",
+            { negocio: nome, ...p },
+            `/negocios/${n.id}?aba=tarefas`,
+          );
+        emails.push({ usuarios, tipo: "tarefaPrazo", negocio: nome, dealId: n.id, p });
+        enviados++;
+        await tx
+          .update(tarefa)
+          .set({ lembretesEnviados: [...tf.enviados, ...devidos.map((d) => `d${d}:${tf.prazo}`)] })
+          .where(eq(tarefa.id, tf.id));
+      }
       // Prazo de participação vencido (não cortado à mão): avisa o Coordenador.
       const vencidas = await tx
         .select({ id: participacaoDeal.id, pessoa: pessoa.nome })
@@ -679,6 +752,36 @@ export async function enviarAvisosDePrazoDeTodos(hoje?: string): Promise<number>
 }
 
 // --- Configurações gerais do tenant ------------------------------------------------------------
+
+/** Dias antes do prazo para lembrar os responsáveis por uma tarefa (0 = no dia). */
+export async function obterDiasDeLembreteDeTarefa(acesso: Acesso | null): Promise<number[]> {
+  const a = exigirTenant(acesso);
+  const [c] = await banco()
+    .select({ dias: tenant.diasLembreteTarefa })
+    .from(tenant)
+    .where(eq(tenant.id, a.tenant.id));
+  return c?.dias ?? [2, 0];
+}
+
+export async function salvarDiasDeLembreteDeTarefa(acesso: Acesso | null, texto: string): Promise<Resultado> {
+  const a = exigirAdministrador(acesso);
+  const dias = [
+    ...new Set(
+      texto
+        .split(/[,;\s]+/)
+        .filter(Boolean)
+        .map(Number),
+    ),
+  ];
+  if (dias.length === 0 || dias.length > 5 || dias.some((d) => !Number.isInteger(d) || d < 0 || d > 60))
+    return { erro: "negocios.erros.diasDeLembreteInvalidos", campo: "diasTarefa" };
+  dias.sort((x, y) => y - x);
+  await banco().update(tenant).set({ diasLembreteTarefa: dias }).where(eq(tenant.id, a.tenant.id));
+  await auditar(a, "tenant.configuracoes_alteradas", "tenant", a.tenant.id, {
+    diasLembreteTarefa: dias.join(","),
+  });
+  return { ok: true };
+}
 
 export async function obterDiasDeAviso(acesso: Acesso | null): Promise<number[]> {
   const a = exigirTenant(acesso);

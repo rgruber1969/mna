@@ -74,6 +74,7 @@
     "avisoEscala": "Etapas longas aparecem encolhidas pela escala definida (ex.: pós-closing a 20%).",
     "emAndamento": "em andamento",
     "duracao": "{dias, plural, one {# dia} other {# dias}}",
-    "documentosDaEtapa": "{n, plural, =0 {Documentos (nenhum)} one {Documentos (#)} other {Documentos (#)}}"
+    "documentosDaEtapa": "{n, plural, =0 {Documentos (nenhum)} one {Documentos (#)} other {Documentos (#)}}",
+    "tarefasDaEtapa": "{n, plural, =0 {Tarefas (nenhuma aberta)} one {Tarefas (# aberta)} other {Tarefas (# abertas)}}"
   }
 }
