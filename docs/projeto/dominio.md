@@ -610,3 +610,44 @@ valem como regra). Ajustes e acréscimos do responsável:
   que normalmente manda a lista de pedidos.
 * **Anonimização (X6):** o arquivo original fica intacto para quem tem
   acesso a ele.
+
+### Pedido de documentos: estrutura observada em listas reais (2026-11-19)
+
+Proposta para os itens 11 e 12, a partir de duas listas reais de
+diligência enviadas pelo responsável (uma contábil/fiscal/trabalhista e
+uma jurídica). Só a estrutura; nenhum dado do caso.
+
+* **Pedido** (a lista de um solicitante, ex.: auditoria contábil ou
+  advogados da compradora): número, solicitante (empresa e pessoas), data,
+  **data-base** e **períodos de revisão** (ex.: exercícios 2020–2024 e a
+  data-base), meses de amostragem, descrição.
+* **Rodadas:** o mesmo pedido recebe listas complementares ao longo do
+  tempo (ex.: "lista inicial", "complementar 1"); cada item registra a
+  rodada em que entrou.
+* **Assuntos** (as abas da planilha): Geral/Societário, Contábil, Fiscal,
+  Trabalhista/Folha, Certidões, Contratos, Propriedade intelectual,
+  Contencioso, Imobiliário, Ambiental, Seguros, Regulatório,
+  Concorrencial, Questionário (perguntas).
+* **Item:** código hierárquico (ex.: "B1.03", "3.1.2"), grupo e subgrupo,
+  **prioridade** (escala do tenant, ex.: Imediata, Alta, Média, Baixa),
+  descrição, **formato esperado** (PDF, XLSX, TXT…), **tipo** (documento
+  ou pergunta), data do pedido, **dias em aberto**, data de entrega,
+  departamento e **responsável do lado vendedor**.
+* **Situação por período:** quando o pedido cobre vários exercícios, cada
+  item tem situação **por período** (ex.: 2024 entregue, 2023 pendente,
+  2020 não aplicável); situações: Pendente, Parcialmente pendente,
+  Entregue/Disponibilizado, Em análise, Aprovado, Não aplicável.
+* **Conversa por item:** comentários datados, alternando solicitante e
+  vendedora, ao longo das rodadas (é o que hoje vira várias colunas
+  "Comentários de X em dd/mm"); entra na mensageria por item.
+* **Ligação com o data room:** cada item aponta para os documentos (e
+  pastas) que o atendem; um documento pode atender vários itens.
+* **Painel do pedido** (a "capa"): totais por situação × assunto.
+* **Importar e exportar a planilha** no formato do solicitante (as abas e
+  colunas dele), para devolver a lista respondida sem retrabalho.
+* **Rediligência:** começar um pedido a partir de um pedido anterior (de
+  outro negócio da mesma vendedora), reaproveitando itens, respostas e
+  documentos ainda válidos.
+* **Catálogo "onde obter":** documentos comuns (sobretudo certidões) com
+  órgão emissor, link oficial, abrangência (federal, estadual por UF,
+  municipal) e se é gratuito ou pago (ex.: Junta Comercial).
