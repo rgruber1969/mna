@@ -250,9 +250,11 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await menu.getByRole("link", { name: "Empresas" }).hover();
   await admin.getByRole("button", { name: "Favoritar Empresas" }).click();
   await expect(admin.getByRole("button", { name: "Tirar Empresas dos favoritos" })).toBeVisible();
+  // Espera a gravação da preferência (ação do servidor) antes de recarregar.
+  const gravou = admin.waitForResponse((r) => r.request().method() === "POST" && r.ok());
   await admin.getByRole("button", { name: "Recolher menu" }).click();
   await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
-  await admin.waitForLoadState("networkidle");
+  await gravou;
   await admin.reload();
   await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
   await admin.getByRole("button", { name: "Expandir menu" }).click();

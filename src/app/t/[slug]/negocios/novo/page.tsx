@@ -30,7 +30,9 @@ async function Painel() {
           <Link href="/negocios" className="text-primary text-sm">
             {t("voltar")}
           </Link>
-          <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
+          <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
+            {t("titulo")}
+          </Titulo>
           <p className="text-muted mb-4 text-sm">{t("aviso")}</p>
           <FormNovoNegocio
             tipos={opcoes.tipos}

@@ -49,7 +49,9 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-6xl">
           <div className="flex items-start justify-between gap-4">
-            <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
+            <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
+              {t("titulo")}
+            </Titulo>
             {podeCriar && (
               <Link
                 href="/negocios/novo"

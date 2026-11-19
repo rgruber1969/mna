@@ -4,6 +4,7 @@ import { auth } from "@/server/auth/auth";
 import { comTenant } from "@/server/db/cliente";
 import { AcessoNegado, type AcessoTenant } from "./acesso";
 import { completarCadastrosPadrao } from "./cadastros-padrao";
+import { listarContasBancarias, revelarContaBancaria, salvarContaBancaria } from "./contas-bancarias";
 import { excluirTipoDeVinculo, listarPapeis, listarTiposDeVinculo, salvarTipoDeVinculo } from "./cadastros";
 import { criarEmpresa, editarEmpresa, excluirEmpresa, listarEmpresas, obterEmpresa } from "./empresas";
 import {
@@ -408,5 +409,57 @@ describe("sócio da Receita já cadastrado", () => {
     ]);
     const homonimo = await cadastrarSocioSugerido(a, e1.id, "JOSE DA SILVA SOCIO", "Sócio", "***999999**");
     expect(homonimo).toMatchObject({ existente: false });
+  });
+});
+
+describe("dados bancários", () => {
+  it("guarda criptografado, mostra mascarado, revela com auditoria e mantém uma principal", async () => {
+    const a = acesso(adminId, true);
+    const e = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Assessoria Bancária Ltda" });
+    if (!("id" in e)) throw new Error("empresa");
+    const alvo = { tipo: "empresa" as const, id: e.id };
+    const base = {
+      bancoCodigo: "237",
+      bancoNome: "",
+      agencia: "0026",
+      conta: "471538-1",
+      tipoConta: "corrente",
+    };
+    expect(
+      await salvarContaBancaria(a, alvo, { ...base, chavePix: "11.444.777/0001-62", tipoChavePix: "cnpj" }),
+    ).toMatchObject({
+      erro: "cadastros.contas.erros.chavePixInvalida",
+    });
+    const c1 = await salvarContaBancaria(a, alvo, {
+      ...base,
+      chavePix: "11.444.777/0001-61",
+      tipoChavePix: "cnpj",
+    });
+    if (!("id" in c1)) throw new Error(c1.erro);
+    const lista = await listarContasBancarias(a, alvo);
+    expect(lista).toMatchObject([
+      { bancoNome: "Bradesco", conta: "***8-1", chavePix: "***161", principal: true },
+    ]);
+    const cru = await dono.query(`select conta_cifrada from conta_bancaria where id = $1`, [c1.id]);
+    expect(cru.rows[0].conta_cifrada).not.toContain("471538");
+    expect(await revelarContaBancaria(a, alvo, c1.id)).toEqual({
+      agencia: "0026",
+      conta: "471538-1",
+      chavePix: "11444777000161",
+    });
+    const c2 = await salvarContaBancaria(a, alvo, {
+      ...base,
+      bancoCodigo: "336",
+      conta: "3380852-0",
+      chavePix: "",
+      tipoChavePix: "",
+      principal: true,
+    });
+    if (!("id" in c2)) throw new Error(c2.erro);
+    const depois = await listarContasBancarias(a, alvo);
+    expect(depois.map((c) => [c.bancoNome, c.principal])).toEqual([
+      ["C6 Bank", true],
+      ["Bradesco", false],
+    ]);
   });
 });

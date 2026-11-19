@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import type { ComponentProps, ReactNode } from "react";
+import { useId, type ComponentProps, type ReactNode } from "react";
 
 /**
  * Componentes básicos com tokens semânticos (ADR-0010). Provisórios até a
@@ -87,12 +87,47 @@ export function Cartao({ children, largura = "max-w-md" }: { children: ReactNode
   );
 }
 
-export function Titulo({ sobre, children }: { sobre?: string; children: ReactNode }) {
+/**
+ * Título da tela. `sobre`: rótulo curto acima do título (ex.: "Cadastro").
+ * `ajuda`: explicação da tela, aberta pelo ícone "?" ao lado do título (não
+ * ocupa espaço na tela).
+ */
+export function Titulo({ sobre, ajuda, children }: { sobre?: string; ajuda?: string; children: ReactNode }) {
   return (
     <header className="mb-6">
       {sobre && <p className="text-accent text-xs font-semibold tracking-widest uppercase">{sobre}</p>}
-      <h1 className="text-text mt-1 text-xl font-bold">{children}</h1>
+      <h1 className="text-text mt-1 flex items-center gap-2 text-xl font-bold">
+        {children}
+        {ajuda && <Ajuda texto={ajuda} />}
+      </h1>
     </header>
+  );
+}
+
+/** Ícone de ajuda "?" que abre a explicação num balão (padrão para todas as telas). */
+export function Ajuda({ texto }: { texto: string }) {
+  const id = useId();
+  const t = useTranslations("comum");
+  return (
+    <>
+      <button
+        type="button"
+        popoverTarget={id}
+        aria-label={t("ajuda")}
+        title={t("ajuda")}
+        className="border-border text-muted hover:text-primary hover:border-primary inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-semibold"
+      >
+        ?
+      </button>
+      <div
+        id={id}
+        popover="auto"
+        role="note"
+        className="bg-surface text-text border-border backdrop:bg-backdrop/40 m-auto max-w-sm rounded-lg border p-4 text-sm font-normal shadow-lg"
+      >
+        {texto}
+      </div>
+    </>
   );
 }
 

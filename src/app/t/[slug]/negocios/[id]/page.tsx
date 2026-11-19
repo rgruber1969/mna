@@ -74,7 +74,9 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
           <Link href="/negocios" className="text-primary text-sm">
             {t("voltar")}
           </Link>
-          <Titulo sobre={t("sobre")}>{n.nome}</Titulo>
+          <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
+            {n.nome}
+          </Titulo>
           <p className="text-muted -mt-2 mb-4 text-sm">
             {[
               n.nomeInterno,

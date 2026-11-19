@@ -1,4 +1,6 @@
 import { connection } from "next/server";
+import { BANCOS, listarContasBancarias } from "@/server/services/contas-bancarias";
+import { ContasBancarias } from "@/components/cadastros/contas-bancarias";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -46,6 +48,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
     pode(acesso, "empresas", "baixar"),
     listarAnexos(acesso, { tipo: "empresa", id: e.id }),
   ]);
+  const contas = await listarContasBancarias(acesso, { tipo: "empresa", id: e.id });
   const [tipos, pessoas, todasEmpresas] = podeEditar
     ? await Promise.all([listarTiposDeVinculo(acesso), listarPessoas(acesso), listarEmpresas(acesso)])
     : [[], [], []];
@@ -89,6 +92,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                 id: "participacoes",
                 rotulo: `${tAbas("participacoes")} (${participacoes.socias.length + participacoes.participaEm.length})`,
               },
+              { id: "bancarios", rotulo: `${tAbas("bancarios")} (${contas.length})` },
               { id: "anexos", rotulo: `${tAbas("anexos")} (${anexos.length})` },
               ...(comReceita ? [{ id: "receita", rotulo: tAbas("receita") }] : []),
             ]}
@@ -220,6 +224,15 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                   />
                 </div>
               )}
+            </PainelDeAba>
+            <PainelDeAba id="bancarios">
+              <ContasBancarias
+                alvo={{ tipo: "empresa", id: e.id }}
+                contas={contas}
+                bancos={BANCOS}
+                podeEditar={podeEditar}
+                podeRevelar={true}
+              />
             </PainelDeAba>
             <PainelDeAba id="anexos">
               <div className="max-w-xl">

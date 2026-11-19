@@ -21,6 +21,7 @@ test.skip(process.env.DEV_ENTRAR_SO_COM_EMAIL !== "sim", "entrada de desenvolvim
 const dono = () => new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO });
 
 test.beforeAll(async () => {
+  test.setTimeout(90_000);
   const p = dono();
   const t = await p.query<{ id: string }>(
     `insert into tenant (slug, nome) values ($1, 'Escritório de Teste') returning id`,
@@ -36,7 +37,7 @@ test.beforeAll(async () => {
   ]);
   await p.end();
   // Perfis, papéis, tipos de operação, empresa do contratante e a pessoa do usuário.
-  execSync("pnpm -s tenants:completar-padrao", { stdio: "ignore" });
+  execSync(`pnpm -s tenants:completar-padrao ${slug}`, { stdio: "ignore" });
   const q = dono();
   // Usuário comum (administrador exigiria 2FA) com o perfil "Gestor do contratante".
   await q.query(

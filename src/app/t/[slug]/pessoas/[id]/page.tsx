@@ -1,4 +1,6 @@
 import { connection } from "next/server";
+import { BANCOS, listarContasBancarias } from "@/server/services/contas-bancarias";
+import { ContasBancarias } from "@/components/cadastros/contas-bancarias";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -44,6 +46,7 @@ async function Painel({
     pode(acesso, "empresas", "baixar"),
     listarAnexos(acesso, { tipo: "pessoa", id: p.id }),
   ]);
+  const contas = await listarContasBancarias(acesso, { tipo: "pessoa", id: p.id });
   const [tipos, empresas] = podeEditar
     ? await Promise.all([listarTiposDeVinculo(acesso), listarEmpresas(acesso)])
     : [[], []];
@@ -81,6 +84,7 @@ async function Painel({
               { id: "endereco", rotulo: tAbas("endereco") },
               { id: "conjuge", rotulo: tAbas("conjuge") },
               { id: "empresas", rotulo: `${tAbas("empresas")} (${p.vinculos.length})` },
+              { id: "bancarios", rotulo: `${tAbas("bancarios")} (${contas.length})` },
               { id: "anexos", rotulo: `${tAbas("anexos")} (${anexos.length})` },
               { id: "acesso", rotulo: tAbas("acesso") },
             ]}
@@ -163,6 +167,15 @@ async function Painel({
                   />
                 </div>
               )}
+            </PainelDeAba>
+            <PainelDeAba id="bancarios">
+              <ContasBancarias
+                alvo={{ tipo: "pessoa", id: p.id }}
+                contas={contas}
+                bancos={BANCOS}
+                podeEditar={podeEditar}
+                podeRevelar={podeEditar}
+              />
             </PainelDeAba>
             <PainelDeAba id="anexos">
               <div className="max-w-xl">

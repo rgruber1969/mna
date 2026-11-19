@@ -16,7 +16,7 @@
     },
     "lista": {
       "titulo": "Negócios",
-      "sobre": "Os negócios de que você participa (administradores veem todos). Todos veem o número e o codinome; o nome interno e as vendedoras aparecem só para quem já pode vê-los.",
+      "sobre": "Processos",
       "novo": "Novo negócio",
       "buscarAria": "Buscar negócios",
       "buscarPlaceholder": "Número, codinome, nome ou empresa",
@@ -37,15 +37,17 @@
       "colSituacao": "Situação",
       "colCoordenador": "Coordenador",
       "colInicio": "Início",
-      "sigilo": "Em sigilo"
+      "sigilo": "Em sigilo",
+      "ajuda": "Os negócios de que você participa (administradores veem todos). Todos veem o número e o codinome; o nome interno e as vendedoras aparecem só para quem já pode vê-los."
     },
     "novo": {
       "titulo": "Novo negócio",
-      "sobre": "Cadastro do negócio: você entra como Coordenador, representando a empresa do contratante.",
+      "sobre": "Negócios",
       "voltar": "← Negócios",
       "aviso": "Preencha o essencial; previsão de fechamento, valor estimado e descrição ficam na tela do negócio.",
       "criar": "Criar negócio",
-      "criando": "Criando..."
+      "criando": "Criando...",
+      "ajuda": "Cadastro do negócio: você entra como Coordenador, representando a empresa do contratante."
     },
     "campos": {
       "codinome": "Codinome",
@@ -72,7 +74,7 @@
     },
     "tela": {
       "voltar": "← Negócios",
-      "sobre": "Dados, empresas e participantes do negócio. As demais abas (etapas, documentos, tarefas etc.) aparecem quando existirem.",
+      "sobre": "Negócio",
       "grupo": "Grupo {grupo}",
       "avisoSigilo": "Antes do NDA, este negócio aparece só pelo número e codinome.",
       "abaResumo": "Resumo",
@@ -81,7 +83,8 @@
       "ladoVendedor": "lado vendedor",
       "ladoComprador": "lado comprador",
       "excluir": "Excluir negócio",
-      "confirmarExcluir": "Excluir o negócio {nome}? Esta ação não pode ser desfeita."
+      "confirmarExcluir": "Excluir o negócio {nome}? Esta ação não pode ser desfeita.",
+      "ajuda": "Dados, empresas e participantes do negócio. As demais abas (etapas, documentos, tarefas etc.) aparecem quando existirem."
     },
     "empresas": {
       "contratante": "contratante",

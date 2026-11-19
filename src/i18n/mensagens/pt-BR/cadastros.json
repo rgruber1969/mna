@@ -359,7 +359,8 @@
       "anexos": "Anexos",
       "acesso": "Acesso",
       "receita": "Sócios na Receita",
-      "participacoes": "Participações"
+      "participacoes": "Participações",
+      "bancarios": "Dados bancários"
     },
     "participacoes": {
       "socias": "Empresas sócias",
@@ -379,6 +380,51 @@
         "mesmaEmpresa": "Uma empresa não pode ser sócia dela mesma.",
         "jaExiste": "Esta empresa já é sócia.",
         "naoEncontrada": "Participação não encontrada."
+      }
+    },
+    "contas": {
+      "explicacao": "Contas e chaves Pix (ex.: para pagamento de honorários). Agência, conta e chave ficam protegidas e aparecem mascaradas; \"Mostrar\" revela e fica registrado.",
+      "nenhuma": "Nenhuma conta cadastrada.",
+      "nova": "+ Adicionar conta ou chave Pix",
+      "adicionar": "Adicionar",
+      "editar": "Editar",
+      "mostrar": "Mostrar",
+      "confirmarExcluir": "Excluir esta conta?",
+      "bancoCodigo": "Código do banco",
+      "bancoNome": "Banco",
+      "agencia": "Agência",
+      "conta": "Conta",
+      "tipoConta": "Tipo de conta",
+      "tipos": {
+        "corrente": "Conta corrente",
+        "poupanca": "Poupança",
+        "pagamento": "Conta de pagamento"
+      },
+      "tipoChavePix": "Tipo de chave Pix",
+      "semPix": "Sem chave Pix",
+      "chaves": {
+        "cnpj": "CNPJ",
+        "cpf": "CPF",
+        "email": "E-mail",
+        "telefone": "Telefone",
+        "aleatoria": "Chave aleatória"
+      },
+      "chavePix": "Chave Pix",
+      "pixDoTipo": "Pix ({tipo})",
+      "principal": "Conta principal",
+      "principalRotulo": "principal",
+      "soPix": "Chave Pix",
+      "salva": "Conta salva.",
+      "excluida": "Conta excluída.",
+      "erros": {
+        "bancoInvalido": "Código do banco inválido (3 dígitos).",
+        "contaOuPix": "Informe a conta ou a chave Pix.",
+        "agenciaObrigatoria": "Informe a agência.",
+        "bancoObrigatorio": "Informe o banco.",
+        "tipoPixObrigatorio": "Escolha o tipo da chave Pix.",
+        "chavePixInvalida": "Chave Pix inválida para o tipo escolhido.",
+        "cadastroNaoEncontrado": "Cadastro não encontrado.",
+        "contaNaoEncontrada": "Conta não encontrada."
       }
     }
   }

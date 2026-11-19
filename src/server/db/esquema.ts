@@ -826,3 +826,38 @@ export const participacaoDeal = pgTable(
     isolamento(),
   ],
 ).enableRLS();
+
+/**
+ * Conta bancária e chave Pix de uma empresa ou pessoa (ex.: para pagamento de
+ * honorários de assessores). Agência, conta e chave Pix são criptografadas com
+ * a chave do tenant (dados-pessoais.md): na pessoa são dados pessoais; na
+ * empresa, a mesma regra, por simplicidade. Banco (código e nome) fica legível.
+ */
+export const contaBancaria = pgTable(
+  "conta_bancaria",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    empresaId: uuid("empresa_id").references(() => empresa.id, { onDelete: "cascade" }),
+    pessoaId: uuid("pessoa_id").references(() => pessoa.id, { onDelete: "cascade" }),
+    /** Código de compensação do banco (3 dígitos, ex.: "237"). */
+    bancoCodigo: text("banco_codigo"),
+    bancoNome: text("banco_nome"),
+    agenciaCifrada: text("agencia_cifrada"),
+    contaCifrada: text("conta_cifrada"),
+    /** corrente, poupanca ou pagamento. */
+    tipoConta: text("tipo_conta").$type<"corrente" | "poupanca" | "pagamento">(),
+    chavePixCifrada: text("chave_pix_cifrada"),
+    tipoChavePix: text("tipo_chave_pix").$type<"cnpj" | "cpf" | "email" | "telefone" | "aleatoria">(),
+    /** Conta usada por padrão (ex.: no anexo de contas de um contrato). */
+    principal: boolean("principal").notNull().default(false),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    check("conta_bancaria_alvo_ck", sql`(empresa_id is null) <> (pessoa_id is null)`),
+    index("conta_bancaria_empresa_idx").on(t.tenantId, t.empresaId),
+    index("conta_bancaria_pessoa_idx").on(t.tenantId, t.pessoaId),
+    isolamento(),
+  ],
+).enableRLS();
