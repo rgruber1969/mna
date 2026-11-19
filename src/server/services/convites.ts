@@ -16,6 +16,7 @@ import { montarEmail, type MarcaDoEmail } from "@/server/email/modelo";
 import { marcaParaEmail } from "./marca";
 import { resolverArea, urlDaArea } from "@/server/enderecos";
 import { produto } from "@/config/produto";
+import { tradutor } from "@/i18n/servidor";
 import { entrar, gerarToken, hashDoToken, tenantPorSlug, type ResultadoLogin } from "./acesso";
 import { atribuirPerfis, filtrarPerfisDoTenant } from "./perfis";
 import { ligarContaAPessoa } from "./pessoas";
@@ -30,35 +31,39 @@ import { notificar } from "./notificacoes";
 export const VALIDADE_CONVITE_MS = 3 * 24 * 60 * 60 * 1000;
 
 const Pessoa = z.object({
-  nome: z.string().trim().min(2, "Informe o nome.").max(120),
-  email: z.email("E-mail inválido.").trim().toLowerCase(),
+  nome: z.string().trim().min(2, "acesso.erros.informeNome").max(120),
+  email: z.email("acesso.erros.emailInvalido").trim().toLowerCase(),
 });
 
 export type DadosPessoa = z.input<typeof Pessoa>;
 
 function validarPessoa(dados: DadosPessoa): z.output<typeof Pessoa> | { erro: string } {
   const r = Pessoa.safeParse(dados);
-  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "acesso.erros.dadosInvalidos" };
 }
 
 async function enviarConvite(
   para: string,
   nome: string,
   link: string,
-  onde: string,
+  /** Nome do tenant; null = console da plataforma. */
+  nomeDoLugar: string | null,
   marca?: MarcaDoEmail | null,
 ): Promise<void> {
+  const t = await tradutor();
+  const onde = nomeDoLugar ?? t("emails.convite.ondeConsole");
   await enviarEmail(
     montarEmail({
       para,
-      assunto: `Convite para acessar ${onde}`,
-      saudacao: `Olá, ${nome}.`,
+      assunto: t("emails.convite.assunto", { onde }),
+      saudacao: t("emails.saudacao", { nome }),
       paragrafos: [
-        `Você foi convidado(a) para acessar ${onde} no ${produto.nome}.`,
-        "Para aceitar, abra o link abaixo em até 3 dias (uso único):",
+        t("emails.convite.paragrafo1", { onde, produto: produto.nome }),
+        t("emails.convite.paragrafo2"),
       ],
-      link: { texto: "Aceitar o convite", url: link },
-      rodape: "Se você não esperava este convite, ignore este e-mail.",
+      link: { texto: t("emails.convite.botao"), url: link },
+      linkAlternativo: t("emails.linkAlternativo"),
+      rodape: t("emails.convite.rodape"),
       marca,
     }),
   );
@@ -86,12 +91,7 @@ export async function convidarUsuarioDaPlataforma(
   await banco()
     .insert(eventoPlataforma)
     .values({ tipo: "convite.plataforma.emitido", atorId, alvoTipo: "convite_plataforma", alvoId: c.id });
-  await enviarConvite(
-    p.email,
-    p.nome,
-    urlDaArea({ tipo: "console" }, `/convite/${token}`),
-    "o console da plataforma",
-  );
+  await enviarConvite(p.email, p.nome, urlDaArea({ tipo: "console" }, `/convite/${token}`), null);
   return { ok: true };
 }
 
@@ -207,7 +207,8 @@ async function conviteValido(host: string | null, token: string): Promise<Convit
   return null;
 }
 
-export type ConviteParaTela = { nome: string; email: string; onde: string; contaExiste: boolean };
+/** `onde`: nome do tenant; null = console da plataforma (a tela traduz). */
+export type ConviteParaTela = { nome: string; email: string; onde: string | null; contaExiste: boolean };
 
 /** Dados para a tela do convite. O convidado é o dono do e-mail, então pode saber se já tem conta. */
 export async function obterConvite(host: string | null, token: string): Promise<ConviteParaTela | null> {
@@ -217,12 +218,12 @@ export async function obterConvite(host: string | null, token: string): Promise<
   return {
     nome: c.nome,
     email: c.email,
-    onde: c.tenant?.nome ?? "o console da plataforma",
+    onde: c.tenant?.nome ?? null,
     contaExiste: Boolean(u),
   };
 }
 
-const CONVITE_INVALIDO = "Convite inválido, expirado ou já utilizado. Peça um novo ao administrador.";
+const CONVITE_INVALIDO = "acesso.erros.conviteInvalido";
 
 export async function aceitarConvite(
   token: string,
@@ -248,13 +249,13 @@ export async function aceitarConvite(
     const senhaOk = credencial?.hash
       ? await ctx.password.verify({ hash: credencial.hash, password: dados.senha })
       : false;
-    if (!senhaOk) return { erro: "Senha incorreta." };
+    if (!senhaOk) return { erro: "acesso.erros.senhaIncorreta" };
     usuarioId = existente.id;
   } else {
     if (dados.senha.length < SENHA_TAMANHO_MINIMO || dados.senha.length > 128)
-      return { erro: `A senha precisa ter pelo menos ${SENHA_TAMANHO_MINIMO} caracteres.` };
+      return { erro: "acesso.erros.senhaCurta", parametros: { minimo: SENHA_TAMANHO_MINIMO } };
     const nome = (dados.nome ?? c.nome).trim();
-    if (nome.length < 2) return { erro: "Informe o nome." };
+    if (nome.length < 2) return { erro: "acesso.erros.informeNome" };
     const novo = await ctx.internalAdapter.createUser(
       { name: nome, email: c.email, emailVerified: true },
       { method: "email-password" },

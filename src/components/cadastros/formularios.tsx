@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState, useTransition, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   adicionarVinculoAcao,
   cadastrarSocioAcao,
@@ -84,22 +85,23 @@ function CamposDeEndereco({
   valores: Valores;
   mudar: (nome: string, valor: string) => void;
 }) {
+  const t = useTranslations("cadastros.formularios");
   const [buscando, iniciar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
   function buscarCep(cep: string) {
     if (!cepValido(cep)) return;
     iniciar(async () => {
       const e = await consultarCepAcao(cep);
-      if (!e) return setAviso("CEP não encontrado agora. Preencha o endereço à mão.");
+      if (!e) return setAviso(t("cepNaoEncontrado"));
       setAviso(null);
       for (const [k, v] of Object.entries(e)) if (v && k !== "cep") mudar(k, v);
       mudar("cep", formatarCep(e.cep));
     });
   }
   return (
-    <Secao titulo="Endereço">
+    <Secao titulo={t("endereco")}>
       <Campo
-        rotulo="CEP"
+        rotulo={t("cep")}
         nome="cep"
         valores={valores}
         mudar={(n, v) => {
@@ -107,21 +109,27 @@ function CamposDeEndereco({
           if (soDigitos(v).length === 8) buscarCep(v);
         }}
         inputMode="numeric"
-        ajuda={buscando ? "Buscando endereço..." : (aviso ?? "Digite o CEP para preencher o endereço.")}
+        ajuda={buscando ? t("buscandoEndereco") : (aviso ?? t("cepAjuda"))}
       />
-      <Campo rotulo="País" nome="pais" valores={valores} mudar={mudar} placeholder="Brasil" />
       <Campo
-        rotulo="Logradouro"
+        rotulo={t("pais")}
+        nome="pais"
+        valores={valores}
+        mudar={mudar}
+        placeholder={t("paisPlaceholder")}
+      />
+      <Campo
+        rotulo={t("logradouro")}
         nome="logradouro"
         valores={valores}
         mudar={mudar}
         className="sm:col-span-2"
       />
-      <Campo rotulo="Número" nome="numero" valores={valores} mudar={mudar} />
-      <Campo rotulo="Complemento" nome="complemento" valores={valores} mudar={mudar} />
-      <Campo rotulo="Bairro" nome="bairro" valores={valores} mudar={mudar} />
-      <Campo rotulo="Cidade" nome="cidade" valores={valores} mudar={mudar} />
-      <Campo rotulo="UF" nome="uf" valores={valores} mudar={mudar} maxLength={2} />
+      <Campo rotulo={t("numero")} nome="numero" valores={valores} mudar={mudar} />
+      <Campo rotulo={t("complemento")} nome="complemento" valores={valores} mudar={mudar} />
+      <Campo rotulo={t("bairro")} nome="bairro" valores={valores} mudar={mudar} />
+      <Campo rotulo={t("cidade")} nome="cidade" valores={valores} mudar={mudar} />
+      <Campo rotulo={t("uf")} nome="uf" valores={valores} mudar={mudar} maxLength={2} />
     </Secao>
   );
 }
@@ -145,22 +153,18 @@ export function FormEmpresa({
   grupos: { id: string; nome: string }[];
   podeSalvar: boolean;
 }) {
+  const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarEmpresaAcao);
   const [valores, mudar] = useValores(inicial);
   const [buscando, iniciar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
 
   function buscarCnpj() {
-    if (!cnpjValido(valores.cnpj ?? "")) return setAviso("CNPJ inválido. Confira os números.");
+    if (!cnpjValido(valores.cnpj ?? "")) return setAviso(t("cnpjInvalido"));
     iniciar(async () => {
       const d = await consultarCnpjAcao(valores.cnpj);
-      if (!d)
-        return setAviso(
-          "Não foi possível consultar agora (serviço fora do ar ou CNPJ não encontrado). Preencha à mão.",
-        );
-      setAviso(
-        `Dados da Receita preenchidos${d.socios.length ? `; ${d.socios.length} sócio(s) no quadro societário` : ""}. Confira antes de salvar.`,
-      );
+      if (!d) return setAviso(t("cnpjIndisponivel"));
+      setAviso(t("receitaPreenchida", { n: d.socios.length }));
       mudar("cnpj", formatarCnpj(valores.cnpj));
       const campos: Valores = {
         razaoSocial: d.razaoSocial,
@@ -181,13 +185,13 @@ export function FormEmpresa({
       {id && <input type="hidden" name="id" value={id} />}
       <Mensagem estado={estado} />
       <fieldset disabled={!podeSalvar}>
-        <Secao titulo="Identificação">
+        <Secao titulo={t("identificacao")}>
           <div className="sm:col-span-2">
-            <span className="text-text mb-1 block text-sm font-medium">CNPJ</span>
+            <span className="text-text mb-1 block text-sm font-medium">{t("cnpj")}</span>
             <div className="mb-1 flex gap-2">
               <input
                 name="cnpj"
-                aria-label="CNPJ"
+                aria-label={t("cnpj")}
                 value={valores.cnpj ?? ""}
                 onChange={(e) => mudar("cnpj", e.target.value)}
                 inputMode="numeric"
@@ -199,44 +203,36 @@ export function FormEmpresa({
                 disabled={buscando}
                 className="border-border text-primary shrink-0 rounded-md border px-3 text-sm font-medium"
               >
-                {buscando ? "Buscando..." : "Buscar dados"}
+                {buscando ? t("buscando") : t("buscarDados")}
               </button>
             </div>
-            <span className="text-muted mb-3 block text-xs">
-              {aviso ?? "Empresa estrangeira: deixe em branco e informe o país e o identificador de origem."}
-            </span>
+            <span className="text-muted mb-3 block text-xs">{aviso ?? t("cnpjAjuda")}</span>
           </div>
           <Campo
-            rotulo="Razão social"
+            rotulo={t("razaoSocial")}
             nome="razaoSocial"
             valores={valores}
             mudar={mudar}
             required
             className="sm:col-span-2"
           />
-          <Campo rotulo="Nome fantasia" nome="nomeFantasia" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("nomeFantasia")} nome="nomeFantasia" valores={valores} mudar={mudar} />
           <Campo
-            rotulo="Identificador estrangeiro"
+            rotulo={t("identificadorEstrangeiro")}
             nome="identificadorEstrangeiro"
             valores={valores}
             mudar={mudar}
           />
-          <Campo
-            rotulo="Atividade principal (CNAE)"
-            nome="cnae"
-            valores={valores}
-            mudar={mudar}
-            className="sm:col-span-2"
-          />
+          <Campo rotulo={t("cnae")} nome="cnae" valores={valores} mudar={mudar} className="sm:col-span-2" />
           <label className="mb-3 block sm:col-span-2">
-            <span className="text-text mb-1 block text-sm font-medium">Grupo econômico</span>
+            <span className="text-text mb-1 block text-sm font-medium">{t("grupoEconomico")}</span>
             <select
               name="grupoId"
               value={valores.grupoId ?? ""}
               onChange={(e) => mudar("grupoId", e.target.value)}
               className={estiloCampo}
             >
-              <option value="">Nenhum</option>
+              <option value="">{t("nenhum")}</option>
               {grupos.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.nome}
@@ -246,13 +242,13 @@ export function FormEmpresa({
           </label>
         </Secao>
         <CamposDeEndereco valores={valores} mudar={mudar} />
-        <Secao titulo="Contato">
-          <Campo rotulo="Telefone" nome="telefone" valores={valores} mudar={mudar} />
-          <Campo rotulo="E-mail geral" nome="email" valores={valores} mudar={mudar} type="email" />
-          <Campo rotulo="Site" nome="site" valores={valores} mudar={mudar} className="sm:col-span-2" />
+        <Secao titulo={t("contato")}>
+          <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("emailGeral")} nome="email" valores={valores} mudar={mudar} type="email" />
+          <Campo rotulo={t("site")} nome="site" valores={valores} mudar={mudar} className="sm:col-span-2" />
         </Secao>
         <label className="mb-4 block">
-          <span className="text-text mb-1 block text-sm font-medium">Observações</span>
+          <span className="text-text mb-1 block text-sm font-medium">{t("observacoes")}</span>
           <textarea
             name="observacoes"
             value={valores.observacoes ?? ""}
@@ -263,7 +259,7 @@ export function FormEmpresa({
         </label>
         {podeSalvar && (
           <Botao type="submit" disabled={salvando}>
-            {salvando ? "Salvando..." : id ? "Salvar empresa" : "Cadastrar empresa"}
+            {salvando ? t("salvando") : id ? t("salvarEmpresa") : t("cadastrarEmpresa")}
           </Botao>
         )}
       </fieldset>
@@ -281,6 +277,7 @@ export function SociosDaReceita({
   cnpj: string;
   jaCadastrados: string[];
 }) {
+  const t = useTranslations("cadastros.formularios");
   const [estado, cadastrar, cadastrando] = useAcaoComAtualizacao(cadastrarSocioAcao);
   const [socios, setSocios] = useState<{ nome: string; qualificacao: string }[] | null>(null);
   const [buscando, iniciar] = useTransition();
@@ -298,14 +295,14 @@ export function SociosDaReceita({
           onClick={() =>
             iniciar(async () => {
               const d = await consultarCnpjAcao(cnpj);
-              if (!d) return setAviso("Não foi possível consultar agora. Tente mais tarde.");
+              if (!d) return setAviso(t("consultaIndisponivel"));
               setSocios(d.socios);
-              if (d.socios.length === 0) setAviso("A Receita não informa sócios para este CNPJ.");
+              if (d.socios.length === 0) setAviso(t("semSocios"));
             })
           }
           className="text-primary text-sm font-medium"
         >
-          {buscando ? "Consultando..." : "Consultar sócios na Receita"}
+          {buscando ? t("consultando") : t("consultarSocios")}
         </button>
       ) : (
         <ul className="divide-border divide-y text-sm">
@@ -316,13 +313,13 @@ export function SociosDaReceita({
                 <span className="text-muted block text-xs">{s.qualificacao}</span>
               </span>
               {existentes.has(normalizar(s.nome)) ? (
-                <span className="text-success text-xs font-medium">já cadastrado</span>
+                <span className="text-success text-xs font-medium">{t("jaCadastrado")}</span>
               ) : (
                 <form action={cadastrar}>
                   <input type="hidden" name="empresaId" value={empresaId} />
                   <input type="hidden" name="nome" value={s.nome} />
                   <button type="submit" disabled={cadastrando} className="text-primary text-xs font-medium">
-                    Cadastrar como pessoa e sócio
+                    {t("cadastrarSocio")}
                   </button>
                 </form>
               )}
@@ -335,6 +332,7 @@ export function SociosDaReceita({
 }
 
 export function FormNovoGrupo() {
+  const t = useTranslations("cadastros.formularios");
   const [estado, criar, criando] = useAcaoComAtualizacao(criarGrupoAcao);
   return (
     <form action={criar} className="mt-3">
@@ -342,8 +340,8 @@ export function FormNovoGrupo() {
       <div className="flex gap-2">
         <input
           name="nome"
-          aria-label="Nome do grupo"
-          placeholder="Nome do grupo"
+          aria-label={t("nomeDoGrupo")}
+          placeholder={t("nomeDoGrupo")}
           required
           className={estiloCampo}
         />
@@ -352,7 +350,7 @@ export function FormNovoGrupo() {
           disabled={criando}
           className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 text-sm font-medium"
         >
-          Criar grupo
+          {t("criarGrupo")}
         </button>
       </div>
     </form>
@@ -361,16 +359,9 @@ export function FormNovoGrupo() {
 
 // --- Pessoa ----------------------------------------------------------------------------
 
-const ROTULOS_SENSIVEIS = {
-  cpf: "CPF",
-  rg: "RG (número)",
-  documentoEstrangeiro: "Documento estrangeiro",
-  conjugeCpf: "CPF do cônjuge",
-  conjugeRg: "RG do cônjuge",
-  conjugeRegime: "Regime de bens",
-} as const;
+const SENSIVEIS = ["cpf", "rg", "documentoEstrangeiro", "conjugeCpf", "conjugeRg", "conjugeRegime"] as const;
 
-type Sensivel = keyof typeof ROTULOS_SENSIVEIS;
+type Sensivel = (typeof SENSIVEIS)[number];
 
 function CampoSensivel({
   campo,
@@ -383,21 +374,22 @@ function CampoSensivel({
   valores: Valores;
   mudar: (nome: string, valor: string) => void;
 }) {
+  const t = useTranslations("cadastros.formularios");
   return (
     <div className="mb-3">
       <Campo
-        rotulo={ROTULOS_SENSIVEIS[campo]}
+        rotulo={t(`sensiveis.${campo}`)}
         nome={campo}
         valores={valores}
         mudar={mudar}
         className="mb-0"
-        placeholder={mascarado ? `Atual: ${mascarado}` : ""}
+        placeholder={mascarado ? t("atual", { valor: mascarado }) : ""}
         autoComplete="off"
-        ajuda={mascarado ? "Deixe em branco para manter o atual." : "Criptografado ao salvar."}
+        ajuda={mascarado ? t("manterAtual") : t("criptografadoAoSalvar")}
       />
       {mascarado && (
         <label className="text-muted mt-1 flex items-center gap-1 text-xs">
-          <input type="checkbox" name="limpar" value={campo} /> Remover
+          <input type="checkbox" name="limpar" value={campo} /> {t("remover")}
         </label>
       )}
     </div>
@@ -418,6 +410,7 @@ export function FormPessoa({
   /** Pessoa com conta: o e-mail é o de login e só muda pela própria conta. */
   emailDeLogin?: boolean;
 }) {
+  const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarPessoaAcao);
   const [valores, mudar] = useValores(inicial);
   const sensivel = (campo: Sensivel) => (
@@ -428,9 +421,9 @@ export function FormPessoa({
       {id && <input type="hidden" name="id" value={id} />}
       <Mensagem estado={estado} />
       <fieldset disabled={!podeSalvar}>
-        <Secao titulo="Dados pessoais">
+        <Secao titulo={t("dadosPessoais")}>
           <Campo
-            rotulo="Nome completo"
+            rotulo={t("nomeCompleto")}
             nome="nome"
             valores={valores}
             mudar={mudar}
@@ -438,38 +431,38 @@ export function FormPessoa({
             className="sm:col-span-2"
           />
           <Campo
-            rotulo="E-mail"
+            rotulo={t("email")}
             nome="email"
             valores={valores}
             mudar={mudar}
             type="email"
             readOnly={emailDeLogin}
-            ajuda={emailDeLogin ? "E-mail de login: só muda pela própria conta." : undefined}
+            ajuda={emailDeLogin ? t("emailDeLogin") : undefined}
           />
-          <Campo rotulo="Telefone" nome="telefone" valores={valores} mudar={mudar} />
-          <Campo rotulo="Nacionalidade" nome="nacionalidade" valores={valores} mudar={mudar} />
-          <Campo rotulo="Estado civil" nome="estadoCivil" valores={valores} mudar={mudar} />
-          <Campo rotulo="Profissão" nome="profissao" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("nacionalidade")} nome="nacionalidade" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("estadoCivil")} nome="estadoCivil" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("profissao")} nome="profissao" valores={valores} mudar={mudar} />
           <Campo
-            rotulo="Data de nascimento"
+            rotulo={t("dataNascimento")}
             nome="dataNascimento"
             valores={valores}
             mudar={mudar}
             type="date"
           />
         </Secao>
-        <Secao titulo="Documentos (criptografados)">
+        <Secao titulo={t("documentos")}>
           {sensivel("cpf")}
           {sensivel("rg")}
-          <Campo rotulo="Órgão emissor do RG" nome="rgOrgao" valores={valores} mudar={mudar} />
-          <Campo rotulo="UF do RG" nome="rgUf" valores={valores} mudar={mudar} maxLength={2} />
+          <Campo rotulo={t("rgOrgao")} nome="rgOrgao" valores={valores} mudar={mudar} />
+          <Campo rotulo={t("rgUf")} nome="rgUf" valores={valores} mudar={mudar} maxLength={2} />
           {sensivel("documentoEstrangeiro")}
         </Secao>
         <CamposDeEndereco valores={valores} mudar={mudar} />
-        <Secao titulo="Cônjuge">
-          <Campo rotulo="Nome do cônjuge" nome="conjugeNome" valores={valores} mudar={mudar} />
+        <Secao titulo={t("conjuge")}>
+          <Campo rotulo={t("conjugeNome")} nome="conjugeNome" valores={valores} mudar={mudar} />
           <Campo
-            rotulo="E-mail do cônjuge"
+            rotulo={t("conjugeEmail")}
             nome="conjugeEmail"
             valores={valores}
             mudar={mudar}
@@ -481,7 +474,7 @@ export function FormPessoa({
         </Secao>
         {podeSalvar && (
           <Botao type="submit" disabled={salvando}>
-            {salvando ? "Salvando..." : id ? "Salvar pessoa" : "Cadastrar pessoa"}
+            {salvando ? t("salvando") : id ? t("salvarPessoa") : t("cadastrarPessoa")}
           </Botao>
         )}
       </fieldset>
@@ -491,20 +484,21 @@ export function FormPessoa({
 
 /** Mostra os dados sensíveis legíveis (auditado no servidor). */
 export function MostrarDadosSensiveis({ pessoaId }: { pessoaId: string }) {
+  const t = useTranslations("cadastros.formularios");
   const [dados, setDados] = useState<Record<string, string | null> | null>(null);
   const [carregando, iniciar] = useTransition();
   if (dados)
     return (
       <div
         role="region"
-        aria-label="Dados sensíveis"
+        aria-label={t("dadosSensiveis")}
         className="border-warning bg-warning-surface rounded-md border p-3 text-sm"
       >
-        <p className="text-warning mb-2 text-xs font-medium">Visualização registrada na auditoria.</p>
+        <p className="text-warning mb-2 text-xs font-medium">{t("visualizacaoRegistrada")}</p>
         <dl className="grid grid-cols-2 gap-1">
-          {(Object.keys(ROTULOS_SENSIVEIS) as Sensivel[]).map((c) => (
+          {SENSIVEIS.map((c) => (
             <div key={c} className="contents">
-              <dt className="text-muted">{ROTULOS_SENSIVEIS[c]}</dt>
+              <dt className="text-muted">{t(`sensiveis.${c}`)}</dt>
               <dd className="text-text">{dados[c] ?? "—"}</dd>
             </div>
           ))}
@@ -514,7 +508,7 @@ export function MostrarDadosSensiveis({ pessoaId }: { pessoaId: string }) {
           onClick={() => setDados(null)}
           className="text-primary mt-2 text-xs font-medium"
         >
-          Ocultar
+          {t("ocultar")}
         </button>
       </div>
     );
@@ -525,7 +519,7 @@ export function MostrarDadosSensiveis({ pessoaId }: { pessoaId: string }) {
       onClick={() => iniciar(async () => setDados(await revelarDadosSensiveisAcao(pessoaId)))}
       className="text-primary text-sm font-medium"
     >
-      {carregando ? "Abrindo..." : "Mostrar dados sensíveis"}
+      {carregando ? t("abrindo") : t("mostrarDadosSensiveis")}
     </button>
   );
 }
@@ -543,6 +537,7 @@ export function FormNovoVinculo({
   pessoas?: { id: string; nome: string }[];
   tipos: { id: string; nome: string; comPercentual: boolean }[];
 }) {
+  const t = useTranslations("cadastros.formularios");
   const [estado, adicionar, adicionando] = useAcaoComAtualizacao(adicionarVinculoAcao);
   const [tipoId, setTipoId] = useState("");
   const comPercentual = tipos.find((t) => t.id === tipoId)?.comPercentual;
@@ -553,9 +548,9 @@ export function FormNovoVinculo({
       {empresaId && <input type="hidden" name="empresaId" value={empresaId} />}
       <div className="grid gap-2 sm:grid-cols-2">
         {empresas && (
-          <select name="empresaId" aria-label="Empresa" required className={estiloCampo} defaultValue="">
+          <select name="empresaId" aria-label={t("empresa")} required className={estiloCampo} defaultValue="">
             <option value="" disabled>
-              Empresa
+              {t("empresa")}
             </option>
             {empresas.map((e) => (
               <option key={e.id} value={e.id}>
@@ -565,9 +560,9 @@ export function FormNovoVinculo({
           </select>
         )}
         {pessoas && (
-          <select name="pessoaId" aria-label="Pessoa" required className={estiloCampo} defaultValue="">
+          <select name="pessoaId" aria-label={t("pessoa")} required className={estiloCampo} defaultValue="">
             <option value="" disabled>
-              Pessoa
+              {t("pessoa")}
             </option>
             {pessoas.map((p) => (
               <option key={p.id} value={p.id}>
@@ -578,14 +573,14 @@ export function FormNovoVinculo({
         )}
         <select
           name="tipoId"
-          aria-label="Tipo de vínculo"
+          aria-label={t("tipoDeVinculo")}
           required
           value={tipoId}
           onChange={(e) => setTipoId(e.target.value)}
           className={estiloCampo}
         >
           <option value="" disabled>
-            Tipo de vínculo
+            {t("tipoDeVinculo")}
           </option>
           {tipos.map((t) => (
             <option key={t.id} value={t.id}>
@@ -593,12 +588,17 @@ export function FormNovoVinculo({
             </option>
           ))}
         </select>
-        <input name="cargo" aria-label="Cargo" placeholder="Cargo (opcional)" className={estiloCampo} />
+        <input
+          name="cargo"
+          aria-label={t("cargo")}
+          placeholder={t("cargoOpcional")}
+          className={estiloCampo}
+        />
         {comPercentual && (
           <input
             name="percentual"
-            aria-label="Percentual de participação"
-            placeholder="% de participação"
+            aria-label={t("percentualAria")}
+            placeholder={t("percentualPlaceholder")}
             inputMode="decimal"
             className={estiloCampo}
           />
@@ -609,7 +609,7 @@ export function FormNovoVinculo({
         disabled={adicionando}
         className="bg-primary text-primary-foreground mt-2 rounded-md px-3 py-1.5 text-sm font-medium"
       >
-        Adicionar vínculo
+        {t("adicionarVinculo")}
       </button>
     </form>
   );
@@ -624,6 +624,8 @@ export function FormPapel({
   papel?: { id: string; nome: string; perfilSugeridoId: string | null };
   perfis: { id: string; nome: string }[];
 }) {
+  const t = useTranslations("cadastros.formularios");
+  const tc = useTranslations("comum");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarPapelAcao);
   return (
     <form action={salvar} className="py-2">
@@ -632,19 +634,19 @@ export function FormPapel({
       <div className="flex flex-wrap items-center gap-2">
         <input
           name="nome"
-          aria-label={papel ? `Nome do papel ${papel.nome}` : "Nome do novo papel"}
+          aria-label={papel ? t("nomeDoPapel", { nome: papel.nome }) : t("nomeDoNovoPapel")}
           defaultValue={papel?.nome}
-          placeholder="Novo papel"
+          placeholder={t("novoPapel")}
           required
           className={`${estiloCampo} sm:w-64`}
         />
         <select
           name="perfilSugeridoId"
-          aria-label={papel ? `Perfil sugerido para ${papel.nome}` : "Perfil sugerido do novo papel"}
+          aria-label={papel ? t("perfilSugeridoPara", { nome: papel.nome }) : t("perfilSugeridoNovoPapel")}
           defaultValue={papel?.perfilSugeridoId ?? ""}
           className={`${estiloCampo} sm:w-56`}
         >
-          <option value="">Sem perfil sugerido</option>
+          <option value="">{t("semPerfilSugerido")}</option>
           {perfis.map((p) => (
             <option key={p.id} value={p.id}>
               {p.nome}
@@ -652,7 +654,7 @@ export function FormPapel({
           ))}
         </select>
         <button type="submit" disabled={salvando} className="text-primary text-sm font-medium">
-          {papel ? "Salvar" : "Adicionar papel"}
+          {papel ? tc("salvar") : t("adicionarPapel")}
         </button>
       </div>
     </form>
@@ -660,6 +662,8 @@ export function FormPapel({
 }
 
 export function FormTipoDeVinculo({ tipo }: { tipo?: { id: string; nome: string; comPercentual: boolean } }) {
+  const t = useTranslations("cadastros.formularios");
+  const tc = useTranslations("comum");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarTipoDeVinculoAcao);
   return (
     <form action={salvar} className="py-2">
@@ -668,18 +672,18 @@ export function FormTipoDeVinculo({ tipo }: { tipo?: { id: string; nome: string;
       <div className="flex flex-wrap items-center gap-3">
         <input
           name="nome"
-          aria-label={tipo ? `Nome do tipo ${tipo.nome}` : "Nome do novo tipo de vínculo"}
+          aria-label={tipo ? t("nomeDoTipo", { nome: tipo.nome }) : t("nomeDoNovoTipo")}
           defaultValue={tipo?.nome}
-          placeholder="Novo tipo de vínculo"
+          placeholder={t("novoTipo")}
           required
           className={`${estiloCampo} sm:w-64`}
         />
         <label className="text-muted flex items-center gap-1 text-sm">
-          <input type="checkbox" name="comPercentual" value="sim" defaultChecked={tipo?.comPercentual} /> Com
-          percentual
+          <input type="checkbox" name="comPercentual" value="sim" defaultChecked={tipo?.comPercentual} />{" "}
+          {t("comPercentual")}
         </label>
         <button type="submit" disabled={salvando} className="text-primary text-sm font-medium">
-          {tipo ? "Salvar" : "Adicionar tipo"}
+          {tipo ? tc("salvar") : t("adicionarTipo")}
         </button>
       </div>
     </form>

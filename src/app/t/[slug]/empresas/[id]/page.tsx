@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { excluirEmpresaAcao, inativarEmpresaAcao, removerVinculoAcao } from "@/app/acoes/cadastros";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarTiposDeVinculo } from "@/server/services/cadastros";
@@ -24,6 +25,7 @@ async function Painel({ id }: { id: Promise<string> }) {
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   if (!(await pode(acesso, "empresas", "ver"))) notFound();
+  const t = await getTranslations("cadastros.empresas");
   const e = await obterEmpresa(acesso, await id);
   if (!e) notFound();
   const [grupos, podeEditar, podeExcluir, podeCriar] = await Promise.all([
@@ -47,12 +49,12 @@ async function Painel({ id }: { id: Promise<string> }) {
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
           <Link href="/empresas" className="text-primary text-sm">
-            ← Empresas
+            {t("voltar")}
           </Link>
-          <Titulo sobre={e.doContratante ? "Empresa do contratante" : "Empresa"}>{e.razaoSocial}</Titulo>
+          <Titulo sobre={e.doContratante ? t("sobreContratante") : t("sobreEmpresa")}>{e.razaoSocial}</Titulo>
           {e.inativaEm && (
             <p className="text-warning bg-warning-surface mb-4 rounded-md px-3 py-2 text-sm">
-              Empresa inativa: não aparece nas listas de escolha.
+              {t("avisoInativa")}
             </p>
           )}
           <FormEmpresa id={e.id} inicial={inicial} grupos={grupos} podeSalvar={podeEditar} />
@@ -62,15 +64,15 @@ async function Painel({ id }: { id: Promise<string> }) {
                 <BotaoDeAcao
                   acao={inativarEmpresaAcao}
                   campos={{ id: e.id, inativa: e.inativaEm ? "nao" : "sim" }}
-                  rotulo={e.inativaEm ? "Reativar empresa" : "Inativar empresa"}
+                  rotulo={e.inativaEm ? t("reativar") : t("inativar")}
                 />
               )}
               {podeExcluir && (
                 <BotaoDeAcao
                   acao={excluirEmpresaAcao}
                   campos={{ id: e.id }}
-                  rotulo="Excluir empresa"
-                  confirmar={`Excluir definitivamente ${e.razaoSocial}? Os vínculos com pessoas também saem.`}
+                  rotulo={t("excluirEmpresa")}
+                  confirmar={t("confirmarExcluir", { nome: e.razaoSocial })}
                   perigo
                 />
               )}
@@ -79,9 +81,9 @@ async function Painel({ id }: { id: Promise<string> }) {
         </Cartao>
         <div className="flex w-full max-w-md flex-col gap-6">
           <Cartao largura="max-w-md">
-            <Titulo sobre="Empresa">Pessoas vinculadas</Titulo>
+            <Titulo sobre={t("sobreEmpresa")}>{t("pessoasVinculadas")}</Titulo>
             {e.vinculos.length === 0 ? (
-              <p className="text-muted text-sm">Nenhuma pessoa vinculada.</p>
+              <p className="text-muted text-sm">{t("nenhumaPessoaVinculada")}</p>
             ) : (
               <ul className="divide-border divide-y text-sm">
                 {e.vinculos.map((v) => (
@@ -107,7 +109,7 @@ async function Painel({ id }: { id: Promise<string> }) {
                         <BotaoDeAcao
                           acao={removerVinculoAcao}
                           campos={{ id: v.id }}
-                          rotulo="Remover"
+                          rotulo={t("remover")}
                           perigo
                         />
                       )}
@@ -126,10 +128,8 @@ async function Painel({ id }: { id: Promise<string> }) {
           </Cartao>
           {e.cnpj && podeCriar && podeEditar && (
             <Cartao largura="max-w-md">
-              <Titulo sobre="Receita Federal">Quadro de sócios</Titulo>
-              <p className="text-muted mb-3 text-sm">
-                Os sócios informados pela Receita podem ser cadastrados como pessoas, um a um.
-              </p>
+              <Titulo sobre={t("receitaFederal")}>{t("quadroDeSocios")}</Titulo>
+              <p className="text-muted mb-3 text-sm">{t("sociosExplicacao")}</p>
               <SociosDaReceita
                 empresaId={e.id}
                 cnpj={e.cnpj}

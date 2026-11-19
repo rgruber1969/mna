@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Lato, Manrope, Montserrat, Open_Sans, Roboto } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { produto } from "@/config/produto";
 import { IDIOMA_PADRAO } from "@/i18n/idiomas";
 import { SCRIPT_DO_TEMA } from "@/components/acesso/tema";
@@ -25,10 +26,10 @@ const lato = Lato({
 
 const fontes = [manrope, inter, roboto, openSans, montserrat, lato].map((f) => f.variable).join(" ");
 
-export const metadata: Metadata = {
-  title: produto.nome,
-  description: `${produto.nome}: gestão de processos de M&A`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("comum.metadados");
+  return { title: produto.nome, description: t("descricao", { produto: produto.nome }) };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

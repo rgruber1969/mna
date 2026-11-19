@@ -1,5 +1,6 @@
 import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { z } from "zod";
+import type { ErroDeServico } from "@/i18n/servidor";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
   convite,
@@ -61,21 +62,21 @@ export async function listarTenants(acesso: Acesso | null): Promise<TenantResumo
 }
 
 const NovoTenant = z.object({
-  nome: z.string().trim().min(2, "Informe o nome do tenant.").max(120),
+  nome: z.string().trim().min(2, "console.erros.nomeDoTenant").max(120),
   slug: z.string().trim().toLowerCase(),
 });
 
 export async function criarTenant(
   acesso: Acesso | null,
   dados: { nome: string; slug: string },
-): Promise<{ id: string } | { erro: string }> {
+): Promise<{ id: string } | ErroDeServico> {
   const a = exigirConsole(acesso);
   const r = NovoTenant.safeParse(dados);
-  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "console.erros.dadosInvalidos" };
   const problema = problemaNoSlug(r.data.slug);
   if (problema) return { erro: problema };
   const [ja] = await banco().select({ id: tenant.id }).from(tenant).where(eq(tenant.slug, r.data.slug));
-  if (ja) return { erro: "Já existe um tenant com este endereço." };
+  if (ja) return { erro: "console.erros.tenantJaExiste" };
   const [t] = await banco().insert(tenant).values(r.data).returning({ id: tenant.id });
   await completarCadastrosPadrao(t.id);
   await auditar(a.usuario.id, "tenant.criado", t.id, { slug: r.data.slug });
@@ -124,14 +125,14 @@ export async function convidarAdministradorDoTenant(
   acesso: Acesso | null,
   tenantId: string,
   dados: DadosPessoa,
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
-  if (!z.uuid().safeParse(tenantId).success) return { erro: "Tenant não encontrado." };
+  if (!z.uuid().safeParse(tenantId).success) return { erro: "console.erros.tenantNaoEncontrado" };
   const [t] = await banco()
     .select({ id: tenant.id, slug: tenant.slug, nome: tenant.nome })
     .from(tenant)
     .where(eq(tenant.id, tenantId));
-  if (!t) return { erro: "Tenant não encontrado." };
+  if (!t) return { erro: "console.erros.tenantNaoEncontrado" };
   const r = await emitirConviteDoTenant(t, { ...dados, administrador: true }, a.usuario.id);
   if ("ok" in r) await auditar(a.usuario.id, "tenant.administrador.convidado", t.id);
   return r;
@@ -139,13 +140,12 @@ export async function convidarAdministradorDoTenant(
 
 // --- Redefinição de 2FA pela plataforma -------------------------------------------
 
-/** Motivos fixos: a auditoria não guarda texto livre (sem dados pessoais, ADR-0007). */
-export const MOTIVOS_DE_REDEFINICAO = {
-  "perdeu-aparelho": "Perdeu ou trocou o aparelho e os códigos de recuperação",
-  "aparelho-roubado": "Aparelho roubado ou comprometido",
-  outro: "Outro motivo (detalhado no atendimento)",
-} as const;
-export type MotivoDeRedefinicao = keyof typeof MOTIVOS_DE_REDEFINICAO;
+/**
+ * Motivos fixos: a auditoria não guarda texto livre (sem dados pessoais, ADR-0007).
+ * Os rótulos ficam nas mensagens (`console.motivos.<código>`).
+ */
+export const MOTIVOS_DE_REDEFINICAO = ["perdeu-aparelho", "aparelho-roubado", "outro"] as const;
+export type MotivoDeRedefinicao = (typeof MOTIVOS_DE_REDEFINICAO)[number];
 
 /**
  * Redefinição completa do 2FA de qualquer conta (autenticacao-e-sessao.md,
@@ -155,14 +155,15 @@ export type MotivoDeRedefinicao = keyof typeof MOTIVOS_DE_REDEFINICAO;
 export async function redefinirDoisFatoresPelaPlataforma(
   acesso: Acesso | null,
   dados: { email: string; motivo: string; identidadeConfirmada: boolean },
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
-  if (!dados.identidadeConfirmada) return { erro: "Confirme a identidade da pessoa antes de redefinir." };
-  if (!(dados.motivo in MOTIVOS_DE_REDEFINICAO)) return { erro: "Escolha o motivo." };
+  if (!dados.identidadeConfirmada) return { erro: "console.erros.confirmeIdentidade" };
+  if (!(MOTIVOS_DE_REDEFINICAO as readonly string[]).includes(dados.motivo))
+    return { erro: "console.erros.escolhaMotivo" };
   const email = dados.email.trim().toLowerCase();
   const [u] = await banco().select({ id: usuario.id }).from(usuario).where(eq(usuario.email, email));
-  if (!u) return { erro: "Nenhuma conta com este e-mail." };
-  if (u.id === a.usuario.id) return { erro: "Você não pode redefinir o seu próprio 2FA por aqui." };
+  if (!u) return { erro: "console.erros.contaNaoEncontrada" };
+  if (u.id === a.usuario.id) return { erro: "console.erros.naoRedefinirProprio" };
   await apagarTodosOsFatores(u.id);
   await banco()
     .insert(eventoPlataforma)
@@ -175,8 +176,8 @@ export async function redefinirDoisFatoresPelaPlataforma(
     });
   await avisarMudancaNosFatores(
     u.id,
-    "A verificação em duas etapas da sua conta foi redefinida pelo suporte da plataforma",
-    "console da plataforma",
+    "emails.mudancaNosFatores.motivos.doisFatoresRedefinidosPeloSuporte",
+    "emails.mudancaNosFatores.locais.consoleDaPlataforma",
   );
   return { ok: true };
 }
@@ -188,17 +189,17 @@ export async function renomearTenant(
   acesso: Acesso | null,
   tenantId: string,
   nome: string,
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
   const r = NovoTenant.shape.nome.safeParse(nome);
-  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Nome inválido." };
-  if (!z.uuid().safeParse(tenantId).success) return { erro: "Tenant não encontrado." };
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "console.erros.nomeInvalido" };
+  if (!z.uuid().safeParse(tenantId).success) return { erro: "console.erros.tenantNaoEncontrado" };
   const feito = await banco()
     .update(tenant)
     .set({ nome: r.data })
     .where(eq(tenant.id, tenantId))
     .returning({ id: tenant.id });
-  if (feito.length === 0) return { erro: "Tenant não encontrado." };
+  if (feito.length === 0) return { erro: "console.erros.tenantNaoEncontrado" };
   await auditar(a.usuario.id, "tenant.renomeado", tenantId);
   return { ok: true };
 }
@@ -208,15 +209,15 @@ export async function definirSuspensao(
   acesso: Acesso | null,
   tenantId: string,
   suspender: boolean,
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
-  if (!z.uuid().safeParse(tenantId).success) return { erro: "Tenant não encontrado." };
+  if (!z.uuid().safeParse(tenantId).success) return { erro: "console.erros.tenantNaoEncontrado" };
   const feito = await banco()
     .update(tenant)
     .set({ suspensoEm: suspender ? new Date() : null })
     .where(eq(tenant.id, tenantId))
     .returning({ id: tenant.id });
-  if (feito.length === 0) return { erro: "Tenant não encontrado." };
+  if (feito.length === 0) return { erro: "console.erros.tenantNaoEncontrado" };
   if (suspender)
     await banco()
       .delete(sessao)
@@ -255,7 +256,7 @@ export async function listarEquipe(acesso: Acesso | null): Promise<EquipeDaPlata
 export async function convidarParaEquipe(
   acesso: Acesso | null,
   dados: DadosPessoa,
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
   const email = String(dados.email ?? "")
     .trim()
@@ -264,7 +265,7 @@ export async function convidarParaEquipe(
     .select({ id: usuario.id })
     .from(usuario)
     .where(and(eq(usuario.email, email), eq(usuario.papelPlataforma, "admin")));
-  if (ja) return { erro: "Esta pessoa já faz parte da equipe." };
+  if (ja) return { erro: "console.erros.jaNaEquipe" };
   // Um convite novo substitui o pendente para o mesmo e-mail.
   await banco()
     .update(convitePlataforma)
@@ -276,15 +277,15 @@ export async function convidarParaEquipe(
 export async function cancelarConviteDaEquipe(
   acesso: Acesso | null,
   conviteId: string,
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
-  if (!z.uuid().safeParse(conviteId).success) return { erro: "Convite não encontrado." };
+  if (!z.uuid().safeParse(conviteId).success) return { erro: "console.erros.conviteNaoEncontrado" };
   const feito = await banco()
     .update(convitePlataforma)
     .set({ expiraEm: new Date() })
     .where(and(eq(convitePlataforma.id, conviteId), isNull(convitePlataforma.aceitoEm)))
     .returning({ id: convitePlataforma.id });
-  if (feito.length === 0) return { erro: "Convite não encontrado." };
+  if (feito.length === 0) return { erro: "console.erros.conviteNaoEncontrado" };
   await banco().insert(eventoPlataforma).values({
     tipo: "convite.plataforma.cancelado",
     atorId: a.usuario.id,
@@ -298,16 +299,16 @@ export async function cancelarConviteDaEquipe(
 export async function removerDaEquipe(
   acesso: Acesso | null,
   usuarioId: string,
-): Promise<{ ok: true } | { erro: string }> {
+): Promise<{ ok: true } | ErroDeServico> {
   const a = exigirConsole(acesso);
-  if (!z.uuid().safeParse(usuarioId).success) return { erro: "Usuário não encontrado." };
-  if (usuarioId === a.usuario.id) return { erro: "Você não pode remover o seu próprio acesso." };
+  if (!z.uuid().safeParse(usuarioId).success) return { erro: "console.erros.usuarioNaoEncontrado" };
+  if (usuarioId === a.usuario.id) return { erro: "console.erros.naoRemoverProprio" };
   const equipe = await banco()
     .select({ id: usuario.id })
     .from(usuario)
     .where(eq(usuario.papelPlataforma, "admin"));
-  if (!equipe.some((u) => u.id === usuarioId)) return { erro: "Usuário não encontrado." };
-  if (equipe.length <= 1) return { erro: "O console precisa de pelo menos um usuário." };
+  if (!equipe.some((u) => u.id === usuarioId)) return { erro: "console.erros.usuarioNaoEncontrado" };
+  if (equipe.length <= 1) return { erro: "console.erros.pelomenosUmUsuario" };
   await banco().update(usuario).set({ papelPlataforma: null }).where(eq(usuario.id, usuarioId));
   await banco()
     .delete(sessao)

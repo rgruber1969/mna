@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 /**
  * Situação de acesso de uma pessoa ao sistema, com o atalho para convidar
@@ -15,16 +16,19 @@ export function AcessoDaPessoa({
   email: string | null;
   podeConvidar: boolean;
 }) {
-  if (acesso === "usuario") return <span className="text-success shrink-0 text-xs font-medium">usuário</span>;
-  if (acesso === "convidado") return <span className="text-muted shrink-0 text-xs">convite enviado</span>;
-  if (!podeConvidar) return <span className="text-muted shrink-0 text-xs">sem acesso</span>;
-  if (!email) return <span className="text-muted shrink-0 text-xs">sem e-mail para convidar</span>;
+  const t = useTranslations("cadastros.acessoDaPessoa");
+  if (acesso === "usuario")
+    return <span className="text-success shrink-0 text-xs font-medium">{t("usuario")}</span>;
+  if (acesso === "convidado")
+    return <span className="text-muted shrink-0 text-xs">{t("conviteEnviado")}</span>;
+  if (!podeConvidar) return <span className="text-muted shrink-0 text-xs">{t("semAcesso")}</span>;
+  if (!email) return <span className="text-muted shrink-0 text-xs">{t("semEmail")}</span>;
   return (
     <Link
       href={`/usuarios?${new URLSearchParams({ nome, email })}`}
       className="text-primary shrink-0 text-xs font-medium"
     >
-      Convidar
+      {t("convidar")}
     </Link>
   );
 }

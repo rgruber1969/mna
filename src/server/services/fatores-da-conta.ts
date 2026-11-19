@@ -6,6 +6,7 @@ import { enviarEmail } from "@/server/email/enviar";
 import { montarEmail } from "@/server/email/modelo";
 import { marcaParaEmail } from "./marca";
 import { produto } from "@/config/produto";
+import { tradutor } from "@/i18n/servidor";
 
 /**
  * Fatores de autenticação da conta (ADR-0019: os fatores são da conta e valem
@@ -97,7 +98,12 @@ export async function outroTenantExigeDoisFatores(
   return false;
 }
 
-/** Avisa a pessoa por e-mail sobre mudança nos fatores da conta (sem detalhes sensíveis). */
+/**
+ * Avisa a pessoa por e-mail sobre mudança nos fatores da conta (sem detalhes
+ * sensíveis). `oQue` e `onde` podem ser chaves das mensagens (ex.:
+ * "emails.mudancaNosFatores.motivos.passkeyRemovidaPeloAdministrador") ou
+ * texto já pronto (nome do tenant); chave existente é traduzida.
+ */
 export async function avisarMudancaNosFatores(
   usuarioId: string,
   oQue: string,
@@ -109,16 +115,19 @@ export async function avisarMudancaNosFatores(
     .from(usuario)
     .where(eq(usuario.id, usuarioId));
   if (!u) return;
+  const t = await tradutor();
+  // Chave das mensagens ou texto pronto (ex.: nome de exibição do tenant).
+  const resolver = (valor: string) => (t.has(valor) ? t(valor) : valor);
   await enviarEmail(
     montarEmail({
       para: u.email,
-      assunto: `Mudança na segurança da sua conta no ${produto.nome}`,
-      saudacao: `Olá, ${u.nome}.`,
+      assunto: t("emails.mudancaNosFatores.assunto", { produto: produto.nome }),
+      saudacao: t("emails.saudacao", { nome: u.nome }),
       paragrafos: [
-        `${oQue} (${onde}).`,
-        "Suas sessões abertas foram encerradas. No próximo acesso, se a verificação em duas etapas for exigida, você vai configurá-la de novo.",
+        t("emails.mudancaNosFatores.descricao", { oQue: resolver(oQue), onde: resolver(onde) }),
+        t("emails.mudancaNosFatores.sessoesEncerradas"),
       ],
-      rodape: "Se você não pediu esta mudança, avise o administrador imediatamente.",
+      rodape: t("emails.mudancaNosFatores.rodape"),
       marca: tenantId ? await marcaParaEmail(tenantId) : null,
     }),
   );

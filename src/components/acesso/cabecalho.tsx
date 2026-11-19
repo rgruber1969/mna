@@ -10,16 +10,17 @@ import { marcaPorSlug } from "@/server/services/marca";
 import { menuDoUsuario } from "@/server/services/menu";
 import { minhasNotificacoes } from "@/server/services/notificacoes";
 
-/** Usuário (com foto), "Minha conta" e sair: comum ao console e ao tenant. */
-function Usuario({ usuario }: { usuario: { nome: string; foto?: string | null } }) {
+/** Usuário (com foto), "Minha conta" e sair, na barra do console. */
+async function Usuario({ usuario }: { usuario: { nome: string; foto?: string | null } }) {
+  const t = await getTranslations("cabecalho");
   return (
     <div className="flex items-center gap-4 text-sm">
-      <Link href="/seguranca" className="text-muted flex items-center gap-2" title="Minha conta">
+      <Link href="/seguranca" className="text-muted flex items-center gap-2" title={t("minhaConta")}>
         <Avatar nome={usuario.nome} foto={usuario.foto} />
         <span className="hidden sm:inline">{usuario.nome}</span>
       </Link>
       <Link href="/seguranca" className="text-primary font-medium">
-        Minha conta
+        {t("minhaConta")}
       </Link>
       <FormSair />
     </div>
@@ -27,7 +28,7 @@ function Usuario({ usuario }: { usuario: { nome: string; foto?: string | null } 
 }
 
 /** Barra superior do console da plataforma (poucos itens: sem menu lateral). */
-export function Cabecalho({
+export async function Cabecalho({
   area,
   usuario,
   console: noConsole = false,
@@ -37,6 +38,7 @@ export function Cabecalho({
   /** Console da plataforma: mostra o link para a equipe da RGRUBER. */
   console?: boolean;
 }) {
+  const t = await getTranslations("cabecalho");
   return (
     <header className="border-border bg-background flex items-center justify-between border-b px-6 py-3">
       <Link href="/" className="text-primary font-semibold">
@@ -45,7 +47,7 @@ export function Cabecalho({
       <div className="flex items-center gap-4 text-sm">
         {noConsole && (
           <Link href="/equipe" className="text-primary font-medium">
-            Equipe
+            {t("equipe")}
           </Link>
         )}
         <Usuario usuario={usuario} />

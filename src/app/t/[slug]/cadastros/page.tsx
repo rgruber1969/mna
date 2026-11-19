@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { excluirPapelAcao, excluirTipoDeVinculoAcao } from "@/app/acoes/cadastros";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/services/cadastros";
@@ -20,6 +21,8 @@ async function Painel() {
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   if (!(await pode(acesso, "cadastros", "ver"))) notFound();
+  const tr = await getTranslations("cadastros.auxiliares");
+  const tc = await getTranslations("comum");
   const [papeis, tipos, perfis, podeCriar, podeEditar, podeExcluir] = await Promise.all([
     listarPapeis(acesso),
     listarTiposDeVinculo(acesso),
@@ -33,11 +36,8 @@ async function Painel() {
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
-          <Titulo sobre="Cadastros auxiliares">Papéis de empresa</Titulo>
-          <p className="text-muted mb-3 text-sm">
-            O papel que uma empresa assume em cada deal. O perfil sugerido é proposto às pessoas da empresa
-            quando ela entra no deal; o administrador confirma.
-          </p>
+          <Titulo sobre={tr("sobre")}>{tr("papeisTitulo")}</Titulo>
+          <p className="text-muted mb-3 text-sm">{tr("papeisExplicacao")}</p>
           <ul className="divide-border divide-y">
             {papeis.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center justify-between gap-2">
@@ -47,7 +47,7 @@ async function Painel() {
                   <span className="py-2 text-sm">
                     {p.nome}
                     <span className="text-muted block text-xs">
-                      {p.perfilSugerido ?? "Sem perfil sugerido"}
+                      {p.perfilSugerido ?? tr("semPerfilSugerido")}
                     </span>
                   </span>
                 )}
@@ -55,8 +55,8 @@ async function Painel() {
                   <BotaoDeAcao
                     acao={excluirPapelAcao}
                     campos={{ id: p.id }}
-                    rotulo="Excluir"
-                    confirmar={`Excluir o papel ${p.nome}?`}
+                    rotulo={tc("excluir")}
+                    confirmar={tr("confirmarExcluirPapel", { nome: p.nome })}
                     perigo
                   />
                 )}
@@ -70,25 +70,20 @@ async function Painel() {
           )}
         </Cartao>
         <Cartao largura="max-w-lg">
-          <Titulo sobre="Cadastros auxiliares">Tipos de vínculo</Titulo>
-          <p className="text-muted mb-3 text-sm">
-            Como uma pessoa se liga a uma empresa. &quot;Com percentual&quot; pede a participação (ex.:
-            sócio).
-          </p>
+          <Titulo sobre={tr("sobre")}>{tr("tiposTitulo")}</Titulo>
+          <p className="text-muted mb-3 text-sm">{tr("tiposExplicacao")}</p>
           <ul className="divide-border divide-y">
             {tipos.map((t) => (
               <li key={t.id} className="flex flex-wrap items-center justify-between gap-2">
                 {podeEditar ? <FormTipoDeVinculo tipo={t} /> : <span className="py-2 text-sm">{t.nome}</span>}
                 <span className="flex items-center gap-2">
-                  <span className="text-muted text-xs">
-                    {t.emUso === 0 ? "sem uso" : `${t.emUso} vínculo${t.emUso > 1 ? "s" : ""}`}
-                  </span>
+                  <span className="text-muted text-xs">{tr("usoDoTipo", { n: t.emUso })}</span>
                   {podeExcluir && t.emUso === 0 && (
                     <BotaoDeAcao
                       acao={excluirTipoDeVinculoAcao}
                       campos={{ id: t.id }}
-                      rotulo="Excluir"
-                      confirmar={`Excluir o tipo ${t.nome}?`}
+                      rotulo={tc("excluir")}
+                      confirmar={tr("confirmarExcluirTipo", { nome: t.nome })}
                       perigo
                     />
                   )}

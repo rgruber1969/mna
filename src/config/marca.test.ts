@@ -35,18 +35,19 @@ describe("validação das cores", () => {
   it("recusa primária clara demais para textos e links, com explicação", () => {
     const p = problemasDeContraste({ primaria: "#ffd60a", destaque: TOKENS_PADRAO.destaque });
     expect(p).toHaveLength(1);
-    expect(p[0]).toMatch(/cor primária.*mínimo 4.5:1/);
+    expect(p[0].erro).toBe("administracao.erros.contrastePrimaria");
+    expect(p[0].parametros).toMatchObject({ minimo: "4.5" });
   });
 
   it("recusa destaque quase invisível sobre o branco", () => {
-    expect(problemasDeContraste({ primaria: TOKENS_PADRAO.primaria, destaque: "#f1f5f9" })[0]).toMatch(
-      /cor de destaque/,
+    expect(problemasDeContraste({ primaria: TOKENS_PADRAO.primaria, destaque: "#f1f5f9" })[0].erro).toBe(
+      "administracao.erros.contrasteDestaque",
     );
   });
 
   it("recusa formato inválido", () => {
     expect(problemasDeContraste({ primaria: "red", destaque: "#123" })).toEqual([
-      "Use cores no formato #RRGGBB.",
+      { erro: "administracao.erros.formatoDeCor" },
     ]);
   });
 });

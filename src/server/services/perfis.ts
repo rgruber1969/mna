@@ -1,6 +1,7 @@
 import { notificar } from "./notificacoes";
 import { and, asc, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import type { ErroDeServico } from "@/i18n/servidor";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
   eventoAuditoria,
@@ -21,12 +22,16 @@ import { matrizDoUsuarioNoTenant } from "./permissoes/verificador";
  * tenant (ADR-0013; perfis-e-permissoes.md). Toda mudança é auditada.
  */
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 type Transacao = Parameters<Parameters<typeof comTenant>[1]>[0];
 
 const uuidValido = (id: string) => z.uuid().safeParse(id).success;
-const Nome = z.string().trim().min(2, "Informe o nome do perfil.").max(80, "Nome muito longo.");
-const Descricao = z.string().trim().max(400, "Descrição muito longa (até 400 caracteres).");
+const Nome = z
+  .string()
+  .trim()
+  .min(2, "administracao.erros.perfilNomeObrigatorio")
+  .max(80, "administracao.erros.nomeLongo");
+const Descricao = z.string().trim().max(400, "administracao.erros.descricaoLonga");
 
 async function auditar(
   a: AcessoTenant,
@@ -147,7 +152,7 @@ export async function obterPerfil(acesso: Acesso | null, perfilId: string): Prom
 
 // --- Cadastro de perfis --------------------------------------------------------
 
-const NOME_REPETIDO = "Já existe um perfil com este nome nesta camada.";
+const NOME_REPETIDO = "administracao.erros.perfilRepetido";
 
 async function nomeLivre(tx: Transacao, camada: Camada, nome: string, ignorar?: string) {
   const r = await tx
@@ -160,20 +165,21 @@ async function nomeLivre(tx: Transacao, camada: Camada, nome: string, ignorar?: 
 export async function criarPerfil(
   acesso: Acesso | null,
   dados: { nome: string; camada: string; descricao?: string; copiarDe?: string },
-): Promise<{ id: string } | { erro: string }> {
+): Promise<{ id: string } | ErroDeServico> {
   const a = exigirAdministrador(acesso);
   const nome = Nome.safeParse(dados.nome);
   if (!nome.success) return { erro: nome.error.issues[0].message };
-  if (dados.camada !== "tenant" && dados.camada !== "deal") return { erro: "Escolha a camada do perfil." };
+  if (dados.camada !== "tenant" && dados.camada !== "deal")
+    return { erro: "administracao.erros.camadaInvalida" };
   const descricao = Descricao.safeParse(dados.descricao ?? "");
   if (!descricao.success) return { erro: descricao.error.issues[0].message };
   const camada: Camada = dados.camada;
-  const r = await comTenant(a.tenant.id, async (tx): Promise<{ id: string } | { erro: string }> => {
+  const r = await comTenant(a.tenant.id, async (tx): Promise<{ id: string } | ErroDeServico> => {
     if (!(await nomeLivre(tx, camada, nome.data))) return { erro: NOME_REPETIDO };
     let matriz: Matriz = {};
     if (dados.copiarDe) {
       const origem = await perfilDoTenant(tx, dados.copiarDe);
-      if (!origem || origem.camada !== camada) return { erro: "Perfil de origem inválido." };
+      if (!origem || origem.camada !== camada) return { erro: "administracao.erros.perfilOrigemInvalido" };
       matriz = normalizarMatriz(origem.matriz, camada);
     }
     const [p] = await tx
@@ -199,7 +205,7 @@ export async function editarPerfil(
   if (!descricao.success) return { erro: descricao.error.issues[0].message };
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const p = await perfilDoTenant(tx, perfilId);
-    if (!p) return { erro: "Perfil não encontrado." };
+    if (!p) return { erro: "administracao.erros.perfilNaoEncontrado" };
     if (!(await nomeLivre(tx, p.camada, nome.data, p.id))) return { erro: NOME_REPETIDO };
     await tx
       .update(perfil)
@@ -219,7 +225,7 @@ export async function salvarMatrizDoPerfil(
   const a = exigirAdministrador(acesso);
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const p = await perfilDoTenant(tx, perfilId);
-    if (!p) return { erro: "Perfil não encontrado." };
+    if (!p) return { erro: "administracao.erros.perfilNaoEncontrado" };
     const matriz = normalizarMatriz(matrizBruta, p.camada);
     await tx.update(perfil).set({ matriz, atualizadoEm: new Date() }).where(eq(perfil.id, p.id));
     return { ok: true };
@@ -237,8 +243,8 @@ export async function definirExigenciaDoPerfil(
   const a = exigirAdministrador(acesso);
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const p = await perfilDoTenant(tx, perfilId);
-    if (!p) return { erro: "Perfil não encontrado." };
-    if (p.camada !== "tenant") return { erro: "A exigência de 2FA vale para perfis do tenant." };
+    if (!p) return { erro: "administracao.erros.perfilNaoEncontrado" };
+    if (p.camada !== "tenant") return { erro: "administracao.erros.exigencia2faSoTenant" };
     await tx
       .update(perfil)
       .set({ exigeDoisFatores: exige, atualizadoEm: new Date() })
@@ -254,12 +260,12 @@ export async function excluirPerfil(acesso: Acesso | null, perfilId: string): Pr
   const a = exigirAdministrador(acesso);
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const p = await perfilDoTenant(tx, perfilId);
-    if (!p) return { erro: "Perfil não encontrado." };
+    if (!p) return { erro: "administracao.erros.perfilNaoEncontrado" };
     const [{ n }] = await tx
       .select({ n: count() })
       .from(perfilUsuario)
       .where(eq(perfilUsuario.perfilId, p.id));
-    if (n > 0) return { erro: `Perfil em uso por ${n} usuário(s). Retire-o deles antes de excluir.` };
+    if (n > 0) return { erro: "administracao.erros.perfilEmUso", parametros: { n } };
     await tx.delete(perfil).where(eq(perfil.id, p.id));
     return { ok: true };
   });
@@ -272,7 +278,7 @@ export async function excluirPerfil(acesso: Acesso | null, perfilId: string): Pr
 /** Trocar o modo não apaga matrizes individuais: elas voltam se o modo voltar. */
 export async function definirModoPermissoes(acesso: Acesso | null, modo: string): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
-  if (modo !== "perfil" && modo !== "usuario") return { erro: "Modo inválido." };
+  if (modo !== "perfil" && modo !== "usuario") return { erro: "administracao.erros.modoInvalido" };
   await banco().update(tenant).set({ modoPermissoes: modo }).where(eq(tenant.id, a.tenant.id));
   await auditar(a, "tenant.permissoes.modo", "tenant", a.tenant.id, { modo });
   return { ok: true };
@@ -343,7 +349,7 @@ export async function permissoesDoUsuario(
   return { modo: a.tenant.modoPermissoes, ...dados, efetiva };
 }
 
-export const UM_PERFIL_SO = "Escolha um único perfil do tenant.";
+export const UM_PERFIL_SO = "administracao.erros.umPerfilSo";
 
 /** Define o perfil do tenant da pessoa: um só, ou nenhum (decisão de 2026-11-18). */
 export async function definirPerfisDoUsuario(
@@ -356,7 +362,7 @@ export async function definirPerfisDoUsuario(
   if (perfilIds.length > 1) return { erro: UM_PERFIL_SO };
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const u = await usuarioAtivo(tx, usuarioId);
-    if (!u) return { erro: "Usuário não encontrado." };
+    if (!u) return { erro: "administracao.erros.usuarioNaoEncontrado" };
     const ids = await filtrarPerfisDoTenant(tx, perfilIds);
     await atribuirPerfis(tx, a.tenant.id, u.id, ids);
     if (u.id !== a.usuario.id) await notificar(tx, a.tenant.id, u.id, "perfil_alterado", {}, "/seguranca");
@@ -461,7 +467,7 @@ export async function salvarMatrizIndividual(
   const a = exigirAdministrador(acesso);
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const at = await atribuicao(tx, usuarioId, perfilId);
-    if (!at) return { erro: "Perfil não atribuído a este usuário." };
+    if (!at) return { erro: "administracao.erros.perfilNaoAtribuido" };
     await gravarIndividual(tx, a.tenant.id, at.u.id, at.p.id, normalizarMatriz(matrizBruta, at.p.camada));
     return { ok: true };
   });
@@ -482,7 +488,7 @@ export async function copiarMatrizIndividual(
   const a = exigirAdministrador(acesso);
   const r = await comTenant(a.tenant.id, async (tx): Promise<Resultado> => {
     const at = await atribuicao(tx, usuarioId, perfilId);
-    if (!at) return { erro: "Perfil não atribuído a este usuário." };
+    if (!at) return { erro: "administracao.erros.perfilNaoAtribuido" };
     if (origem === "perfil") {
       await tx
         .delete(matrizUsuario)
@@ -490,7 +496,7 @@ export async function copiarMatrizIndividual(
       return { ok: true };
     }
     const deOutro = await atribuicao(tx, origem, perfilId);
-    if (!deOutro || deOutro.u.id === at.u.id) return { erro: "Escolha outro usuário com o mesmo perfil." };
+    if (!deOutro || deOutro.u.id === at.u.id) return { erro: "administracao.erros.escolhaOutroUsuario" };
     const matriz = (await matrizIndividualDe(tx, deOutro.u.id, at.p.id)) ?? at.p.matriz;
     await gravarIndividual(tx, a.tenant.id, at.u.id, at.p.id, normalizarMatriz(matriz, at.p.camada));
     return { ok: true };

@@ -1,3 +1,4 @@
+import { getFormatter, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -11,6 +12,8 @@ import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao, FormConvidarParaEquipe } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
+const DATA_E_HORA = { dateStyle: "short", timeStyle: "medium" } as const;
+
 /** Equipe da RGRUBER: quem acessa o console (perfis-e-permissoes.md). */
 async function Painel() {
   await connection();
@@ -19,6 +22,8 @@ async function Painel() {
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   const { usuarios, convites } = await listarEquipe(acesso);
+  const t = await getTranslations("console.equipe");
+  const formatar = await getFormatter();
 
   return (
     <>
@@ -26,21 +31,21 @@ async function Painel() {
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <Cartao largura="max-w-2xl">
-            <Titulo sobre="Console">Equipe da RGRUBER</Titulo>
+            <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
             <ul className="divide-border divide-y text-sm">
               {usuarios.map((u) => (
                 <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span>
                     <span className="text-text">{u.nome}</span>{" "}
                     <span className="text-muted">({u.email})</span>
-                    {u.ehVoce && <span className="text-muted"> · você</span>}
+                    {u.ehVoce && <span className="text-muted">{t("voce")}</span>}
                   </span>
                   {!u.ehVoce && (
                     <BotaoDeAcao
                       acao={removerDaEquipeAcao}
                       campos={{ id: u.id }}
-                      rotulo="Remover acesso"
-                      confirmar="Remover o acesso desta pessoa ao console agora? As sessões dela serão encerradas."
+                      rotulo={t("removerAcesso")}
+                      confirmar={t("confirmarRemover")}
                       perigo
                     />
                   )}
@@ -50,21 +55,24 @@ async function Painel() {
           </Cartao>
           {convites.length > 0 && (
             <Cartao largura="max-w-2xl">
-              <Titulo sobre="Aguardando aceite">Convites pendentes</Titulo>
+              <Titulo sobre={t("convitesSobre")}>{t("convitesTitulo")}</Titulo>
               <ul className="divide-border divide-y text-sm">
                 {convites.map((c) => (
                   <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                     <span>
                       <span className="text-text">{c.nome}</span>{" "}
                       <span className="text-muted">
-                        ({c.email}) · vence em {c.expiraEm.toLocaleString("pt-BR")}
+                        {t("conviteVence", {
+                          email: c.email,
+                          data: formatar.dateTime(c.expiraEm, DATA_E_HORA),
+                        })}
                       </span>
                     </span>
                     <BotaoDeAcao
                       acao={cancelarConviteDaEquipeAcao}
                       campos={{ id: c.id }}
-                      rotulo="Cancelar"
-                      confirmar="Cancelar este convite?"
+                      rotulo={t("cancelar")}
+                      confirmar={t("confirmarCancelar")}
                       perigo
                     />
                   </li>
@@ -74,10 +82,8 @@ async function Painel() {
           )}
         </div>
         <Cartao largura="max-w-sm">
-          <Titulo sobre="Novo">Convidar para a equipe</Titulo>
-          <p className="text-muted mb-4 text-sm">
-            A pessoa terá acesso total ao console, sempre com verificação em duas etapas.
-          </p>
+          <Titulo sobre={t("convidarSobre")}>{t("convidarTitulo")}</Titulo>
+          <p className="text-muted mb-4 text-sm">{t("convidarTexto")}</p>
           <FormConvidarParaEquipe />
         </Cartao>
       </main>

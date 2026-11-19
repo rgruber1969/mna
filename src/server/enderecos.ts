@@ -46,10 +46,10 @@ export function protocolo(): "http" | "https" {
 }
 
 /** Motivo da recusa do slug, ou null se ele é válido. */
+/** Problema no endereço (subdomínio): chave das mensagens (ADR-0020) ou null se estiver bom. */
 export function problemaNoSlug(slug: string): string | null {
-  if (!FORMATO_SLUG.test(slug))
-    return "Use de 1 a 40 letras minúsculas, números ou hífens (sem hífen nas pontas).";
-  if (SLUGS_RESERVADOS.has(slug)) return "Este endereço é reservado pela plataforma.";
+  if (!FORMATO_SLUG.test(slug)) return "console.erros.enderecoInvalido";
+  if (SLUGS_RESERVADOS.has(slug)) return "console.erros.enderecoReservado";
   return null;
 }
 

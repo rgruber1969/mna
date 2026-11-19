@@ -7,6 +7,7 @@ import { passkey } from "@better-auth/passkey";
 import type { BetterAuthPlugin } from "better-auth";
 import { and, eq } from "drizzle-orm";
 import { produto } from "@/config/produto";
+import { tradutor } from "@/i18n/servidor";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
   conta,
@@ -187,14 +188,19 @@ export const auth = betterAuth({
         if (!u || !(await areaPermitida(host, u.id))) return;
         const area = resolverArea(host);
         const marca = area.tipo === "tenant" ? await marcaParaEmailPorSlug(area.slug) : null;
+        const t = await tradutor();
         await enviarEmail(
           montarEmail({
             para: email,
-            assunto: `Seu link de acesso ao ${produto.nome}`,
-            saudacao: `Olá, ${u.nome}.`,
-            paragrafos: ["Use o link abaixo para entrar. Ele vale por 10 minutos e só uma vez:"],
-            link: { texto: "Entrar", url: `${protocolo()}://${host}/link/${encodeURIComponent(token)}` },
-            rodape: "Se não foi você que pediu, ignore este e-mail: sua conta continua protegida.",
+            assunto: t("emails.linkDeAcesso.assunto", { produto: produto.nome }),
+            saudacao: t("emails.saudacao", { nome: u.nome }),
+            paragrafos: [t("emails.linkDeAcesso.paragrafo")],
+            link: {
+              texto: t("emails.linkDeAcesso.botao"),
+              url: `${protocolo()}://${host}/link/${encodeURIComponent(token)}`,
+            },
+            linkAlternativo: t("emails.linkAlternativo"),
+            rodape: t("emails.linkDeAcesso.rodape"),
             marca,
           }),
         );

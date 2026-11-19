@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { excluirPessoaAcao, inativarPessoaAcao, removerVinculoAcao } from "@/app/acoes/cadastros";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarTiposDeVinculo } from "@/server/services/cadastros";
@@ -24,6 +25,7 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   if (!(await pode(acesso, "empresas", "ver"))) notFound();
+  const t = await getTranslations("cadastros.pessoas");
   const p = await obterPessoa(acesso, await id);
   if (!p) notFound();
   const [podeEditar, podeExcluir, { parecidas }] = await Promise.all([
@@ -45,17 +47,17 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
           <Link href="/pessoas" className="text-primary text-sm">
-            ← Pessoas
+            {t("voltar")}
           </Link>
-          <Titulo sobre="Pessoa">{p.nome}</Titulo>
+          <Titulo sobre={t("sobrePessoa")}>{p.nome}</Titulo>
           {parecidas && (
             <p className="text-warning bg-warning-surface mb-4 rounded-md px-3 py-2 text-sm">
-              Atenção: já existe pessoa com o mesmo nome. Sem CPF, confira se não é a mesma pessoa.
+              {t("avisoMesmoNome")}
             </p>
           )}
           {p.inativaEm && (
             <p className="text-warning bg-warning-surface mb-4 rounded-md px-3 py-2 text-sm">
-              Pessoa inativa: não aparece nas listas de escolha.
+              {t("avisoInativa")}
             </p>
           )}
           <FormPessoa
@@ -71,15 +73,15 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
                 <BotaoDeAcao
                   acao={inativarPessoaAcao}
                   campos={{ id: p.id, inativa: p.inativaEm ? "nao" : "sim" }}
-                  rotulo={p.inativaEm ? "Reativar pessoa" : "Inativar pessoa"}
+                  rotulo={p.inativaEm ? t("reativar") : t("inativar")}
                 />
               )}
               {podeExcluir && !p.usuarioId && (
                 <BotaoDeAcao
                   acao={excluirPessoaAcao}
                   campos={{ id: p.id }}
-                  rotulo="Excluir pessoa"
-                  confirmar={`Excluir definitivamente ${p.nome}? Os dados não poderão ser recuperados.`}
+                  rotulo={t("excluirPessoa")}
+                  confirmar={t("confirmarExcluir", { nome: p.nome })}
                   perigo
                 />
               )}
@@ -89,17 +91,15 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
         <div className="flex w-full max-w-md flex-col gap-6">
           {podeEditar && temSensiveis && (
             <Cartao largura="max-w-md">
-              <Titulo sobre="Dados sensíveis">CPF, RG e cônjuge</Titulo>
-              <p className="text-muted mb-3 text-sm">
-                Aparecem mascarados. Mostrar fica registrado na auditoria.
-              </p>
+              <Titulo sobre={t("sobreSensiveis")}>{t("tituloSensiveis")}</Titulo>
+              <p className="text-muted mb-3 text-sm">{t("sensiveisExplicacao")}</p>
               <MostrarDadosSensiveis pessoaId={p.id} />
             </Cartao>
           )}
           <Cartao largura="max-w-md">
-            <Titulo sobre="Pessoa">Empresas vinculadas</Titulo>
+            <Titulo sobre={t("sobrePessoa")}>{t("empresasVinculadas")}</Titulo>
             {p.vinculos.length === 0 ? (
-              <p className="text-muted text-sm">Nenhuma empresa vinculada.</p>
+              <p className="text-muted text-sm">{t("nenhumaEmpresaVinculada")}</p>
             ) : (
               <ul className="divide-border divide-y text-sm">
                 {p.vinculos.map((v) => (
@@ -115,7 +115,12 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
                       </span>
                     </span>
                     {podeEditar && (
-                      <BotaoDeAcao acao={removerVinculoAcao} campos={{ id: v.id }} rotulo="Remover" perigo />
+                      <BotaoDeAcao
+                        acao={removerVinculoAcao}
+                        campos={{ id: v.id }}
+                        rotulo={t("remover")}
+                        perigo
+                      />
                     )}
                   </li>
                 ))}
@@ -130,7 +135,7 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
             )}
           </Cartao>
           <Cartao largura="max-w-md">
-            <Titulo sobre="Pessoa">Acesso ao sistema</Titulo>
+            <Titulo sobre={t("sobrePessoa")}>{t("acessoAoSistema")}</Titulo>
             <p className="flex items-center gap-3 text-sm">
               <AcessoDaPessoa
                 acesso={p.acesso}
@@ -140,7 +145,7 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
               />
               {p.usuarioId && acesso.administrador && (
                 <Link href={`/usuarios/${p.usuarioId}`} className="text-primary text-xs font-medium">
-                  Ver usuário
+                  {t("verUsuario")}
                 </Link>
               )}
             </p>

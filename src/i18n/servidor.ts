@@ -7,9 +7,14 @@ import { carregarMensagens } from "./mensagens";
  * mensagens de erro devolvidas pelas ações. Na V1, sempre no idioma padrão;
  * depois, no idioma de quem recebe.
  */
-export async function tradutor(idioma: Idioma = IDIOMA_PADRAO) {
+/** Tradutor com chaves em texto livre (as mensagens são carregadas sem tipo). */
+export type Tradutor = ((chave: string, parametros?: Record<string, string | number | Date>) => string) & {
+  has(chave: string): boolean;
+};
+
+export async function tradutor(idioma: Idioma = IDIOMA_PADRAO): Promise<Tradutor> {
   const messages = await carregarMensagens(idioma);
-  return createTranslator({ locale: idioma, messages, timeZone: FUSO_PADRAO });
+  return createTranslator({ locale: idioma, messages, timeZone: FUSO_PADRAO }) as unknown as Tradutor;
 }
 
 /**

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { useFormatter, useNow, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useNow, useTranslations } from "next-intl";
+import { IDIOMAS } from "@/i18n/idiomas";
 import { definirTemaAcao } from "@/app/acoes/conta";
 import { alternarFavoritoAcao, definirMenuRecolhidoAcao } from "@/app/acoes/menu";
 import {
@@ -89,6 +90,12 @@ const ICONES: Record<string, ReactNode> = {
     <>
       <rect x="3" y="4" width="18" height="12" rx="2" />
       <path d="M8 20h8M12 16v4" />
+    </>
+  ),
+  globo: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
     </>
   ),
   conta: (
@@ -316,6 +323,7 @@ function MenuDoUsuario({
   temaInicial: PreferenciaDeTema;
 }) {
   const t = useTranslations("cabecalho");
+  const localeAtual = useLocale();
   const [aberto, setAberto] = useState(false);
   const [tema, setTema] = useState<PreferenciaDeTema>(temaInicial);
   const [, iniciar] = useTransition();
@@ -381,6 +389,25 @@ function MenuDoUsuario({
                 {t(`temas.${p}`)}
               </button>
             ))}
+          </div>
+          <div className="border-border my-2 border-t" />
+          <p className="text-muted px-4 pb-1 text-xs font-semibold tracking-widest uppercase">
+            {t("idioma")}
+          </p>
+          <div role="radiogroup" aria-label={t("idioma")}>
+            {IDIOMAS.map((idioma) => (
+              <button
+                key={idioma}
+                type="button"
+                role="radio"
+                aria-checked={idioma === localeAtual}
+                className={`${idioma === localeAtual ? "text-primary font-semibold" : "text-text"} hover:bg-surface flex w-full items-center gap-3 px-4 py-2 text-sm`}
+              >
+                <Icone nome="globo" className="h-4 w-4" />
+                {t(`idiomas.${idioma}`)}
+              </button>
+            ))}
+            <p className="text-muted px-4 pt-1 pb-2 text-xs">{t("idiomaEmBreve")}</p>
           </div>
           <div className="border-border my-2 border-t" />
           <div className="px-4 py-1">

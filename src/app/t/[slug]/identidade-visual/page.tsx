@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -19,43 +20,39 @@ async function Painel() {
   if (portao) return portao;
   if (!acesso.administrador) notFound();
   const id = await obterIdentidade(acesso);
+  const t = await getTranslations("administracao.identidade");
   const url = (chave: string | null) => enderecoDaImagem(acesso.tenant.id, chave);
 
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-lg">
-          <Titulo sobre="Administração">Identidade visual</Titulo>
-          <p className="text-muted mb-4 text-sm">
-            Nome, cores e fonte das telas e dos e-mails do tenant. As cores precisam ser legíveis: combinações
-            com pouco contraste são recusadas.
-          </p>
+          <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
+          <p className="text-muted mb-4 text-sm">{t("texto")}</p>
           <FormIdentidade inicial={id} />
         </Cartao>
         <Cartao largura="max-w-lg">
-          <Titulo sobre="Administração">Logos e ícone</Titulo>
-          <p className="text-muted mb-4 text-sm">
-            JPG, PNG ou WebP, até 2 MB. Prefira fundo transparente. O sistema reduz e regrava a imagem.
-          </p>
+          <Titulo sobre={t("sobre")}>{t("logosTitulo")}</Titulo>
+          <p className="text-muted mb-4 text-sm">{t("logosTexto")}</p>
           <FormImagemDaMarca
             tipo="logoClaro"
-            titulo="Logo para fundo claro"
-            explicacao="Topo das telas e e-mails."
+            titulo={t("logoClaro.titulo")}
+            explicacao={t("logoClaro.explicacao")}
             atual={url(id.logoClaro)}
             nome={acesso.tenant.nomeExibido}
           />
           <FormImagemDaMarca
             tipo="logoEscuro"
-            titulo="Logo para fundo escuro"
-            explicacao="Tela de entrada (fundo escuro). Sem ela, a de fundo claro aparece sobre uma placa clara."
+            titulo={t("logoEscuro.titulo")}
+            explicacao={t("logoEscuro.explicacao")}
             atual={url(id.logoEscuro)}
             nome={acesso.tenant.nomeExibido}
             fundoEscuro
           />
           <FormImagemDaMarca
             tipo="icone"
-            titulo="Ícone da aba"
-            explicacao="Símbolo quadrado mostrado na aba do navegador."
+            titulo={t("icone.titulo")}
+            explicacao={t("icone.explicacao")}
             atual={url(id.icone)}
             nome={acesso.tenant.nomeExibido}
           />

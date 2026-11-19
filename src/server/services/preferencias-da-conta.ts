@@ -15,8 +15,8 @@ export async function definirTema(
   acesso: Acesso | null,
   tema: string,
 ): Promise<{ ok: true } | { erro: string }> {
-  if (!acesso) return { erro: "Entre de novo para mudar o tema." };
-  if (!(TEMAS as readonly string[]).includes(tema)) return { erro: "Tema inválido." };
+  if (!acesso) return { erro: "acesso.erros.temaEntreDeNovo" };
+  if (!(TEMAS as readonly string[]).includes(tema)) return { erro: "acesso.erros.temaInvalido" };
   await banco()
     .update(usuario)
     .set({ tema: tema as Tema, updatedAt: new Date() })

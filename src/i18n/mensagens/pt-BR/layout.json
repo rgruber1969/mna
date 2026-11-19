@@ -36,7 +36,13 @@
       "claro": "Claro",
       "escuro": "Escuro",
       "sistema": "Igual ao sistema"
-    }
+    },
+    "idioma": "Idioma",
+    "idiomas": {
+      "pt-BR": "Português (Brasil)"
+    },
+    "idiomaEmBreve": "Inglês e espanhol em breve",
+    "equipe": "Equipe"
   },
   "notificacoes": {
     "titulo": "Notificações",

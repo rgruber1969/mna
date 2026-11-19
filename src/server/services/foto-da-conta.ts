@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import sharp from "sharp";
+import type { ErroDeServico } from "@/i18n/servidor";
 import { apagarArquivo, chaveDaConta, gravarArquivo, lerArquivo } from "@/server/arquivos/armazenamento";
 import { banco, comTenant } from "@/server/db/cliente";
 import { eventoAuditoria, eventoPlataforma, usuario, vinculoTenant } from "@/server/db/esquema";
@@ -20,7 +21,7 @@ export const FOTO_TAMANHO_MAXIMO = 2 * 1024 * 1024; // 2 MB
 const LADO = 256;
 const FORMATOS = new Set(["jpeg", "png", "webp"]);
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 
 /** Endereço da foto para o navegador; muda quando a foto muda (evita cache antigo). */
 export function enderecoDaFoto(usuarioId: string, chave: string | null | undefined): string | null {
@@ -70,11 +71,11 @@ export async function processarFoto(conteudo: Uint8Array): Promise<Uint8Array | 
 }
 
 export async function enviarFotoDaConta(acesso: Acesso | null, arquivo: File | null): Promise<Resultado> {
-  if (!acesso) return { erro: "Entre de novo para alterar a foto." };
-  if (!arquivo || arquivo.size === 0) return { erro: "Escolha uma imagem." };
-  if (arquivo.size > FOTO_TAMANHO_MAXIMO) return { erro: "A imagem deve ter até 2 MB." };
+  if (!acesso) return { erro: "administracao.erros.entreDeNovoFoto" };
+  if (!arquivo || arquivo.size === 0) return { erro: "administracao.erros.escolhaImagem" };
+  if (arquivo.size > FOTO_TAMANHO_MAXIMO) return { erro: "administracao.erros.imagemGrande" };
   const foto = await processarFoto(new Uint8Array(await arquivo.arrayBuffer()));
-  if (!foto) return { erro: "Envie uma imagem JPG, PNG ou WebP." };
+  if (!foto) return { erro: "administracao.erros.formatoImagem" };
 
   const anterior = await chaveAtual(acesso.usuario.id);
   const chave = chaveDaConta(acesso.usuario.id, `foto-${randomBytes(8).toString("hex")}.webp`);
@@ -89,7 +90,7 @@ export async function enviarFotoDaConta(acesso: Acesso | null, arquivo: File | n
 }
 
 export async function removerFotoDaConta(acesso: Acesso | null): Promise<Resultado> {
-  if (!acesso) return { erro: "Entre de novo para alterar a foto." };
+  if (!acesso) return { erro: "administracao.erros.entreDeNovoFoto" };
   const anterior = await chaveAtual(acesso.usuario.id);
   if (!anterior) return { ok: true };
   await banco()

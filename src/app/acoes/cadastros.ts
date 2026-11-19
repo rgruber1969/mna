@@ -1,6 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
+import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
   criarEmpresa,
@@ -83,50 +85,58 @@ export async function consultarCepAcao(cep: string): Promise<Endereco | null> {
 // --- Empresas ----------------------------------------------------------------------------
 
 export async function salvarEmpresaAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const id = texto(f, "id");
   const r = id
     ? await editarEmpresa(await acesso(), id, dadosEmpresa(f))
     : await criarEmpresa(await acesso(), dadosEmpresa(f));
-  if ("erro" in r) return { erro: r.erro };
-  return id ? { ok: "Empresa salva." } : { destino: `/empresas/${r.id}` };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return id ? { ok: t("empresaSalva") } : { destino: `/empresas/${r.id}` };
 }
 
 export async function inativarEmpresaAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const inativa = texto(f, "inativa") === "sim";
   const r = await definirEmpresaInativa(await acesso(), texto(f, "id"), inativa);
-  return "erro" in r ? { erro: r.erro } : { ok: inativa ? "Empresa inativada." : "Empresa reativada." };
+  return "erro" in r
+    ? { erro: await traduzirErro(r) }
+    : { ok: inativa ? t("empresaInativada") : t("empresaReativada") };
 }
 
 export async function excluirEmpresaAcao(_: Estado, f: FormData): Promise<Estado> {
   const r = await excluirEmpresa(await acesso(), texto(f, "id"));
-  return "erro" in r ? { erro: r.erro } : { destino: "/empresas" };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { destino: "/empresas" };
 }
 
 export async function criarGrupoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await criarGrupo(await acesso(), texto(f, "nome"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Grupo criado." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("grupoCriado") };
 }
 
 export async function excluirGrupoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await excluirGrupo(await acesso(), texto(f, "id"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Grupo excluído." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("grupoExcluido") };
 }
 
 export async function cadastrarSocioAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await cadastrarSocioSugerido(await acesso(), texto(f, "empresaId"), texto(f, "nome"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Sócio cadastrado." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("socioCadastrado") };
 }
 
 // --- Pessoas -------------------------------------------------------------------------------
 
 export async function salvarPessoaAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const id = texto(f, "id");
   if (id) {
     const r = await editarPessoa(await acesso(), id, dadosPessoa(f), f.getAll("limpar").map(String));
-    return "erro" in r ? { erro: r.erro } : { ok: "Pessoa salva." };
+    return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("pessoaSalva") };
   }
   const r = await criarPessoa(await acesso(), dadosPessoa(f));
-  if ("erro" in r) return { erro: r.erro };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
   return { destino: `/pessoas/${r.id}${r.parecidas ? "?parecidas=1" : ""}` };
 }
 
@@ -137,17 +147,21 @@ export async function revelarDadosSensiveisAcao(
 }
 
 export async function inativarPessoaAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const inativa = texto(f, "inativa") === "sim";
   const r = await definirPessoaInativa(await acesso(), texto(f, "id"), inativa);
-  return "erro" in r ? { erro: r.erro } : { ok: inativa ? "Pessoa inativada." : "Pessoa reativada." };
+  return "erro" in r
+    ? { erro: await traduzirErro(r) }
+    : { ok: inativa ? t("pessoaInativada") : t("pessoaReativada") };
 }
 
 export async function excluirPessoaAcao(_: Estado, f: FormData): Promise<Estado> {
   const r = await excluirPessoa(await acesso(), texto(f, "id"));
-  return "erro" in r ? { erro: r.erro } : { destino: "/pessoas" };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { destino: "/pessoas" };
 }
 
 export async function adicionarVinculoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await adicionarVinculo(await acesso(), {
     pessoaId: texto(f, "pessoaId"),
     empresaId: texto(f, "empresaId"),
@@ -155,40 +169,45 @@ export async function adicionarVinculoAcao(_: Estado, f: FormData): Promise<Esta
     cargo: texto(f, "cargo"),
     percentual: texto(f, "percentual"),
   });
-  return "erro" in r ? { erro: r.erro } : { ok: "Vínculo adicionado." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("vinculoAdicionado") };
 }
 
 export async function removerVinculoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await removerVinculo(await acesso(), texto(f, "id"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Vínculo removido." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("vinculoRemovido") };
 }
 
 // --- Cadastros gerais ----------------------------------------------------------------------
 
 export async function salvarPapelAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await salvarPapel(await acesso(), {
     id: texto(f, "id") || undefined,
     nome: texto(f, "nome"),
     perfilSugeridoId: texto(f, "perfilSugeridoId"),
   });
-  return "erro" in r ? { erro: r.erro } : { ok: "Papel salvo." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("papelSalvo") };
 }
 
 export async function excluirPapelAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await excluirPapel(await acesso(), texto(f, "id"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Papel excluído." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("papelExcluido") };
 }
 
 export async function salvarTipoDeVinculoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await salvarTipoDeVinculo(await acesso(), {
     id: texto(f, "id") || undefined,
     nome: texto(f, "nome"),
     comPercentual: texto(f, "comPercentual") === "sim",
   });
-  return "erro" in r ? { erro: r.erro } : { ok: "Tipo de vínculo salvo." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("tipoSalvo") };
 }
 
 export async function excluirTipoDeVinculoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.mensagens");
   const r = await excluirTipoDeVinculo(await acesso(), texto(f, "id"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Tipo de vínculo excluído." };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("tipoExcluido") };
 }

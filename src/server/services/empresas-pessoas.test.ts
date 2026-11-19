@@ -154,7 +154,7 @@ describe("empresas", () => {
     expect(r).toHaveProperty("id");
     const dup = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Outra", cnpj: "11222333000181" });
     expect(dup).toMatchObject({
-      erro: "Já existe uma empresa com este CNPJ.",
+      erro: "cadastros.erros.empresaCnpjJaExiste",
       existenteId: (r as { id: string }).id,
     });
     const e = await obterEmpresa(a, (r as { id: string }).id);
@@ -170,7 +170,7 @@ describe("empresas", () => {
     ).toHaveProperty("id");
     const contratante = (await listarEmpresas(a)).find((x) => x.doContratante)!;
     expect(await excluirEmpresa(a, contratante.id)).toEqual({
-      erro: "A empresa do contratante não pode ser excluída.",
+      erro: "cadastros.erros.empresaContratanteNaoExcluivel",
     });
     expect(
       await editarEmpresa(a, contratante.id, {
@@ -215,13 +215,13 @@ describe("pessoas e dados sensíveis", () => {
     expect(JSON.stringify(p)).not.toContain(CPF);
 
     expect(await criarPessoa(a, { ...pessoaVazia, nome: "Outra Maria", cpf: CPF })).toMatchObject({
-      erro: "Já existe uma pessoa com este CPF.",
+      erro: "cadastros.erros.pessoaCpfJaExiste",
       existenteId: r.id,
     });
     expect(
       await criarPessoa(a, { ...pessoaVazia, nome: "Outra", email: "maria@exemplo.test" }),
     ).toMatchObject({
-      erro: "Já existe uma pessoa com este e-mail.",
+      erro: "cadastros.erros.pessoaEmailJaExiste",
     });
     expect(await criarPessoa(a, { ...pessoaVazia, nome: "Inválida", cpf: "123.456.789-00" })).toHaveProperty(
       "erro",

@@ -1,3 +1,155 @@
 {
-  "acesso": {}
+  "acesso": {
+    "geral": {
+      "email": "E-mail",
+      "senha": "Senha",
+      "entrar": "Entrar",
+      "entrando": "Entrando...",
+      "sair": "Sair",
+      "enviando": "Enviando...",
+      "seguranca": "Segurança",
+      "verificacaoEmDuasEtapas": "Verificação em duas etapas"
+    },
+    "entrada": {
+      "tituloConsole": "Console do Administrador",
+      "receberLink": "Receber link de acesso por e-mail",
+      "passkeyCadastrada": "Passkey cadastrada. Agora entre com ela.",
+      "suspensaSobre": "Acesso",
+      "suspensaTitulo": "Acesso suspenso",
+      "suspensaTexto": "O acesso a este endereço está suspenso no momento. Fale com o responsável pelo contrato."
+    },
+    "desenvolvimento": {
+      "aviso": "Modo desenvolvimento: entrar só com e-mail",
+      "rotuloEmail": "E-mail (desenvolvimento)",
+      "botao": "Entrar sem senha"
+    },
+    "segundoFator": {
+      "titulo": "Confirme que é você",
+      "codigoDoAplicativo": "Código do aplicativo autenticador",
+      "codigoDeRecuperacao": "Código de recuperação",
+      "usarRecuperacao": "Usar um código de recuperação",
+      "verificar": "Verificar",
+      "verificando": "Verificando..."
+    },
+    "convite": {
+      "sobre": "Convite",
+      "ola": "Olá, {nome}",
+      "intro": "Você foi convidado(a) para acessar {onde} com o e-mail <destaque>{email}</destaque>.",
+      "ondeConsole": "o console da plataforma",
+      "contaExiste": "Você já tem conta na plataforma: confirme sua senha para aceitar.",
+      "contaNova": "Defina seu nome e uma senha para criar seu acesso.",
+      "senhaAtual": "Sua senha atual",
+      "nome": "Nome",
+      "criarSenha": "Crie uma senha (mínimo 12 caracteres)",
+      "repitaSenha": "Repita a senha",
+      "aceitar": "Aceitar convite",
+      "aceitando": "Aceitando..."
+    },
+    "link": {
+      "sobre": "Link de acesso",
+      "texto": "Clique para entrar. Se você tiver verificação em duas etapas, o código será pedido em seguida.",
+      "rotuloEmail": "E-mail para receber o link",
+      "receber": "Receber link por e-mail"
+    },
+    "configurar2fa": {
+      "exigeConsole": "O console exige verificação em duas etapas.",
+      "exigeTenant": "{tenant} exige verificação em duas etapas para o seu acesso.",
+      "escolha": "Escolha uma das opções para continuar.",
+      "opcaoPasskey": "Opção 1: passkey (recomendada)",
+      "opcaoAutenticador": "Opção 2: aplicativo autenticador"
+    },
+    "exigeSegundoFator": {
+      "titulo": "Entre com dois fatores",
+      "texto": "Esta área exige verificação em duas etapas. Saia e entre de novo usando a passkey ou a senha com o código do aplicativo autenticador."
+    },
+    "seguranca": {
+      "minhaConta": "Minha conta",
+      "foto": "Foto",
+      "passkey": "Passkey",
+      "jaTemPasskey": "Você já tem passkey cadastrada. Recomendamos cadastrar uma segunda, em outro aparelho (por exemplo, celular e notebook): se perder um, entra com o outro sem precisar do administrador.",
+      "autenticador": "Aplicativo autenticador",
+      "autenticadorAtivo": "Aplicativo autenticador ativo.",
+      "tituloConsole": "{produto} · Console"
+    },
+    "autenticador": {
+      "intro": "Para proteger o acesso, configure um aplicativo autenticador (por exemplo, Google ou Microsoft Authenticator). Confirme sua senha para começar.",
+      "continuar": "Continuar",
+      "preparando": "Preparando...",
+      "passo1": "No aplicativo autenticador, escolha adicionar conta e leia o código abaixo.",
+      "passo2": "Guarde os códigos de recuperação em local seguro (gerenciador de senhas). Cada um vale uma vez.",
+      "passo3": "Digite o código de 6 dígitos que o aplicativo mostrar.",
+      "qrAlt": "QR code do aplicativo autenticador",
+      "semQr": "Não consegue ler o QR code?",
+      "codigosDeRecuperacao": "Códigos de recuperação",
+      "codigoDe6Digitos": "Código de 6 dígitos",
+      "ativar": "Ativar",
+      "confirmando": "Confirmando..."
+    },
+    "passkey": {
+      "entrar": "Entrar com passkey",
+      "aguardandoPasskey": "Aguardando a passkey...",
+      "intro": "A passkey fica no seu celular ou computador e é liberada pela digital, pelo rosto ou pelo PIN do aparelho. Ela já vale como verificação em duas etapas.",
+      "rotuloNome": "Nome da passkey (ex.: celular, notebook)",
+      "cadastrar": "Cadastrar passkey",
+      "aguardandoAparelho": "Aguardando o aparelho...",
+      "erroDesconhecido": "erro desconhecido",
+      "erros": {
+        "jaRegistrada": "Este aparelho já tem uma passkey desta conta. Use-a para entrar ou escolha outro aparelho.",
+        "enderecoInvalido": "Este endereço não aceita passkey. Abra o sistema pelo endereço oficial (ex.: bt.localhost:3000) e tente de novo.",
+        "naoSuportada": "Este navegador não aceita passkey. Use o Chrome, o Edge ou o Safari, ou a opção do aplicativo autenticador.",
+        "cancelada": "A operação foi cancelada ou o tempo acabou. Tente de novo. Se nenhuma janela do Windows apareceu, confira se o Windows Hello (PIN, rosto ou digital) está configurado, ou escolha \"celular\" na janela. ({detalhe})",
+        "generica": "Não foi possível concluir a passkey. Tente de novo ou use o aplicativo autenticador. ({detalhe})"
+      }
+    },
+    "novoTenant": {
+      "nome": "Nome do tenant",
+      "endereco": "Endereço (subdomínio)",
+      "exemploEndereco": "ex.: bt",
+      "criar": "Criar tenant",
+      "criando": "Criando..."
+    },
+    "convidarAdministrador": {
+      "nome": "Nome",
+      "enviar": "Enviar convite"
+    },
+    "inicio": {
+      "administrador": "Administrador",
+      "usuario": "Usuário",
+      "ola": "Olá, {nome}",
+      "texto": "Acesso confirmado. A tela principal com os deals vem nas próximas etapas."
+    },
+    "raiz": {
+      "sobre": "Fundação técnica",
+      "texto": "Ambiente em construção. A base da aplicação, a API e o banco de dados estão em funcionamento.",
+      "documentacaoDaApi": "Documentação da API"
+    },
+    "sucesso": {
+      "linkEnviado": "Se este e-mail tiver acesso a este endereço, enviamos um link que vale por 10 minutos.",
+      "passkeyCadastrada": "Passkey cadastrada.",
+      "conviteEnviado": "Convite enviado. Ele vale por 3 dias.",
+      "fotoAtualizada": "Foto atualizada.",
+      "fotoRemovida": "Foto removida."
+    },
+    "erros": {
+      "loginInvalido": "E-mail ou senha inválidos, ou acesso não permitido neste endereço.",
+      "codigoInvalido": "Código inválido ou expirado. Entre novamente se o problema continuar.",
+      "entreComDoisFatores": "Para cadastrar outro fator, saia e entre de novo com dois fatores.",
+      "metodoNaoSuportado": "Método de 2FA não suportado.",
+      "senhaIncorreta": "Senha incorreta.",
+      "codigoDoAutenticadorInvalido": "Código inválido. Confira o horário do celular e tente de novo.",
+      "linkInvalido": "Link inválido, expirado ou já utilizado. Peça um novo na tela de entrada.",
+      "passkeyNaoIniciouCadastro": "Não foi possível iniciar o cadastro da passkey. Entre novamente e tente de novo.",
+      "passkeyNaoCadastrada": "A passkey não foi cadastrada. Tente de novo.",
+      "passkeyNaoIniciouLogin": "Não foi possível iniciar o login com passkey.",
+      "passkeyNaoReconhecida": "Passkey não reconhecida ou sem acesso a este endereço.",
+      "conviteInvalido": "Convite inválido, expirado ou já utilizado. Peça um novo ao administrador.",
+      "senhaCurta": "A senha precisa ter pelo menos {minimo} caracteres.",
+      "senhasNaoConferem": "As senhas não conferem.",
+      "informeNome": "Informe o nome.",
+      "emailInvalido": "E-mail inválido.",
+      "dadosInvalidos": "Dados inválidos.",
+      "temaEntreDeNovo": "Entre de novo para mudar o tema.",
+      "temaInvalido": "Tema inválido."
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -21,6 +22,7 @@ async function Painel() {
   if (portao) return portao;
   if (!acesso.administrador) notFound();
   const { modo, perfis } = await listarPerfis(acesso);
+  const t = await getTranslations("administracao.perfis");
 
   const lista = (camada: "tenant" | "deal") => (
     <ul className="divide-border divide-y text-sm">
@@ -32,13 +34,13 @@ async function Painel() {
               <Link href={`/perfis/${p.id}`} className="text-primary font-medium">
                 {p.nome}
               </Link>
-              {p.exigeDoisFatores && <span className="text-success ml-2 text-xs font-medium">exige 2FA</span>}
+              {p.exigeDoisFatores && (
+                <span className="text-success ml-2 text-xs font-medium">{t("exige2fa")}</span>
+              )}
               {p.descricao && <span className="text-muted block text-xs">{p.descricao}</span>}
             </span>
             {camada === "tenant" && (
-              <span className="text-muted shrink-0 text-xs">
-                {p.emUso === 0 ? "sem usuários" : `${p.emUso} usuário${p.emUso > 1 ? "s" : ""}`}
-              </span>
+              <span className="text-muted shrink-0 text-xs">{t("usuariosEmUso", { n: p.emUso })}</span>
             )}
           </li>
         ))}
@@ -50,50 +52,37 @@ async function Painel() {
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <Cartao largura="max-w-2xl">
-            <Titulo sobre="Administração">Perfis do tenant</Titulo>
-            <p className="text-muted mb-4 text-sm">
-              Valem fora dos deals (painel, lista de deals, valuations avulsos, cadastros, auditoria). Cada
-              usuário tem um só.
-            </p>
+            <Titulo sobre={t("sobre")}>{t("tituloTenant")}</Titulo>
+            <p className="text-muted mb-4 text-sm">{t("textoTenant")}</p>
             {lista("tenant")}
           </Cartao>
           <Cartao largura="max-w-2xl">
-            <Titulo sobre="Administração">Perfis de deal</Titulo>
-            <p className="text-muted mb-4 text-sm">
-              Escolhidos para cada pessoa em cada deal em que ela participa, com o alcance (deal inteiro ou
-              etapas). A participação nos deals chega junto com o cadastro de deals.
-            </p>
+            <Titulo sobre={t("sobre")}>{t("tituloDeal")}</Titulo>
+            <p className="text-muted mb-4 text-sm">{t("textoDeal")}</p>
             {lista("deal")}
           </Cartao>
         </div>
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Configuração">Modo de permissões</Titulo>
+            <Titulo sobre={t("configuracaoSobre")}>{t("modoTitulo")}</Titulo>
             <p className="text-text mb-2 text-sm">
-              Atual: <strong>{modo === "perfil" ? "por perfil" : "por usuário"}</strong>.
+              {t.rich("modoAtual", {
+                modo: modo === "perfil" ? t("modoPorPerfil") : t("modoPorUsuario"),
+                forte: (c) => <strong>{c}</strong>,
+              })}
             </p>
             <p className="text-muted mb-4 text-sm">
-              {modo === "perfil"
-                ? "Todos com o mesmo perfil têm as mesmas permissões."
-                : "Cada usuário pode ter permissões próprias em cada perfil (ex.: júnior com menos que sênior). Quem não foi personalizado segue a matriz do perfil."}
+              {modo === "perfil" ? t("modoPorPerfilTexto") : t("modoPorUsuarioTexto")}
             </p>
             <BotaoDeAcao
               acao={definirModoAcao}
               campos={{ modo: modo === "perfil" ? "usuario" : "perfil" }}
-              rotulo={
-                modo === "perfil"
-                  ? "Mudar para Modo de permissões por Usuário"
-                  : "Mudar para Modo de permissões por Perfil"
-              }
-              confirmar={
-                modo === "perfil"
-                  ? "Mudar para o modo de permissões por usuário?"
-                  : "Mudar para o modo de permissões por perfil? As personalizações ficam guardadas e voltam se o modo for trocado de novo."
-              }
+              rotulo={modo === "perfil" ? t("mudarParaUsuario") : t("mudarParaPerfil")}
+              confirmar={modo === "perfil" ? t("confirmarMudarParaUsuario") : t("confirmarMudarParaPerfil")}
             />
           </Cartao>
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Novo">Criar perfil</Titulo>
+            <Titulo sobre={t("novoSobre")}>{t("criarTitulo")}</Titulo>
             <FormNovoPerfil perfis={perfis} />
           </Cartao>
         </div>

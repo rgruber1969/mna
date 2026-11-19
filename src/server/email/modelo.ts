@@ -1,5 +1,6 @@
 import { produto } from "@/config/produto";
 import { TOKENS_PADRAO, textoSobre } from "@/config/marca";
+import { IDIOMA_PADRAO } from "@/i18n/idiomas";
 import type { Email } from "./enviar";
 
 /**
@@ -17,6 +18,10 @@ export type ConteudoDoEmail = {
   paragrafos: string[];
   link?: { texto: string; url: string };
   rodape?: string;
+  /** Frase que antecede o endereço do link, abaixo do botão (já traduzida). */
+  linkAlternativo?: string;
+  /** Idioma do e-mail (atributo lang do HTML). */
+  idioma?: string;
   marca?: MarcaDoEmail | null;
 };
 
@@ -46,10 +51,10 @@ export function montarEmail(c: ConteudoDoEmail): Email {
     : `<strong style="font-size:18px;color:${cor}">${escapar(nome)}</strong>`;
   const botao = c.link
     ? `<p style="margin:24px 0"><a href="${escapar(c.link.url)}" style="background:${cor};color:${textoSobre(cor)};padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block">${escapar(c.link.texto)}</a></p>
-<p style="margin:0 0 16px;font-size:12px;color:${TOKENS_PADRAO.texto}">Se o botão não funcionar, copie este endereço no navegador:<br>${escapar(c.link.url)}</p>`
+<p style="margin:0 0 16px;font-size:12px;color:${TOKENS_PADRAO.texto}">${c.linkAlternativo ? `${escapar(c.linkAlternativo)}<br>` : ""}${escapar(c.link.url)}</p>`
     : "";
 
-  const html = `<!doctype html><html lang="pt-BR"><body style="margin:0;padding:24px;background:${TOKENS_PADRAO.fundo};font-family:Arial,Helvetica,sans-serif;color:${TOKENS_PADRAO.texto};font-size:15px;line-height:1.5">
+  const html = `<!doctype html><html lang="${escapar(c.idioma ?? IDIOMA_PADRAO)}"><body style="margin:0;padding:24px;background:${TOKENS_PADRAO.fundo};font-family:Arial,Helvetica,sans-serif;color:${TOKENS_PADRAO.texto};font-size:15px;line-height:1.5">
 <div style="max-width:560px;margin:0 auto">
 <div style="padding-bottom:16px;margin-bottom:24px;border-bottom:3px solid ${cor}">${cabecalho}</div>
 ${p(c.saudacao)}

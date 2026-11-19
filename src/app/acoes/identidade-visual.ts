@@ -1,6 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
+import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
   enviarImagemDaMarca,
@@ -22,12 +24,14 @@ export async function salvarIdentidadeAcao(_: Estado, f: FormData): Promise<Esta
     corDestaque: texto(f, "corDestaque"),
     fonte: texto(f, "fonte"),
   });
-  return "erro" in r ? { erro: r.erro } : { ok: "Identidade visual salva." };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: (await getTranslations("administracao"))("acoes.identidadeSalva") };
 }
 
 export async function restaurarPadraoAcao(): Promise<Estado> {
   const r = await restaurarPadrao(await acesso());
-  return "erro" in r ? { erro: r.erro } : { ok: "Cores e fonte voltaram ao padrão." };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: (await getTranslations("administracao"))("acoes.coresPadrao") };
 }
 
 export async function enviarImagemAcao(_: Estado, f: FormData): Promise<Estado> {
@@ -37,10 +41,12 @@ export async function enviarImagemAcao(_: Estado, f: FormData): Promise<Estado> 
     texto(f, "tipo"),
     arquivo instanceof File ? arquivo : null,
   );
-  return "erro" in r ? { erro: r.erro } : { ok: "Imagem atualizada." };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: (await getTranslations("administracao"))("acoes.imagemAtualizada") };
 }
 
 export async function removerImagemAcao(_: Estado, f: FormData): Promise<Estado> {
   const r = await removerImagemDaMarca(await acesso(), texto(f, "tipo"));
-  return "erro" in r ? { erro: r.erro } : { ok: "Imagem removida." };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: (await getTranslations("administracao"))("acoes.imagemRemovida") };
 }

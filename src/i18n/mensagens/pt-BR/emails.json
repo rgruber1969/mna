@@ -1,3 +1,35 @@
 {
-  "emails": {}
+  "emails": {
+    "saudacao": "Olá, {nome}.",
+    "linkAlternativo": "Se o botão não funcionar, copie este endereço no navegador:",
+    "convite": {
+      "assunto": "Convite para acessar {onde}",
+      "paragrafo1": "Você foi convidado(a) para acessar {onde} no {produto}.",
+      "paragrafo2": "Para aceitar, abra o link abaixo em até 3 dias (uso único):",
+      "botao": "Aceitar o convite",
+      "rodape": "Se você não esperava este convite, ignore este e-mail.",
+      "ondeConsole": "o console da plataforma"
+    },
+    "linkDeAcesso": {
+      "assunto": "Seu link de acesso ao {produto}",
+      "paragrafo": "Use o link abaixo para entrar. Ele vale por 10 minutos e só uma vez:",
+      "botao": "Entrar",
+      "rodape": "Se não foi você que pediu, ignore este e-mail: sua conta continua protegida."
+    },
+    "mudancaNosFatores": {
+      "assunto": "Mudança na segurança da sua conta no {produto}",
+      "descricao": "{oQue} ({onde}).",
+      "sessoesEncerradas": "Suas sessões abertas foram encerradas. No próximo acesso, se a verificação em duas etapas for exigida, você vai configurá-la de novo.",
+      "rodape": "Se você não pediu esta mudança, avise o administrador imediatamente.",
+      "motivos": {
+        "passkeyRemovidaPeloAdministrador": "Uma passkey foi removida da sua conta pelo administrador",
+        "autenticadorRemovidoPeloAdministrador": "O aplicativo autenticador foi removido da sua conta pelo administrador",
+        "doisFatoresRedefinidosPeloAdministrador": "A verificação em duas etapas da sua conta foi redefinida pelo administrador",
+        "doisFatoresRedefinidosPeloSuporte": "A verificação em duas etapas da sua conta foi redefinida pelo suporte da plataforma"
+      },
+      "locais": {
+        "consoleDaPlataforma": "console da plataforma"
+      }
+    }
+  }
 }

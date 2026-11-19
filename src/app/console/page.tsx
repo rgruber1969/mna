@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -20,25 +21,29 @@ async function Painel() {
   if (!acesso.segundoFatorNaSessao) return <ExigeSegundoFator />;
   const tenants = await listarTenants(acesso);
   const dominio = process.env.APP_DOMINIO ?? "localhost:3000";
+  const t = await getTranslations("console");
+  const motivos = Object.fromEntries(MOTIVOS_DE_REDEFINICAO.map((m) => [m, t(`motivos.${m}`)]));
 
   return (
     <>
       <Cabecalho area={`${produto.nome} · Console`} usuario={acesso.usuario} console />
       <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
         <Cartao largura="max-w-2xl">
-          <Titulo sobre="Console">Tenants</Titulo>
+          <Titulo sobre={t("tenants.sobre")}>{t("tenants.titulo")}</Titulo>
           {tenants.length === 0 ? (
-            <p className="text-muted text-sm">Nenhum tenant cadastrado.</p>
+            <p className="text-muted text-sm">{t("tenants.nenhum")}</p>
           ) : (
             <ul className="divide-border divide-y">
-              {tenants.map((t) => (
-                <li key={t.id} className="flex items-center justify-between py-3">
-                  <Link href={`/tenants/${t.id}`} className="text-primary font-medium">
-                    {t.nome}
+              {tenants.map((ten) => (
+                <li key={ten.id} className="flex items-center justify-between py-3">
+                  <Link href={`/tenants/${ten.id}`} className="text-primary font-medium">
+                    {ten.nome}
                   </Link>
                   <span className="text-muted text-sm">
-                    {t.suspensoEm && <span className="text-danger mr-2 font-medium">Suspenso</span>}
-                    {t.slug}.{dominio}
+                    {ten.suspensoEm && (
+                      <span className="text-danger mr-2 font-medium">{t("tenants.suspenso")}</span>
+                    )}
+                    {ten.slug}.{dominio}
                   </span>
                 </li>
               ))}
@@ -47,16 +52,13 @@ async function Painel() {
         </Cartao>
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Novo">Cadastrar tenant</Titulo>
+            <Titulo sobre={t("tenants.novoSobre")}>{t("tenants.cadastrar")}</Titulo>
             <FormNovoTenant />
           </Cartao>
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Suporte">Redefinir 2FA de uma conta</Titulo>
-            <p className="text-muted mb-4 text-sm">
-              Para quem perdeu todos os fatores e tem acesso a mais de um tenant que exige 2FA. Apaga
-              autenticador, códigos e passkeys, encerra as sessões e avisa a pessoa por e-mail.
-            </p>
-            <FormRedefinirPelaPlataforma motivos={{ ...MOTIVOS_DE_REDEFINICAO }} />
+            <Titulo sobre={t("tenants.suporteSobre")}>{t("tenants.redefinirTitulo")}</Titulo>
+            <p className="text-muted mb-4 text-sm">{t("tenants.redefinirTexto")}</p>
+            <FormRedefinirPelaPlataforma motivos={motivos} />
           </Cartao>
         </div>
       </main>

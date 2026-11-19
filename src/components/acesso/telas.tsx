@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import { Suspense, type ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { produto } from "@/config/produto";
 import { obterAcesso, pendenciaDeDoisFatores, type Acesso } from "@/server/services/acesso";
 import { obterConvite } from "@/server/services/convites";
@@ -19,10 +21,11 @@ import { FormConvite, FormEntrar, FormEntrarSoComEmail, FormSegundoFator } from 
 
 /** Logotipo da RGRUBER para fundo escuro (docs/marca/rgruber; mínimo de 120 px de largura). */
 export function LogoRgruber() {
+  const t = useTranslations("comum.basicos");
   return (
     <Image
       src="/marca/rgruber-horizontal-negativa.svg"
-      alt="RGRUBER Consultoria"
+      alt={t("logoAlt")}
       width={200}
       height={57}
       priority
@@ -51,6 +54,7 @@ export function TelaEntrar({
   /** Entrada de desenvolvimento (só e-mail) disponível neste endereço. */
   soComEmail?: boolean;
 }) {
+  const t = useTranslations("acesso.entrada");
   return (
     <Moldura
       destaque={Boolean(marca) || linhas}
@@ -70,9 +74,7 @@ export function TelaEntrar({
         <div className="border-border my-6 border-t" />
         <BotaoEntrarComPasskey />
         <details className="mt-4">
-          <summary className="text-primary cursor-pointer text-sm font-medium">
-            Receber link de acesso por e-mail
-          </summary>
+          <summary className="text-primary cursor-pointer text-sm font-medium">{t("receberLink")}</summary>
           <div className="mt-4">
             <FormPedirLink />
           </div>
@@ -84,10 +86,11 @@ export function TelaEntrar({
 }
 
 export function TelaSegundoFator() {
+  const t = useTranslations("acesso");
   return (
     <Moldura>
       <Cartao>
-        <Titulo sobre="Verificação em duas etapas">Confirme que é você</Titulo>
+        <Titulo sobre={t("geral.verificacaoEmDuasEtapas")}>{t("segundoFator.titulo")}</Titulo>
         <FormSegundoFator />
       </Cartao>
     </Moldura>
@@ -96,20 +99,22 @@ export function TelaSegundoFator() {
 
 async function ConteudoConvite({ token }: { token: Promise<string> }) {
   await connection();
-  const t = await token;
-  const c = await obterConvite((await headers()).get("host"), t);
+  const t = await getTranslations("acesso.convite");
+  const tokenDoConvite = await token;
+  const c = await obterConvite((await headers()).get("host"), tokenDoConvite);
   if (!c) notFound();
   return (
     <>
-      <Titulo sobre="Convite">Olá, {c.nome}</Titulo>
+      <Titulo sobre={t("sobre")}>{t("ola", { nome: c.nome })}</Titulo>
       <p className="text-muted mb-6 text-sm">
-        Você foi convidado(a) para acessar {c.onde} com o e-mail{" "}
-        <strong className="text-text">{c.email}</strong>.{" "}
-        {c.contaExiste
-          ? "Você já tem conta na plataforma: confirme sua senha para aceitar."
-          : "Defina seu nome e uma senha para criar seu acesso."}
+        {t.rich("intro", {
+          onde: c.onde ?? t("ondeConsole"),
+          email: c.email,
+          destaque: (partes) => <strong className="text-text">{partes}</strong>,
+        })}{" "}
+        {c.contaExiste ? t("contaExiste") : t("contaNova")}
       </p>
-      <FormConvite token={t} contaExiste={c.contaExiste} nome={c.nome} />
+      <FormConvite token={tokenDoConvite} contaExiste={c.contaExiste} nome={c.nome} />
     </>
   );
 }
@@ -127,13 +132,12 @@ export function TelaConvite({ token }: { token: Promise<string> }) {
 }
 
 export function TelaLink({ token }: { token: Promise<string> }) {
+  const t = useTranslations("acesso");
   return (
     <Moldura>
       <Cartao>
-        <Titulo sobre="Link de acesso">Entrar</Titulo>
-        <p className="text-muted mb-6 text-sm">
-          Clique para entrar. Se você tiver verificação em duas etapas, o código será pedido em seguida.
-        </p>
+        <Titulo sobre={t("link.sobre")}>{t("geral.entrar")}</Titulo>
+        <p className="text-muted mb-6 text-sm">{t("link.texto")}</p>
         <Suspense fallback={<Carregando />}>
           <TokenDoLink token={token} />
         </Suspense>
@@ -159,6 +163,7 @@ export function portaoDeDoisFatores(acesso: Acesso) {
 
 async function ConteudoConfigurar2fa() {
   await connection();
+  const t = await getTranslations("acesso.configurar2fa");
   const acesso = await obterAcesso(new Headers(await headers()));
   if (!acesso) redirect("/entrar");
   if (pendenciaDeDoisFatores(acesso) !== "configurar") redirect("/");
@@ -166,14 +171,14 @@ async function ConteudoConfigurar2fa() {
     <>
       <p className="text-muted mb-6 text-sm">
         {acesso.area === "console"
-          ? "O console exige verificação em duas etapas."
-          : `${acesso.tenant.nomeExibido} exige verificação em duas etapas para o seu acesso.`}{" "}
-        Escolha uma das opções para continuar.
+          ? t("exigeConsole")
+          : t("exigeTenant", { tenant: acesso.tenant.nomeExibido })}{" "}
+        {t("escolha")}
       </p>
-      <h2 className="text-text mb-2 text-sm font-semibold">Opção 1: passkey (recomendada)</h2>
+      <h2 className="text-text mb-2 text-sm font-semibold">{t("opcaoPasskey")}</h2>
       <FormCriarPasskey reentrar />
       <div className="border-border my-6 border-t" />
-      <h2 className="text-text mb-2 text-sm font-semibold">Opção 2: aplicativo autenticador</h2>
+      <h2 className="text-text mb-2 text-sm font-semibold">{t("opcaoAutenticador")}</h2>
       <FormAutenticador />
     </>
   );
@@ -181,10 +186,11 @@ async function ConteudoConfigurar2fa() {
 
 /** Configuração obrigatória do 2FA: quando exigido e sem fator, só esta tela fica disponível. */
 export function TelaConfigurar2fa() {
+  const t = useTranslations("acesso.geral");
   return (
     <Moldura>
       <Cartao>
-        <Titulo sobre="Segurança">Verificação em duas etapas</Titulo>
+        <Titulo sobre={t("seguranca")}>{t("verificacaoEmDuasEtapas")}</Titulo>
         <Suspense fallback={<Carregando />}>
           <ConteudoConfigurar2fa />
         </Suspense>
@@ -195,14 +201,12 @@ export function TelaConfigurar2fa() {
 
 /** Aviso para quem precisa entrar de novo com dois fatores (ex.: só usou a senha). */
 export function ExigeSegundoFator() {
+  const t = useTranslations("acesso");
   return (
     <Moldura>
       <Cartao>
-        <Titulo sobre="Segurança">Entre com dois fatores</Titulo>
-        <p className="text-muted mb-6 text-sm">
-          Esta área exige verificação em duas etapas. Saia e entre de novo usando a passkey ou a senha com o
-          código do aplicativo autenticador.
-        </p>
+        <Titulo sobre={t("geral.seguranca")}>{t("exigeSegundoFator.titulo")}</Titulo>
+        <p className="text-muted mb-6 text-sm">{t("exigeSegundoFator.texto")}</p>
         <FormSair />
       </Cartao>
     </Moldura>
@@ -211,28 +215,26 @@ export function ExigeSegundoFator() {
 
 async function ConteudoSeguranca() {
   await connection();
+  const t = await getTranslations("acesso");
   const acesso = await obterAcesso(new Headers(await headers()));
   if (!acesso) redirect("/entrar");
   const conteudo = (
     <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
       <Cartao>
-        <Titulo sobre="Minha conta">Foto</Titulo>
+        <Titulo sobre={t("seguranca.minhaConta")}>{t("seguranca.foto")}</Titulo>
         <FormFoto nome={acesso.usuario.nome} foto={acesso.usuario.foto} />
       </Cartao>
       <Cartao>
-        <Titulo sobre="Segurança">Passkey</Titulo>
+        <Titulo sobre={t("geral.seguranca")}>{t("seguranca.passkey")}</Titulo>
         {acesso.usuario.temPasskey && (
-          <p className="text-success mb-4 text-sm">
-            Você já tem passkey cadastrada. Recomendamos cadastrar uma segunda, em outro aparelho (por
-            exemplo, celular e notebook): se perder um, entra com o outro sem precisar do administrador.
-          </p>
+          <p className="text-success mb-4 text-sm">{t("seguranca.jaTemPasskey")}</p>
         )}
         <FormCriarPasskey />
       </Cartao>
       <Cartao>
-        <Titulo sobre="Segurança">Aplicativo autenticador</Titulo>
+        <Titulo sobre={t("geral.seguranca")}>{t("seguranca.autenticador")}</Titulo>
         {acesso.usuario.temAutenticador ? (
-          <p className="text-success text-sm">Aplicativo autenticador ativo.</p>
+          <p className="text-success text-sm">{t("seguranca.autenticadorAtivo")}</p>
         ) : (
           <FormAutenticador />
         )}
@@ -243,7 +245,11 @@ async function ConteudoSeguranca() {
   if (acesso.area === "tenant") return <EstruturaDoTenant acesso={acesso}>{conteudo}</EstruturaDoTenant>;
   return (
     <>
-      <Cabecalho area={`${produto.nome} · Console`} usuario={acesso.usuario} console />
+      <Cabecalho
+        area={t("seguranca.tituloConsole", { produto: produto.nome })}
+        usuario={acesso.usuario}
+        console
+      />
       {conteudo}
     </>
   );

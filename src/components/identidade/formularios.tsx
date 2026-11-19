@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, type CSSProperties } from "react";
 import {
   enviarImagemAcao,
@@ -30,13 +31,14 @@ function CampoDeCor({
   valor: string;
   mudar: (v: string) => void;
 }) {
+  const t = useTranslations("administracao.identidade.formulario");
   return (
     <div className="mb-4">
       <span className="text-text mb-1 block text-sm font-medium">{rotulo}</span>
       <div className="flex items-center gap-2">
         <input
           type="color"
-          aria-label={`${rotulo} (seletor)`}
+          aria-label={t("seletor", { rotulo })}
           value={corValida(valor) ? valor : TOKENS_PADRAO.primaria}
           onChange={(e) => mudar(e.target.value)}
           className="border-border h-9 w-12 cursor-pointer rounded border"
@@ -59,13 +61,15 @@ function CampoDeCor({
  * antes de salvar (o servidor confere de novo; ADR-0010).
  */
 export function FormIdentidade({ inicial }: { inicial: Inicial }) {
+  const t = useTranslations("administracao.identidade.formulario");
+  const tErro = useTranslations();
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarIdentidadeAcao);
   const [estadoPadrao, restaurar, restaurando] = useAcaoComAtualizacao(restaurarPadraoAcao);
   const [nome, setNome] = useState(inicial.nomeExibicao ?? "");
   const [primaria, setPrimaria] = useState(inicial.corPrimaria ?? TOKENS_PADRAO.primaria);
   const [destaque, setDestaque] = useState(inicial.corDestaque ?? TOKENS_PADRAO.destaque);
   const [fonte, setFonte] = useState(inicial.fonte ?? "manrope");
-  const problemas = problemasDeContraste({ primaria, destaque });
+  const problemas = problemasDeContraste({ primaria, destaque }).map((p) => tErro(p.erro, p.parametros));
   const tema = variaveisDoTema({ primaria, destaque }, fonte) as CSSProperties;
   const mensagem = estado ?? estadoPadrao;
 
@@ -75,22 +79,20 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
       {mensagem?.ok && <Aviso tipo="ok">{mensagem.ok}</Aviso>}
       <form action={salvar}>
         <Campo
-          rotulo="Nome de exibição"
+          rotulo={t("nomeExibicao")}
           name="nomeExibicao"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           placeholder={inicial.nome}
           maxLength={80}
         />
-        <p className="text-muted -mt-3 mb-4 text-xs">
-          Aparece nas telas e nos e-mails. Vazio: usa o nome do cadastro ({inicial.nome}).
-        </p>
+        <p className="text-muted -mt-3 mb-4 text-xs">{t("nomeAjuda", { nome: inicial.nome })}</p>
         <div className="flex flex-wrap gap-x-8">
-          <CampoDeCor rotulo="Cor primária" nome="corPrimaria" valor={primaria} mudar={setPrimaria} />
-          <CampoDeCor rotulo="Cor de destaque" nome="corDestaque" valor={destaque} mudar={setDestaque} />
+          <CampoDeCor rotulo={t("corPrimaria")} nome="corPrimaria" valor={primaria} mudar={setPrimaria} />
+          <CampoDeCor rotulo={t("corDestaque")} nome="corDestaque" valor={destaque} mudar={setDestaque} />
         </div>
         <label className="mb-4 block">
-          <span className="text-text mb-1 block text-sm font-medium">Fonte</span>
+          <span className="text-text mb-1 block text-sm font-medium">{t("fonte")}</span>
           <select
             name="fonte"
             value={fonte}
@@ -99,15 +101,15 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
           >
             {FONTES.map((f) => (
               <option key={f.id} value={f.id}>
-                {f.nome}
+                {f.id === "manrope" ? t("fontePadrao", { nome: f.nome }) : f.nome}
               </option>
             ))}
           </select>
         </label>
 
-        <p className="text-text mb-2 text-sm font-medium">Prévia</p>
+        <p className="text-text mb-2 text-sm font-medium">{t("previa")}</p>
         <div
-          aria-label="Prévia da identidade visual"
+          aria-label={t("previaAria")}
           style={tema}
           className="border-border mb-4 overflow-hidden rounded-lg border font-sans"
         >
@@ -115,12 +117,14 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
             {nome || inicial.nome}
           </div>
           <div className="bg-background space-y-2 p-4">
-            <p className="text-accent text-xs font-semibold tracking-widest uppercase">Destaque</p>
+            <p className="text-accent text-xs font-semibold tracking-widest uppercase">{t("destaque")}</p>
             <p className="text-text text-sm">
-              Texto comum com um <span className="text-primary font-medium">link na cor primária</span>.
+              {t.rich("textoComum", {
+                link: (c) => <span className="text-primary font-medium">{c}</span>,
+              })}
             </p>
             <span className="bg-primary text-primary-foreground inline-block rounded-md px-4 py-2 text-sm font-medium">
-              Botão principal
+              {t("botaoPrincipal")}
             </span>
           </div>
         </div>
@@ -132,12 +136,12 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
           </div>
         )}
         <Botao type="submit" disabled={salvando || problemas.length > 0}>
-          {salvando ? "Salvando..." : "Salvar identidade visual"}
+          {salvando ? t("salvando") : t("salvar")}
         </Botao>
       </form>
       <form action={restaurar} className="mt-3 text-center">
         <button type="submit" disabled={restaurando} className="text-primary text-sm font-medium">
-          Restaurar cores e fonte padrão
+          {t("restaurar")}
         </button>
       </form>
     </div>
@@ -160,6 +164,7 @@ export function FormImagemDaMarca({
   nome: string;
   fundoEscuro?: boolean;
 }) {
+  const t = useTranslations("administracao.identidade.formulario");
   const [estado, enviar, enviando] = useAcaoComAtualizacao(enviarImagemAcao);
   const [estadoRemocao, remover, removendo] = useAcaoComAtualizacao(removerImagemAcao);
   const mensagem = estado ?? estadoRemocao;
@@ -175,12 +180,12 @@ export function FormImagemDaMarca({
         {atual ? (
           <LogoDoTenant
             src={atual}
-            nome={`${titulo} de ${nome}`}
+            nome={t("imagemDe", { titulo, nome })}
             className={tipo === "icone" ? "h-12" : "h-16"}
           />
         ) : (
           <span className={`${fundoEscuro ? "text-backdrop-foreground" : "text-muted"} text-xs`}>
-            Nenhuma imagem (usa o padrão)
+            {t("nenhumaImagem")}
           </span>
         )}
       </div>
@@ -190,7 +195,7 @@ export function FormImagemDaMarca({
           type="file"
           name="imagem"
           required
-          aria-label={`Arquivo: ${titulo}`}
+          aria-label={t("arquivo", { titulo })}
           accept="image/png,image/jpeg,image/webp"
           className="text-muted file:border-border file:bg-background file:text-primary text-xs file:mr-3 file:rounded-md file:border file:px-3 file:py-1.5 file:text-sm file:font-medium"
         />
@@ -199,14 +204,14 @@ export function FormImagemDaMarca({
           disabled={enviando}
           className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium disabled:opacity-60"
         >
-          {enviando ? "Enviando..." : "Enviar"}
+          {enviando ? t("enviando") : t("enviar")}
         </button>
       </form>
       {atual && (
         <form action={remover} className="mt-2">
           <input type="hidden" name="tipo" value={tipo} />
           <button type="submit" disabled={removendo} className="text-danger text-xs font-medium">
-            Remover
+            {t("remover")}
           </button>
         </form>
       )}

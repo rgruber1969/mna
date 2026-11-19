@@ -31,7 +31,7 @@ describe("problemaNoSlug", () => {
   it("aceita slugs válidos e recusa reservados e mal formados", () => {
     expect(problemaNoSlug("bt")).toBeNull();
     expect(problemaNoSlug("escritorio-1")).toBeNull();
-    expect(problemaNoSlug("admin")).toMatch(/reservado/);
+    expect(problemaNoSlug("admin")).toBe("console.erros.enderecoReservado");
     expect(problemaNoSlug("Bt")).not.toBeNull();
     expect(problemaNoSlug("bt-")).not.toBeNull();
     expect(problemaNoSlug("a".repeat(41))).not.toBeNull();

@@ -2,6 +2,7 @@ import { asc, count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { comTenant } from "@/server/db/cliente";
 import { papelEmpresa, perfil, tipoVinculo, vinculoPessoaEmpresa } from "@/server/db/esquema";
+import type { ErroDeServico } from "@/i18n/servidor";
 import type { Acesso } from "./acesso";
 import { auditar, type ResultadoComId } from "./empresas";
 import { exigirPermissao, pode } from "./permissoes/verificador";
@@ -12,10 +13,14 @@ import { exigirPermissao, pode } from "./permissoes/verificador";
  * pessoa e empresa. Ambos extensíveis pelo tenant.
  */
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 
 const uuidValido = (id: string) => z.uuid().safeParse(id).success;
-const Nome = z.string().trim().min(2, "Informe o nome.").max(120, "Nome muito longo.");
+const Nome = z
+  .string()
+  .trim()
+  .min(2, "cadastros.erros.nomeObrigatorio")
+  .max(120, "cadastros.erros.nomeLongo");
 
 // --- Papéis de empresa ---------------------------------------------------------------
 
@@ -69,9 +74,10 @@ export async function salvarPapel(
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "cadastros", dados.id ? "editar" : "criar");
   const nome = Nome.safeParse(dados.nome);
-  if (!nome.success) return { erro: nome.error.issues[0]?.message ?? "Nome inválido." };
+  if (!nome.success) return { erro: nome.error.issues[0]?.message ?? "cadastros.erros.nomeInvalido" };
   const perfilId = dados.perfilSugeridoId || null;
-  if (!(await perfilDeDealValido(a.tenant.id, perfilId))) return { erro: "Escolha um perfil de deal." };
+  if (!(await perfilDeDealValido(a.tenant.id, perfilId)))
+    return { erro: "cadastros.erros.perfilDeDealInvalido" };
   const r = await comTenant(a.tenant.id, async (tx) => {
     if (dados.id) {
       if (!uuidValido(dados.id)) return null;
@@ -86,8 +92,8 @@ export async function salvarPapel(
       .values({ tenantId: a.tenant.id, nome: nome.data, perfilSugeridoId: perfilId })
       .returning({ id: papelEmpresa.id });
   }).catch(() => "duplicado" as const);
-  if (r === "duplicado") return { erro: "Já existe um papel com este nome." };
-  if (!r?.[0]) return { erro: "Papel não encontrado." };
+  if (r === "duplicado") return { erro: "cadastros.erros.papelJaExiste" };
+  if (!r?.[0]) return { erro: "cadastros.erros.papelNaoEncontrado" };
   await auditar(a, dados.id ? "papel.editado" : "papel.criado", "papel_empresa", r[0].id);
   return { id: r[0].id };
 }
@@ -95,11 +101,11 @@ export async function salvarPapel(
 /** Papel em uso nos deals não pode ser excluído (verificação chega com os deals, item 8). */
 export async function excluirPapel(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "cadastros", "excluir");
-  if (!uuidValido(id)) return { erro: "Papel não encontrado." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.papelNaoEncontrado" };
   const feito = await comTenant(a.tenant.id, (tx) =>
     tx.delete(papelEmpresa).where(eq(papelEmpresa.id, id)).returning({ id: papelEmpresa.id }),
   );
-  if (feito.length === 0) return { erro: "Papel não encontrado." };
+  if (feito.length === 0) return { erro: "cadastros.erros.papelNaoEncontrado" };
   await auditar(a, "papel.excluido", "papel_empresa", id);
   return { ok: true };
 }
@@ -132,7 +138,7 @@ export async function salvarTipoDeVinculo(
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "cadastros", dados.id ? "editar" : "criar");
   const nome = Nome.safeParse(dados.nome);
-  if (!nome.success) return { erro: nome.error.issues[0]?.message ?? "Nome inválido." };
+  if (!nome.success) return { erro: nome.error.issues[0]?.message ?? "cadastros.erros.nomeInvalido" };
   const r = await comTenant(a.tenant.id, async (tx) => {
     if (dados.id) {
       if (!uuidValido(dados.id)) return null;
@@ -147,23 +153,23 @@ export async function salvarTipoDeVinculo(
       .values({ tenantId: a.tenant.id, nome: nome.data, comPercentual: dados.comPercentual })
       .returning({ id: tipoVinculo.id });
   }).catch(() => "duplicado" as const);
-  if (r === "duplicado") return { erro: "Já existe um tipo de vínculo com este nome." };
-  if (!r?.[0]) return { erro: "Tipo de vínculo não encontrado." };
+  if (r === "duplicado") return { erro: "cadastros.erros.tipoJaExiste" };
+  if (!r?.[0]) return { erro: "cadastros.erros.tipoNaoEncontrado" };
   await auditar(a, dados.id ? "tipo_vinculo.editado" : "tipo_vinculo.criado", "tipo_vinculo", r[0].id);
   return { id: r[0].id };
 }
 
 export async function excluirTipoDeVinculo(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "cadastros", "excluir");
-  if (!uuidValido(id)) return { erro: "Tipo de vínculo não encontrado." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.tipoNaoEncontrado" };
   const [{ n }] = await comTenant(a.tenant.id, (tx) =>
     tx.select({ n: count() }).from(vinculoPessoaEmpresa).where(eq(vinculoPessoaEmpresa.tipoId, id)),
   );
-  if (n > 0) return { erro: `Tipo em uso em ${n} vínculo${n > 1 ? "s" : ""}: remova os vínculos antes.` };
+  if (n > 0) return { erro: "cadastros.erros.tipoEmUso", parametros: { n } };
   const feito = await comTenant(a.tenant.id, (tx) =>
     tx.delete(tipoVinculo).where(eq(tipoVinculo.id, id)).returning({ id: tipoVinculo.id }),
   );
-  if (feito.length === 0) return { erro: "Tipo de vínculo não encontrado." };
+  if (feito.length === 0) return { erro: "cadastros.erros.tipoNaoEncontrado" };
   await auditar(a, "tipo_vinculo.excluido", "tipo_vinculo", id);
   return { ok: true };
 }

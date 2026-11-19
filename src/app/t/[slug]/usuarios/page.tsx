@@ -1,3 +1,4 @@
+import { getFormatter, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -12,6 +13,8 @@ import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao, FormConvidarUsuario } from "@/components/usuarios/formularios";
 import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
 
+const DATA_E_HORA = { dateStyle: "short", timeStyle: "medium" } as const;
+
 /** Administração de usuários do tenant (só administradores). */
 async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?: string }> }) {
   await connection();
@@ -22,22 +25,24 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
   if (!acesso.administrador) notFound();
   const { exigeDeTodos, usuarios, convites } = await listarUsuarios(acesso);
   const perfisDoTenant = (await listarPerfis(acesso)).perfis.filter((p) => p.camada === "tenant");
+  const t = await getTranslations("administracao.usuarios");
+  const formatar = await getFormatter();
 
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <div className="flex w-full max-w-3xl flex-col gap-6">
           <Cartao largura="max-w-3xl">
-            <Titulo sobre="Administração">Usuários</Titulo>
+            <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
             <div className="-mx-2 overflow-x-auto">
               <table className={estiloTabela.tabela}>
                 <thead className={estiloTabela.cabecalho}>
                   <tr>
-                    <th className={estiloTabela.th}>Nome</th>
-                    <th className={estiloTabela.th}>Perfil</th>
-                    <th className={estiloTabela.th}>2FA</th>
+                    <th className={estiloTabela.th}>{t("colunaNome")}</th>
+                    <th className={estiloTabela.th}>{t("colunaPerfil")}</th>
+                    <th className={estiloTabela.th}>{t("colunaDoisFatores")}</th>
                     <th className={`${estiloTabela.th} text-right`}>
-                      <span className="sr-only">Ações</span>
+                      <span className="sr-only">{t("colunaAcoes")}</span>
                     </th>
                   </tr>
                 </thead>
@@ -57,27 +62,27 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
                       </td>
                       <td className={estiloTabela.td}>
                         <span className="flex flex-wrap gap-1">
-                          {u.administrador && <Etiqueta>Administrador</Etiqueta>}
+                          {u.administrador && <Etiqueta>{t("administrador")}</Etiqueta>}
                           {u.perfil ? (
                             <Etiqueta tom="neutra">{u.perfil}</Etiqueta>
                           ) : (
-                            !u.administrador && <span className="text-muted text-xs">Sem perfil</span>
+                            !u.administrador && <span className="text-muted text-xs">{t("semPerfil")}</span>
                           )}
                         </span>
                       </td>
                       <td className={estiloTabela.td}>
                         {u.temDoisFatores ? (
-                          <Etiqueta tom="sucesso">Ativo</Etiqueta>
+                          <Etiqueta tom="sucesso">{t("doisFatoresAtivo")}</Etiqueta>
                         ) : u.exigeDoisFatores ? (
-                          <Etiqueta tom="perigo">Exigido, não configurado</Etiqueta>
+                          <Etiqueta tom="perigo">{t("doisFatoresExigidoNaoConfigurado")}</Etiqueta>
                         ) : (
-                          <Etiqueta tom="neutra">Não configurado</Etiqueta>
+                          <Etiqueta tom="neutra">{t("doisFatoresNaoConfigurado")}</Etiqueta>
                         )}
                       </td>
                       <td className={`${estiloTabela.td} text-right`}>
                         <Link
                           href={`/usuarios/${u.id}`}
-                          aria-label={`Abrir ${u.nome}`}
+                          aria-label={t("abrir", { nome: u.nome })}
                           className="bg-surface text-text hover:text-primary inline-flex h-8 w-8 items-center justify-center rounded-md font-bold"
                         >
                           ···
@@ -92,24 +97,26 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
 
           {convites.length > 0 && (
             <Cartao largura="max-w-2xl">
-              <Titulo sobre="Aguardando aceite">Convites pendentes</Titulo>
+              <Titulo sobre={t("convitesSobre")}>{t("convitesTitulo")}</Titulo>
               <ul className="divide-border divide-y text-sm">
                 {convites.map((c) => (
                   <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                     <span>
                       <span className="text-text">{c.nome}</span>{" "}
                       <span className="text-muted">
-                        ({c.email}){c.administrador ? " · administrador" : ""} · vence em{" "}
-                        {c.expiraEm.toLocaleString("pt-BR")}
+                        {t(c.administrador ? "conviteAdminVence" : "conviteVence", {
+                          email: c.email,
+                          data: formatar.dateTime(c.expiraEm, DATA_E_HORA),
+                        })}
                       </span>
                     </span>
                     <span className="flex gap-2">
-                      <BotaoDeAcao acao={reenviarConviteAcao} campos={{ id: c.id }} rotulo="Reenviar" />
+                      <BotaoDeAcao acao={reenviarConviteAcao} campos={{ id: c.id }} rotulo={t("reenviar")} />
                       <BotaoDeAcao
                         acao={cancelarConviteAcao}
                         campos={{ id: c.id }}
-                        rotulo="Cancelar"
-                        confirmar="Cancelar este convite?"
+                        rotulo={t("cancelar")}
+                        confirmar={t("confirmarCancelarConvite")}
                         perigo
                       />
                     </span>
@@ -121,27 +128,21 @@ async function Painel({ consulta }: { consulta: Promise<{ nome?: string; email?:
         </div>
 
         <Cartao largura="max-w-sm">
-          <Titulo sobre="Novo">Convidar usuário</Titulo>
+          <Titulo sobre={t("convidarSobre")}>{t("convidarTitulo")}</Titulo>
           <FormConvidarUsuario perfis={perfisDoTenant} inicial={await consulta} />
         </Cartao>
         {/* Coluna própria: em telas largas fica à direita do convite; nas estreitas, abaixo. */}
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Configuração">Verificação em duas etapas</Titulo>
+            <Titulo sobre={t("configuracaoSobre")}>{t("doisFatoresTitulo")}</Titulo>
             <p className="text-muted mb-4 text-sm">
-              {exigeDeTodos
-                ? "Exigida de todos os usuários deste tenant."
-                : "Exigida dos administradores e dos usuários marcados individualmente."}
+              {exigeDeTodos ? t("exigidaDeTodos") : t("exigidaPadrao")}
             </p>
             <BotaoDeAcao
               acao={exigirDeTodosAcao}
               campos={{ valor: exigeDeTodos ? "nao" : "sim" }}
-              rotulo={exigeDeTodos ? "Deixar de exigir de todos" : "Exigir de todos"}
-              confirmar={
-                exigeDeTodos
-                  ? undefined
-                  : "Quem ainda não tem 2FA terá de configurar no próximo acesso. Continuar?"
-              }
+              rotulo={exigeDeTodos ? t("deixarDeExigirDeTodos") : t("exigirDeTodos")}
+              confirmar={exigeDeTodos ? undefined : t("confirmarExigirDeTodos")}
             />
           </Cartao>
         </div>

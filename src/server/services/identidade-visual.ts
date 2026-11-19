@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { z } from "zod";
+import type { ErroDeServico } from "@/i18n/servidor";
 import { apagarArquivo, chaveDoArquivo, gravarArquivo } from "@/server/arquivos/armazenamento";
 import { banco, comTenant } from "@/server/db/cliente";
 import { eventoAuditoria, tenant } from "@/server/db/esquema";
@@ -34,7 +35,7 @@ export type TipoDeImagem = keyof typeof TIPOS_DE_IMAGEM;
 
 export const tipoDeImagemValido = (t: string): t is TipoDeImagem => t in TIPOS_DE_IMAGEM;
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 
 /** Identidade gravada, para o formulário de configuração (só administradores). */
 export async function obterIdentidade(acesso: Acesso | null): Promise<IdentidadeGravada & { nome: string }> {
@@ -57,7 +58,7 @@ async function auditar(a: AcessoTenant, tipo: string, detalhes?: Record<string, 
 }
 
 const Dados = z.object({
-  nomeExibicao: z.string().trim().max(80, "Nome de exibição muito longo (até 80 caracteres)."),
+  nomeExibicao: z.string().trim().max(80, "administracao.erros.nomeExibicaoLongo"),
   corPrimaria: z.string().trim().toLowerCase(),
   corDestaque: z.string().trim().toLowerCase(),
   fonte: z.string().trim(),
@@ -69,12 +70,12 @@ export type DadosIdentidade = z.input<typeof Dados>;
 export async function salvarIdentidade(acesso: Acesso | null, dados: DadosIdentidade): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const r = Dados.safeParse(dados);
-  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "administracao.erros.dadosInvalidos" };
   const { nomeExibicao, corPrimaria, corDestaque, fonte } = r.data;
-  if (!corValida(corPrimaria) || !corValida(corDestaque)) return { erro: "Use cores no formato #RRGGBB." };
-  if (!fonteValida(fonte)) return { erro: "Escolha uma fonte da lista." };
+  if (!corValida(corPrimaria) || !corValida(corDestaque)) return { erro: "administracao.erros.formatoDeCor" };
+  if (!fonteValida(fonte)) return { erro: "administracao.erros.fonteInvalida" };
   const problemas = problemasDeContraste({ primaria: corPrimaria, destaque: corDestaque });
-  if (problemas.length) return { erro: problemas.join(" ") };
+  if (problemas.length) return problemas[0];
 
   const padrao = (cor: string, p: string) => (cor === p ? null : cor);
   await banco()
@@ -132,11 +133,11 @@ export async function enviarImagemDaMarca(
   arquivo: File | null,
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
-  if (!tipoDeImagemValido(tipo)) return { erro: "Tipo de imagem inválido." };
-  if (!arquivo || arquivo.size === 0) return { erro: "Escolha uma imagem." };
-  if (arquivo.size > IMAGEM_TAMANHO_MAXIMO) return { erro: "A imagem deve ter até 2 MB." };
+  if (!tipoDeImagemValido(tipo)) return { erro: "administracao.erros.tipoImagemInvalido" };
+  if (!arquivo || arquivo.size === 0) return { erro: "administracao.erros.escolhaImagem" };
+  if (arquivo.size > IMAGEM_TAMANHO_MAXIMO) return { erro: "administracao.erros.imagemGrande" };
   const png = await processarImagemDaMarca(new Uint8Array(await arquivo.arrayBuffer()), tipo);
-  if (!png) return { erro: "Envie uma imagem JPG, PNG ou WebP." };
+  if (!png) return { erro: "administracao.erros.formatoImagem" };
 
   const anterior = await chaveAtual(a.tenant.id, tipo);
   const nome = `${TIPOS_DE_IMAGEM[tipo].arquivo}-${randomBytes(8).toString("hex")}.png`;
@@ -153,7 +154,7 @@ export async function enviarImagemDaMarca(
 
 export async function removerImagemDaMarca(acesso: Acesso | null, tipo: string): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
-  if (!tipoDeImagemValido(tipo)) return { erro: "Tipo de imagem inválido." };
+  if (!tipoDeImagemValido(tipo)) return { erro: "administracao.erros.tipoImagemInvalido" };
   const anterior = await chaveAtual(a.tenant.id, tipo);
   if (!anterior) return { ok: true };
   await banco()

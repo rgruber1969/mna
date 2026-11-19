@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { excluirGrupoAcao } from "@/app/acoes/cadastros";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarEmpresas, listarGrupos } from "@/server/services/empresas";
@@ -22,6 +23,8 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   if (!(await pode(acesso, "empresas", "ver"))) notFound();
+  const t = await getTranslations("cadastros.empresas");
+  const tc = await getTranslations("comum");
   const filtro = await busca;
   const [empresas, grupos, podeCriar, podeExcluir] = await Promise.all([
     listarEmpresas(acesso, { busca: filtro.busca, inativas: filtro.inativas === "sim" }),
@@ -35,13 +38,13 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-3xl">
           <div className="flex items-start justify-between gap-4">
-            <Titulo sobre="Cadastro">Empresas</Titulo>
+            <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
             {podeCriar && (
               <Link
                 href="/empresas/nova"
                 className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
               >
-                Nova empresa
+                {t("nova")}
               </Link>
             )}
           </div>
@@ -49,18 +52,18 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
             <input
               name="busca"
               defaultValue={filtro.busca}
-              aria-label="Buscar empresa"
-              placeholder="Buscar por nome ou CNPJ"
+              aria-label={t("buscarAria")}
+              placeholder={t("buscarPlaceholder")}
               className="border-border bg-background text-text w-full max-w-xs rounded-md border px-3 py-2 text-sm"
             />
             <label className="text-muted flex items-center gap-1 text-sm">
               <input type="checkbox" name="inativas" value="sim" defaultChecked={filtro.inativas === "sim"} />{" "}
-              Mostrar inativas
+              {t("mostrarInativas")}
             </label>
-            <button className="text-primary text-sm font-medium">Buscar</button>
+            <button className="text-primary text-sm font-medium">{t("buscar")}</button>
           </form>
           {empresas.length === 0 ? (
-            <p className="text-muted text-sm">Nenhuma empresa encontrada.</p>
+            <p className="text-muted text-sm">{t("nenhuma")}</p>
           ) : (
             <ul className="divide-border divide-y text-sm">
               {empresas.map((e) => (
@@ -70,31 +73,29 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
                       {e.razaoSocial}
                     </Link>
                     {e.doContratante && (
-                      <span className="text-accent ml-2 text-xs font-medium">contratante</span>
+                      <span className="text-accent ml-2 text-xs font-medium">{t("contratante")}</span>
                     )}
-                    {e.inativa && <span className="text-muted ml-2 text-xs">inativa</span>}
+                    {e.inativa && <span className="text-muted ml-2 text-xs">{t("inativa")}</span>}
                     <span className="text-muted block text-xs">
                       {[
                         e.nomeFantasia,
                         e.cnpj ? formatarCnpj(e.cnpj) : e.pais !== "Brasil" ? e.pais : null,
-                        e.grupo && `Grupo ${e.grupo}`,
+                        e.grupo && t("grupo", { nome: e.grupo }),
                       ]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>
                   </span>
-                  <span className="text-muted shrink-0 text-xs">
-                    {e.pessoas === 0 ? "sem pessoas" : `${e.pessoas} pessoa${e.pessoas > 1 ? "s" : ""}`}
-                  </span>
+                  <span className="text-muted shrink-0 text-xs">{t("pessoas", { n: e.pessoas })}</span>
                 </li>
               ))}
             </ul>
           )}
         </Cartao>
         <Cartao largura="max-w-sm">
-          <Titulo sobre="Cadastro">Grupos econômicos</Titulo>
+          <Titulo sobre={t("sobre")}>{t("gruposTitulo")}</Titulo>
           {grupos.length === 0 ? (
-            <p className="text-muted text-sm">Nenhum grupo cadastrado.</p>
+            <p className="text-muted text-sm">{t("nenhumGrupo")}</p>
           ) : (
             <ul className="divide-border divide-y text-sm">
               {grupos.map((g) => (
@@ -102,17 +103,15 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
                   <span>
                     {g.nome}
                     <span className="text-muted block text-xs">
-                      {g.empresas === 0
-                        ? "sem empresas"
-                        : `${g.empresas} empresa${g.empresas > 1 ? "s" : ""}`}
+                      {t("empresasDoGrupo", { n: g.empresas })}
                     </span>
                   </span>
                   {podeExcluir && (
                     <BotaoDeAcao
                       acao={excluirGrupoAcao}
                       campos={{ id: g.id }}
-                      rotulo="Excluir"
-                      confirmar={`Excluir o grupo ${g.nome}? As empresas ficam sem grupo.`}
+                      rotulo={tc("excluir")}
+                      confirmar={t("confirmarExcluirGrupo", { nome: g.nome })}
                       perigo
                     />
                   )}

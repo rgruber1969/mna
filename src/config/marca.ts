@@ -6,6 +6,8 @@
  * tons são derivados aqui, e a legibilidade é verificada (WCAG AA) ao salvar.
  */
 
+import type { ErroDeServico } from "@/i18n/servidor";
+
 /** Tokens do tema padrão (identidade RGRUBER); espelham `src/app/globals.css`. */
 export const TOKENS_PADRAO = {
   primaria: "#123e7a",
@@ -18,7 +20,7 @@ export const TOKENS_PADRAO = {
 
 /** Fontes testadas, carregadas em `src/app/layout.tsx` (lista curta, ADR-0010). */
 export const FONTES = [
-  { id: "manrope", nome: "Manrope (padrão)", variavel: "--font-manrope" },
+  { id: "manrope", nome: "Manrope", variavel: "--font-manrope" },
   { id: "inter", nome: "Inter", variavel: "--font-inter" },
   { id: "roboto", nome: "Roboto", variavel: "--font-roboto" },
   { id: "open-sans", nome: "Open Sans", variavel: "--font-open-sans" },
@@ -79,24 +81,27 @@ export function textoSobre(cor: string): string {
 
 export type Cores = { primaria: string; destaque: string };
 
-/** Problemas de legibilidade das cores escolhidas (vazio = aceitas). */
-export function problemasDeContraste({ primaria, destaque }: Cores): string[] {
-  const problemas: string[] = [];
-  if (!corValida(primaria) || !corValida(destaque)) return ["Use cores no formato #RRGGBB."];
+/**
+ * Problemas de legibilidade das cores escolhidas (vazio = aceitas). Cada um é
+ * uma chave das mensagens (traduzida onde é exibida) com seus parâmetros.
+ */
+export function problemasDeContraste({ primaria, destaque }: Cores): ErroDeServico[] {
+  const problemas: ErroDeServico[] = [];
+  if (!corValida(primaria) || !corValida(destaque)) return [{ erro: "administracao.erros.formatoDeCor" }];
   const primariaNoFundo = contraste(primaria, TOKENS_PADRAO.fundo);
   if (primariaNoFundo < CONTRASTE_TEXTO)
-    problemas.push(
-      `A cor primária é usada em textos e links sobre fundo branco e ficou com contraste ` +
-        `${primariaNoFundo.toFixed(1)}:1 (mínimo ${CONTRASTE_TEXTO}:1). Escolha um tom mais escuro.`,
-    );
+    problemas.push({
+      erro: "administracao.erros.contrastePrimaria",
+      parametros: { razao: primariaNoFundo.toFixed(1), minimo: String(CONTRASTE_TEXTO) },
+    });
   if (contraste(primaria, textoSobre(primaria)) < CONTRASTE_TEXTO)
-    problemas.push("Nenhuma cor de texto fica legível sobre a cor primária. Escolha outro tom.");
+    problemas.push({ erro: "administracao.erros.contrasteSemTexto" });
   const destaqueNoFundo = contraste(destaque, TOKENS_PADRAO.fundo);
   if (destaqueNoFundo < CONTRASTE_GRAFICO)
-    problemas.push(
-      `A cor de destaque ficou com contraste ${destaqueNoFundo.toFixed(1)}:1 sobre fundo branco ` +
-        `(mínimo ${CONTRASTE_GRAFICO}:1). Escolha um tom mais escuro.`,
-    );
+    problemas.push({
+      erro: "administracao.erros.contrasteDestaque",
+      parametros: { razao: destaqueNoFundo.toFixed(1), minimo: String(CONTRASTE_GRAFICO) },
+    });
   return problemas;
 }
 

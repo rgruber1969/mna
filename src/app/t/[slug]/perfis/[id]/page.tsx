@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -23,47 +24,43 @@ async function Detalhe({ id }: { id: Promise<string> }) {
   if (!acesso.administrador) notFound();
   const p = await obterPerfil(acesso, await id);
   if (!p) notFound();
+  const t = await getTranslations("administracao.perfis.detalhe");
 
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
           <Link href="/perfis" className="text-primary text-sm">
-            ← Perfis
+            {t("voltar")}
           </Link>
-          <Titulo sobre={p.camada === "tenant" ? "Perfil do tenant" : "Perfil de deal"}>{p.nome}</Titulo>
+          <Titulo sobre={p.camada === "tenant" ? t("sobreTenant") : t("sobreDeal")}>{p.nome}</Titulo>
           <p className="text-muted mb-4 text-sm">
-            Marque o que este perfil pode fazer em cada menu. O que não estiver marcado é negado.
-            {acesso.tenant.modoPermissoes === "usuario" &&
-              " No modo por usuário, quem tiver permissões personalizadas não muda com esta matriz."}
+            {t("marque")}
+            {acesso.tenant.modoPermissoes === "usuario" && ` ${t("notaModoUsuario")}`}
           </p>
           <FormMatrizDoPerfil id={p.id} recursos={recursosDaCamada(p.camada)} matriz={p.matriz} />
         </Cartao>
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Editar">Nome e descrição</Titulo>
+            <Titulo sobre={t("editarSobre")}>{t("nomeEDescricao")}</Titulo>
             <FormEditarPerfil id={p.id} nome={p.nome} descricao={p.descricao} />
           </Cartao>
           {p.camada === "tenant" && (
             <Cartao largura="max-w-sm">
-              <Titulo sobre="Segurança">Verificação em duas etapas</Titulo>
-              <p className="text-muted mb-4 text-sm">
-                {p.exigeDoisFatores
-                  ? "Exigida de todos com este perfil (soma-se às outras regras: vale sempre a mais segura)."
-                  : "Não exigida por este perfil. Ainda pode ser exigida pelo tenant, individualmente ou por outro perfil."}
-              </p>
+              <Titulo sobre={t("segurancaSobre")}>{t("doisFatores")}</Titulo>
+              <p className="text-muted mb-4 text-sm">{p.exigeDoisFatores ? t("exigida") : t("naoExigida")}</p>
               <BotaoDeAcao
                 acao={exigirDoPerfilAcao}
                 campos={{ id: p.id, valor: p.exigeDoisFatores ? "nao" : "sim" }}
-                rotulo={p.exigeDoisFatores ? "Deixar de exigir por este perfil" : "Exigir 2FA deste perfil"}
+                rotulo={p.exigeDoisFatores ? t("deixarDeExigir") : t("exigir")}
               />
             </Cartao>
           )}
           {p.camada === "tenant" && (
             <Cartao largura="max-w-sm">
-              <Titulo sobre="Em uso">Usuários com este perfil</Titulo>
+              <Titulo sobre={t("emUsoSobre")}>{t("usuariosComPerfil")}</Titulo>
               {p.usuarios.length === 0 ? (
-                <p className="text-muted text-sm">Nenhum.</p>
+                <p className="text-muted text-sm">{t("nenhum")}</p>
               ) : (
                 <ul className="text-sm">
                   {p.usuarios.map((u) => (
@@ -78,13 +75,13 @@ async function Detalhe({ id }: { id: Promise<string> }) {
             </Cartao>
           )}
           <Cartao largura="max-w-sm">
-            <Titulo sobre="Excluir">Excluir perfil</Titulo>
-            <p className="text-muted mb-4 text-sm">Só é possível quando ninguém usa o perfil.</p>
+            <Titulo sobre={t("excluirSobre")}>{t("excluirTitulo")}</Titulo>
+            <p className="text-muted mb-4 text-sm">{t("excluirTexto")}</p>
             <BotaoDeAcao
               acao={excluirPerfilAcao}
               campos={{ id: p.id }}
-              rotulo="Excluir perfil"
-              confirmar="Excluir este perfil?"
+              rotulo={t("excluirTitulo")}
+              confirmar={t("confirmarExcluir")}
               perigo
             />
           </Cartao>

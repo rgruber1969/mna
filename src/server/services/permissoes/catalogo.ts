@@ -8,74 +8,63 @@ import { z } from "zod";
  * saiba, pelo recurso, se a pergunta é sobre o tenant ou sobre um deal.
  */
 
-export const ACOES = {
-  ver: "Ver",
-  criar: "Criar",
-  editar: "Editar",
-  excluir: "Excluir",
-  baixar: "Baixar",
-  comentar: "Comentar",
-  aprovar: "Aprovar",
-  liberar: "Liberar ao comprador",
-} as const;
-export type Acao = keyof typeof ACOES;
-
-/** Abreviação de cada ação nas tabelas (legenda em perfis-e-permissoes.md). */
-export const SIGLAS: Record<Acao, string> = {
-  ver: "V",
-  criar: "C",
-  editar: "E",
-  excluir: "X",
-  baixar: "B",
-  comentar: "Co",
-  aprovar: "Ap",
-  liberar: "Li",
-};
+export const ACOES = [
+  "ver",
+  "criar",
+  "editar",
+  "excluir",
+  "baixar",
+  "comentar",
+  "aprovar",
+  "liberar",
+] as const;
+export type Acao = (typeof ACOES)[number];
 
 export type Camada = "tenant" | "deal";
 
-type DefinicaoDoRecurso = { nome: string; camada: Camada; acoes: readonly Acao[]; nota?: string };
+/**
+ * `nota`: o recurso tem uma observação exibida na matriz. Os nomes dos
+ * recursos, das ações e as notas ficam nas mensagens (administracao.permissoes),
+ * traduzidos onde são exibidos.
+ */
+type DefinicaoDoRecurso = { camada: Camada; acoes: readonly Acao[]; nota?: true };
 
 const VCEX = ["ver", "criar", "editar", "excluir"] as const;
 const VCEXB = ["ver", "criar", "editar", "excluir", "baixar"] as const;
 
 export const RECURSOS = {
   // --- Camada do tenant (fora dos deals) -------------------------------------
-  painel: { nome: "Painel", camada: "tenant", acoes: ["ver"] },
+  painel: { camada: "tenant", acoes: ["ver"] },
   deals: {
-    nome: "Deals (lista)",
     camada: "tenant",
     acoes: VCEX,
-    nota: "A lista mostra só os deals em que a pessoa participa.",
+    nota: true,
   },
-  valuations: { nome: "Valuations avulsos", camada: "tenant", acoes: VCEXB },
-  empresas: { nome: "Empresas e pessoas", camada: "tenant", acoes: VCEXB },
+  valuations: { camada: "tenant", acoes: VCEXB },
+  empresas: { camada: "tenant", acoes: VCEXB },
   cadastros: {
-    nome: "Cadastros gerais",
     camada: "tenant",
     acoes: VCEX,
-    nota: "Etapas padrão, catálogo de documentos, templates e papéis de empresa.",
+    nota: true,
   },
-  auditoria: { nome: "Auditoria", camada: "tenant", acoes: ["ver"] },
+  auditoria: { camada: "tenant", acoes: ["ver"] },
 
   // --- Camada do deal (dentro de cada deal, conforme a participação) ---------
-  deal: { nome: "Deal e participantes", camada: "deal", acoes: ["ver", "editar"] },
-  etapas: { nome: "Etapas", camada: "deal", acoes: VCEX },
+  deal: { camada: "deal", acoes: ["ver", "editar"] },
+  etapas: { camada: "deal", acoes: VCEX },
   documentos: {
-    nome: "Documentos",
     camada: "deal",
     acoes: VCEXB,
-    nota: "Só nas versões a que a pessoa recebeu acesso de quem as enviou.",
+    nota: true,
   },
-  tarefas: { nome: "Tarefas", camada: "deal", acoes: VCEX },
-  mensagens: { nome: "Mensagens", camada: "deal", acoes: ["ver", "criar"], nota: "Mensagens são imutáveis." },
-  contratos: { nome: "Contratos", camada: "deal", acoes: VCEXB },
+  tarefas: { camada: "deal", acoes: VCEX },
+  mensagens: { camada: "deal", acoes: ["ver", "criar"], nota: true },
+  contratos: { camada: "deal", acoes: VCEXB },
   ebook: {
-    nome: "E-book / OnePager",
     camada: "deal",
     acoes: [...VCEXB, "comentar", "aprovar", "liberar"],
   },
-  ofertas: { nome: "Ofertas", camada: "deal", acoes: VCEX },
+  ofertas: { camada: "deal", acoes: VCEX },
 } as const satisfies Record<string, DefinicaoDoRecurso>;
 
 export type Recurso = keyof typeof RECURSOS;

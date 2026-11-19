@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { startTransition, useRef, useState, type PointerEvent } from "react";
 import { enviarFotoAcao, removerFotoAcao } from "@/app/acoes/conta";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
@@ -19,6 +20,7 @@ type Imagem = { url: string; largura: number; altura: number; elemento: HTMLImag
  * imagem final (foto-da-conta.ts).
  */
 export function FormFoto({ nome, foto }: { nome: string; foto?: string | null }) {
+  const t = useTranslations("administracao.foto");
   const [estado, enviar, enviando] = useAcaoComAtualizacao(enviarFotoAcao);
   const [estadoRemocao, remover, removendo] = useAcaoComAtualizacao(removerFotoAcao);
   const [imagem, setImagem] = useState<Imagem | null>(null);
@@ -44,8 +46,8 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
     setErroLocal(null);
     if (!arquivo) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type))
-      return setErroLocal("Escolha uma imagem JPG, PNG ou WebP.");
-    if (arquivo.size > TAMANHO_MAXIMO) return setErroLocal("A imagem deve ter até 2 MB.");
+      return setErroLocal(t("formatoInvalido"));
+    if (arquivo.size > TAMANHO_MAXIMO) return setErroLocal(t("imagemGrande"));
     const url = URL.createObjectURL(arquivo);
     const elemento = new Image();
     elemento.onload = () => {
@@ -53,7 +55,7 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
       setZoom(1);
       setDesloc({ x: 0, y: 0 });
     };
-    elemento.onerror = () => setErroLocal("Não foi possível abrir esta imagem.");
+    elemento.onerror = () => setErroLocal(t("naoAbriu"));
     elemento.src = url;
   }
 
@@ -76,7 +78,7 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
     const lado = JANELA / escala;
     ctx.drawImage(imagem.elemento, -esquerda / escala, -topo / escala, lado, lado, 0, 0, SAIDA, SAIDA);
     canvas.toBlob((blob) => {
-      if (!blob) return setErroLocal("Não foi possível preparar a imagem.");
+      if (!blob) return setErroLocal(t("naoPreparou"));
       const dados = new FormData();
       dados.set("foto", new File([blob], "foto.png", { type: "image/png" }));
       startTransition(() => enviar(dados));
@@ -102,10 +104,7 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
         <>
           <div className="mb-4 flex items-center gap-4">
             <Avatar nome={nome} foto={foto} tamanho={72} />
-            <p className="text-muted text-xs">
-              Aparece ao lado do seu nome, em todos os lugares onde você tem acesso. Os dados da imagem (como
-              local e câmera) são apagados.
-            </p>
+            <p className="text-muted text-xs">{t("explicacao")}</p>
           </div>
           <input
             ref={entrada}
@@ -132,23 +131,23 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
               <path d="M4 8h3l2-2h6l2 2h3v11H4z" strokeLinejoin="round" />
               <circle cx="12" cy="13" r="3.5" />
             </svg>
-            Escolher imagem
+            {t("escolher")}
           </label>
-          <p className="text-muted mt-1 text-center text-xs">JPG, PNG ou WebP, até 2 MB</p>
+          <p className="text-muted mt-1 text-center text-xs">{t("formatos")}</p>
           {foto && (
             <form action={remover} className="mt-4 text-center">
               <button disabled={removendo} className="text-danger text-sm font-medium disabled:opacity-60">
-                {removendo ? "Removendo..." : "Remover foto atual"}
+                {removendo ? t("removendo") : t("removerAtual")}
               </button>
             </form>
           )}
         </>
       ) : (
         <>
-          <p className="text-text mb-2 text-sm font-medium">Prévia: arraste para enquadrar e use o zoom</p>
+          <p className="text-text mb-2 text-sm font-medium">{t("previa")}</p>
           <div
             role="img"
-            aria-label="Prévia da foto"
+            aria-label={t("previaAria")}
             onPointerDown={aoPressionar}
             onPointerMove={aoMover}
             onPointerUp={() => (arrasto.current = null)}
@@ -171,14 +170,14 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
             />
           </div>
           <label className="mb-4 flex items-center gap-3 text-sm">
-            <span className="text-muted">Zoom</span>
+            <span className="text-muted">{t("zoom")}</span>
             <input
               type="range"
               min={1}
               max={4}
               step={0.05}
               value={zoom}
-              aria-label="Zoom"
+              aria-label={t("zoom")}
               onChange={(e) => {
                 setZoom(Number(e.target.value));
                 setDesloc((d) => limitar(d.x, d.y));
@@ -187,10 +186,10 @@ export function FormFoto({ nome, foto }: { nome: string; foto?: string | null })
             />
           </label>
           <Botao type="button" onClick={salvar} disabled={enviando}>
-            {enviando ? "Enviando..." : "Salvar foto"}
+            {enviando ? t("enviando") : t("salvar")}
           </Botao>
           <button type="button" onClick={cancelar} className="text-muted mt-3 w-full text-sm font-medium">
-            Cancelar
+            {t("cancelar")}
           </button>
         </>
       )}

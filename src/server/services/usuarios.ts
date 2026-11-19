@@ -1,6 +1,7 @@
 import { notificar } from "./notificacoes";
 import { and, desc, eq, gt, isNull, ne } from "drizzle-orm";
 import { z } from "zod";
+import type { ErroDeServico } from "@/i18n/servidor";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
   convite,
@@ -15,7 +16,7 @@ import { exigirAdministrador, type Acesso, type AcessoTenant } from "./acesso";
 import { emitirConviteDoTenant, type DadosPessoa } from "./convites";
 import { exigidosPorPerfil } from "./exigencia-2fa";
 import { enderecoDaFoto } from "./foto-da-conta";
-import { filtrarPerfisDoTenant } from "./perfis";
+import { filtrarPerfisDoTenant, UM_PERFIL_SO } from "./perfis";
 import {
   apagarTodosOsFatores,
   avisarMudancaNosFatores,
@@ -33,7 +34,7 @@ import {
  * (perfis-e-permissoes.md; autenticacao-e-sessao.md). Toda ação é auditada.
  */
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 
 const uuidValido = (id: string) => z.uuid().safeParse(id).success;
 
@@ -199,7 +200,7 @@ export async function convidarUsuario(
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const pedidos = (dados.perfis ?? []).filter(Boolean);
-  if (pedidos.length > 1) return { erro: "Escolha um único perfil do tenant." };
+  if (pedidos.length > 1) return { erro: UM_PERFIL_SO };
   const perfis = await comTenant(a.tenant.id, (tx) => filtrarPerfisDoTenant(tx, pedidos));
   const email = String(dados.email ?? "")
     .trim()
@@ -211,7 +212,7 @@ export async function convidarUsuario(
       .innerJoin(usuario, eq(usuario.id, vinculoTenant.usuarioId))
       .where(and(eq(usuario.email, email), eq(vinculoTenant.situacao, "ativo"))),
   );
-  if (jaTem.length > 0) return { erro: "Esta pessoa já tem acesso a este tenant." };
+  if (jaTem.length > 0) return { erro: "administracao.erros.jaTemAcesso" };
   // Um convite novo substitui o pendente para o mesmo e-mail.
   await comTenant(a.tenant.id, (tx) =>
     tx
@@ -244,7 +245,7 @@ async function convitePendente(a: AcessoTenant, conviteId: string) {
 export async function cancelarConvite(acesso: Acesso | null, conviteId: string): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const c = await convitePendente(a, conviteId);
-  if (!c) return { erro: "Convite não encontrado." };
+  if (!c) return { erro: "administracao.erros.conviteNaoEncontrado" };
   await comTenant(a.tenant.id, (tx) =>
     tx.update(convite).set({ expiraEm: new Date() }).where(eq(convite.id, c.id)),
   );
@@ -256,7 +257,7 @@ export async function cancelarConvite(acesso: Acesso | null, conviteId: string):
 export async function reenviarConvite(acesso: Acesso | null, conviteId: string): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const c = await convitePendente(a, conviteId);
-  if (!c) return { erro: "Convite não encontrado." };
+  if (!c) return { erro: "administracao.erros.conviteNaoEncontrado" };
   await comTenant(a.tenant.id, (tx) =>
     tx.update(convite).set({ expiraEm: new Date() }).where(eq(convite.id, c.id)),
   );
@@ -292,9 +293,9 @@ export async function definirAdministrador(
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const v = await vinculoAtivo(a, usuarioId);
-  if (!v) return { erro: "Usuário não encontrado." };
+  if (!v) return { erro: "administracao.erros.usuarioNaoEncontrado" };
   if (!administrador && v.administrador && (await quantosAdministradores(a)) <= 1)
-    return { erro: "O tenant precisa de pelo menos um administrador." };
+    return { erro: "administracao.erros.pelomenosUmAdmin" };
   await comTenant(a.tenant.id, (tx) =>
     tx
       .update(vinculoTenant)
@@ -312,7 +313,7 @@ export async function definirExigenciaIndividual(
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const v = await vinculoAtivo(a, usuarioId);
-  if (!v) return { erro: "Usuário não encontrado." };
+  if (!v) return { erro: "administracao.erros.usuarioNaoEncontrado" };
   await comTenant(a.tenant.id, (tx) =>
     tx
       .update(vinculoTenant)
@@ -334,8 +335,8 @@ export async function definirExigenciaDeTodos(acesso: Acesso | null, exige: bool
 export async function revogarAcesso(acesso: Acesso | null, usuarioId: string): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const v = await vinculoAtivo(a, usuarioId);
-  if (!v) return { erro: "Usuário não encontrado." };
-  if (v.id === a.usuario.id) return { erro: "Você não pode revogar o seu próprio acesso." };
+  if (!v) return { erro: "administracao.erros.usuarioNaoEncontrado" };
+  if (v.id === a.usuario.id) return { erro: "administracao.erros.naoRevogarProprio" };
   await comTenant(a.tenant.id, (tx) =>
     tx
       .update(vinculoTenant)
@@ -349,8 +350,7 @@ export async function revogarAcesso(acesso: Acesso | null, usuarioId: string): P
 
 // --- Fatores (recuperação) --------------------------------------------------------
 
-const PRECISA_OUTRO_FATOR =
-  "Não é possível remover o único fator da pessoa. Use a redefinição completa do 2FA.";
+const PRECISA_OUTRO_FATOR = "administracao.erros.precisaOutroFator";
 
 /** Remove um aparelho perdido, desde que reste outro fator (vale mesmo com outros tenants). */
 export async function removerPasskeyDoUsuario(
@@ -360,14 +360,15 @@ export async function removerPasskeyDoUsuario(
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const v = await vinculoAtivo(a, usuarioId);
-  if (!v || !uuidValido(passkeyId)) return { erro: "Usuário não encontrado." };
+  if (!v || !uuidValido(passkeyId)) return { erro: "administracao.erros.usuarioNaoEncontrado" };
   if (quantidadeDeFatores(await fatoresDaConta(v.id)) <= 1) return { erro: PRECISA_OUTRO_FATOR };
-  if (!(await removerPasskeyDaConta(v.id, passkeyId))) return { erro: "Passkey não encontrada." };
+  if (!(await removerPasskeyDaConta(v.id, passkeyId)))
+    return { erro: "administracao.erros.passkeyNaoEncontrada" };
   await encerrarSessoes(v.id);
   await auditar(a, "usuario.2fa.passkey.removida", "usuario", v.id);
   await avisarMudancaNosFatores(
     v.id,
-    "Uma passkey foi removida da sua conta pelo administrador",
+    "emails.mudancaNosFatores.motivos.passkeyRemovidaPeloAdministrador",
     a.tenant.nomeExibido,
     a.tenant.id,
   );
@@ -380,16 +381,16 @@ export async function removerAutenticadorDoUsuario(
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const v = await vinculoAtivo(a, usuarioId);
-  if (!v) return { erro: "Usuário não encontrado." };
+  if (!v) return { erro: "administracao.erros.usuarioNaoEncontrado" };
   const f = await fatoresDaConta(v.id);
-  if (!f.autenticador) return { erro: "A pessoa não tem aplicativo autenticador." };
+  if (!f.autenticador) return { erro: "administracao.erros.semAutenticador" };
   if (quantidadeDeFatores(f) <= 1) return { erro: PRECISA_OUTRO_FATOR };
   await removerAutenticadorDaConta(v.id);
   await encerrarSessoes(v.id);
   await auditar(a, "usuario.2fa.autenticador.removido", "usuario", v.id);
   await avisarMudancaNosFatores(
     v.id,
-    "O aplicativo autenticador foi removido da sua conta pelo administrador",
+    "emails.mudancaNosFatores.motivos.autenticadorRemovidoPeloAdministrador",
     a.tenant.nomeExibido,
     a.tenant.id,
   );
@@ -397,8 +398,7 @@ export async function removerAutenticadorDoUsuario(
 }
 
 /** Mensagem genérica: não revela que a pessoa tem acesso a outros tenants (ADR-0019, regra 5). */
-export const REDEFINICAO_PELA_PLATAFORMA =
-  "Por segurança, esta redefinição precisa ser feita pelo suporte da plataforma. Peça à RGRUBER.";
+export const REDEFINICAO_PELA_PLATAFORMA = "administracao.erros.redefinicaoPelaPlataforma";
 
 /** Redefinição completa: só se nenhum outro tenant exige 2FA da pessoa. */
 export async function redefinirDoisFatoresDoUsuario(
@@ -407,7 +407,7 @@ export async function redefinirDoisFatoresDoUsuario(
 ): Promise<Resultado> {
   const a = exigirAdministrador(acesso);
   const v = await vinculoAtivo(a, usuarioId);
-  if (!v) return { erro: "Usuário não encontrado." };
+  if (!v) return { erro: "administracao.erros.usuarioNaoEncontrado" };
   if (await outroTenantExigeDoisFatores(v.id, a.tenant.id)) return { erro: REDEFINICAO_PELA_PLATAFORMA };
   await apagarTodosOsFatores(v.id);
   await auditar(a, "usuario.2fa.redefinido", "usuario", v.id);
@@ -416,7 +416,7 @@ export async function redefinirDoisFatoresDoUsuario(
   );
   await avisarMudancaNosFatores(
     v.id,
-    "A verificação em duas etapas da sua conta foi redefinida pelo administrador",
+    "emails.mudancaNosFatores.motivos.doisFatoresRedefinidosPeloAdministrador",
     a.tenant.nomeExibido,
     a.tenant.id,
   );

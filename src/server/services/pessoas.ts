@@ -4,6 +4,7 @@ import { comTenant } from "@/server/db/cliente";
 import { empresa, pessoa, tipoVinculo, usuario, vinculoPessoaEmpresa } from "@/server/db/esquema";
 import { enderecoDaFoto } from "./foto-da-conta";
 import { cpfValido, mascararCpf, mascararDocumento, soDigitos } from "@/config/documentos";
+import type { ErroDeServico } from "@/i18n/servidor";
 import type { Acesso, AcessoTenant } from "./acesso";
 import { criptografar, descriptografar, indiceCego } from "./cripto/cripto";
 import { auditar, CamposEndereco, type ResultadoComId } from "./empresas";
@@ -21,27 +22,27 @@ import { exigirPermissao } from "./permissoes/verificador";
  * CPF único no tenant (índice cego); e-mail único quando preenchido.
  */
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 
 const uuidValido = (id: string) => z.uuid().safeParse(id).success;
 const opcional = (max = 200) =>
   z
     .string()
     .trim()
-    .max(max, "Texto muito longo.")
+    .max(max, "cadastros.erros.textoLongo")
     .transform((v) => v || null);
 const email = z
   .string()
   .trim()
   .toLowerCase()
   .transform((v) => v || null)
-  .refine((v) => v === null || z.email().safeParse(v).success, "E-mail inválido.");
-const cpf = (rotulo: string) =>
+  .refine((v) => v === null || z.email().safeParse(v).success, "cadastros.erros.emailInvalido");
+const cpf = (erro: string) =>
   z
     .string()
     .trim()
     .transform((v) => soDigitos(v) || null)
-    .refine((v) => v === null || cpfValido(v), `${rotulo} inválido. Confira os números.`);
+    .refine((v) => v === null || cpfValido(v), erro);
 
 /** Campos sensíveis: gravados criptografados, mostrados mascarados. */
 export const CAMPOS_SENSIVEIS = [
@@ -64,7 +65,11 @@ const coluna = {
 } as const satisfies Record<CampoSensivel, keyof typeof pessoa.$inferSelect>;
 
 const DadosPessoa = z.object({
-  nome: z.string().trim().min(2, "Informe o nome completo.").max(200, "Nome muito longo."),
+  nome: z
+    .string()
+    .trim()
+    .min(2, "cadastros.erros.pessoaNomeObrigatorio")
+    .max(200, "cadastros.erros.nomeLongo"),
   email,
   telefone: opcional(40),
   nacionalidade: opcional(80),
@@ -74,17 +79,17 @@ const DadosPessoa = z.object({
     .string()
     .trim()
     .transform((v) => v || null)
-    .refine((v) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v), "Data de nascimento inválida."),
+    .refine((v) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v), "cadastros.erros.dataNascimentoInvalida"),
   ...CamposEndereco,
   rgOrgao: opcional(20),
   rgUf: opcional(2).transform((v) => v?.toUpperCase() ?? null),
   conjugeNome: opcional(),
   conjugeEmail: email,
   // Sensíveis: vazio na edição = manter o atual (use `limpar` para apagar).
-  cpf: cpf("CPF"),
+  cpf: cpf("cadastros.erros.cpfInvalido"),
   rg: opcional(30),
   documentoEstrangeiro: opcional(60),
-  conjugeCpf: cpf("CPF do cônjuge"),
+  conjugeCpf: cpf("cadastros.erros.cpfConjugeInvalido"),
   conjugeRg: opcional(30),
   conjugeRegime: opcional(80),
 });
@@ -93,7 +98,7 @@ export type DadosPessoa = z.input<typeof DadosPessoa>;
 
 function validar(dados: DadosPessoa) {
   const r = DadosPessoa.safeParse(dados);
-  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "cadastros.erros.dadosInvalidos" };
 }
 
 type Validados = z.output<typeof DadosPessoa>;
@@ -102,7 +107,8 @@ async function duplicidade(
   a: AcessoTenant,
   d: { email: string | null; cpf: string | null },
   exceto?: string,
-): Promise<{ erro: string; existenteId: string } | null> {
+  outra = false,
+): Promise<(ErroDeServico & { existenteId: string }) | null> {
   return comTenant(a.tenant.id, async (tx) => {
     const fora = exceto ? ne(pessoa.id, exceto) : undefined;
     if (d.cpf) {
@@ -110,14 +116,22 @@ async function duplicidade(
         .select({ id: pessoa.id })
         .from(pessoa)
         .where(and(eq(pessoa.cpfIndice, indiceCego(a.tenant.id, d.cpf)), fora));
-      if (p) return { erro: "Já existe uma pessoa com este CPF.", existenteId: p.id };
+      if (p)
+        return {
+          erro: outra ? "cadastros.erros.pessoaCpfJaExisteOutra" : "cadastros.erros.pessoaCpfJaExiste",
+          existenteId: p.id,
+        };
     }
     if (d.email) {
       const [p] = await tx
         .select({ id: pessoa.id })
         .from(pessoa)
         .where(and(eq(pessoa.email, d.email), fora));
-      if (p) return { erro: "Já existe uma pessoa com este e-mail.", existenteId: p.id };
+      if (p)
+        return {
+          erro: outra ? "cadastros.erros.pessoaEmailJaExisteOutra" : "cadastros.erros.pessoaEmailJaExiste",
+          existenteId: p.id,
+        };
     }
     return null;
   });
@@ -332,11 +346,11 @@ export async function editarPessoa(
   limpar: string[] = [],
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "empresas", "editar");
-  if (!uuidValido(id)) return { erro: "Pessoa não encontrada." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
   const d = validar(dados);
   if ("erro" in d) return d;
-  const dup = await duplicidade(a, d, id);
-  if (dup) return { erro: dup.erro.replace("uma pessoa", "outra pessoa"), existenteId: dup.existenteId };
+  const dup = await duplicidade(a, d, id, true);
+  if (dup) return dup;
   const campos = limpar.filter((c): c is CampoSensivel =>
     (CAMPOS_SENSIVEIS as readonly string[]).includes(c),
   );
@@ -355,7 +369,7 @@ export async function editarPessoa(
       .where(eq(pessoa.id, id))
       .returning({ id: pessoa.id });
   });
-  if (!feito?.length) return { erro: "Pessoa não encontrada." };
+  if (!feito?.length) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
   await auditar(
     a,
     "pessoa.editada",
@@ -372,7 +386,7 @@ export async function definirPessoaInativa(
   inativa: boolean,
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "editar");
-  if (!uuidValido(id)) return { erro: "Pessoa não encontrada." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
   const feito = await comTenant(a.tenant.id, (tx) =>
     tx
       .update(pessoa)
@@ -380,7 +394,7 @@ export async function definirPessoaInativa(
       .where(eq(pessoa.id, id))
       .returning({ id: pessoa.id }),
   );
-  if (feito.length === 0) return { erro: "Pessoa não encontrada." };
+  if (feito.length === 0) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
   await auditar(a, inativa ? "pessoa.inativada" : "pessoa.reativada", "pessoa", id);
   return { ok: true };
 }
@@ -388,13 +402,12 @@ export async function definirPessoaInativa(
 /** Exclusão definitiva: nunca de quem tem conta no tenant (revogue o acesso e inative). */
 export async function excluirPessoa(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "excluir");
-  if (!uuidValido(id)) return { erro: "Pessoa não encontrada." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
   const [p] = await comTenant(a.tenant.id, (tx) =>
     tx.select({ usuarioId: pessoa.usuarioId }).from(pessoa).where(eq(pessoa.id, id)),
   );
-  if (!p) return { erro: "Pessoa não encontrada." };
-  if (p.usuarioId)
-    return { erro: "Esta pessoa tem acesso ao sistema: revogue o acesso e inative o cadastro." };
+  if (!p) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
+  if (p.usuarioId) return { erro: "cadastros.erros.pessoaTemAcesso" };
   await comTenant(a.tenant.id, (tx) => tx.delete(pessoa).where(eq(pessoa.id, id)));
   await auditar(a, "pessoa.excluida", "pessoa", id);
   return { ok: true };
@@ -403,9 +416,9 @@ export async function excluirPessoa(acesso: Acesso | null, id: string): Promise<
 // --- Vínculos com empresas -----------------------------------------------------------
 
 const Vinculo = z.object({
-  pessoaId: z.uuid("Pessoa inválida."),
-  empresaId: z.uuid("Escolha a empresa."),
-  tipoId: z.uuid("Escolha o tipo de vínculo."),
+  pessoaId: z.uuid("cadastros.erros.pessoaInvalida"),
+  empresaId: z.uuid("cadastros.erros.vinculoEscolhaEmpresa"),
+  tipoId: z.uuid("cadastros.erros.vinculoEscolhaTipo"),
   cargo: opcional(120),
   percentual: z
     .string()
@@ -413,7 +426,7 @@ const Vinculo = z.object({
     .transform((v) => v.replace(",", ".") || null)
     .refine(
       (v) => v === null || (/^\d{1,3}(\.\d{1,4})?$/.test(v) && Number(v) <= 100),
-      "Percentual entre 0 e 100.",
+      "cadastros.erros.percentualInvalido",
     ),
 });
 
@@ -423,7 +436,7 @@ export async function adicionarVinculo(
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "editar");
   const r = Vinculo.safeParse(dados);
-  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "cadastros.erros.dadosInvalidos" };
   const v = r.data;
   const erro = await comTenant(a.tenant.id, async (tx) => {
     const [t] = await tx
@@ -432,7 +445,7 @@ export async function adicionarVinculo(
       .where(eq(tipoVinculo.id, v.tipoId));
     const [e] = await tx.select({ id: empresa.id }).from(empresa).where(eq(empresa.id, v.empresaId));
     const [p] = await tx.select({ id: pessoa.id }).from(pessoa).where(eq(pessoa.id, v.pessoaId));
-    if (!t || !e || !p) return "Pessoa, empresa ou tipo de vínculo não encontrado.";
+    if (!t || !e || !p) return "cadastros.erros.vinculoReferenciaNaoEncontrada";
     await tx.insert(vinculoPessoaEmpresa).values({
       tenantId: a.tenant.id,
       pessoaId: v.pessoaId,
@@ -450,14 +463,14 @@ export async function adicionarVinculo(
 
 export async function removerVinculo(acesso: Acesso | null, vinculoId: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "editar");
-  if (!uuidValido(vinculoId)) return { erro: "Vínculo não encontrado." };
+  if (!uuidValido(vinculoId)) return { erro: "cadastros.erros.vinculoNaoEncontrado" };
   const [v] = await comTenant(a.tenant.id, (tx) =>
     tx
       .delete(vinculoPessoaEmpresa)
       .where(eq(vinculoPessoaEmpresa.id, vinculoId))
       .returning({ pessoaId: vinculoPessoaEmpresa.pessoaId, empresaId: vinculoPessoaEmpresa.empresaId }),
   );
-  if (!v) return { erro: "Vínculo não encontrado." };
+  if (!v) return { erro: "cadastros.erros.vinculoNaoEncontrado" };
   await auditar(a, "pessoa.vinculo.removido", "pessoa", v.pessoaId, { empresaId: v.empresaId });
   return { ok: true };
 }
@@ -472,11 +485,11 @@ export async function cadastrarSocioSugerido(
   nome: string,
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "empresas", "criar");
-  if (!uuidValido(empresaId)) return { erro: "Empresa não encontrada." };
+  if (!uuidValido(empresaId)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   const [socio] = await comTenant(a.tenant.id, (tx) =>
     tx.select({ id: tipoVinculo.id }).from(tipoVinculo).where(eq(tipoVinculo.padrao, "socio")),
   );
-  if (!socio) return { erro: 'O tipo de vínculo "Sócio" não existe mais nos cadastros.' };
+  if (!socio) return { erro: "cadastros.erros.tipoSocioInexistente" };
   const p = await criarPessoa(a, { ...pessoaVazia, nome: nomeProprio(nome) });
   if ("erro" in p) return p;
   const v = await adicionarVinculo(a, {

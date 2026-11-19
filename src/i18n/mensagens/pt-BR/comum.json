@@ -5,6 +5,18 @@
     "excluir": "Excluir",
     "fechar": "Fechar",
     "verTodas": "Ver todas",
-    "nadaEncontrado": "Nada encontrado."
+    "nadaEncontrado": "Nada encontrado.",
+    "basicos": {
+      "carregando": "Carregando...",
+      "copyrightBy": "Copyright by",
+      "logoAlt": "RGRUBER Consultoria",
+      "fotoDe": "Foto de {nome}",
+      "perfilNoTenant": "Perfil no tenant",
+      "semPerfil": "Sem perfil por enquanto",
+      "semPerfilDescricao": "A pessoa entra, mas não vê nada fora dos deals até receber um perfil."
+    },
+    "metadados": {
+      "descricao": "{produto}: gestão de processos de M&A"
+    }
   }
 }

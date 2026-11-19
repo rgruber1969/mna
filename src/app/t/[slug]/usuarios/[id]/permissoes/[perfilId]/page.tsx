@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -21,6 +22,7 @@ async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }>
   if (!acesso.administrador) notFound();
   const { id, perfilId } = await ids;
   const m = await obterMatrizIndividual(acesso, id, perfilId);
+  const t = await getTranslations("administracao.usuarios.permissoesIndividuais");
   if (!m) notFound();
 
   return (
@@ -30,13 +32,12 @@ async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }>
           <Link href={`/usuarios/${m.usuario.id}`} className="text-primary text-sm">
             ← {m.usuario.nome}
           </Link>
-          <Titulo sobre={`Perfil: ${m.perfil.nome}`}>Permissões de {m.usuario.nome}</Titulo>
+          <Titulo sobre={t("perfilSobre", { nome: m.perfil.nome })}>
+            {t("titulo", { nome: m.usuario.nome })}
+          </Titulo>
           <p className="text-muted mb-4 text-sm">
-            {m.personalizada
-              ? "Personalizadas para esta pessoa neste perfil."
-              : "Hoje seguem a matriz do perfil. Ao salvar, passam a ser próprias desta pessoa."}
-            {acesso.tenant.modoPermissoes === "perfil" &&
-              " O tenant está no modo por perfil: estas permissões ficam guardadas e só valem no modo por usuário."}
+            {m.personalizada ? t("personalizadas") : t("seguemOPerfil")}
+            {acesso.tenant.modoPermissoes === "perfil" && ` ${t("modoPorPerfil")}`}
           </p>
           <FormMatrizIndividual
             usuarioId={m.usuario.id}
@@ -46,10 +47,8 @@ async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }>
           />
         </Cartao>
         <Cartao largura="max-w-sm">
-          <Titulo sobre="Atalho">Copiar permissões</Titulo>
-          <p className="text-muted mb-4 text-sm">
-            Copie de outro usuário com o mesmo perfil, ou volte à matriz do perfil.
-          </p>
+          <Titulo sobre={t("atalhoSobre")}>{t("atalhoTitulo")}</Titulo>
+          <p className="text-muted mb-4 text-sm">{t("atalhoTexto")}</p>
           <FormCopiarMatriz usuarioId={m.usuario.id} perfilId={m.perfil.id} outros={m.outros} />
         </Cartao>
       </main>

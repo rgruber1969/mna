@@ -1,6 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
+import { traduzirErro, type ErroDeServico } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
   copiarMatrizIndividual,
@@ -20,9 +22,16 @@ import type { Estado } from "./acesso";
 const acesso = async () => obterAcesso(new Headers(await headers()));
 const texto = (f: FormData, nome: string) => String(f.get(nome) ?? "");
 
-function estado(r: { ok: true } | { erro: string }, mensagem: string, destino?: string): Estado {
-  if ("erro" in r) return { erro: r.erro };
-  return destino ? { destino } : { ok: mensagem };
+/** Traduz o resultado do serviço: erro (chave) vira a frase; sucesso vira a mensagem da chave dada. */
+async function estado(
+  r: { ok: true } | ErroDeServico,
+  mensagem: string,
+  destino?: string,
+  area = "administracao",
+): Promise<Estado> {
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  if (destino) return { destino };
+  return { ok: (await getTranslations(area))(mensagem) };
 }
 
 /** Caixas marcadas "recurso:acao" → matriz (o serviço descarta o que não vale). */
@@ -42,7 +51,7 @@ export async function criarPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
     descricao: texto(f, "descricao"),
     copiarDe: texto(f, "copiarDe") || undefined,
   });
-  return "erro" in r ? { erro: r.erro } : { destino: `/perfis/${r.id}` };
+  return "erro" in r ? { erro: await traduzirErro(r) } : { destino: `/perfis/${r.id}` };
 }
 
 export async function editarPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
@@ -51,14 +60,14 @@ export async function editarPerfilAcao(_: Estado, f: FormData): Promise<Estado> 
       nome: texto(f, "nome"),
       descricao: texto(f, "descricao"),
     }),
-    "Perfil salvo.",
+    "acoes.perfilSalvo",
   );
 }
 
 export async function salvarMatrizDoPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await salvarMatrizDoPerfil(await acesso(), texto(f, "id"), matrizDoFormulario(f)),
-    "Permissões salvas.",
+    "acoes.permissoesSalvas",
   );
 }
 
@@ -69,25 +78,25 @@ export async function excluirPerfilAcao(_: Estado, f: FormData): Promise<Estado>
 export async function exigirDoPerfilAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await definirExigenciaDoPerfil(await acesso(), texto(f, "id"), texto(f, "valor") === "sim"),
-    "Exigência de 2FA salva.",
+    "acoes.exigenciaSalva",
   );
 }
 
 export async function definirModoAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await definirModoPermissoes(await acesso(), texto(f, "modo")), "Modo alterado.");
+  return estado(await definirModoPermissoes(await acesso(), texto(f, "modo")), "acoes.modoAlterado");
 }
 
 export async function definirPerfisDoUsuarioAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await definirPerfisDoUsuario(await acesso(), texto(f, "id"), f.getAll("perfil").map(String)),
-    "Perfis salvos.",
+    "acoes.perfisSalvos",
   );
 }
 
 export async function salvarMatrizIndividualAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await salvarMatrizIndividual(await acesso(), texto(f, "id"), texto(f, "perfil"), matrizDoFormulario(f)),
-    "Permissões do usuário salvas.",
+    "acoes.permissoesDoUsuarioSalvas",
   );
 }
 
@@ -95,6 +104,6 @@ export async function copiarMatrizIndividualAcao(_: Estado, f: FormData): Promis
   const origem = texto(f, "origem");
   return estado(
     await copiarMatrizIndividual(await acesso(), texto(f, "id"), texto(f, "perfil"), origem),
-    origem === "perfil" ? "Voltou às permissões do perfil." : "Permissões copiadas.",
+    origem === "perfil" ? "acoes.voltouAoPerfil" : "acoes.permissoesCopiadas",
   );
 }

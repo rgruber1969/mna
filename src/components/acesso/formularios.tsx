@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   aceitarConviteAcao,
   confirmarAutenticadorAcao,
@@ -30,49 +31,52 @@ function useAcao(acao: (estado: Estado, dados: FormData) => Promise<Estado>) {
 }
 
 export function FormSair() {
+  const t = useTranslations("acesso.geral");
   const [, acao] = useAcao(sairAcao);
   return (
     <form action={acao}>
-      <button className="text-primary font-medium">Sair</button>
+      <button className="text-primary font-medium">{t("sair")}</button>
     </form>
   );
 }
 
 export function FormEntrar() {
+  const t = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useAcao(entrarAcao);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
-      <Campo rotulo="E-mail" name="email" type="email" autoComplete="username" required />
-      <Campo rotulo="Senha" name="senha" type="password" autoComplete="current-password" required />
-      <Botao disabled={enviando}>{enviando ? "Entrando..." : "Entrar"}</Botao>
+      <Campo rotulo={t("email")} name="email" type="email" autoComplete="username" required />
+      <Campo rotulo={t("senha")} name="senha" type="password" autoComplete="current-password" required />
+      <Botao disabled={enviando}>{enviando ? t("entrando") : t("entrar")}</Botao>
     </form>
   );
 }
 
 /** Só no ambiente local, com a entrada de desenvolvimento ligada. */
 export function FormEntrarSoComEmail() {
+  const t = useTranslations("acesso.desenvolvimento");
+  const tGeral = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useAcao(entrarSoComEmailAcao);
   return (
     <form action={acao} className="border-warning bg-warning-surface mt-6 rounded-md border p-4">
-      <p className="text-warning mb-3 text-xs font-semibold tracking-wide uppercase">
-        Modo desenvolvimento: entrar só com e-mail
-      </p>
+      <p className="text-warning mb-3 text-xs font-semibold tracking-wide uppercase">{t("aviso")}</p>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
-      <Campo rotulo="E-mail (desenvolvimento)" name="email" type="email" required />
-      <Botao disabled={enviando}>{enviando ? "Entrando..." : "Entrar sem senha"}</Botao>
+      <Campo rotulo={t("rotuloEmail")} name="email" type="email" required />
+      <Botao disabled={enviando}>{enviando ? tGeral("entrando") : t("botao")}</Botao>
     </form>
   );
 }
 
 export function FormSegundoFator() {
+  const t = useTranslations("acesso.segundoFator");
   const [estado, acao, enviando] = useAcao(segundoFatorAcao);
   const [recuperacao, setRecuperacao] = useState(false);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       <Campo
-        rotulo={recuperacao ? "Código de recuperação" : "Código do aplicativo autenticador"}
+        rotulo={recuperacao ? t("codigoDeRecuperacao") : t("codigoDoAplicativo")}
         name="codigo"
         autoComplete="one-time-code"
         inputMode={recuperacao ? "text" : "numeric"}
@@ -86,9 +90,9 @@ export function FormSegundoFator() {
           checked={recuperacao}
           onChange={(e) => setRecuperacao(e.target.checked)}
         />
-        Usar um código de recuperação
+        {t("usarRecuperacao")}
       </label>
-      <Botao disabled={enviando}>{enviando ? "Verificando..." : "Verificar"}</Botao>
+      <Botao disabled={enviando}>{enviando ? t("verificando") : t("verificar")}</Botao>
     </form>
   );
 }
@@ -102,6 +106,7 @@ export function FormConvite({
   contaExiste: boolean;
   nome: string;
 }) {
+  const t = useTranslations("acesso.convite");
   const [estado, acao, enviando] = useAcao(aceitarConviteAcao);
   return (
     <form action={acao}>
@@ -109,7 +114,7 @@ export function FormConvite({
       <input type="hidden" name="token" value={token} />
       {contaExiste ? (
         <Campo
-          rotulo="Sua senha atual"
+          rotulo={t("senhaAtual")}
           name="senha"
           type="password"
           autoComplete="current-password"
@@ -117,9 +122,9 @@ export function FormConvite({
         />
       ) : (
         <>
-          <Campo rotulo="Nome" name="nome" defaultValue={nome} autoComplete="name" required />
+          <Campo rotulo={t("nome")} name="nome" defaultValue={nome} autoComplete="name" required />
           <Campo
-            rotulo="Crie uma senha (mínimo 12 caracteres)"
+            rotulo={t("criarSenha")}
             name="senha"
             type="password"
             autoComplete="new-password"
@@ -127,7 +132,7 @@ export function FormConvite({
             required
           />
           <Campo
-            rotulo="Repita a senha"
+            rotulo={t("repitaSenha")}
             name="confirmacao"
             type="password"
             autoComplete="new-password"
@@ -136,12 +141,14 @@ export function FormConvite({
           />
         </>
       )}
-      <Botao disabled={enviando}>{enviando ? "Aceitando..." : "Aceitar convite"}</Botao>
+      <Botao disabled={enviando}>{enviando ? t("aceitando") : t("aceitar")}</Botao>
     </form>
   );
 }
 
 export function FormAutenticador() {
+  const t = useTranslations("acesso.autenticador");
+  const tGeral = useTranslations("acesso.geral");
   const [inicio, iniciar, iniciando] = useActionState(iniciarAutenticadorAcao, undefined);
   const [confirmacao, confirmar, confirmando] = useAcao(confirmarAutenticadorAcao);
 
@@ -149,12 +156,15 @@ export function FormAutenticador() {
     return (
       <form action={iniciar}>
         {inicio?.erro && <Aviso>{inicio.erro}</Aviso>}
-        <p className="text-muted mb-4 text-sm">
-          Para proteger o acesso, configure um aplicativo autenticador (por exemplo, Google ou Microsoft
-          Authenticator). Confirme sua senha para começar.
-        </p>
-        <Campo rotulo="Senha" name="senha" type="password" autoComplete="current-password" required />
-        <Botao disabled={iniciando}>{iniciando ? "Preparando..." : "Continuar"}</Botao>
+        <p className="text-muted mb-4 text-sm">{t("intro")}</p>
+        <Campo
+          rotulo={tGeral("senha")}
+          name="senha"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
+        <Botao disabled={iniciando}>{iniciando ? t("preparando") : t("continuar")}</Botao>
       </form>
     );
   }
@@ -163,23 +173,21 @@ export function FormAutenticador() {
     <form action={confirmar}>
       {confirmacao?.erro && <Aviso>{confirmacao.erro}</Aviso>}
       <ol className="text-text mb-4 list-decimal space-y-2 pl-5 text-sm">
-        <li>No aplicativo autenticador, escolha adicionar conta e leia o código abaixo.</li>
-        <li>
-          Guarde os códigos de recuperação em local seguro (gerenciador de senhas). Cada um vale uma vez.
-        </li>
-        <li>Digite o código de 6 dígitos que o aplicativo mostrar.</li>
+        <li>{t("passo1")}</li>
+        <li>{t("passo2")}</li>
+        <li>{t("passo3")}</li>
       </ol>
       <div
         className="bg-background mx-auto mb-4 w-48"
-        aria-label="QR code do aplicativo autenticador"
+        aria-label={t("qrAlt")}
         dangerouslySetInnerHTML={{ __html: inicio.qr }}
       />
       <details className="text-muted mb-4 text-xs">
-        <summary>Não consegue ler o QR code?</summary>
+        <summary>{t("semQr")}</summary>
         <code className="break-all">{inicio.uri}</code>
       </details>
       <div className="border-border mb-4 rounded-md border p-3">
-        <p className="text-text mb-2 text-sm font-medium">Códigos de recuperação</p>
+        <p className="text-text mb-2 text-sm font-medium">{t("codigosDeRecuperacao")}</p>
         <ul className="text-text grid grid-cols-2 gap-1 font-mono text-sm">
           {inicio.codigosRecuperacao?.map((c) => (
             <li key={c}>{c}</li>
@@ -187,39 +195,48 @@ export function FormAutenticador() {
         </ul>
       </div>
       <Campo
-        rotulo="Código de 6 dígitos"
+        rotulo={t("codigoDe6Digitos")}
         name="codigo"
         inputMode="numeric"
         autoComplete="one-time-code"
         required
       />
-      <Botao disabled={confirmando}>{confirmando ? "Confirmando..." : "Ativar"}</Botao>
+      <Botao disabled={confirmando}>{confirmando ? t("confirmando") : t("ativar")}</Botao>
     </form>
   );
 }
 
 export function FormNovoTenant() {
+  const t = useTranslations("acesso.novoTenant");
   const [estado, acao, enviando] = useAcao(criarTenantAcao);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
-      <Campo rotulo="Nome do tenant" name="nome" required />
-      <Campo rotulo="Endereço (subdomínio)" name="slug" placeholder="ex.: bt" pattern="[a-z0-9-]+" required />
-      <Botao disabled={enviando}>{enviando ? "Criando..." : "Criar tenant"}</Botao>
+      <Campo rotulo={t("nome")} name="nome" required />
+      <Campo
+        rotulo={t("endereco")}
+        name="slug"
+        placeholder={t("exemploEndereco")}
+        pattern="[a-z0-9-]+"
+        required
+      />
+      <Botao disabled={enviando}>{enviando ? t("criando") : t("criar")}</Botao>
     </form>
   );
 }
 
 export function FormConvidarAdministrador({ tenantId }: { tenantId: string }) {
+  const t = useTranslations("acesso.convidarAdministrador");
+  const tGeral = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useActionState(convidarAdministradorAcao, undefined);
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
       <input type="hidden" name="tenantId" value={tenantId} />
-      <Campo rotulo="Nome" name="nome" required />
-      <Campo rotulo="E-mail" name="email" type="email" required />
-      <Botao disabled={enviando}>{enviando ? "Enviando..." : "Enviar convite"}</Botao>
+      <Campo rotulo={t("nome")} name="nome" required />
+      <Campo rotulo={tGeral("email")} name="email" type="email" required />
+      <Botao disabled={enviando}>{enviando ? tGeral("enviando") : t("enviar")}</Botao>
     </form>
   );
 }

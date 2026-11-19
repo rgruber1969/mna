@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
@@ -19,6 +20,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   if (!(await pode(acesso, "empresas", "ver"))) notFound();
+  const t = await getTranslations("cadastros.pessoas");
   const filtro = await busca;
   const [pessoas, podeCriar] = await Promise.all([
     listarPessoas(acesso, { busca: filtro.busca, inativas: filtro.inativas === "sim" }),
@@ -30,13 +32,13 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-3xl">
           <div className="flex items-start justify-between gap-4">
-            <Titulo sobre="Cadastro">Pessoas</Titulo>
+            <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
             {podeCriar && (
               <Link
                 href="/pessoas/nova"
                 className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
               >
-                Nova pessoa
+                {t("nova")}
               </Link>
             )}
           </div>
@@ -44,26 +46,26 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
             <input
               name="busca"
               defaultValue={filtro.busca}
-              aria-label="Buscar pessoa"
-              placeholder="Buscar por nome ou e-mail"
+              aria-label={t("buscarAria")}
+              placeholder={t("buscarPlaceholder")}
               className="border-border bg-background text-text w-full max-w-xs rounded-md border px-3 py-2 text-sm"
             />
             <label className="text-muted flex items-center gap-1 text-sm">
               <input type="checkbox" name="inativas" value="sim" defaultChecked={filtro.inativas === "sim"} />{" "}
-              Mostrar inativas
+              {t("mostrarInativas")}
             </label>
-            <button className="text-primary text-sm font-medium">Buscar</button>
+            <button className="text-primary text-sm font-medium">{t("buscar")}</button>
           </form>
           {pessoas.length === 0 ? (
-            <p className="text-muted text-sm">Nenhuma pessoa encontrada.</p>
+            <p className="text-muted text-sm">{t("nenhuma")}</p>
           ) : (
             <div className="-mx-2 overflow-x-auto">
               <table className={estiloTabela.tabela}>
                 <thead className={estiloTabela.cabecalho}>
                   <tr>
-                    <th className={estiloTabela.th}>Nome</th>
-                    <th className={estiloTabela.th}>Empresas</th>
-                    <th className={`${estiloTabela.th} text-right`}>Acesso</th>
+                    <th className={estiloTabela.th}>{t("colNome")}</th>
+                    <th className={estiloTabela.th}>{t("colEmpresas")}</th>
+                    <th className={`${estiloTabela.th} text-right`}>{t("colAcesso")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -76,7 +78,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
                             <Link href={`/pessoas/${p.id}`} className="text-text block font-semibold">
                               {p.nome}
                               {p.inativa && (
-                                <span className="text-muted ml-2 text-xs font-normal">inativa</span>
+                                <span className="text-muted ml-2 text-xs font-normal">{t("inativa")}</span>
                               )}
                             </Link>
                             {p.email && <span className="text-muted block truncate text-xs">{p.email}</span>}

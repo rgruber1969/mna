@@ -1,6 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
+import { traduzirErro } from "@/i18n/servidor";
 import {
   confirmarAutenticador,
   entrar,
@@ -40,8 +42,8 @@ function irPara(destino: string): Estado {
   return { destino };
 }
 
-function seguir(r: ResultadoLogin): Estado {
-  if ("erro" in r) return { erro: r.erro };
+async function seguir(r: ResultadoLogin): Promise<Estado> {
+  if ("erro" in r) return { erro: await traduzirErro(r) };
   return irPara(r.etapa === "dois-fatores" ? "/dois-fatores" : "/");
 }
 
@@ -65,7 +67,7 @@ export async function sairAcao(): Promise<Estado> {
 
 export async function aceitarConviteAcao(_: Estado, f: FormData): Promise<Estado> {
   if (texto(f, "senha") !== texto(f, "confirmacao") && f.has("confirmacao"))
-    return { erro: "As senhas não conferem." };
+    return { erro: await traduzirErro({ erro: "acesso.erros.senhasNaoConferem" }) };
   return seguir(
     await aceitarConvite(
       texto(f, "token"),
@@ -83,7 +85,7 @@ export async function iniciarAutenticadorAcao(
   f: FormData,
 ): Promise<EstadoAutenticador> {
   const r = await iniciarAutenticador(texto(f, "senha"), await cabecalhos());
-  if ("erro" in r) return { erro: r.erro };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
   const { toString } = await import("qrcode");
   const qr = await toString(r.uri, { type: "svg", margin: 1 });
   return { uri: r.uri, qr, codigosRecuperacao: r.codigosRecuperacao };
@@ -91,7 +93,7 @@ export async function iniciarAutenticadorAcao(
 
 export async function confirmarAutenticadorAcao(_: Estado, f: FormData): Promise<Estado> {
   const r = await confirmarAutenticador(texto(f, "codigo"), await cabecalhos());
-  if ("erro" in r) return { erro: r.erro };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
   return irPara("/");
 }
 
@@ -99,15 +101,22 @@ export async function confirmarAutenticadorAcao(_: Estado, f: FormData): Promise
 
 export async function pedirLinkAcao(_: Estado, f: FormData): Promise<Estado> {
   await pedirLinkMagico(texto(f, "email"), await cabecalhos());
-  return { ok: "Se este e-mail tiver acesso a este endereço, enviamos um link que vale por 10 minutos." };
+  return { ok: (await getTranslations("acesso.sucesso"))("linkEnviado") };
 }
 
 export async function entrarComLinkAcao(_: Estado, f: FormData): Promise<Estado> {
   return seguir(await entrarComLinkMagico(texto(f, "token"), await cabecalhos()));
 }
 
+/** Os erros dos serviços chegam como chave; aqui viram a frase. */
+async function traduzirOpcoes(
+  r: OpcoesWebAuthn | { erro: string },
+): Promise<OpcoesWebAuthn | { erro: string }> {
+  return typeof r.erro === "string" ? { erro: await traduzirErro({ erro: r.erro }) } : r;
+}
+
 export async function opcoesEntrarComPasskeyAcao(): Promise<OpcoesWebAuthn | { erro: string }> {
-  return opcoesParaEntrarComPasskey(await cabecalhos());
+  return traduzirOpcoes(await opcoesParaEntrarComPasskey(await cabecalhos()));
 }
 
 export async function entrarComPasskeyAcao(resposta: unknown): Promise<Estado> {
@@ -115,7 +124,7 @@ export async function entrarComPasskeyAcao(resposta: unknown): Promise<Estado> {
 }
 
 export async function opcoesCriarPasskeyAcao(): Promise<OpcoesWebAuthn | { erro: string }> {
-  return opcoesParaCriarPasskey(await cabecalhos());
+  return traduzirOpcoes(await opcoesParaCriarPasskey(await cabecalhos()));
 }
 
 /**
@@ -125,8 +134,8 @@ export async function opcoesCriarPasskeyAcao(): Promise<OpcoesWebAuthn | { erro:
 export async function salvarPasskeyAcao(resposta: unknown, nome: string, reentrar: boolean): Promise<Estado> {
   const h = await cabecalhos();
   const r = await salvarPasskey(resposta, nome, h);
-  if ("erro" in r) return { erro: r.erro };
-  if (!reentrar) return { ok: "Passkey cadastrada." };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  if (!reentrar) return { ok: (await getTranslations("acesso.sucesso"))("passkeyCadastrada") };
   await sair(h);
   return irPara("/entrar?passkey=cadastrada");
 }
@@ -136,7 +145,7 @@ export async function salvarPasskeyAcao(resposta: unknown, nome: string, reentra
 export async function criarTenantAcao(_: Estado, f: FormData): Promise<Estado> {
   const acesso = await obterAcesso(await cabecalhos());
   const r = await criarTenant(acesso, { nome: texto(f, "nome"), slug: texto(f, "slug") });
-  if ("erro" in r) return { erro: r.erro };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
   return irPara(`/tenants/${r.id}`);
 }
 
@@ -146,6 +155,6 @@ export async function convidarAdministradorAcao(_: Estado, f: FormData): Promise
     nome: texto(f, "nome"),
     email: texto(f, "email"),
   });
-  if ("erro" in r) return { erro: r.erro };
-  return { ok: "Convite enviado. Ele vale por 3 dias." };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: (await getTranslations("acesso.sucesso"))("conviteEnviado") };
 }

@@ -1,6 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
+import { traduzirErro, type ErroDeServico } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
   cancelarConviteDaEquipe,
@@ -30,10 +32,21 @@ const acesso = async () => obterAcesso(new Headers(await headers()));
 const texto = (f: FormData, nome: string) => String(f.get(nome) ?? "");
 const sim = (f: FormData, nome: string) => texto(f, nome) === "sim";
 
-function estado(r: { ok: true } | { erro: string }, mensagem: string, destino?: string): Estado {
-  if ("erro" in r) return { erro: r.erro };
-  return destino ? { destino } : { ok: mensagem };
+/** Traduz o resultado do serviço: erro (chave) vira a frase; sucesso vira a mensagem da chave dada. */
+async function estado(
+  r: { ok: true } | ErroDeServico,
+  mensagem: string,
+  destino?: string,
+  area = "administracao",
+): Promise<Estado> {
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  if (destino) return { destino };
+  return { ok: (await getTranslations(area))(mensagem) };
 }
+
+/** Igual a `estado`, com as mensagens de sucesso da área do console. */
+const estadoConsole = (r: { ok: true } | ErroDeServico, mensagem: string) =>
+  estado(r, mensagem, undefined, "console");
 
 export async function convidarUsuarioAcao(_: Estado, f: FormData): Promise<Estado> {
   const r = await convidarUsuario(await acesso(), {
@@ -43,32 +56,32 @@ export async function convidarUsuarioAcao(_: Estado, f: FormData): Promise<Estad
     perfis: f.getAll("perfil").map(String),
     exigeDoisFatores: f.get("exige2fa") === "on",
   });
-  return estado(r, "Convite enviado. Ele vale por 3 dias.");
+  return estado(r, "acoes.conviteEnviado");
 }
 
 export async function reenviarConviteAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await reenviarConvite(await acesso(), texto(f, "id")), "Convite reenviado.");
+  return estado(await reenviarConvite(await acesso(), texto(f, "id")), "acoes.conviteReenviado");
 }
 
 export async function cancelarConviteAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await cancelarConvite(await acesso(), texto(f, "id")), "Convite cancelado.");
+  return estado(await cancelarConvite(await acesso(), texto(f, "id")), "acoes.conviteCancelado");
 }
 
 export async function exigirDeTodosAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await definirExigenciaDeTodos(await acesso(), sim(f, "valor")), "Configuração salva.");
+  return estado(await definirExigenciaDeTodos(await acesso(), sim(f, "valor")), "acoes.configuracaoSalva");
 }
 
 export async function exigirDoUsuarioAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await definirExigenciaIndividual(await acesso(), texto(f, "id"), sim(f, "valor")),
-    "Configuração salva.",
+    "acoes.configuracaoSalva",
   );
 }
 
 export async function definirAdministradorAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await definirAdministrador(await acesso(), texto(f, "id"), sim(f, "valor")),
-    "Papel alterado.",
+    "acoes.papelAlterado",
   );
 }
 
@@ -79,57 +92,66 @@ export async function revogarAcessoAcao(_: Estado, f: FormData): Promise<Estado>
 export async function removerPasskeyAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await removerPasskeyDoUsuario(await acesso(), texto(f, "id"), texto(f, "passkey")),
-    "Passkey removida.",
+    "acoes.passkeyRemovida",
   );
 }
 
 export async function removerAutenticadorAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await removerAutenticadorDoUsuario(await acesso(), texto(f, "id")), "Autenticador removido.");
+  return estado(
+    await removerAutenticadorDoUsuario(await acesso(), texto(f, "id")),
+    "acoes.autenticadorRemovido",
+  );
 }
 
 export async function redefinirDoisFatoresAcao(_: Estado, f: FormData): Promise<Estado> {
   return estado(
     await redefinirDoisFatoresDoUsuario(await acesso(), texto(f, "id")),
-    "2FA redefinido. A pessoa configura de novo no próximo acesso.",
+    "acoes.doisFatoresRedefinido",
   );
 }
 
 export async function redefinirPelaPlataformaAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(
+  return estadoConsole(
     await redefinirDoisFatoresPelaPlataforma(await acesso(), {
       email: texto(f, "email"),
       motivo: texto(f, "motivo"),
       identidadeConfirmada: f.get("identidade") === "on",
     }),
-    "2FA redefinido e pessoa avisada por e-mail.",
+    "acoes.doisFatoresRedefinido",
   );
 }
 
 // --- Console: tenant e equipe da RGRUBER --------------------------------------------
 
 export async function renomearTenantAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await renomearTenant(await acesso(), texto(f, "id"), texto(f, "nome")), "Nome alterado.");
+  return estadoConsole(
+    await renomearTenant(await acesso(), texto(f, "id"), texto(f, "nome")),
+    "acoes.nomeAlterado",
+  );
 }
 
 export async function suspenderTenantAcao(_: Estado, f: FormData): Promise<Estado> {
   const suspender = sim(f, "valor");
-  return estado(
+  return estadoConsole(
     await definirSuspensao(await acesso(), texto(f, "id"), suspender),
-    suspender ? "Tenant suspenso." : "Tenant reativado.",
+    suspender ? "acoes.tenantSuspenso" : "acoes.tenantReativado",
   );
 }
 
 export async function convidarParaEquipeAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(
+  return estadoConsole(
     await convidarParaEquipe(await acesso(), { nome: texto(f, "nome"), email: texto(f, "email") }),
-    "Convite enviado. Ele vale por 3 dias.",
+    "acoes.conviteEnviado",
   );
 }
 
 export async function cancelarConviteDaEquipeAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await cancelarConviteDaEquipe(await acesso(), texto(f, "id")), "Convite cancelado.");
+  return estadoConsole(
+    await cancelarConviteDaEquipe(await acesso(), texto(f, "id")),
+    "acoes.conviteCancelado",
+  );
 }
 
 export async function removerDaEquipeAcao(_: Estado, f: FormData): Promise<Estado> {
-  return estado(await removerDaEquipe(await acesso(), texto(f, "id")), "Acesso removido.");
+  return estadoConsole(await removerDaEquipe(await acesso(), texto(f, "id")), "acoes.acessoRemovido");
 }

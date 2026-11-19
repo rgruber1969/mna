@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type { ComponentProps, ReactNode } from "react";
 
 /**
@@ -50,10 +51,11 @@ export function AssinaturaRgruber({
   escuro?: boolean | "auto";
   className?: string;
 }) {
+  const t = useTranslations("comum.basicos");
   const logo = (negativa: boolean, extra = "") => (
     <Image
       src={negativa ? "/marca/rgruber-horizontal-negativa.svg" : "/marca/rgruber-horizontal-positiva.svg"}
-      alt="RGRUBER Consultoria"
+      alt={t("logoAlt")}
       width={120}
       height={34}
       unoptimized
@@ -64,7 +66,7 @@ export function AssinaturaRgruber({
     <footer
       className={`${escuro === true ? "text-backdrop-foreground" : "text-muted"} ${className} flex items-center gap-2 text-xs opacity-60`}
     >
-      <span>Copyright by</span>
+      <span>{t("copyrightBy")}</span>
       {escuro === "auto" ? (
         <>
           {logo(false, "dark:hidden")}
@@ -130,7 +132,8 @@ export function Aviso({ tipo = "erro", children }: { tipo?: "erro" | "ok"; child
 }
 
 export function Carregando() {
-  return <p className="text-muted text-sm">Carregando...</p>;
+  const t = useTranslations("comum.basicos");
+  return <p className="text-muted text-sm">{t("carregando")}</p>;
 }
 
 /**
@@ -171,11 +174,12 @@ export function Avatar({
   foto?: string | null;
   tamanho?: number;
 }) {
+  const t = useTranslations("comum.basicos");
   if (foto)
     return (
       <Image
         src={foto}
-        alt={`Foto de ${nome}`}
+        alt={t("fotoDe", { nome })}
         width={tamanho}
         height={tamanho}
         unoptimized
@@ -204,9 +208,10 @@ export function OpcoesDePerfil({
   perfis: { id: string; nome: string; descricao: string }[];
   marcado?: string;
 }) {
+  const t = useTranslations("comum.basicos");
   return (
     <fieldset className="mb-4">
-      <legend className="text-text mb-2 text-sm font-medium">Perfil no tenant</legend>
+      <legend className="text-text mb-2 text-sm font-medium">{t("perfilNoTenant")}</legend>
       {perfis.map((p) => (
         <CaixaComDescricao
           key={p.id}
@@ -222,8 +227,8 @@ export function OpcoesDePerfil({
         type="radio"
         name="perfil"
         value=""
-        titulo="Sem perfil por enquanto"
-        descricao="A pessoa entra, mas não vê nada fora dos deals até receber um perfil."
+        titulo={t("semPerfil")}
+        descricao={t("semPerfilDescricao")}
         defaultChecked={marcado === ""}
       />
     </fieldset>

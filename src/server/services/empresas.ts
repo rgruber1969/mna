@@ -10,6 +10,7 @@ import {
   vinculoPessoaEmpresa,
 } from "@/server/db/esquema";
 import { cnpjValido, soDigitos } from "@/config/documentos";
+import type { ErroDeServico } from "@/i18n/servidor";
 import type { Acesso, AcessoTenant } from "./acesso";
 import { exigirPermissao } from "./permissoes/verificador";
 import { situacoes } from "./situacao-de-acesso";
@@ -20,14 +21,14 @@ import { situacoes } from "./situacao-de-acesso";
  * gera evento de auditoria. Nome e CNPJ de empresa não são dados pessoais.
  */
 
-type Resultado = { ok: true } | { erro: string };
+type Resultado = { ok: true } | ErroDeServico;
 
 const uuidValido = (id: string) => z.uuid().safeParse(id).success;
 const opcional = (max = 200) =>
   z
     .string()
     .trim()
-    .max(max, "Texto muito longo.")
+    .max(max, "cadastros.erros.textoLongo")
     .transform((v) => v || null);
 
 export async function auditar(
@@ -65,9 +66,13 @@ const DadosEmpresa = z.object({
     .string()
     .trim()
     .transform((v) => soDigitos(v) || null)
-    .refine((v) => v === null || cnpjValido(v), "CNPJ inválido. Confira os números."),
+    .refine((v) => v === null || cnpjValido(v), "cadastros.erros.cnpjInvalido"),
   identificadorEstrangeiro: opcional(60),
-  razaoSocial: z.string().trim().min(2, "Informe a razão social.").max(200, "Razão social muito longa."),
+  razaoSocial: z
+    .string()
+    .trim()
+    .min(2, "cadastros.erros.razaoSocialObrigatoria")
+    .max(200, "cadastros.erros.razaoSocialLonga"),
   nomeFantasia: opcional(),
   cnae: opcional(300),
   ...CamposEndereco,
@@ -78,21 +83,21 @@ const DadosEmpresa = z.object({
     .trim()
     .toLowerCase()
     .transform((v) => v || null)
-    .refine((v) => v === null || z.email().safeParse(v).success, "E-mail inválido."),
+    .refine((v) => v === null || z.email().safeParse(v).success, "cadastros.erros.emailInvalido"),
   observacoes: opcional(2000),
   grupoId: z
     .string()
     .trim()
     .transform((v) => v || null)
-    .refine((v) => v === null || uuidValido(v), "Grupo inválido."),
+    .refine((v) => v === null || uuidValido(v), "cadastros.erros.grupoInvalido"),
 });
 
 export type DadosEmpresa = z.input<typeof DadosEmpresa>;
-export type ResultadoComId = { id: string } | { erro: string; existenteId?: string };
+export type ResultadoComId = { id: string } | (ErroDeServico & { existenteId?: string });
 
 function validar(dados: DadosEmpresa) {
   const r = DadosEmpresa.safeParse(dados);
-  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
+  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "cadastros.erros.dadosInvalidos" };
 }
 
 // --- Consulta --------------------------------------------------------------------
@@ -236,7 +241,7 @@ export async function criarEmpresa(acesso: Acesso | null, dados: DadosEmpresa): 
   const d = validar(dados);
   if ("erro" in d) return d;
   const existente = await cnpjEmUso(a, d.cnpj);
-  if (existente) return { erro: "Já existe uma empresa com este CNPJ.", existenteId: existente };
+  if (existente) return { erro: "cadastros.erros.empresaCnpjJaExiste", existenteId: existente };
   const [e] = await comTenant(a.tenant.id, (tx) =>
     tx
       .insert(empresa)
@@ -253,11 +258,11 @@ export async function editarEmpresa(
   dados: DadosEmpresa,
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "empresas", "editar");
-  if (!uuidValido(id)) return { erro: "Empresa não encontrada." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   const d = validar(dados);
   if ("erro" in d) return d;
   const existente = await cnpjEmUso(a, d.cnpj, id);
-  if (existente) return { erro: "Já existe outra empresa com este CNPJ.", existenteId: existente };
+  if (existente) return { erro: "cadastros.erros.empresaCnpjJaExisteOutra", existenteId: existente };
   const feito = await comTenant(a.tenant.id, (tx) =>
     tx
       .update(empresa)
@@ -265,7 +270,7 @@ export async function editarEmpresa(
       .where(eq(empresa.id, id))
       .returning({ id: empresa.id }),
   );
-  if (feito.length === 0) return { erro: "Empresa não encontrada." };
+  if (feito.length === 0) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   await auditar(a, "empresa.editada", "empresa", id);
   return { id };
 }
@@ -277,7 +282,7 @@ export async function definirEmpresaInativa(
   inativa: boolean,
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "editar");
-  if (!uuidValido(id)) return { erro: "Empresa não encontrada." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   const [e] = await comTenant(a.tenant.id, (tx) =>
     tx
       .update(empresa)
@@ -285,7 +290,10 @@ export async function definirEmpresaInativa(
       .where(and(eq(empresa.id, id), inativa ? eq(empresa.doContratante, false) : undefined))
       .returning({ id: empresa.id }),
   );
-  if (!e) return { erro: inativa ? "Esta empresa não pode ser inativada." : "Empresa não encontrada." };
+  if (!e)
+    return {
+      erro: inativa ? "cadastros.erros.empresaNaoInativavel" : "cadastros.erros.empresaNaoEncontrada",
+    };
   await auditar(a, inativa ? "empresa.inativada" : "empresa.reativada", "empresa", id);
   return { ok: true };
 }
@@ -297,12 +305,12 @@ export async function definirEmpresaInativa(
  */
 export async function excluirEmpresa(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "excluir");
-  if (!uuidValido(id)) return { erro: "Empresa não encontrada." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   const [e] = await comTenant(a.tenant.id, (tx) =>
     tx.select({ doContratante: empresa.doContratante }).from(empresa).where(eq(empresa.id, id)),
   );
-  if (!e) return { erro: "Empresa não encontrada." };
-  if (e.doContratante) return { erro: "A empresa do contratante não pode ser excluída." };
+  if (!e) return { erro: "cadastros.erros.empresaNaoEncontrada" };
+  if (e.doContratante) return { erro: "cadastros.erros.empresaContratanteNaoExcluivel" };
   await comTenant(a.tenant.id, (tx) => tx.delete(empresa).where(eq(empresa.id, id)));
   await auditar(a, "empresa.excluida", "empresa", id);
   return { ok: true };
@@ -310,7 +318,11 @@ export async function excluirEmpresa(acesso: Acesso | null, id: string): Promise
 
 // --- Grupos econômicos -------------------------------------------------------------
 
-const NomeGrupo = z.string().trim().min(2, "Informe o nome do grupo.").max(120, "Nome muito longo.");
+const NomeGrupo = z
+  .string()
+  .trim()
+  .min(2, "cadastros.erros.grupoNomeObrigatorio")
+  .max(120, "cadastros.erros.nomeLongo");
 
 export async function listarGrupos(
   acesso: Acesso | null,
@@ -334,7 +346,7 @@ export async function listarGrupos(
 export async function criarGrupo(acesso: Acesso | null, nome: string): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "empresas", "criar");
   const r = NomeGrupo.safeParse(nome);
-  if (!r.success) return { erro: r.error.issues[0]?.message ?? "Nome inválido." };
+  if (!r.success) return { erro: r.error.issues[0]?.message ?? "cadastros.erros.nomeInvalido" };
   const [g] = await comTenant(a.tenant.id, (tx) =>
     tx
       .insert(grupoEconomico)
@@ -342,18 +354,18 @@ export async function criarGrupo(acesso: Acesso | null, nome: string): Promise<R
       .onConflictDoNothing()
       .returning({ id: grupoEconomico.id }),
   );
-  if (!g) return { erro: "Já existe um grupo com este nome." };
+  if (!g) return { erro: "cadastros.erros.grupoJaExiste" };
   await auditar(a, "grupo.criado", "grupo_economico", g.id);
   return { id: g.id };
 }
 
 export async function excluirGrupo(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "empresas", "excluir");
-  if (!uuidValido(id)) return { erro: "Grupo não encontrado." };
+  if (!uuidValido(id)) return { erro: "cadastros.erros.grupoNaoEncontrado" };
   const feito = await comTenant(a.tenant.id, (tx) =>
     tx.delete(grupoEconomico).where(eq(grupoEconomico.id, id)).returning({ id: grupoEconomico.id }),
   );
-  if (feito.length === 0) return { erro: "Grupo não encontrado." };
+  if (feito.length === 0) return { erro: "cadastros.erros.grupoNaoEncontrado" };
   await auditar(a, "grupo.excluido", "grupo_economico", id);
   return { ok: true };
 }

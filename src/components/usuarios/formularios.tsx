@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import type { Estado } from "@/app/acoes/acesso";
@@ -45,6 +46,7 @@ export function BotaoDeAcao({
   perigo?: boolean;
 }) {
   const [estado, executar, enviando] = useAcaoComAtualizacao(acao);
+  const t = useTranslations("administracao");
   return (
     <form
       action={executar}
@@ -60,7 +62,7 @@ export function BotaoDeAcao({
         disabled={enviando}
         className={`${perigo ? "border-danger text-danger" : "border-primary text-primary"} rounded-md border px-3 py-1 text-xs font-medium disabled:opacity-60`}
       >
-        {enviando ? "Aguarde..." : rotulo}
+        {enviando ? t("botao.aguarde") : rotulo}
       </button>
       {estado?.erro && (
         <span role="alert" className="text-danger ml-2 text-xs">
@@ -85,39 +87,40 @@ export function FormConvidarUsuario({
   inicial?: { nome?: string; email?: string };
 }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(convidarUsuarioAcao);
+  const t = useTranslations("administracao.usuarios.formulario");
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
-      <Campo rotulo="Nome" name="nome" required defaultValue={inicial?.nome} />
-      <Campo rotulo="E-mail do convidado" name="email" type="email" required defaultValue={inicial?.email} />
+      <Campo rotulo={t("nome")} name="nome" required defaultValue={inicial?.nome} />
+      <Campo rotulo={t("email")} name="email" type="email" required defaultValue={inicial?.email} />
       {perfis.length > 0 && <OpcoesDePerfil perfis={perfis} />}
       <label className="text-text mb-2 flex items-center gap-2 text-sm">
-        <input type="checkbox" name="exige2fa" defaultChecked /> Exigir verificação em duas etapas
-        (recomendado)
+        <input type="checkbox" name="exige2fa" defaultChecked /> {t("exigir2fa")}
       </label>
       <label className="text-text mb-4 flex items-center gap-2 text-sm">
-        <input type="checkbox" name="administrador" /> Administrador do tenant (acesso total; sempre com 2FA)
+        <input type="checkbox" name="administrador" /> {t("administrador")}
       </label>
-      <Botao disabled={enviando}>{enviando ? "Enviando..." : "Enviar convite"}</Botao>
+      <Botao disabled={enviando}>{enviando ? t("enviando") : t("enviarConvite")}</Botao>
     </form>
   );
 }
 
 export function FormRedefinirPelaPlataforma({ motivos }: { motivos: Record<string, string> }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(redefinirPelaPlataformaAcao);
+  const t = useTranslations("console.formularios");
   return (
     <form
       action={acao}
       onSubmit={(e) => {
-        if (!window.confirm("Apagar todos os fatores desta conta e encerrar as sessões?")) e.preventDefault();
+        if (!window.confirm(t("confirmarRedefinir"))) e.preventDefault();
       }}
     >
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
-      <Campo rotulo="E-mail da conta" name="email" type="email" required />
+      <Campo rotulo={t("emailDaConta")} name="email" type="email" required />
       <label className="mb-4 block">
-        <span className="text-text mb-1 block text-sm font-medium">Motivo</span>
+        <span className="text-text mb-1 block text-sm font-medium">{t("motivo")}</span>
         <select
           name="motivo"
           required
@@ -125,7 +128,7 @@ export function FormRedefinirPelaPlataforma({ motivos }: { motivos: Record<strin
           className="border-border bg-background text-text w-full rounded-md border px-3 py-2 text-sm"
         >
           <option value="" disabled>
-            Escolha
+            {t("escolha")}
           </option>
           {Object.entries(motivos).map(([valor, texto]) => (
             <option key={valor} value={valor}>
@@ -136,35 +139,37 @@ export function FormRedefinirPelaPlataforma({ motivos }: { motivos: Record<strin
       </label>
       <label className="text-text mb-4 flex items-start gap-2 text-sm">
         <input type="checkbox" name="identidade" className="mt-1" />
-        Confirmei a identidade da pessoa (por exemplo, com o administrador do tenant dela).
+        {t("identidade")}
       </label>
-      <Botao disabled={enviando}>{enviando ? "Redefinindo..." : "Redefinir 2FA"}</Botao>
+      <Botao disabled={enviando}>{enviando ? t("redefinindo") : t("redefinir")}</Botao>
     </form>
   );
 }
 
 export function FormRenomearTenant({ id, nome }: { id: string; nome: string }) {
   const [estado, acao, enviando] = useAcaoComAtualizacao(renomearTenantAcao);
+  const t = useTranslations("console.formularios");
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
       <input type="hidden" name="id" value={id} />
-      <Campo rotulo="Nome do tenant" name="nome" defaultValue={nome} required />
-      <Botao disabled={enviando}>{enviando ? "Salvando..." : "Salvar nome"}</Botao>
+      <Campo rotulo={t("nomeDoTenant")} name="nome" defaultValue={nome} required />
+      <Botao disabled={enviando}>{enviando ? t("salvando") : t("salvarNome")}</Botao>
     </form>
   );
 }
 
 export function FormConvidarParaEquipe() {
   const [estado, acao, enviando] = useAcaoComAtualizacao(convidarParaEquipeAcao);
+  const t = useTranslations("console.formularios");
   return (
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
-      <Campo rotulo="Nome" name="nome" required />
-      <Campo rotulo="E-mail do convidado" name="email" type="email" required />
-      <Botao disabled={enviando}>{enviando ? "Enviando..." : "Enviar convite"}</Botao>
+      <Campo rotulo={t("nome")} name="nome" required />
+      <Campo rotulo={t("emailConvidado")} name="email" type="email" required />
+      <Botao disabled={enviando}>{enviando ? t("enviando") : t("enviarConvite")}</Botao>
     </form>
   );
 }

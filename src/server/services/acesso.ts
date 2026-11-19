@@ -65,12 +65,12 @@ export type AcessoTenant = Extract<Acesso, { area: "tenant" }>;
 
 export class AcessoNegado extends Error {
   constructor() {
-    super("Acesso negado.");
+    super("erros.acessoNegado"); // chave das mensagens (erros.json); nunca mostrada como frase
   }
 }
 
-/** Mensagem única para falhas de login: não revela se a conta existe (ADR-0019, regra 5). */
-export const ERRO_LOGIN = "E-mail ou senha inválidos, ou acesso não permitido neste endereço.";
+/** Chave da mensagem única para falhas de login: não revela se a conta existe (ADR-0019, regra 5). */
+export const ERRO_LOGIN = "acesso.erros.loginInvalido";
 
 export function gerarToken(): { token: string; hash: string } {
   const token = randomBytes(32).toString("base64url");
@@ -231,11 +231,15 @@ async function podeCadastrarFator(headers: Headers): Promise<boolean> {
   return Boolean(a && (!a.usuario.doisFatoresAtivo || a.segundoFatorNaSessao));
 }
 
-const ENTRE_COM_DOIS_FATORES = "Para cadastrar outro fator, saia e entre de novo com dois fatores.";
+const ENTRE_COM_DOIS_FATORES = "acesso.erros.entreComDoisFatores";
 
 // --- Login, segundo fator e saída ------------------------------------------
 
-export type ResultadoLogin = { etapa: "concluido" } | { etapa: "dois-fatores" } | { erro: string };
+/** Erros dos serviços são chaves das mensagens (ADR-0020); as ações os traduzem. */
+export type ResultadoLogin =
+  | { etapa: "concluido" }
+  | { etapa: "dois-fatores" }
+  | { erro: string; parametros?: Record<string, string | number> };
 
 export async function registrarEntrada(headers: Headers, usuarioId: string, metodo: string): Promise<void> {
   const area = resolverArea(headers.get("host"));
@@ -307,7 +311,7 @@ export async function verificarSegundoFator(
     );
     return { etapa: "concluido" };
   } catch {
-    return { erro: "Código inválido ou expirado. Entre novamente se o problema continuar." };
+    return { erro: "acesso.erros.codigoInvalido" };
   }
 }
 
@@ -328,10 +332,10 @@ export async function iniciarAutenticador(
   if (!(await podeCadastrarFator(headers))) return { erro: ENTRE_COM_DOIS_FATORES };
   try {
     const r = await auth.api.enableTwoFactor({ body: { password: senha }, headers });
-    if (r.method !== "totp") return { erro: "Método de 2FA não suportado." };
+    if (r.method !== "totp") return { erro: "acesso.erros.metodoNaoSuportado" };
     return { uri: r.totpURI, codigosRecuperacao: r.backupCodes };
   } catch {
-    return { erro: "Senha incorreta." };
+    return { erro: "acesso.erros.senhaIncorreta" };
   }
 }
 
@@ -344,7 +348,7 @@ export async function confirmarAutenticador(
     await registrarEntrada(headers, r.user.id, "autenticador-configurado");
     return { ok: true };
   } catch {
-    return { erro: "Código inválido. Confira o horário do celular e tente de novo." };
+    return { erro: "acesso.erros.codigoDoAutenticadorInvalido" };
   }
 }
 
@@ -371,7 +375,7 @@ export async function entrarComLinkMagico(token: string, headers: Headers): Prom
     if (r.user) await registrarEntrada(headers, r.user.id, "link");
     return { etapa: "concluido" };
   } catch {
-    return { erro: "Link inválido, expirado ou já utilizado. Peça um novo na tela de entrada." };
+    return { erro: "acesso.erros.linkInvalido" };
   }
 }
 
@@ -384,7 +388,7 @@ export async function opcoesParaCriarPasskey(headers: Headers): Promise<OpcoesWe
   try {
     return (await auth.api.generatePasskeyRegistrationOptions({ headers })) as unknown as OpcoesWebAuthn;
   } catch {
-    return { erro: "Não foi possível iniciar o cadastro da passkey. Entre novamente e tente de novo." };
+    return { erro: "acesso.erros.passkeyNaoIniciouCadastro" };
   }
 }
 
@@ -402,7 +406,7 @@ export async function salvarPasskey(
     if (usuarioId) await registrarEntrada(headers, usuarioId, "passkey-cadastrada");
     return { ok: true };
   } catch {
-    return { erro: "A passkey não foi cadastrada. Tente de novo." };
+    return { erro: "acesso.erros.passkeyNaoCadastrada" };
   }
 }
 
@@ -412,7 +416,7 @@ export async function opcoesParaEntrarComPasskey(
   try {
     return (await auth.api.generatePasskeyAuthenticationOptions({ headers })) as unknown as OpcoesWebAuthn;
   } catch {
-    return { erro: "Não foi possível iniciar o login com passkey." };
+    return { erro: "acesso.erros.passkeyNaoIniciouLogin" };
   }
 }
 
@@ -422,6 +426,6 @@ export async function entrarComPasskey(resposta: unknown, headers: Headers): Pro
     await registrarEntrada(headers, r.user.id, "passkey");
     return { etapa: "concluido" };
   } catch {
-    return { erro: "Passkey não reconhecida ou sem acesso a este endereço." };
+    return { erro: "acesso.erros.passkeyNaoReconhecida" };
   }
 }

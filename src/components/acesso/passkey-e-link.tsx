@@ -2,6 +2,7 @@
 
 import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   entrarComLinkAcao,
   entrarComPasskeyAcao,
@@ -19,30 +20,31 @@ function seguirDestino(r: Estado) {
   return r;
 }
 
-const CANCELADO = "A operação foi cancelada ou o tempo acabou. Tente de novo.";
-
 /**
  * Mensagem para cada motivo de falha da passkey (antes, todos apareciam como
  * "cancelada", escondendo a causa). O detalhe técnico vai entre parênteses
  * para facilitar o suporte; nada de dado pessoal.
  */
-function mensagemDoErro(e: unknown): string {
+function mensagemDoErro(e: unknown, t: Tradutor): string {
   const erro = e as { name?: string; code?: string; message?: string };
   const codigo = erro?.code ?? "";
   const nome = erro?.name ?? "";
   if (codigo === "ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED" || nome === "InvalidStateError")
-    return "Este aparelho já tem uma passkey desta conta. Use-a para entrar ou escolha outro aparelho.";
+    return t("erros.jaRegistrada");
   if (codigo === "ERROR_INVALID_DOMAIN" || codigo === "ERROR_INVALID_RP_ID" || nome === "SecurityError")
-    return "Este endereço não aceita passkey. Abra o sistema pelo endereço oficial (ex.: bt.localhost:3000) e tente de novo.";
+    return t("erros.enderecoInvalido");
   if (/not supported/i.test(erro?.message ?? "") || nome === "NotSupportedError")
-    return "Este navegador não aceita passkey. Use o Chrome, o Edge ou o Safari, ou a opção do aplicativo autenticador.";
+    return t("erros.naoSuportada");
   if (codigo === "ERROR_CEREMONY_ABORTED" || nome === "NotAllowedError" || nome === "AbortError")
-    return `${CANCELADO} Se nenhuma janela do Windows apareceu, confira se o Windows Hello (PIN, rosto ou digital) está configurado, ou escolha "celular" na janela. (${codigo || nome})`;
-  return `Não foi possível concluir a passkey. Tente de novo ou use o aplicativo autenticador. (${codigo || nome || "erro desconhecido"})`;
+    return t("erros.cancelada", { detalhe: codigo || nome });
+  return t("erros.generica", { detalhe: codigo || nome || t("erroDesconhecido") });
 }
+
+type Tradutor = ReturnType<typeof useTranslations<"acesso.passkey">>;
 
 /** Login completo com passkey (política 2A): o aparelho + digital/rosto/PIN. */
 export function BotaoEntrarComPasskey() {
+  const t = useTranslations("acesso.passkey");
   const [estado, setEstado] = useState<Estado>();
   const [ocupado, setOcupado] = useState(false);
 
@@ -56,7 +58,7 @@ export function BotaoEntrarComPasskey() {
       setEstado(seguirDestino(await entrarComPasskeyAcao(resposta)));
     } catch (e) {
       console.error("Passkey:", e);
-      setEstado({ erro: mensagemDoErro(e) });
+      setEstado({ erro: mensagemDoErro(e, t) });
     } finally {
       setOcupado(false);
     }
@@ -71,7 +73,7 @@ export function BotaoEntrarComPasskey() {
         disabled={ocupado}
         className="border-primary text-primary w-full rounded-md border px-4 py-2.5 text-sm font-medium disabled:opacity-60"
       >
-        {ocupado ? "Aguardando a passkey..." : "Entrar com passkey"}
+        {ocupado ? t("aguardandoPasskey") : t("entrar")}
       </button>
     </div>
   );
@@ -79,6 +81,7 @@ export function BotaoEntrarComPasskey() {
 
 /** Cadastro de passkey. Com `reentrar`, a pessoa sai e entra de novo com ela. */
 export function FormCriarPasskey({ reentrar = false }: { reentrar?: boolean }) {
+  const t = useTranslations("acesso.passkey");
   const [estado, setEstado] = useState<Estado>();
   const [ocupado, setOcupado] = useState(false);
 
@@ -92,7 +95,7 @@ export function FormCriarPasskey({ reentrar = false }: { reentrar?: boolean }) {
       setEstado(seguirDestino(await salvarPasskeyAcao(resposta, String(dados.get("nome") ?? ""), reentrar)));
     } catch (e) {
       console.error("Passkey:", e);
-      setEstado({ erro: mensagemDoErro(e) });
+      setEstado({ erro: mensagemDoErro(e, t) });
     } finally {
       setOcupado(false);
     }
@@ -102,24 +105,23 @@ export function FormCriarPasskey({ reentrar = false }: { reentrar?: boolean }) {
     <form action={criar}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
-      <p className="text-muted mb-4 text-sm">
-        A passkey fica no seu celular ou computador e é liberada pela digital, pelo rosto ou pelo PIN do
-        aparelho. Ela já vale como verificação em duas etapas.
-      </p>
-      <Campo rotulo="Nome da passkey (ex.: celular, notebook)" name="nome" maxLength={60} />
-      <Botao disabled={ocupado}>{ocupado ? "Aguardando o aparelho..." : "Cadastrar passkey"}</Botao>
+      <p className="text-muted mb-4 text-sm">{t("intro")}</p>
+      <Campo rotulo={t("rotuloNome")} name="nome" maxLength={60} />
+      <Botao disabled={ocupado}>{ocupado ? t("aguardandoAparelho") : t("cadastrar")}</Botao>
     </form>
   );
 }
 
 /** Pedido de link de acesso por e-mail (política 1A). */
 export function FormPedirLink() {
+  const t = useTranslations("acesso.link");
+  const tGeral = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useActionState(pedirLinkAcao, undefined);
   if (estado?.ok) return <Aviso tipo="ok">{estado.ok}</Aviso>;
   return (
     <form action={acao}>
-      <Campo rotulo="E-mail para receber o link" name="email" type="email" autoComplete="username" required />
-      <Botao disabled={enviando}>{enviando ? "Enviando..." : "Receber link por e-mail"}</Botao>
+      <Campo rotulo={t("rotuloEmail")} name="email" type="email" autoComplete="username" required />
+      <Botao disabled={enviando}>{enviando ? tGeral("enviando") : t("receber")}</Botao>
     </form>
   );
 }
@@ -129,6 +131,7 @@ export function FormPedirLink() {
  * e-mail abrem os links sozinhos e gastariam o link de uso único.
  */
 export function FormUsarLink({ token }: { token: string }) {
+  const t = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useActionState(
     async (anterior: Estado, dados: FormData) => seguirDestino(await entrarComLinkAcao(anterior, dados)),
     undefined,
@@ -137,7 +140,7 @@ export function FormUsarLink({ token }: { token: string }) {
     <form action={acao}>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
       <input type="hidden" name="token" value={token} />
-      <Botao disabled={enviando}>{enviando ? "Entrando..." : "Entrar"}</Botao>
+      <Botao disabled={enviando}>{enviando ? t("entrando") : t("entrar")}</Botao>
     </form>
   );
 }
