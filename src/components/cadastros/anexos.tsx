@@ -4,12 +4,14 @@ import { useFormatter, useTranslations } from "next-intl";
 import { enviarAnexoAcao, removerAnexoAcao } from "@/app/acoes/anexos";
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso, Botao, Campo } from "@/components/ui/basicos";
+import { Miniatura, temPrevia, Visualizar } from "./previa-do-anexo";
 
 export type AnexoNaTela = {
   id: string;
   categoria: string;
   descricao: string | null;
   nomeArquivo: string;
+  tipoDeConteudo: string;
   tamanho: number;
   situacao: string;
   enviadoPor: string | null;
@@ -48,8 +50,15 @@ export function AnexosDoCadastro({
       ) : (
         <ul className="divide-border mb-3 divide-y text-sm">
           {anexos.map((a) => (
-            <li key={a.id} className="flex items-start justify-between gap-2 py-2">
-              <span className="min-w-0">
+            <li key={a.id} className="flex items-start justify-between gap-3 py-2">
+              {podeBaixar && a.situacao === "disponivel" && (
+                <Miniatura
+                  id={a.id}
+                  tipo={a.tipoDeConteudo}
+                  rotulo={a.nomeArquivo.split(".").pop()?.slice(0, 4) ?? ""}
+                />
+              )}
+              <span className="min-w-0 flex-1">
                 <span className="text-text block font-medium">
                   {t(`categorias.${a.categoria}` as "categorias.outro")}
                   {a.descricao && <span className="text-muted font-normal"> · {a.descricao}</span>}
@@ -66,9 +75,14 @@ export function AnexosDoCadastro({
               <span className="flex shrink-0 items-center gap-3">
                 {a.situacao === "disponivel" ? (
                   podeBaixar && (
-                    <a href={`/api/anexos/${a.id}`} className="text-primary text-xs font-medium">
-                      {t("baixar")}
-                    </a>
+                    <>
+                      {temPrevia(a.tipoDeConteudo) && (
+                        <Visualizar id={a.id} tipo={a.tipoDeConteudo} nome={a.nomeArquivo} />
+                      )}
+                      <a href={`/api/anexos/${a.id}`} className="text-primary text-xs font-medium">
+                        {t("baixar")}
+                      </a>
+                    </>
                   )
                 ) : (
                   <span className="text-warning text-xs">

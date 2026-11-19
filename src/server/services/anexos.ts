@@ -47,6 +47,7 @@ export type Anexo = {
   categoria: string;
   descricao: string | null;
   nomeArquivo: string;
+  tipoDeConteudo: string;
   tamanho: number;
   situacao: string;
   enviadoPor: string | null;
@@ -92,6 +93,7 @@ export async function listarAnexos(acesso: Acesso | null, alvo: AlvoDoAnexo): Pr
       categoria: l.categoria,
       descricao: l.descricao,
       nomeArquivo: await descriptografar(a.tenant.id, l.nomeArquivoCifrado),
+      tipoDeConteudo: l.tipoDeConteudo,
       tamanho: l.tamanho,
       situacao: l.situacao,
       enviadoPor: enviadoPor ?? null,
@@ -189,10 +191,24 @@ export async function enviarAnexo(
   });
 }
 
-/** Arquivo pronto para download (só disponível; permissão e auditoria). */
+/**
+ * Uso do arquivo: baixar, visualizar na tela ou miniatura na lista. Os três
+ * entregam o conteúdo (a página desenha a prévia a partir dele), por isso
+ * exigem a mesma permissão de baixar; cada um gera o seu evento de auditoria.
+ */
+export const MODOS_DE_ACESSO = ["baixar", "visualizar", "miniatura"] as const;
+export type ModoDeAcesso = (typeof MODOS_DE_ACESSO)[number];
+const EVENTO_DO_MODO: Record<ModoDeAcesso, string> = {
+  baixar: "anexo.baixado",
+  visualizar: "anexo.visualizado",
+  miniatura: "anexo.miniatura_vista",
+};
+
+/** Arquivo pronto para download ou prévia (só disponível; permissão e auditoria). */
 export async function baixarAnexo(
   acesso: Acesso | null,
   id: string,
+  modo: ModoDeAcesso = "baixar",
 ): Promise<{ nome: string; tipo: string; conteudo: Uint8Array } | null> {
   const a = await exigirPermissao(acesso, "empresas", "baixar");
   if (!uuidValido(id)) return null;
@@ -204,7 +220,9 @@ export async function baixarAnexo(
   if (!cifrado) return null;
   const conteudo = await descriptografarArquivo(a.tenant.id, l.id, cifrado);
   const alvoTipo = l.empresaId ? "empresa" : "pessoa";
-  await auditar(a, "anexo.baixado", alvoTipo, (l.empresaId ?? l.pessoaId)!, { anexoId: l.id });
+  await auditar(a, EVENTO_DO_MODO[modo] ?? "anexo.baixado", alvoTipo, (l.empresaId ?? l.pessoaId)!, {
+    anexoId: l.id,
+  });
   return { nome: await descriptografar(a.tenant.id, l.nomeArquivoCifrado), tipo: l.tipoDeConteudo, conteudo };
 }
 

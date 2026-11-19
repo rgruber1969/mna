@@ -93,7 +93,16 @@ test("lê o PDF, confere, cadastra empresa e pessoa e guarda o documento como an
   await page.getByRole("link", { name: "Abrir o cadastro" }).click();
 
   await expect(page.getByRole("heading", { name: "Empresa de Teste Ltda" })).toBeVisible();
-  await expect(page.getByText("contrato.pdf", { exact: false })).toBeVisible();
+  await expect(page.getByText("contrato.pdf · ", { exact: false })).toBeVisible();
+  // Prévia desenhada pela página: miniatura na lista e janela com as páginas.
+  await page.getByRole("heading", { name: "Documentos anexados" }).scrollIntoViewIfNeeded();
+  await expect(page.locator("li canvas").first()).toBeVisible();
+  await page.getByRole("button", { name: "Visualizar" }).click();
+  const janela = page.getByRole("dialog", { name: "Visualizando contrato.pdf" });
+  await expect(janela.locator("canvas").first()).toBeVisible();
+  await janela.getByRole("button", { name: "Fechar" }).click();
+  await expect(janela).toBeHidden();
+
   const download = page.waitForEvent("download");
   await page.getByRole("link", { name: "Baixar" }).click();
   expect((await download).suggestedFilename()).toBe("contrato.pdf");

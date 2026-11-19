@@ -281,7 +281,13 @@
         "grande": "O arquivo passa de 10 MB.",
         "formato": "Formato não aceito. Use PDF, PNG, JPG, WebP, DOCX ou XLSX.",
         "bloqueado": "O arquivo foi bloqueado pelo antivírus e não foi guardado. Os administradores foram avisados."
-      }
+      },
+      "visualizar": "Visualizar",
+      "visualizando": "Visualizando {nome}",
+      "fechar": "Fechar",
+      "carregando": "Carregando…",
+      "previaIndisponivel": "Não foi possível mostrar a prévia. Use Baixar.",
+      "maisPaginas": "Mostrando {mostradas} de {total} páginas. Baixe o arquivo para ver todas."
     },
     "porDocumento": {
       "botao": "A partir de documento",
