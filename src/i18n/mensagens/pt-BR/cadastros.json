@@ -49,7 +49,7 @@
       "nenhuma": "Nenhuma pessoa encontrada.",
       "colNome": "Nome",
       "colEmpresas": "Empresas",
-      "colAcesso": "Acesso",
+      "colAcesso": "Usuário",
       "inativa": "inativa",
       "avisoNova": "Só o nome é obrigatório. CPF, RG e dados do cônjuge são gravados criptografados.",
       "sobrePessoa": "Pessoa",
@@ -84,7 +84,8 @@
       "conviteEnviado": "convite enviado",
       "semAcesso": "sem acesso",
       "semEmail": "sem e-mail para convidar",
-      "convidar": "Convidar"
+      "convidar": "Convidar",
+      "eUsuario": "É usuário"
     },
     "formularios": {
       "endereco": "Endereço",

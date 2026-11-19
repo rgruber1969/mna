@@ -123,6 +123,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                           nome={p.nome}
                           email={p.email}
                           podeConvidar={acesso.administrador}
+                          soIcone
                         />
                       </td>
                     </tr>
