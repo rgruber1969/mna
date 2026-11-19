@@ -190,6 +190,13 @@
       "when": 1795091854120,
       "tag": "0026_negocios",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1795095189814,
+      "tag": "0027_equipe_da_compradora",
+      "breakpoints": true
     }
   ]
 }

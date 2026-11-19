@@ -380,3 +380,100 @@ describe("lados e sigilo", () => {
     });
   });
 });
+
+describe("equipe da compradora (escritório, advisor)", () => {
+  it("com várias compradoras, escolhe para qual trabalha e vê o negócio como ela", async () => {
+    const g = acesso("gestor");
+    const a = acesso("admin", true);
+    await criarConta("adva", "usuario-externo");
+    const esc = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Escritório da Compradora A" });
+    if (!("id" in esc)) throw new Error(esc.erro);
+    const [{ id: contato }] = (
+      await dono.query(`select id from tipo_vinculo where tenant_id = $1 and padrao = 'contato'`, [tenantId])
+    ).rows as { id: string }[];
+    await adicionarVinculo(a, {
+      pessoaId: await pessoaDe("adva"),
+      empresaId: esc.id,
+      tipoId: contato,
+      cargo: "",
+      percentual: "",
+    });
+    const papelEsc = await papel("escritorio-compradora");
+    expect(
+      await adicionarEmpresaAoNegocio(g, negocioId, { empresaId: esc.id, papelId: papelEsc }),
+    ).toMatchObject({
+      erro: "negocios.erros.escolhaCompradora",
+    });
+    expect(
+      await adicionarEmpresaAoNegocio(g, negocioId, {
+        empresaId: esc.id,
+        papelId: papelEsc,
+        atuaParaId: compradoraA,
+      }),
+    ).toEqual({ ok: true });
+    await adicionarParticipante(g, negocioId, {
+      pessoaId: await pessoaDe("adva"),
+      perfilId: await perfilDeDeal("advogado"),
+      empresaId: "",
+      lado: "",
+      prazo: "",
+    });
+    // A Compradora A já assinou o NDA: o escritório dela vê a vendedora, mas não a Compradora B.
+    const visto = await obterNegocio(acesso("adva"), negocioId);
+    expect(visto?.nomeInterno).toBe("Venda da Vendedora Exemplo");
+    const nomes = visto!.empresas.map((e) => e.nome);
+    expect(nomes).toEqual(
+      expect.arrayContaining(["Compradora A S.A.", "Escritório da Compradora A", "Vendedora Exemplo Ltda"]),
+    );
+    expect(nomes).not.toContain("Compradora B S.A.");
+    expect(visto!.empresas.find((e) => e.nome === "Escritório da Compradora A")?.atuaPara).toBe(
+      "Compradora A S.A.",
+    );
+    // A compradora não sai antes da equipe dela.
+    const d = await obterNegocio(g, negocioId);
+    const papelA = d!.empresas.find((e) => e.nome === "Compradora A S.A." && e.papel === "Compradora")!;
+    expect(await removerEmpresaDoNegocio(g, negocioId, papelA.id)).toMatchObject({
+      erro: "negocios.erros.compradoraComEquipe",
+    });
+  });
+
+  it("com uma compradora só, a ligação é automática, inclusive para quem entrou antes dela", async () => {
+    const g = acesso("gestor");
+    const a = acesso("admin", true);
+    const r = await criarNegocio(g, {
+      codinome: "Projeto Simples",
+      nomeInterno: "Bilateral",
+      tipoOperacaoId: (await listarTiposDeOperacao(a)).find((t) => !t.comPercentual)!.id,
+      percentual: "",
+      papelContratanteId: await papel("escritorio-vendedora"),
+      objeto: "empresas",
+      vendedoras: [vendedora],
+      grupoId: "",
+      dataInicio: "2026-11-19",
+    });
+    if (!("id" in r)) throw new Error(r.erro);
+    const esc = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Assessoria Financeira Ltda" });
+    if (!("id" in esc)) throw new Error(esc.erro);
+    // Entra antes de haver compradora: fica sem ligação...
+    expect(
+      await adicionarEmpresaAoNegocio(g, r.id, {
+        empresaId: esc.id,
+        papelId: await papel("advisor-compradora"),
+      }),
+    ).toEqual({ ok: true });
+    // ...e é ligada sozinha quando a primeira compradora entra.
+    await adicionarEmpresaAoNegocio(g, r.id, { empresaId: compradoraB, papelId: await papel("compradora") });
+    const d = await obterNegocio(g, r.id);
+    expect(d?.empresas.find((e) => e.nome === "Assessoria Financeira Ltda")?.atuaPara).toBe(
+      "Compradora B S.A.",
+    );
+    const outro = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Banca Jurídica Ltda" });
+    if (!("id" in outro)) throw new Error(outro.erro);
+    await adicionarEmpresaAoNegocio(g, r.id, {
+      empresaId: outro.id,
+      papelId: await papel("escritorio-compradora"),
+    });
+    const d2 = await obterNegocio(g, r.id);
+    expect(d2?.empresas.find((e) => e.nome === "Banca Jurídica Ltda")?.atuaPara).toBe("Compradora B S.A.");
+  });
+});

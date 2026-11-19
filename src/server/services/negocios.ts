@@ -142,7 +142,13 @@ export async function excluirTipoDeOperacao(acesso: Acesso | null, id: string): 
   return { ok: true };
 }
 
-export type PapelComLado = { id: string; nome: string; lado: Lado | null; perfilSugeridoId: string | null };
+export type PapelComLado = {
+  id: string;
+  nome: string;
+  lado: Lado | null;
+  perfilSugeridoId: string | null;
+  padrao: string | null;
+};
 
 async function papeisComLado(a: AcessoTenant): Promise<PapelComLado[]> {
   return comTenant(a.tenant.id, (tx) =>
@@ -152,6 +158,7 @@ async function papeisComLado(a: AcessoTenant): Promise<PapelComLado[]> {
         nome: papelEmpresa.nome,
         lado: papelEmpresa.lado,
         perfilSugeridoId: papelEmpresa.perfilSugeridoId,
+        padrao: papelEmpresa.padrao,
       })
       .from(papelEmpresa)
       .orderBy(asc(papelEmpresa.nome)),
@@ -190,6 +197,10 @@ type EmpresaNoNegocio = {
   papelId: string;
   lado: Lado | null;
   situacaoFunil: SituacaoNoFunil | null;
+  /** Papel "Compradora" (compradora potencial, com funil). */
+  compradora: boolean;
+  /** Compradora para quem esta empresa trabalha (lado comprador). */
+  atuaParaId: string | null;
 };
 
 /** Como a pessoa enxerga o negócio: se participa, de que lado e o que pode ver. */
@@ -199,6 +210,8 @@ export type Visao = {
   lados: Set<Lado>;
   /** Empresas que a pessoa representa no negócio. */
   minhasEmpresas: Set<string>;
+  /** Compradoras que a pessoa representa ou para quem a empresa dela trabalha. */
+  minhasCompradoras: Set<string>;
   podeVerVendedora: boolean;
   matriz: Matriz;
 };
@@ -221,11 +234,13 @@ async function empresasDoNegocio(a: AcessoTenant, dealId: string): Promise<Empre
         papelId: dealEmpresa.papelId,
         lado: papelEmpresa.lado,
         situacaoFunil: dealEmpresa.situacaoFunil,
+        compradora: sql<boolean>`${papelEmpresa.padrao} = 'compradora'`,
+        atuaParaId: dealEmpresa.atuaParaId,
       })
       .from(dealEmpresa)
       .innerJoin(papelEmpresa, eq(papelEmpresa.id, dealEmpresa.papelId))
       .where(eq(dealEmpresa.dealId, dealId)),
-  );
+  ).then((l) => l.map((e) => ({ ...e, compradora: Boolean(e.compradora) })));
 }
 
 async function minhasParticipacoes(a: AcessoTenant, dealIds: string[]) {
@@ -258,15 +273,27 @@ function montarVisao(
     if (lado) lados.add(lado);
     if (p.empresaId) minhasEmpresas.add(p.empresaId);
   }
-  // Compradora que já assinou o NDA (ou passou dele) vê quem vende.
+  // Compradoras "minhas": as que represento e aquelas para quem minha empresa trabalha.
+  const minhasCompradoras = new Set<string>();
+  for (const e of empresas) {
+    if (!minhasEmpresas.has(e.empresaId)) continue;
+    if (e.compradora) minhasCompradoras.add(e.empresaId);
+    if (e.atuaParaId) minhasCompradoras.add(e.atuaParaId);
+  }
+  // Compradora que já assinou o NDA (ou passou dele) vê quem vende; quem trabalha para ela também.
   const compradoraAposNda = empresas.some(
-    (e) => minhasEmpresas.has(e.empresaId) && e.situacaoFunil && FUNIL_APOS_NDA.includes(e.situacaoFunil),
+    (e) =>
+      e.compradora &&
+      minhasCompradoras.has(e.empresaId) &&
+      e.situacaoFunil &&
+      FUNIL_APOS_NDA.includes(e.situacaoFunil),
   );
   return {
     administrador: a.administrador,
     participa: minhas.length > 0,
     lados,
     minhasEmpresas,
+    minhasCompradoras,
     podeVerVendedora: a.administrador || lados.has("vendedor") || compradoraAposNda,
     matriz,
   };
@@ -292,8 +319,10 @@ function empresaVisivel(v: Visao, e: EmpresaNoNegocio): boolean {
   if (v.administrador || v.lados.has("vendedor")) return true;
   if (v.minhasEmpresas.has(e.empresaId)) return true;
   if (e.lado === "vendedor") return v.podeVerVendedora;
-  // Do lado comprador, só as próprias empresas (nunca as outras compradoras).
-  return false;
+  // Do lado comprador, só a própria equipe: a compradora e quem trabalha para
+  // ela (nunca as outras compradoras nem as equipes delas).
+  if (e.compradora && v.minhasCompradoras.has(e.empresaId)) return true;
+  return Boolean(e.atuaParaId && v.minhasCompradoras.has(e.atuaParaId));
 }
 
 // --- Lista ------------------------------------------------------------------------------
@@ -359,6 +388,7 @@ export async function paginaDeNegocios(
               papelPadrao: papelEmpresa.padrao,
               lado: papelEmpresa.lado,
               situacaoFunil: dealEmpresa.situacaoFunil,
+              atuaParaId: dealEmpresa.atuaParaId,
               nome: empresa.razaoSocial,
               doContratante: empresa.doContratante,
             })
@@ -380,7 +410,10 @@ export async function paginaDeNegocios(
       : [],
   ]);
   const minhasPor = Map.groupBy(minhas, (p) => p.dealId);
-  const empresasPor = Map.groupBy(empresas, (e) => e.dealId);
+  const empresasPor = Map.groupBy(
+    empresas.map((e) => ({ ...e, compradora: e.papelPadrao === "compradora" })),
+    (e) => e.dealId,
+  );
   const coordPor = Map.groupBy(coordenadores, (c) => c.dealId);
   const visiveis: (NegocioResumo & { tipoId: string | null; ladoDoContratante: Lado | null })[] = [];
   for (const l of linhas) {
@@ -618,7 +651,11 @@ export type NegocioDetalhe = {
     lado: Lado | null;
     situacaoFunil: SituacaoNoFunil | null;
     doContratante: boolean;
+    /** Compradora para quem trabalha (empresa do lado comprador). */
+    atuaPara: string | null;
   }[];
+  /** Compradoras do negócio (para escolher para quem uma empresa do lado comprador trabalha). */
+  compradoras: { empresaId: string; nome: string }[];
   participantes: {
     id: string;
     pessoaId: string;
@@ -676,6 +713,8 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
         lado: papelEmpresa.lado,
         situacaoFunil: dealEmpresa.situacaoFunil,
         doContratante: empresa.doContratante,
+        atuaParaId: dealEmpresa.atuaParaId,
+        papelPadrao: papelEmpresa.padrao,
       })
       .from(dealEmpresa)
       .innerJoin(empresa, eq(empresa.id, dealEmpresa.empresaId))
@@ -703,6 +742,11 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
       .orderBy(asc(pessoa.nome)),
   ]);
   const verTudo = visao.administrador || visao.lados.has("vendedor");
+  // Do lado comprador, os participantes da própria equipe (empresas visíveis do lado comprador).
+  const equipe = new Set(
+    empresas.filter((e) => e.lado === "comprador" && empresaVisivel(visao, e)).map((e) => e.empresaId),
+  );
+  const nomeDa = new Map(detalheEmpresas.map((e) => [e.empresaId, e.nome]));
   const m = visao.matriz;
   const podeEditar = a.administrador || concede(m, "deal", "editar");
   return {
@@ -726,12 +770,29 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
     podeEditar,
     podeGerirParticipantes: podeEditar,
     podeExcluir: (await pode(a, "deals", "excluir")) && (a.administrador || visao.participa),
-    empresas: detalheEmpresas.filter((e) => visiveis.has(e.id)),
+    empresas: detalheEmpresas
+      .filter((e) => visiveis.has(e.id))
+      .map((e) => ({
+        id: e.id,
+        empresaId: e.empresaId,
+        nome: e.nome,
+        cnpj: e.cnpj,
+        papel: e.papel,
+        lado: e.lado,
+        situacaoFunil: e.situacaoFunil,
+        doContratante: e.doContratante,
+        atuaPara: e.atuaParaId ? (nomeDa.get(e.atuaParaId) ?? null) : null,
+      })),
+    compradoras: verTudo
+      ? detalheEmpresas
+          .filter((e) => e.papelPadrao === "compradora")
+          .map((e) => ({ empresaId: e.empresaId, nome: e.nome }))
+      : [],
     participantes: participantes
       .filter(
         (p) =>
           verTudo ||
-          (p.empresaId !== null && visao.minhasEmpresas.has(p.empresaId)) ||
+          (p.empresaId !== null && (visao.minhasEmpresas.has(p.empresaId) || equipe.has(p.empresaId))) ||
           (p.empresaId === null && p.lado && visao.lados.has(p.lado) && p.lado !== "comprador"),
       )
       .map((p) => ({
@@ -849,11 +910,17 @@ export async function opcoesDeEmpresas(acesso: Acesso | null, dealId: string) {
   return { papeis, empresas };
 }
 
-/** Inclui uma empresa com um papel. Uma empresa só pode estar num dos lados de cada negócio. */
+/**
+ * Inclui uma empresa com um papel. Uma empresa só pode estar num dos lados de
+ * cada negócio. Empresa do lado comprador que não é compradora (escritório,
+ * advisor etc.) fica ligada à compradora para quem trabalha: sozinha quando
+ * há uma só; escolhida quando há várias; ligada depois, quando a primeira
+ * compradora entrar.
+ */
 export async function adicionarEmpresaAoNegocio(
   acesso: Acesso | null,
   dealId: string,
-  dados: { empresaId: string; papelId: string },
+  dados: { empresaId: string; papelId: string; atuaParaId?: string },
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deal", "editar", { dealId });
   if (!uuidValido(dealId)) return { erro: "negocios.erros.naoEncontrado" };
@@ -870,13 +937,34 @@ export async function adicionarEmpresaAoNegocio(
       return { erro: "negocios.erros.mesmaEmpresaNosDoisLados", campo: "papelId" };
     if (empresas.some((x) => x.empresaId === e.id && x.papelId === papel.id))
       return { erro: "negocios.erros.empresaJaTemPapel" };
+    const compradoras = [...new Set(empresas.filter((x) => x.compradora).map((x) => x.empresaId))];
+    const ehCompradora = papel.padrao === "compradora";
+    let atuaParaId: string | null = null;
+    if (papel.lado === "comprador" && !ehCompradora) {
+      if (dados.atuaParaId) {
+        if (!compradoras.includes(dados.atuaParaId))
+          return { erro: "negocios.erros.escolhaCompradora", campo: "atuaParaId" };
+        atuaParaId = dados.atuaParaId;
+      } else if (compradoras.length === 1) atuaParaId = compradoras[0];
+      else if (compradoras.length > 1)
+        return { erro: "negocios.erros.escolhaCompradora", campo: "atuaParaId" };
+    }
     await tx.insert(dealEmpresa).values({
       tenantId: a.tenant.id,
       dealId,
       empresaId: e.id,
       papelId: papel.id,
-      situacaoFunil: papel.padrao === "compradora" ? "prospectada" : null,
+      situacaoFunil: ehCompradora ? "prospectada" : null,
+      atuaParaId,
     });
+    // Primeira compradora: quem já estava no lado comprador passa a trabalhar para ela.
+    if (ehCompradora && compradoras.length === 0) {
+      const equipe = empresas
+        .filter((x) => x.lado === "comprador" && !x.compradora && !x.atuaParaId && x.empresaId !== e.id)
+        .map((x) => x.id);
+      if (equipe.length)
+        await tx.update(dealEmpresa).set({ atuaParaId: e.id }).where(inArray(dealEmpresa.id, equipe));
+    }
     return { ok: true };
   });
   if ("erro" in feito) return feito;
@@ -909,6 +997,19 @@ export async function removerEmpresaDoNegocio(
       .select({ id: dealEmpresa.id })
       .from(dealEmpresa)
       .where(and(eq(dealEmpresa.dealId, dealId), eq(dealEmpresa.empresaId, alvo.empresaId)));
+    // Compradora com equipe (escritório, advisor) ligada a ela não sai antes da equipe.
+    const [comoCompradora] = await tx
+      .select({ padrao: papelEmpresa.padrao })
+      .from(dealEmpresa)
+      .innerJoin(papelEmpresa, eq(papelEmpresa.id, dealEmpresa.papelId))
+      .where(eq(dealEmpresa.id, id));
+    if (comoCompradora?.padrao === "compradora") {
+      const [daEquipe] = await tx
+        .select({ id: dealEmpresa.id })
+        .from(dealEmpresa)
+        .where(and(eq(dealEmpresa.dealId, dealId), eq(dealEmpresa.atuaParaId, alvo.empresaId)));
+      if (daEquipe) return { erro: "negocios.erros.compradoraComEquipe" };
+    }
     if (papeisDela.length === 1) {
       if (alvo.doContratante) return { erro: "negocios.erros.contratanteFica" };
       const [representante] = await tx

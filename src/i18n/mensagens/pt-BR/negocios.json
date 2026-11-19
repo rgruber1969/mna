@@ -90,7 +90,10 @@
       "incluirTitulo": "Incluir empresa",
       "empresa": "Empresa",
       "papel": "Papel",
-      "incluir": "Incluir"
+      "incluir": "Incluir",
+      "atuaPara": "Trabalha para",
+      "atuaParaAjuda": "Empresas do lado comprador veem o negócio como a compradora para quem trabalham.",
+      "trabalhaPara": "trabalha para {nome}"
     },
     "participantes": {
       "contato": "Contato (sem acesso)",
@@ -170,7 +173,9 @@
       "ultimoCoordenador": "O negócio precisa de ao menos um Coordenador.",
       "tipoJaExiste": "Já existe um tipo de operação com este nome.",
       "tipoNaoEncontrado": "Tipo de operação não encontrado.",
-      "tipoEmUso": "Este tipo de operação está em uso e não pode ser excluído."
+      "tipoEmUso": "Este tipo de operação está em uso e não pode ser excluído.",
+      "escolhaCompradora": "Há mais de uma compradora: escolha para qual delas esta empresa trabalha.",
+      "compradoraComEquipe": "Há empresas trabalhando para esta compradora (escritório, advisor etc.): remova-as antes."
     }
   }
 }

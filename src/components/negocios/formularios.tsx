@@ -323,13 +323,20 @@ export function FormIncluirEmpresa({
   dealId,
   papeis,
   empresas,
+  compradoras,
 }: {
   dealId: string;
-  papeis: PapelOpcao[];
+  papeis: (PapelOpcao & { padrao: string | null })[];
   empresas: Opcao[];
+  compradoras: { empresaId: string; nome: string }[];
 }) {
   const t = useTranslations("negocios.empresas");
   const [estado, incluir, incluindo] = useAcaoComAtualizacao(adicionarEmpresaAoNegocioAcao);
+  const [papelId, setPapelId] = useState("");
+  const papel = papeis.find((p) => p.id === papelId);
+  // Escritório, advisor etc. do lado comprador: com várias compradoras, escolhe para qual trabalha.
+  const pedeCompradora =
+    papel?.lado === "comprador" && papel.padrao !== "compradora" && compradoras.length > 1;
   return (
     <form action={incluir} className="border-border mt-4 max-w-md border-t pt-3">
       <p className="text-text mb-2 text-sm font-medium">{t("incluirTitulo")}</p>
@@ -346,7 +353,13 @@ export function FormIncluirEmpresa({
         </select>
       </Rotulo>
       <Rotulo texto={t("papel")}>
-        <select name="papelId" required defaultValue="" className={estiloCampo}>
+        <select
+          name="papelId"
+          required
+          value={papelId}
+          onChange={(e) => setPapelId(e.target.value)}
+          className={estiloCampo}
+        >
           <option value="" disabled />
           {papeis.map((p) => (
             <option key={p.id} value={p.id}>
@@ -355,6 +368,19 @@ export function FormIncluirEmpresa({
           ))}
         </select>
       </Rotulo>
+      {pedeCompradora && (
+        <Rotulo texto={t("atuaPara")}>
+          <select name="atuaParaId" required defaultValue="" className={estiloCampo}>
+            <option value="" disabled />
+            {compradoras.map((c) => (
+              <option key={c.empresaId} value={c.empresaId}>
+                {c.nome}
+              </option>
+            ))}
+          </select>
+          <span className="text-muted mt-1 block text-xs">{t("atuaParaAjuda")}</span>
+        </Rotulo>
+      )}
       <Botao type="submit" disabled={incluindo}>
         {t("incluir")}
       </Botao>

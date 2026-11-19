@@ -780,6 +780,11 @@ export const dealEmpresa = pgTable(
     situacaoFunil: text("situacao_funil").$type<
       "prospectada" | "teaser" | "nda" | "proposta" | "escolhida" | "descartada"
     >(),
+    /**
+     * Empresa do lado comprador que não é a compradora (escritório, advisor
+     * etc.): a compradora para quem trabalha. Vê o negócio como ela.
+     */
+    atuaParaId: uuid("atua_para_id").references(() => empresa.id, { onDelete: "no action" }),
     criadoEm: criadoEm(),
   },
   (t) => [

@@ -132,6 +132,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                           e.papel,
                           lado(e.lado),
                           e.situacaoFunil && tf(e.situacaoFunil),
+                          e.atuaPara && te("trabalhaPara", { nome: e.atuaPara }),
                           e.cnpj && formatarCnpj(e.cnpj),
                         ]
                           .filter(Boolean)
@@ -151,7 +152,12 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                 ))}
               </ul>
               {opcoesEmp && (
-                <FormIncluirEmpresa dealId={n.id} papeis={opcoesEmp.papeis} empresas={opcoesEmp.empresas} />
+                <FormIncluirEmpresa
+                  dealId={n.id}
+                  papeis={opcoesEmp.papeis}
+                  empresas={opcoesEmp.empresas}
+                  compradoras={n.compradoras}
+                />
               )}
             </PainelDeAba>
             <PainelDeAba id="participantes">

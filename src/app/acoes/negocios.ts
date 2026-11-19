@@ -62,6 +62,7 @@ export async function adicionarEmpresaAoNegocioAcao(_: Estado, f: FormData): Pro
   const r = await adicionarEmpresaAoNegocio(await acesso(), texto(f, "dealId"), {
     empresaId: texto(f, "empresaId"),
     papelId: texto(f, "papelId"),
+    atuaParaId: texto(f, "atuaParaId") || undefined,
   });
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("empresaIncluida") };
 }

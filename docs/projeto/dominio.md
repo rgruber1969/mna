@@ -280,11 +280,17 @@ Regras do item 8 (questionário `perguntas-negocios.md`, respondido em
   empresa do contratante fica com ao menos um papel; empresa com
   participantes só sai depois deles; papel e tipo de operação em uso não
   podem ser excluídos.
-* **Sigilo do lado comprador na primeira entrega:** pessoas do lado
-  comprador veem só as próprias empresas (nunca as outras compradoras) e
-  as vendedoras só depois do NDA da sua empresa. Advogados e advisors da
-  compradora, que não estão no funil, veem só número e codinome até haver
-  regra própria (a definir com o funil).
+* **Equipe da compradora** (decidido em 2026-11-19): empresa do lado
+  comprador que não é compradora (escritório, advisor, contabilidade,
+  auditora) fica ligada à compradora **para quem trabalha** e vê o negócio
+  como ela: só número e codinome antes do NDA dela; a vendedora depois.
+  * **Uma compradora no negócio:** a ligação é automática, sem pergunta;
+    quem entrou antes da primeira compradora é ligado a ela quando ela
+    entra.
+  * **Duas ou mais:** ao incluir a empresa, escolhe-se para qual
+    compradora ela trabalha.
+  * Pessoas do lado comprador nunca veem as outras compradoras nem as
+    equipes delas; a compradora só sai do negócio depois da sua equipe.
 
 ### Valuation
 
