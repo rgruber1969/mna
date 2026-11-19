@@ -15,7 +15,7 @@ responsável.
     componentes das telas reais, para ser aproveitada quando a função real
     for construída.
 
-Resumo: **23 reais, 9 simuladas e 1 parcial** (item 33). A ordem de tornar reais as simuladas
+Resumo: **24 reais, 9 simuladas e 1 parcial** (item 33). A ordem de tornar reais as simuladas
 será definida depois da demonstração, conforme a reação do cliente.
 
 | # | Funcionalidade | Valor | Esforço | Depende de | Demonstração |
@@ -53,6 +53,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 31 | Resumos automáticos (mensagens e histórico de documento): resumo local sem IA | Médio | M | 11, 16 | Real |
 | 32 | Ofertas recebidas com estrutura de pagamento, rateio entre vendedoras e comparação com o valuation | Alto | M | 8, 18 | Real |
 | 33 | Anonimização de clientes: N anonimizações por tenant, aplicadas aos deals escolhidos; clientes com códigos (C00001), variações de grafia e grupo econômico em 2 níveis (C00087.001); importação de planilha; substituição dos nomes pelos códigos nos documentos enviados, guardando original (restrito) e anonimizado | Alto (venda) | G | 7, 11 | Parcial: real em planilhas (XLSX, CSV); simulado em DOCX e PDF |
+| 34 | Cadastro de empresas, pessoas e vínculos a partir de documento (PDF com texto: CNPJs, CPFs e quadro de sócios, sempre com conferência) e anexos de empresas e pessoas (criptografados), ADR-0021 | Alto | M | 7, 24, Armazenamento | Real |
 
 Como cada item simulado aparece na demonstração:
 

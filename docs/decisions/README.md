@@ -25,10 +25,11 @@ projeto e em `docs/projeto/`.
 | [0014](0014-envio-de-email.md) | E-mail | Mailpit / Resend / SES São Paulo |
 | [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
 | [0016](0016-antivirus-nos-uploads.md) | Antivírus | Simulado (local/demo), GuardDuty (produção); download só após "Disponível" |
-| [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | Envelope com chave por tenant em todos os ambientes; chave mestra no `.env` / Vercel (fora da produção) ou AWS KMS (produção) |
+| [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | Envelope com chave por tenant em todos os ambientes; chave mestra no `.env` / Vercel (fora da produção) ou AWS KMS (produção); anexos de cadastro também criptografados (adendo) |
 | [0018](0018-ferramentas-de-desenvolvimento.md) | Ferramentas | Drizzle; shadcn/ui + Tailwind; Vitest + Playwright; ESLint + Prettier; pnpm |
 | [0019](0019-identidade-unica-e-vinculo-por-tenant.md) | Identidade | Conta única + vínculo por tenant (tabelas próprias, RLS); sessão única por endereço |
 | [0020](0020-internacionalizacao-preparada-desde-a-v1.md) | Idiomas | Base de idiomas (next-intl) desde a V1, só português; textos em arquivos de mensagens; idioma por usuário |
+| [0021](0021-leitura-de-documentos-para-cadastro.md) | Leitura de documentos | Local sem IA (texto do PDF, CNPJ/CPF, base pública), sempre com conferência; IA depois no mesmo módulo |
 
 ## Premissas de arquitetura
 

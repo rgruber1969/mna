@@ -517,3 +517,27 @@ Claude Code. Decisões em vigor: [README](README.md).
   1,234.56).
 * **Por que agora:** com o sistema ainda pequeno, mover os textos custa uma
   etapa; depois, custaria passar por centenas de arquivos.
+
+## Leitura de documentos para cadastro (ADR-0021)
+
+* **O que é:** você envia um PDF (por exemplo, o comprovante de CNPJ) e o
+  sistema propõe a empresa, os sócios e os vínculos, para você conferir
+  antes de gravar. É como um estagiário que lê o documento e preenche um
+  rascunho: você revisa e assina embaixo.
+* **Camada de texto do PDF:** PDFs gerados por computador (como o
+  comprovante baixado do site da Receita) guardam o texto "por baixo" da
+  imagem; é isso que o sistema lê. PDF escaneado é só uma fotografia da
+  página, sem texto, e precisaria de **OCR** (reconhecimento de texto na
+  imagem), que ficou para depois.
+* **`unpdf`:** biblioteca que tira o texto do PDF no próprio servidor,
+  sem enviar o arquivo a ninguém.
+* **Dígito verificador:** os dois últimos números de CPF e CNPJ são
+  calculados a partir dos outros; conferindo a conta, o sistema descarta
+  números que só parecem CPF ou CNPJ.
+* **Por que não IA agora:** a IA entenderia melhor contratos e
+  escaneados, mas o documento (com CPF e RG) teria de ir para o servidor
+  do provedor. O módulo já nasce preparado para receber essa opção.
+* **Anexos criptografados (adendo ao ADR-0017):** cada anexo é trancado
+  com a chave do tenant antes de ir para o armazenamento, como os campos de
+  CPF e RG. Para baixar, o servidor confere a permissão, destranca e
+  registra quem baixou.

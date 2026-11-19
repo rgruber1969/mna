@@ -130,3 +130,19 @@ Regras:
   tenant e fica amarrado ao tenant (não pode ser copiado para outro); o
   índice cego também é calculado por tenant; as chaves locais são geradas
   por script direto no `.env`, sem aparecer na tela.
+* Adendo (2026-11-19): **anexos de cadastro criptografados com a chave do
+  tenant.** Escolha do responsável entre (A) criptografar todos os anexos
+  de empresas e pessoas com a chave do tenant (envelope), (B) só a
+  proteção do próprio armazenamento, como nos documentos dos processos, e
+  (C) criptografar só os anexos de pessoas. Escolhida a (A): documentos
+  de identidade e contratos sociais trazem os mesmos dados sensíveis que
+  os campos criptografados (CPF, RG) e devem ter a mesma proteção; a
+  destruição da chave do tenant torna também os arquivos ilegíveis.
+  Descartadas a (B) (imagens de documentos menos protegidas que os mesmos
+  dados nos campos) e a (C) (duas regras; o contrato social também traz
+  CPF dos sócios). Consequências: o arquivo é criptografado no servidor
+  antes de ir para o armazenamento (AES-256-GCM, amarrado ao tenant e ao
+  anexo) e o **download passa pelo servidor**, que confere a permissão,
+  descriptografa e registra a auditoria; não há link direto ao
+  armazenamento para esses arquivos. Limite de tamanho por arquivo para
+  manter o processamento em memória.

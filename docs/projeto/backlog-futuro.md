@@ -12,6 +12,14 @@ versão 1" é anotado aqui.
 - [ ] E-book e OnePager em outros formatos além de PDF: apresentação
       (PPTX) e página web com link privado (o OnePager na V1 é só PDF)
 
+## Cadastro a partir de documento (ADR-0021)
+
+- [ ] Leitura por IA (contratos sociais, documentos de identidade, nomes,
+      cargos e participações), quando houver provedor aprovado para dados
+      pessoais
+- [ ] Leitura de PDFs escaneados e imagens (OCR local)
+- [ ] Leitura de outros formatos além de PDF (DOCX, imagens)
+
 ## Anonimização de clientes
 
 - [ ] Substituição real em DOCX e PDF (na V1, simulada; em planilhas, real)
