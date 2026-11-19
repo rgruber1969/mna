@@ -2,7 +2,7 @@ import { and, asc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { comTenant } from "@/server/db/cliente";
-import { dealEmpresa, dealEtapa, etapaPadrao } from "@/server/db/esquema";
+import { dealEmpresa, dealEtapa, empresa, etapaPadrao } from "@/server/db/esquema";
 import type { Acesso } from "./acesso";
 import { mudarSituacaoDaEtapa } from "./etapas";
 import { paginaDeNegocios, visaoDoNegocio, type FiltroDeNegocios, type NegocioResumo } from "./negocios";
@@ -20,7 +20,8 @@ export type CartaoDoQuadro = NegocioResumo & {
   colunaId: string;
   podeMover: boolean;
   /** Resumo do funil de compradoras (só para quem o vê). */
-  funil: Record<string, number> | null;
+  /** Compradoras por situação do funil (só para quem o vê). */
+  funil: Record<string, string[]> | null;
 };
 
 export type Quadro = { colunas: { id: string; nome: string }[]; cartoes: CartaoDoQuadro[] };
@@ -57,8 +58,13 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
       : [],
     ids.length
       ? await tx
-          .select({ dealId: dealEmpresa.dealId, situacao: dealEmpresa.situacaoFunil })
+          .select({
+            dealId: dealEmpresa.dealId,
+            situacao: dealEmpresa.situacaoFunil,
+            nome: empresa.razaoSocial,
+          })
           .from(dealEmpresa)
+          .innerJoin(empresa, eq(empresa.id, dealEmpresa.empresaId))
           .where(and(inArray(dealEmpresa.dealId, ids), isNotNull(dealEmpresa.situacaoFunil)))
       : [],
   ]);
@@ -79,13 +85,14 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
         ate.find((e) => e.etapaPadraoId && ativas.has(e.etapaPadraoId))?.etapaPadraoId ?? COLUNA_A_INICIAR;
     }
     const matriz = a.administrador ? null : await permissoesNoDeal(a, n.id);
-    let funil: Record<string, number> | null = null;
+    const { visao } = await visaoDoNegocio(a, n.id);
+    const soComprador = !a.administrador && visao.lados.has("comprador") && !visao.lados.has("vendedor");
+    let funil: Record<string, string[]> | null = null;
     const doFunil = funilPor.get(n.id) ?? [];
     if (doFunil.length) {
-      const { visao } = await visaoDoNegocio(a, n.id);
       if (visao.administrador || (visao.lados.has("vendedor") && concede(visao.matriz, "funil", "ver"))) {
         funil = {};
-        for (const c of doFunil) funil[c.situacao!] = (funil[c.situacao!] ?? 0) + 1;
+        for (const c of doFunil) (funil[c.situacao!] ??= []).push(c.nome);
       }
     }
     cartoes.push({
@@ -93,7 +100,9 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
       colunaId,
       podeMover:
         (n.situacao === "andamento" || n.situacao === "suspenso") &&
-        (a.administrador || concede(matriz ?? {}, "etapas", "editar")),
+        (a.administrador ||
+          (concede(matriz ?? {}, "etapas", "editar") &&
+            (!soComprador || concede(matriz ?? {}, "etapas", "alterarComprador")))),
       funil,
     });
   }

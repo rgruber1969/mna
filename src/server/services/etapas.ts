@@ -14,7 +14,7 @@ import {
 } from "@/server/db/esquema";
 import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
 import { auditar } from "./empresas";
-import { negocioFechado, nomeVisivel } from "./negocios";
+import { negocioFechado, nomeVisivel, visaoDoNegocio } from "./negocios";
 import { notificar } from "./notificacoes";
 import { concede, normalizarMatriz, somarMatrizes, type Acao, type Matriz } from "./permissoes/catalogo";
 import { exigirPermissao } from "./permissoes/verificador";
@@ -312,14 +312,32 @@ async function contextoDeEtapas(a: AcessoTenant, dealId: string) {
         .map((p) => normalizarMatriz(individualDe.get(p.perfilId) ?? p.matriz, "deal")),
     );
   };
-  return { etapas, matrizNa, alcanceTotal: a.administrador || minhas.some((p) => p.alcance === "deal") };
+  // Lado comprador (sem participação do lado vendedor): alterar as etapas exige também
+  // "Alterar (lado comprador)", desmarcada por padrão em todos os perfis.
+  const lados = await visaoDoNegocio(a, dealId)
+    .then((r) => r.visao.lados)
+    .catch(() => new Set<string>());
+  const soComprador = !a.administrador && lados.has("comprador") && !lados.has("vendedor");
+  const podeNa = (etapaId: string | null, acao: Acao) => {
+    const m = matrizNa(etapaId);
+    if (!concede(m, "etapas", acao)) return false;
+    if (soComprador && (acao === "criar" || acao === "editar" || acao === "excluir"))
+      return concede(m, "etapas", "alterarComprador");
+    return true;
+  };
+  return {
+    etapas,
+    matrizNa,
+    podeNa,
+    alcanceTotal: a.administrador || minhas.some((p) => p.alcance === "deal"),
+  };
 }
 
 async function exigirNaEtapa(acesso: Acesso | null, dealId: string, etapaId: string | null, acao: Acao) {
   const a = exigirTenant(acesso);
   if (!uuidValido(dealId)) throw new Error("negócio inválido");
   const ctx = await contextoDeEtapas(a, dealId);
-  if (!concede(ctx.matrizNa(etapaId), "etapas", acao)) {
+  if (!ctx.podeNa(etapaId, acao)) {
     // Negado por padrão, com a negação na auditoria (ADR-0013).
     await comTenant(a.tenant.id, (tx) =>
       tx.insert(eventoAuditoria).values({
@@ -396,7 +414,7 @@ export async function etapasDoNegocio(
     escala: e.escala,
     responsaveis: e.responsaveis,
     observacoes: e.observacoes,
-    podeEditar: !fechado && concede(ctx.matrizNa(e.id), "etapas", "editar"),
+    podeEditar: !fechado && ctx.podeNa(e.id, "editar"),
     subetapas: ctx.etapas.filter((s) => s.paiId === e.id && vê(s)).map(montar),
   });
   const etapas = ctx.etapas
@@ -406,8 +424,8 @@ export async function etapasDoNegocio(
   return {
     etapas,
     principal: etapaPrincipal(ctx.etapas),
-    podeIncluir: !fechado && concede(ctx.matrizNa(null), "etapas", "criar"),
-    podeExcluir: !fechado && concede(ctx.matrizNa(null), "etapas", "excluir"),
+    podeIncluir: !fechado && ctx.podeNa(null, "criar"),
+    podeExcluir: !fechado && ctx.podeNa(null, "excluir"),
     fechado,
   };
 }

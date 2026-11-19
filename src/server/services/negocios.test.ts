@@ -757,7 +757,7 @@ describe("kanban de negócios", () => {
     const cartao = q.cartoes.find((c) => c.id === negocioId)!;
     expect(cartao.colunaId).toBe(coluna("Negociação informal"));
     expect(cartao.podeMover).toBe(true);
-    expect(cartao.funil).toMatchObject({ escolhida: 1 });
+    expect(cartao.funil?.escolhida).toEqual(["Compradora A S.A."]);
     expect(await moverNegocioParaEtapa(g, negocioId, coluna("Term Sheet"))).toEqual({ ok: true });
     const depois = await quadroDeNegocios(g, { situacao: "abertos" });
     expect(depois.cartoes.find((c) => c.id === negocioId)?.colunaId).toBe(coluna("Term Sheet"));
@@ -767,5 +767,24 @@ describe("kanban de negócios", () => {
     await expect(moverNegocioParaEtapa(acesso("audj"), negocioId, coluna("QPA"))).rejects.toBeInstanceOf(
       AcessoNegado,
     );
+  });
+});
+
+describe("etapas: proteção do lado comprador", () => {
+  it("advogado da compradora não altera etapas, salvo com 'Alterar (lado comprador)' no perfil", async () => {
+    const g = acesso("gestor");
+    const r = await etapasDoNegocio(acesso("adva"), negocioId);
+    expect(r?.podeIncluir).toBe(false);
+    expect(r?.etapas.every((e) => !e.podeEditar)).toBe(true);
+    const qpa = (await etapasDoNegocio(g, negocioId))!.etapas.find((e) => e.nome === "QPA")!;
+    await expect(
+      mudarSituacaoDaEtapa(acesso("adva"), negocioId, qpa.id, "andamento", true),
+    ).rejects.toBeInstanceOf(AcessoNegado);
+    await dono.query(
+      `update perfil set matriz = jsonb_set(matriz, '{etapas}', '["ver","editar","alterarComprador"]'::jsonb)
+       where tenant_id = $1 and padrao = 'advogado'`,
+      [tenantId],
+    );
+    expect((await etapasDoNegocio(acesso("adva"), negocioId))?.etapas.some((e) => e.podeEditar)).toBe(true);
   });
 });

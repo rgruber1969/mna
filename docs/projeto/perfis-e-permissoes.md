@@ -175,6 +175,10 @@ tipos de vínculo entre pessoa e empresa.
 (lista de acesso); vale também para contratos, e-book e ofertas. "C" é
 enviar documento ou nova versão.
 
+* **Etapas: "Alterar (lado comprador)"** (2026-11-19): do lado comprador,
+  criar, editar, mover ou excluir etapas exige também esta permissão,
+  desmarcada por padrão em todos os perfis (o tenant marca em Perfis, se
+  quiser). O lado vendedor segue só a matriz.
 * **Funil de compradoras** (2026-11-19): ver e editar; padrão V E para
   Coordenador, Advogado e Advisor e V para Representante da empresa. Só vale
   para quem está do lado vendedor do negócio.

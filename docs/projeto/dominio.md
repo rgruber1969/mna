@@ -550,8 +550,8 @@ Etapas padrão:
   Arrastar ou "Mover para" pede confirmação, conclui a etapa atual (ou a
   volta a não iniciada, se a nova estiver antes) e inicia a nova; só quem
   tem "Etapas × editar" no negócio. O cartão mostra vendedoras (se
-  visíveis), coordenador, situação, etapas em paralelo e o resumo do funil
-  (lado vendedor). Clicar abre um painel lateral com as etapas (editáveis)
+  visíveis), coordenador, situação, etapas em paralelo e o funil por
+  situação com o nome das compradoras (lado vendedor). Clicar abre um painel lateral com as etapas (editáveis)
   e os últimos eventos.
 * **Pedido de 2026-11-19:** um kanban com todos os negócios que o usuário
   vê, colunas = etapas, com ações direto no cartão (editar a etapa, mover

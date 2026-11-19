@@ -26,7 +26,7 @@ type Cartao = {
   etapasEmParalelo: number;
   colunaId: string;
   podeMover: boolean;
-  funil: Record<string, number> | null;
+  funil: Record<string, string[]> | null;
 };
 type Painel = Awaited<ReturnType<typeof painelDoNegocioAcao>>;
 
@@ -132,11 +132,13 @@ export function KanbanDeNegocios({
                       <p className="text-muted mt-1">{t("emParalelo", { n: c.etapasEmParalelo })}</p>
                     )}
                     {c.funil && (
-                      <p className="text-muted mt-1">
-                        {FUNIL.filter((s) => c.funil![s])
-                          .map((s) => `${c.funil![s]} ${tf(s).toLowerCase()}`)
-                          .join(" · ")}
-                      </p>
+                      <ul className="mt-1 space-y-0.5">
+                        {FUNIL.filter((s) => c.funil![s]?.length).map((s) => (
+                          <li key={s} className="text-muted break-words">
+                            <span className="text-text font-medium">{tf(s)}:</span> {c.funil![s].join(", ")}
+                          </li>
+                        ))}
+                      </ul>
                     )}
                     {c.coordenadores.length > 0 && (
                       <p className="text-muted mt-1">{c.coordenadores.join(", ")}</p>

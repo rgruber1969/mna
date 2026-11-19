@@ -225,7 +225,8 @@
         "baixar": "Baixar",
         "comentar": "Comentar",
         "aprovar": "Aprovar",
-        "liberar": "Liberar ao comprador"
+        "liberar": "Liberar ao comprador",
+        "alterarComprador": "Alterar (lado comprador)"
       },
       "recursos": {
         "painel": "Painel",
@@ -249,7 +250,8 @@
         "cadastros": "Etapas padrão, catálogo de documentos, templates e papéis de empresa.",
         "documentos": "Só nas versões a que a pessoa recebeu acesso de quem as enviou.",
         "mensagens": "Mensagens são imutáveis.",
-        "funil": "Só para quem está do lado vendedor do negócio."
+        "funil": "Só para quem está do lado vendedor do negócio.",
+        "etapas": "Do lado comprador, criar, editar, mover ou excluir etapas exige também \"Alterar (lado comprador)\"."
       },
       "todas": "Todas",
       "nenhuma": "Nenhuma",

@@ -17,6 +17,8 @@ export const ACOES = [
   "comentar",
   "aprovar",
   "liberar",
+  /** Etapas: o lado comprador só altera com esta permissão (desmarcada por padrão). */
+  "alterarComprador",
 ] as const;
 export type Acao = (typeof ACOES)[number];
 
@@ -52,7 +54,7 @@ export const RECURSOS = {
   // --- Camada do deal (dentro de cada deal, conforme a participação) ---------
   deal: { camada: "deal", acoes: ["ver", "editar"] },
   funil: { camada: "deal", acoes: ["ver", "editar"], nota: true },
-  etapas: { camada: "deal", acoes: VCEX },
+  etapas: { camada: "deal", acoes: [...VCEX, "alterarComprador"], nota: true },
   documentos: {
     camada: "deal",
     acoes: VCEXB,
