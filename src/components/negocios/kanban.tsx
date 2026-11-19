@@ -48,19 +48,45 @@ const corDoNivel: Record<Exclude<Nivel, null>, { faixa: string; texto: string }>
   proximo: { faixa: "bg-warning", texto: "text-warning" },
   atrasado: { faixa: "bg-danger", texto: "text-danger" },
 };
-/** Ícone colorido de cada coluna (cores alternadas). */
-const coresDasColunas = [
-  "bg-primary/15 text-primary",
-  "bg-accent/20 text-accent",
-  "bg-success/15 text-success",
-  "bg-warning/20 text-warning",
+/**
+ * Ícone de cada coluna: fundo sólido nas cores da identidade visual (principal
+ * e destaque, alternadas) e figura clara; desenho próprio para cada etapa
+ * (pelo nome; etapas sem desenho conhecido usam a sequência de reserva).
+ */
+const coresDasColunas = ["bg-primary text-primary-foreground", "bg-accent text-accent-foreground"];
+const DESENHOS: { chave: RegExp; d: string }[] = [
+  { chave: /iniciar/, d: "M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" }, // relógio
+  { chave: /prospec/, d: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4" }, // lupa
+  { chave: /negocia/, d: "M4 5h16v10H9l-5 4z" }, // balão de conversa
+  { chave: /term|loi|mou/, d: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" }, // documento
+  { chave: /dilig/, d: "M9 4h6v3H9zM7 6H5v15h14V6h-2M9 13l2 2 4-4" }, // prancheta com check
+  { chave: /closing|fecha|→|cp/, d: "M4 12h12M12 6l6 6-6 6" }, // seta (condições até o closing)
+  { chave: /^qpa$|spa|contrato|acordo/, d: "M4 20h4l11-11-4-4L4 16zM13 7l4 4" }, // caneta (assinatura)
+  {
+    chave: /^closing$/,
+    d: "M7 4h10v4a5 5 0 0 1-10 0zM12 13v4M8 21h8M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3",
+  }, // troféu
+  { chave: /pós|pos-|pos /, d: "M4 6h16v14H4zM4 10h16M9 3v4M15 3v4" }, // calendário
 ];
-const desenhos = ["M4 6h16M4 12h10M4 18h6", "M12 3v18M3 12h18", "M4 17l5-5 4 4 7-7", "M5 12l4 4 10-10"];
+const RESERVA = [
+  "M5 12l4 4 10-10",
+  "M4 17l5-5 4 4 7-7",
+  "M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z",
+  "M3 7h18M3 12h18M3 17h18",
+];
 
-function IconeDaColuna({ indice }: { indice: number }) {
+function desenhoDa(nome: string, indice: number) {
+  const n = semAcento(nome).trim();
+  // "Closing" exato tem o troféu; as demais com "closing" (ex.: "QPA → Closing") têm a seta.
+  if (n === "closing") return DESENHOS[7].d;
+  if (n.startsWith("pos")) return DESENHOS[8].d;
+  return DESENHOS.find((x) => x.chave.test(n))?.d ?? RESERVA[indice % RESERVA.length];
+}
+
+function IconeDaColuna({ nome, indice }: { nome: string; indice: number }) {
   return (
     <span
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${coresDasColunas[indice % coresDasColunas.length]}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shadow-sm ${coresDasColunas[indice % coresDasColunas.length]}`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -68,10 +94,11 @@ function IconeDaColuna({ indice }: { indice: number }) {
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
+        strokeLinejoin="round"
         className="h-5 w-5"
         aria-hidden="true"
       >
-        <path d={desenhos[indice % desenhos.length]} />
+        <path d={desenhoDa(nome, indice)} />
       </svg>
     </span>
   );
@@ -240,12 +267,19 @@ export function KanbanDeNegocios({
   colunas,
   cartoes,
   hoje,
+  filtros,
+  tipos,
 }: {
   colunas: { id: string; nome: string }[];
   cartoes: Cartao[];
   hoje: string;
+  /** Filtros da lista (situação, lado, tipo), aplicados ao escolher. */
+  filtros: { situacao: string; lado: string; tipo: string };
+  tipos: { id: string; nome: string }[];
 }) {
   const t = useTranslations("negocios.kanban");
+  const tl = useTranslations("negocios.lista");
+  const tsit = useTranslations("negocios.situacoes");
   const ts = useTranslations("negocios.situacoes");
   const tf = useTranslations("negocios.funil");
   const router = useRouter();
@@ -303,16 +337,60 @@ export function KanbanDeNegocios({
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <form
+        className="mb-3 flex flex-wrap items-center gap-2"
+        onChange={(e) => (e.target as HTMLElement).tagName === "SELECT" && e.currentTarget.requestSubmit()}
+      >
+        <input type="hidden" name="vista" value="kanban" />
         <input
           type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder={t("buscar")}
           aria-label={t("buscar")}
-          className="border-border bg-background text-text focus:border-primary w-full max-w-xs rounded-full border px-4 py-2 text-sm outline-none"
+          className="border-border bg-background text-text focus:border-primary w-full max-w-xs rounded-full border px-4 py-1.5 text-sm outline-none"
         />
-        <span className="text-muted flex flex-wrap items-center gap-3 text-xs" aria-label={t("legenda")}>
+        <select
+          name="situacao"
+          defaultValue={filtros.situacao}
+          aria-label={tl("filtroSituacao")}
+          className={"border-border bg-background text-text rounded-md border px-2 py-1.5 text-sm"}
+        >
+          <option value="">{tl("todasSituacoes")}</option>
+          <option value="abertos">{tl("emAberto")}</option>
+          {(["andamento", "suspenso", "concluido", "encerrado"] as const).map((x) => (
+            <option key={x} value={x}>
+              {tsit(x)}
+            </option>
+          ))}
+        </select>
+        <select
+          name="lado"
+          defaultValue={filtros.lado}
+          aria-label={tl("filtroLado")}
+          className={"border-border bg-background text-text rounded-md border px-2 py-1.5 text-sm"}
+        >
+          <option value="">{tl("todosLados")}</option>
+          <option value="vendedor">{tl("ladoVendedor")}</option>
+          <option value="comprador">{tl("ladoComprador")}</option>
+        </select>
+        <select
+          name="tipo"
+          defaultValue={filtros.tipo}
+          aria-label={tl("filtroTipo")}
+          className={"border-border bg-background text-text rounded-md border px-2 py-1.5 text-sm"}
+        >
+          <option value="">{tl("todosTipos")}</option>
+          {tipos.map((x) => (
+            <option key={x.id} value={x.id}>
+              {x.nome}
+            </option>
+          ))}
+        </select>
+        <span
+          className="text-muted ml-auto flex flex-wrap items-center gap-3 text-xs"
+          aria-label={t("legenda")}
+        >
           {(["emDia", "atencao", "proximo", "atrasado"] as const).map((n) => (
             <span key={n} className="flex items-center gap-1">
               <span className={`inline-block h-2.5 w-2.5 rounded-full ${corDoNivel[n].faixa}`} />{" "}
@@ -320,7 +398,7 @@ export function KanbanDeNegocios({
             </span>
           ))}
         </span>
-      </div>
+      </form>
       {erro && <Aviso>{erro}</Aviso>}
       <div
         className={`grid auto-cols-[minmax(13rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 ${movendo ? "opacity-70" : ""}`}
@@ -351,7 +429,7 @@ export function KanbanDeNegocios({
                   {coluna.nome}
                 </h3>
                 <div className="mt-2 flex items-center gap-2">
-                  <IconeDaColuna indice={i} />
+                  <IconeDaColuna nome={coluna.nome} indice={i} />
                   <span>
                     <span className="text-text block text-xl leading-none font-bold">{daColuna.length}</span>
                     <span className={`text-xs ${atrasados ? "text-danger" : "text-muted"}`}>

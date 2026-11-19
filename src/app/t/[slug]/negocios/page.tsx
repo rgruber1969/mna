@@ -59,83 +59,92 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
             <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
               {t("titulo")}
             </Titulo>
-            {podeCriar && (
-              <Link
-                href="/negocios/novo"
-                className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
-              >
-                {t("novo")}
-              </Link>
-            )}
-          </div>
-          <nav className="mb-3 flex gap-2" aria-label={t("vista")}>
-            {(["lista", "kanban"] as const).map((v) => {
-              const q = new URLSearchParams();
-              for (const k of ["busca", "tipo", "lado"]) if (um(k)) q.set(k, um(k));
-              if (v === "kanban") q.set("vista", "kanban");
-              const ativo = (v === "kanban") === kanban;
-              return (
+            <span className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+              <nav className="flex gap-2" aria-label={t("vista")}>
+                {(["lista", "kanban"] as const).map((v) => {
+                  const q = new URLSearchParams();
+                  for (const k of ["busca", "tipo", "lado"]) if (um(k)) q.set(k, um(k));
+                  if (v === "kanban") q.set("vista", "kanban");
+                  const ativo = (v === "kanban") === kanban;
+                  return (
+                    <Link
+                      key={v}
+                      href={`/negocios${q.size ? `?${q}` : ""}`}
+                      aria-current={ativo ? "page" : undefined}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium ${ativo ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted"}`}
+                    >
+                      {t(v === "kanban" ? "vistaKanban" : "vistaLista")}
+                    </Link>
+                  );
+                })}
+              </nav>
+              {podeCriar && (
                 <Link
-                  key={v}
-                  href={`/negocios${q.size ? `?${q}` : ""}`}
-                  aria-current={ativo ? "page" : undefined}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${ativo ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted"}`}
+                  href="/negocios/novo"
+                  className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
                 >
-                  {t(v === "kanban" ? "vistaKanban" : "vistaLista")}
+                  {t("novo")}
                 </Link>
-              );
-            })}
-          </nav>
-          <form className="mb-4 flex flex-wrap items-center gap-3">
-            {kanban && <input type="hidden" name="vista" value="kanban" />}
-            <input
-              name="busca"
-              defaultValue={filtro.busca}
-              aria-label={t("buscarAria")}
-              placeholder={t("buscarPlaceholder")}
-              className={`${estiloFiltro} w-full max-w-xs`}
-            />
-            <select
-              name="situacao"
-              defaultValue={filtro.situacao}
-              aria-label={t("filtroSituacao")}
-              className={estiloFiltro}
-            >
-              <option value="">{t("todasSituacoes")}</option>
-              <option value="abertos">{t("emAberto")}</option>
-              {(["andamento", "suspenso", "concluido", "encerrado"] as const).map((s) => (
-                <option key={s} value={s}>
-                  {ts(s)}
-                </option>
-              ))}
-            </select>
-            <select
-              name="lado"
-              defaultValue={filtro.lado}
-              aria-label={t("filtroLado")}
-              className={estiloFiltro}
-            >
-              <option value="">{t("todosLados")}</option>
-              <option value="vendedor">{t("ladoVendedor")}</option>
-              <option value="comprador">{t("ladoComprador")}</option>
-            </select>
-            <select
-              name="tipo"
-              defaultValue={filtro.tipo}
-              aria-label={t("filtroTipo")}
-              className={estiloFiltro}
-            >
-              <option value="">{t("todosTipos")}</option>
-              {tipos.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.nome}
-                </option>
-              ))}
-            </select>
-            <button className="text-primary text-sm font-medium">{t("buscar")}</button>
-          </form>
+              )}
+            </span>
+          </div>
+          {!kanban && (
+            <form className="mb-4 flex flex-wrap items-center gap-3">
+              <input
+                name="busca"
+                defaultValue={filtro.busca}
+                aria-label={t("buscarAria")}
+                placeholder={t("buscarPlaceholder")}
+                className={`${estiloFiltro} w-full max-w-xs`}
+              />
+              <select
+                name="situacao"
+                defaultValue={filtro.situacao}
+                aria-label={t("filtroSituacao")}
+                className={estiloFiltro}
+              >
+                <option value="">{t("todasSituacoes")}</option>
+                <option value="abertos">{t("emAberto")}</option>
+                {(["andamento", "suspenso", "concluido", "encerrado"] as const).map((s) => (
+                  <option key={s} value={s}>
+                    {ts(s)}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="lado"
+                defaultValue={filtro.lado}
+                aria-label={t("filtroLado")}
+                className={estiloFiltro}
+              >
+                <option value="">{t("todosLados")}</option>
+                <option value="vendedor">{t("ladoVendedor")}</option>
+                <option value="comprador">{t("ladoComprador")}</option>
+              </select>
+              <select
+                name="tipo"
+                defaultValue={filtro.tipo}
+                aria-label={t("filtroTipo")}
+                className={estiloFiltro}
+              >
+                <option value="">{t("todosTipos")}</option>
+                {tipos.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.nome}
+                  </option>
+                ))}
+              </select>
+              <button className="text-primary text-sm font-medium">{t("buscar")}</button>
+            </form>
+          )}
           {quadro ? (
-            <KanbanDeNegocios colunas={quadro.colunas} cartoes={quadro.cartoes} hoje={hojeEmSaoPaulo()} />
+            <KanbanDeNegocios
+              colunas={quadro.colunas}
+              cartoes={quadro.cartoes}
+              hoje={hojeEmSaoPaulo()}
+              filtros={{ situacao: filtro.situacao, lado: filtro.lado, tipo: filtro.tipo }}
+              tipos={tipos.map((x) => ({ id: x.id, nome: x.nome }))}
+            />
           ) : pagina.total === 0 ? (
             <p className="text-muted text-sm">{t("nenhum")}</p>
           ) : (

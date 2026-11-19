@@ -30,7 +30,7 @@ import { concede, type Acao } from "./permissoes/catalogo";
  *   aquele perfil no negócio conclui, e fica registrado quem (T3).
  * - Permissões pela matriz "Tarefas" na etapa (alcance das participações).
  *   Responsável sempre muda a situação e o checklist da própria tarefa.
- * - Quem vê (padrão protetor, a confirmar): o lado de quem criou, os
+ * - Quem vê (decidido em 2026-11-19): o lado de quem criou, os
  *   responsáveis e os administradores; tarefas internas de um lado não
  *   aparecem para o outro.
  */

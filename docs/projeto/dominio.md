@@ -598,7 +598,7 @@ Etapas padrão:
   por e-mail com antecedência configurável (padrão 2 dias e no dia) no bloco
   de prazos das Configurações (T4). Removido do negócio, a pessoa deixa de
   ser responsável (a tarefa fica "sem responsável").
-* **Assumido, a confirmar:** a tarefa é vista pelo lado de quem a criou,
+* **Decidido em 2026-11-19:** a tarefa é vista pelo lado de quem a criou,
   pelos responsáveis e pelos administradores; responsável por perfil vale
   só para quem tem o perfil do mesmo lado da tarefa (o perfil "Advogado" do
   lado vendedor não inclui o advogado da compradora). Ainda não: comentários
