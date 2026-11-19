@@ -28,7 +28,7 @@ enviado → NDA assinado → Proposta recebida → Escolhida / Descartada)?
 histórico do negócio. A compradora e a equipe dela veem só a própria
 situação.
 
-**Resposta:**
+**Resposta:** OK
 
 **N2. Escolher uma compradora descarta as outras automaticamente?**
 
@@ -36,7 +36,7 @@ situação.
 como Descartadas?", com sim ou não (às vezes se mantém uma segunda opção em
 espera).
 
-**Resposta:**
+**Resposta:** OK
 
 **N3. Ao ser descartada, a compradora perde o acesso na hora?**
 
@@ -44,7 +44,7 @@ espera).
 dela recebem prazo "hoje" (o histórico continua). Se ela voltar com nova
 proposta, o Coordenador reabre os acessos.
 
-**Resposta:**
+**Resposta:** OK
 
 **N4. Período de exclusividade.** Já decidido: início, duração em dias (ou
 data de fim) e alertas com antecedência configurável (padrão 15 e 5 dias).
@@ -53,7 +53,7 @@ Pode haver **prorrogação**?
 **Sugestão:** sim. Cada prorrogação fica registrada (nova data de fim,
 quem prorrogou, motivo opcional), e os alertas recomeçam pela nova data.
 
-**Resposta:**
+**Resposta:** OK
 
 **N5. Encerrar o negócio** (Concluído ou Encerrado sem conclusão): o que
 acontece com os acessos externos?
@@ -62,7 +62,7 @@ acontece com os acessos externos?
 nada). Os administradores podem tirar todos os externos de uma vez, com o
 botão "Encerrar acessos externos".
 
-**Resposta:**
+**Resposta:** OK
 
 **N6. Aviso por e-mail ao incluir participante.** Já decidido: e-mail com
 número + codinome e link. Quem não tem usuário (contato) recebe algo?
@@ -70,7 +70,7 @@ número + codinome e link. Quem não tem usuário (contato) recebe algo?
 **Sugestão:** não. Contato não recebe e-mail na V1. Para dar acesso, o
 administrador convida a pessoa, e ela passa a receber.
 
-**Resposta:**
+**Resposta:** OK
 
 ---
 
