@@ -39,6 +39,11 @@ import {
   type DadosDoCnpj,
   type Endereco,
 } from "@/server/services/consultas-publicas";
+import {
+  adicionarParticipacao,
+  cadastrarEmpresaSocia,
+  removerParticipacao,
+} from "@/server/services/participacoes";
 import type { Estado } from "./acesso";
 
 /** Empresas, pessoas e cadastros gerais: só repassam para a camada de serviços (ADR-0004). */
@@ -132,8 +137,39 @@ export async function excluirGrupoAcao(_: Estado, f: FormData): Promise<Estado> 
 
 export async function cadastrarSocioAcao(_: Estado, f: FormData): Promise<Estado> {
   const t = await getTranslations("cadastros.mensagens");
-  const r = await cadastrarSocioSugerido(await acesso(), texto(f, "empresaId"), texto(f, "nome"));
+  // Sócio pessoa jurídica: cadastra a empresa e a liga como sócia.
+  if (texto(f, "tipo") === "pj") {
+    const r = await cadastrarEmpresaSocia(await acesso(), texto(f, "empresaId"), {
+      nome: texto(f, "nome"),
+      documento: texto(f, "documento"),
+      qualificacao: texto(f, "qualificacao"),
+    });
+    return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("empresaSociaCadastrada") };
+  }
+  const r = await cadastrarSocioSugerido(
+    await acesso(),
+    texto(f, "empresaId"),
+    texto(f, "nome"),
+    texto(f, "qualificacao"),
+  );
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("socioCadastrado") };
+}
+
+export async function adicionarParticipacaoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.participacoes");
+  const r = await adicionarParticipacao(await acesso(), {
+    empresaId: texto(f, "empresaId"),
+    sociaId: texto(f, "sociaId"),
+    qualificacao: texto(f, "qualificacao"),
+    percentual: texto(f, "percentual"),
+  });
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("adicionada") };
+}
+
+export async function removerParticipacaoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("cadastros.participacoes");
+  const r = await removerParticipacao(await acesso(), texto(f, "id"));
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("removida") };
 }
 
 // --- Pessoas -------------------------------------------------------------------------------

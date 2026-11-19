@@ -226,7 +226,11 @@ export function CadastroPorDocumento() {
                             />
                           )}
                           <span className="text-muted block text-xs">
-                            {[s.qualificacao, s.cpf && `CPF ${mascararCpf(s.cpf)}`]
+                            {[
+                              s.qualificacao,
+                              s.tipo === "pj" && t("empresaSocia"),
+                              s.cpf && `CPF ${mascararCpf(s.cpf)}`,
+                            ]
                               .filter(Boolean)
                               .join(" · ")}{" "}
                             {s.existenteId && `· ${t("jaCadastrada")}`}

@@ -567,15 +567,24 @@ export async function removerVinculo(acesso: Acesso | null, vinculoId: string): 
  * Sócio sugerido pela consulta do CNPJ: cadastra a pessoa (só o nome) e o
  * vínculo de sócio com a empresa, depois de o usuário confirmar.
  */
+/** Quem é sócio no quadro da Receita (pela qualificação) vira "Sócio"; os demais, "Administrador". */
+export function vinculoDaQualificacao(qualificacao: string): "socio" | "administrador" {
+  return /s[óo]ci/i.test(qualificacao) ? "socio" : "administrador";
+}
+
 export async function cadastrarSocioSugerido(
   acesso: Acesso | null,
   empresaId: string,
   nome: string,
+  qualificacao = "",
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "empresas", "criar");
   if (!uuidValido(empresaId)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   const [socio] = await comTenant(a.tenant.id, (tx) =>
-    tx.select({ id: tipoVinculo.id }).from(tipoVinculo).where(eq(tipoVinculo.padrao, "socio")),
+    tx
+      .select({ id: tipoVinculo.id })
+      .from(tipoVinculo)
+      .where(eq(tipoVinculo.padrao, vinculoDaQualificacao(qualificacao))),
   );
   if (!socio) return { erro: "cadastros.erros.tipoSocioInexistente" };
   const p = await criarPessoa(a, { ...pessoaVazia, nome: nomeProprio(nome) });
@@ -584,7 +593,7 @@ export async function cadastrarSocioSugerido(
     pessoaId: p.id,
     empresaId,
     tipoId: socio.id,
-    cargo: "",
+    cargo: qualificacao.trim().slice(0, 120),
     percentual: "",
   });
   return "erro" in v ? v : { id: p.id };

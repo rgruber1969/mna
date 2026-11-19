@@ -30,7 +30,7 @@
       "remover": "Remover",
       "receitaFederal": "Receita Federal",
       "quadroDeSocios": "Quadro de sócios",
-      "sociosExplicacao": "Os sócios informados pela Receita podem ser cadastrados como pessoas, um a um.",
+      "sociosExplicacao": "Os sócios e administradores informados pela Receita podem ser cadastrados um a um: pessoas físicas como pessoas, e empresas sócias como empresas.",
       "avisoContratanteSemCnpj": "Esta é a empresa do contratante e está sem CNPJ. Preencha o CNPJ para evitar que ela seja cadastrada de novo.",
       "colRazaoSocial": "Razão social",
       "colCnpj": "CNPJ",
@@ -185,7 +185,10 @@
       "adicionarTipo": "Adicionar tipo",
       "completarExistente": "Sim, completar o cadastro de {nome}",
       "criarOutra": "Não, cadastrar outra empresa",
-      "criacaoCurta": "Comece pelo essencial. Depois de cadastrar, a tela da pessoa abre com as abas para completar documentos, endereço, cônjuge, empresas e anexos."
+      "criacaoCurta": "Comece pelo essencial. Depois de cadastrar, a tela da pessoa abre com as abas para completar documentos, endereço, cônjuge, empresas e anexos.",
+      "empresaSocia": "empresa sócia",
+      "cadastrarEmpresaSocia": "Cadastrar como empresa e sócia",
+      "cadastrarAdministrador": "Cadastrar como pessoa e administrador"
     },
     "mensagens": {
       "empresaSalva": "Empresa salva.",
@@ -202,7 +205,8 @@
       "papelSalvo": "Papel salvo.",
       "papelExcluido": "Papel excluído.",
       "tipoSalvo": "Tipo de vínculo salvo.",
-      "tipoExcluido": "Tipo de vínculo excluído."
+      "tipoExcluido": "Tipo de vínculo excluído.",
+      "empresaSociaCadastrada": "Empresa cadastrada e ligada como sócia."
     },
     "erros": {
       "textoLongo": "Texto muito longo.",
@@ -332,7 +336,8 @@
       },
       "parecida": "Já existe \"{nome}\", sem CNPJ, com nome parecido:",
       "completarParecida": "completar esse cadastro",
-      "criarNova": "cadastrar como nova empresa"
+      "criarNova": "cadastrar como nova empresa",
+      "empresaSocia": "empresa sócia (será cadastrada como empresa)"
     },
     "abas": {
       "dados": "Dados",
@@ -343,7 +348,28 @@
       "pessoas": "Pessoas",
       "anexos": "Anexos",
       "acesso": "Acesso",
-      "receita": "Sócios na Receita"
+      "receita": "Sócios na Receita",
+      "participacoes": "Participações"
+    },
+    "participacoes": {
+      "socias": "Empresas sócias",
+      "participaEm": "Participa como sócia em",
+      "nenhumaSocia": "Nenhuma empresa sócia.",
+      "nenhumaParticipacao": "Não participa de outras empresas.",
+      "adicionarTitulo": "Adicionar empresa sócia",
+      "socia": "Empresa sócia",
+      "qualificacao": "Qualificação (opcional)",
+      "percentual": "Percentual (opcional)",
+      "adicionar": "Adicionar",
+      "adicionada": "Empresa sócia adicionada.",
+      "removida": "Participação removida.",
+      "remover": "Remover",
+      "erros": {
+        "escolhaSocia": "Escolha a empresa sócia.",
+        "mesmaEmpresa": "Uma empresa não pode ser sócia dela mesma.",
+        "jaExiste": "Esta empresa já é sócia.",
+        "naoEncontrada": "Participação não encontrada."
+      }
     }
   }
 }

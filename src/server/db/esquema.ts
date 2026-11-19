@@ -612,6 +612,33 @@ export const vinculoPessoaEmpresa = pgTable(
 ).enableRLS();
 
 /**
+ * Participação de uma empresa no capital de outra (empresa sócia; dominio.md).
+ * `empresaId` é a empresa que tem a sócia; `sociaId`, a empresa sócia.
+ */
+export const participacaoEmpresa = pgTable(
+  "participacao_empresa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    sociaId: uuid("socia_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "cascade" }),
+    qualificacao: text("qualificacao"),
+    percentual: numeric("percentual", { precision: 7, scale: 4 }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    uniqueIndex("participacao_empresa_uq").on(t.tenantId, t.empresaId, t.sociaId),
+    index("participacao_empresa_socia_idx").on(t.tenantId, t.sociaId),
+    check("participacao_empresa_diferentes_ck", sql`empresa_id <> socia_id`),
+    isolamento(),
+  ],
+).enableRLS();
+
+/**
  * Anexo do cadastro de uma empresa ou de uma pessoa (ex.: comprovante de CNPJ,
  * contrato social, RG). O arquivo vai para o armazenamento já criptografado
  * com a chave do tenant (ADR-0017, adendo de 2026-11-19) e só é baixado pelo

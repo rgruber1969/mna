@@ -176,6 +176,13 @@
       "when": 1795080089394,
       "tag": "0024_perfil_externo_sem_criar",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795084700232,
+      "tag": "0025_participacao_entre_empresas",
+      "breakpoints": true
     }
   ]
 }

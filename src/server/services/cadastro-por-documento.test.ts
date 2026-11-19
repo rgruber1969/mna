@@ -3,11 +3,13 @@ import pg from "pg";
 import { auth } from "@/server/auth/auth";
 import type { AcessoTenant } from "./acesso";
 import { listarAnexos } from "./anexos";
+import { listarParticipacoes } from "./participacoes";
 import { completarCadastrosPadrao } from "./cadastros-padrao";
 import { confirmarCadastro, proporCadastro, type Proposta } from "./cadastro-por-documento";
 import { completarEmpresa, criarEmpresa, nomesParecidos, obterEmpresa } from "./empresas";
 import { encontrarDocumentos, lerDocumento } from "./leitor-de-documentos";
 import { pdfComTexto } from "@/testes/pdf-de-teste";
+import { cnpjDoSocio } from "@/config/documentos";
 
 /** Cadastro a partir de documento (ADR-0021): leitura local, proposta e confirmação. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -71,6 +73,18 @@ function simularReceita() {
                 qualificacao_socio: "Sócio-Administrador",
                 cnpj_cpf_do_socio: "***982247**",
               },
+              // Empresa sócia (a Receita informa só a raiz do CNPJ) e um administrador que não é sócio.
+              {
+                identificador_de_socio: 1,
+                nome_socio: "HOLDING DE TESTE S.A.",
+                qualificacao_socio: "Sócio",
+                cnpj_cpf_do_socio: "12345678",
+              },
+              {
+                nome_socio: "CICLANO ADMINISTRADOR",
+                qualificacao_socio: "Administrador",
+                cnpj_cpf_do_socio: "",
+              },
             ],
           })
         : new Response("erro", { status: 500 }),
@@ -131,7 +145,30 @@ describe("proposta e confirmação", () => {
     expect(p.empresas).toHaveLength(1);
     expect(p.empresas[0]).toMatchObject({ razaoSocial: "EMPRESA EXEMPLO LTDA", existenteId: null });
     expect(p.empresas[0].socios).toEqual([
-      { nome: "Fulana de Tal", qualificacao: "Sócio-Administrador", cpf: "52998224725", existenteId: null },
+      {
+        nome: "Fulana de Tal",
+        qualificacao: "Sócio-Administrador",
+        tipo: "pf",
+        documento: "***982247**",
+        cpf: "52998224725",
+        existenteId: null,
+      },
+      {
+        nome: "HOLDING DE TESTE S.A.",
+        qualificacao: "Sócio",
+        tipo: "pj",
+        documento: "12345678",
+        cpf: null,
+        existenteId: null,
+      },
+      {
+        nome: "Ciclano Administrador",
+        qualificacao: "Administrador",
+        tipo: "pf",
+        documento: "",
+        cpf: null,
+        existenteId: null,
+      },
     ]);
     expect(p.pessoas).toEqual([{ cpf: "11144477735", nome: "Beltrano Souza", existenteId: null }]);
     const antes = await dono.query(`select count(*)::int n from empresa where tenant_id = $1`, [tenantId]);
@@ -151,19 +188,24 @@ describe("proposta e confirmação", () => {
     );
     if ("erro" in r) throw new Error(r.erro);
     expect(r).toMatchObject({
-      empresasCriadas: 1,
-      pessoasCriadas: 2,
-      vinculosCriados: 1,
+      empresasCriadas: 2,
+      pessoasCriadas: 3,
+      vinculosCriados: 2,
       anexoGuardado: true,
       falhas: [],
     });
 
     const depois = await dono.query(`select count(*)::int n from empresa where tenant_id = $1`, [tenantId]);
-    expect(depois.rows[0].n).toBe(antes.rows[0].n + 1);
+    expect(depois.rows[0].n).toBe(antes.rows[0].n + 2);
     const empresaId = r.destino!.split("/").at(-1)!;
     const e = await obterEmpresa(a, empresaId);
     expect(e?.vinculos.map((v) => [v.pessoa, v.tipo, v.cargo])).toEqual([
+      ["Ciclano Administrador", "Administrador", "Administrador"],
       ["Fulana de Tal", "Sócio", "Sócio-Administrador"],
+    ]);
+    const { socias } = await listarParticipacoes(a, empresaId);
+    expect(socias.map((x) => [x.nome, x.cnpj, x.qualificacao])).toEqual([
+      ["HOLDING DE TESTE S.A.", "12345678000195", "Sócio"],
     ]);
     expect(await listarAnexos(a, { tipo: "empresa", id: empresaId })).toHaveLength(1);
 
@@ -171,7 +213,7 @@ describe("proposta e confirmação", () => {
     simularReceita();
     const p2 = (await proporCadastro(a, { nome: "contrato.pdf", conteudo: CONTRATO })) as Proposta;
     expect(p2.empresas[0].existenteId).toBe(empresaId);
-    expect(p2.empresas[0].socios[0].existenteId).not.toBeNull();
+    expect(p2.empresas[0].socios.every((x) => x.existenteId)).toBe(true);
     expect(p2.pessoas[0].existenteId).not.toBeNull();
     const r2 = await confirmarCadastro(
       a,
@@ -246,5 +288,13 @@ describe("empresa parecida sem CNPJ (ex.: a do contratante)", () => {
       nomeFantasia: "Por Documento",
       cidade: "Rio de Janeiro",
     });
+  });
+});
+
+describe("CNPJ do sócio pessoa jurídica", () => {
+  it("monta o CNPJ da matriz a partir da raiz e aceita o CNPJ completo", () => {
+    expect(cnpjDoSocio("00565447")).toBe("00565447000108");
+    expect(cnpjDoSocio("11.444.777/0001-61")).toBe("11444777000161");
+    expect(cnpjDoSocio("***123456**")).toBeNull();
   });
 });

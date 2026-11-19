@@ -34,6 +34,27 @@ export function cnpjValido(valor: string): boolean {
   return dv(12) === Number(d[12]) && dv(13) === Number(d[13]);
 }
 
+/**
+ * CNPJ completo a partir do que a Receita informa sobre um sócio pessoa
+ * jurídica: o próprio CNPJ (14 dígitos) ou só a raiz (8 dígitos), da qual se
+ * monta o da matriz (filial 0001 + dígitos verificadores). Inválido: null.
+ */
+export function cnpjDoSocio(informado: string): string | null {
+  const d = soDigitos(informado);
+  if (d.length === 14) return cnpjValido(d) ? d : null;
+  if (d.length !== 8) return null;
+  const base = `${d}0001`;
+  const dv = (num: string) => {
+    const pesos =
+      num.length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const r = pesos.reduce((soma, p, i) => soma + Number(num[i]) * p, 0) % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  const com1 = `${base}${dv(base)}`;
+  const cnpj = `${com1}${dv(com1)}`;
+  return cnpjValido(cnpj) ? cnpj : null;
+}
+
 export const cepValido = (valor: string) => soDigitos(valor).length === 8;
 
 export const formatarCnpj = (v: string) =>

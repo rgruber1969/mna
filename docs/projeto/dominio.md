@@ -67,6 +67,17 @@ Regras do cadastro (questionário `perguntas-empresas-pessoas.md`, 2026-11-18):
 * **Logo da empresa** (decidido em 2026-11-19): no cadastro da empresa, não
   no deal; o grupo econômico também tem logo (ex.: RGBsys e HTEC, sem logo
   próprio, vendidas juntas usam o logo do Grupo RGBtec).
+* **Empresa sócia de outra empresa** (decidido em 2026-11-19): vínculo
+  próprio entre empresas ("participação"), com percentual e qualificação
+  opcionais, visível nas duas (sócias de uma; empresas em que a outra
+  participa). No quadro de sócios da Receita, sócio pessoa jurídica é
+  cadastrado "como empresa e sócia": o CNPJ da matriz é montado a partir
+  do início informado e os dados vêm da consulta pública; se a empresa já
+  existir, só a participação é criada. Vale também no cadastro a partir de
+  documento.
+* **Quadro de sócios × vínculo:** quem é sócio na Receita vira vínculo
+  "Sócio" (a qualificação vai para o cargo); quem é só administrador vira
+  vínculo "Administrador".
 * **Anexos e cadastro a partir de documento** (item 34, ADR-0021):
   documentos da empresa e da pessoa anexados ao cadastro, criptografados;
   um PDF pode ser lido para propor empresas, sócios e vínculos.

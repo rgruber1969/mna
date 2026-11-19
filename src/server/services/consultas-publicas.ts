@@ -23,6 +23,9 @@ export type Endereco = {
   uf: string;
 };
 
+/** Sócio pessoa física, pessoa jurídica (empresa sócia) ou estrangeiro. */
+export type TipoDeSocio = "pf" | "pj" | "estrangeiro";
+
 export type DadosDoCnpj = {
   razaoSocial: string;
   nomeFantasia: string;
@@ -32,7 +35,7 @@ export type DadosDoCnpj = {
   numero: string;
   endereco: Endereco;
   /** Sócios do quadro público; `documentoParcial` é o CPF mascarado pela Receita (ex.: "***456789**"). */
-  socios: { nome: string; qualificacao: string; documentoParcial: string }[];
+  socios: { nome: string; qualificacao: string; documentoParcial: string; tipo: TipoDeSocio }[];
 };
 
 async function buscarJson(url: string): Promise<unknown | null> {
@@ -111,6 +114,11 @@ async function cnpjNaCnpjWs(numero: string): Promise<DadosDoCnpj | null> {
         nome: texto(x.nome),
         qualificacao: texto(((x.qualificacao_socio ?? {}) as Record<string, unknown>).descricao),
         documentoParcial: texto(x.cpf_cnpj_socio),
+        tipo: (/jur[ií]dica/i.test(texto(x.tipo))
+          ? "pj"
+          : /estrangeir/i.test(texto(x.tipo))
+            ? "estrangeiro"
+            : "pf") as TipoDeSocio,
       }))
       .filter((x) => x.nome),
   };
@@ -147,6 +155,11 @@ async function cnpjNaBrasilApi(numero: string): Promise<DadosDoCnpj | null> {
         nome: texto(s.nome_socio),
         qualificacao: texto(s.qualificacao_socio),
         documentoParcial: texto(s.cnpj_cpf_do_socio),
+        tipo: (texto(s.identificador_de_socio) === "1"
+          ? "pj"
+          : texto(s.identificador_de_socio) === "3"
+            ? "estrangeiro"
+            : "pf") as TipoDeSocio,
       }))
       .filter((s) => s.nome),
   };

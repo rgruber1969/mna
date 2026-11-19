@@ -8,7 +8,9 @@ import { excluirEmpresaAcao, inativarEmpresaAcao, removerVinculoAcao } from "@/a
 import { obterAcesso } from "@/server/services/acesso";
 import { listarTiposDeVinculo } from "@/server/services/cadastros";
 import { CATEGORIAS_DE_EMPRESA, listarAnexos } from "@/server/services/anexos";
-import { listarGrupos, obterEmpresa } from "@/server/services/empresas";
+import { listarEmpresas, listarGrupos, obterEmpresa } from "@/server/services/empresas";
+import { listarParticipacoes } from "@/server/services/participacoes";
+import { removerParticipacaoAcao } from "@/app/acoes/cadastros";
 import { AnexosDoCadastro } from "@/components/cadastros/anexos";
 import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
@@ -16,7 +18,12 @@ import { formatarCep, formatarCnpj } from "@/config/documentos";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { FormEmpresa, FormNovoVinculo, SociosDaReceita } from "@/components/cadastros/formularios";
+import {
+  FormEmpresa,
+  FormNovaParticipacao,
+  FormNovoVinculo,
+  SociosDaReceita,
+} from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
@@ -39,9 +46,11 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
     pode(acesso, "empresas", "baixar"),
     listarAnexos(acesso, { tipo: "empresa", id: e.id }),
   ]);
-  const [tipos, pessoas] = podeEditar
-    ? await Promise.all([listarTiposDeVinculo(acesso), listarPessoas(acesso)])
-    : [[], []];
+  const [tipos, pessoas, todasEmpresas] = podeEditar
+    ? await Promise.all([listarTiposDeVinculo(acesso), listarPessoas(acesso), listarEmpresas(acesso)])
+    : [[], [], []];
+  const participacoes = await listarParticipacoes(acesso, e.id);
+  const tPart = await getTranslations("cadastros.participacoes");
   const inicial = Object.fromEntries(
     Object.entries(e).map(([k, v]) => [k, typeof v === "string" ? v : ""]),
   ) as Record<string, string>;
@@ -76,6 +85,10 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
               { id: "dados", rotulo: tAbas("dados") },
               { id: "endereco", rotulo: tAbas("endereco") },
               { id: "pessoas", rotulo: `${tAbas("pessoas")} (${e.vinculos.length})` },
+              {
+                id: "participacoes",
+                rotulo: `${tAbas("participacoes")} (${participacoes.socias.length + participacoes.participaEm.length})`,
+              },
               { id: "anexos", rotulo: `${tAbas("anexos")} (${anexos.length})` },
               ...(comReceita ? [{ id: "receita", rotulo: tAbas("receita") }] : []),
             ]}
@@ -150,6 +163,64 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                 </div>
               )}
             </PainelDeAba>
+            <PainelDeAba id="participacoes">
+              <div className="grid gap-6 md:grid-cols-2">
+                {(
+                  [
+                    ["socias", participacoes.socias, tPart("nenhumaSocia")],
+                    ["participaEm", participacoes.participaEm, tPart("nenhumaParticipacao")],
+                  ] as const
+                ).map(([chave, lista, vazio]) => (
+                  <div key={chave}>
+                    <p className="text-accent mb-2 text-xs font-semibold tracking-widest uppercase">
+                      {tPart(chave)}
+                    </p>
+                    {lista.length === 0 ? (
+                      <p className="text-muted text-sm">{vazio}</p>
+                    ) : (
+                      <ul className="divide-border divide-y text-sm">
+                        {lista.map((p) => (
+                          <li key={p.id} className="flex items-start justify-between gap-2 py-2">
+                            <span>
+                              <Link href={`/empresas/${p.empresaId}`} className="text-primary font-medium">
+                                {p.nome}
+                              </Link>
+                              <span className="text-muted block text-xs">
+                                {[
+                                  p.cnpj && formatarCnpj(p.cnpj),
+                                  p.qualificacao,
+                                  p.percentual && `${Number(p.percentual)}%`,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </span>
+                            </span>
+                            {podeEditar && (
+                              <BotaoDeAcao
+                                acao={removerParticipacaoAcao}
+                                campos={{ id: p.id }}
+                                rotulo={tPart("remover")}
+                                perigo
+                              />
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {podeEditar && (
+                <div className="max-w-md">
+                  <FormNovaParticipacao
+                    empresaId={e.id}
+                    empresas={todasEmpresas
+                      .filter((x) => x.id !== e.id && !x.inativa)
+                      .map((x) => ({ id: x.id, nome: x.razaoSocial }))}
+                  />
+                </div>
+              )}
+            </PainelDeAba>
             <PainelDeAba id="anexos">
               <div className="max-w-xl">
                 <AnexosDoCadastro
@@ -168,7 +239,10 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                   <SociosDaReceita
                     empresaId={e.id}
                     cnpj={e.cnpj!}
-                    jaCadastrados={e.vinculos.map((v) => v.pessoa)}
+                    jaCadastrados={[
+                      ...e.vinculos.map((v) => v.pessoa),
+                      ...participacoes.socias.map((p) => p.nome),
+                    ]}
                   />
                 </div>
               </PainelDeAba>

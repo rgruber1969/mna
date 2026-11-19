@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { formatarCep, formatarCnpj, formatarCpf } from "@/config/documentos";
+import { cnpjDoSocio, formatarCep, formatarCnpj, formatarCpf } from "@/config/documentos";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { comTenant } from "@/server/db/cliente";
 import { empresa, pessoa, tipoVinculo, vinculoPessoaEmpresa } from "@/server/db/esquema";
@@ -11,7 +11,8 @@ import { consultarCnpj } from "./consultas-publicas";
 import { indiceCego } from "./cripto/cripto";
 import { auditar, completarEmpresa, criarEmpresa, empresaParecidaSemCnpj } from "./empresas";
 import { lerDocumento, normalizarNome } from "./leitor-de-documentos";
-import { adicionarVinculo, criarPessoa, nomeProprio, pessoaVazia } from "./pessoas";
+import { adicionarVinculo, criarPessoa, nomeProprio, pessoaVazia, vinculoDaQualificacao } from "./pessoas";
+import { cadastrarEmpresaSocia } from "./participacoes";
 import { exigirPermissao } from "./permissoes/verificador";
 
 /**
@@ -28,6 +29,10 @@ export const TAMANHO_MAXIMO_DOCUMENTO = 10 * 1024 * 1024;
 export type SocioProposto = {
   nome: string;
   qualificacao: string;
+  /** "pj": empresa sócia (cadastrada como empresa e ligada como sócia). */
+  tipo: "pf" | "pj" | "estrangeiro";
+  /** Documento como a Receita informa (CNPJ ou raiz, no caso de empresa sócia). */
+  documento: string;
   /** CPF completo, quando encontrado no texto e compatível com o quadro público. */
   cpf: string | null;
   existenteId: string | null;
@@ -123,7 +128,33 @@ export async function proporCadastro(
       tx.select({ id: empresa.id }).from(empresa).where(eq(empresa.cnpj, cnpj)),
     );
     const d = await consultarCnpj(a, cnpj);
-    const socios: SocioProposto[] = (d?.socios ?? []).map((s) => {
+    const socios: SocioProposto[] = [];
+    for (const s of d?.socios ?? []) {
+      if (s.tipo === "pj") {
+        const cnpjDaSocia = cnpjDoSocio(s.documentoParcial);
+        const [ja] = cnpjDaSocia
+          ? await comTenant(a.tenant.id, (tx) =>
+              tx.select({ id: empresa.id }).from(empresa).where(eq(empresa.cnpj, cnpjDaSocia)),
+            )
+          : [];
+        socios.push({
+          nome: s.nome,
+          qualificacao: s.qualificacao,
+          tipo: "pj",
+          documento: s.documentoParcial,
+          cpf: null,
+          existenteId: ja?.id ?? null,
+        });
+        continue;
+      }
+      socios.push(socioPessoa(s));
+    }
+    function socioPessoa(s: {
+      nome: string;
+      qualificacao: string;
+      documentoParcial: string;
+      tipo: "pf" | "pj" | "estrangeiro";
+    }): SocioProposto {
       // CPF do texto: pelo nome próximo ou pelos dígitos visíveis do quadro público.
       const doTexto =
         leitura.cpfs.find((c) => c.nomeProximo && normalizarNome(c.nomeProximo) === normalizarNome(s.nome)) ??
@@ -133,10 +164,12 @@ export async function proporCadastro(
       return {
         nome: nomeProprio(s.nome),
         qualificacao: s.qualificacao,
+        tipo: s.tipo,
+        documento: s.documentoParcial,
         cpf,
         existenteId: (cpf && porCpf.get(cpf)) || porNome.get(normalizarNome(s.nome)) || null,
       };
-    });
+    }
     empresas.push({
       cnpj,
       razaoSocial: d?.razaoSocial ?? "",
@@ -205,6 +238,8 @@ const SelecaoSchema = z.object({
               existenteId: uuidOuNulo,
               nome: Texto,
               qualificacao: Texto,
+              tipo: z.enum(["pf", "pj", "estrangeiro"]).default("pf"),
+              documento: z.string().max(20).default(""),
               cpf: z.string().nullable(),
             }),
           )
@@ -248,9 +283,15 @@ export async function confirmarCadastro(
     destino: null,
   };
 
-  const [socio] = await comTenant(a.tenant.id, (tx) =>
-    tx.select({ id: tipoVinculo.id }).from(tipoVinculo).where(eq(tipoVinculo.padrao, "socio")),
+  const tipos = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .select({ id: tipoVinculo.id, padrao: tipoVinculo.padrao })
+      .from(tipoVinculo)
+      .where(inArray(tipoVinculo.padrao, ["socio", "administrador"])),
   );
+  const tipoDe = (qualificacao: string) =>
+    tipos.find((t) => t.padrao === vinculoDaQualificacao(qualificacao)) ??
+    tipos.find((t) => t.padrao === "socio");
   let primeiraEmpresa: string | null = null;
   let primeiraPessoa: string | null = null;
 
@@ -311,9 +352,20 @@ export async function confirmarCadastro(
     primeiraEmpresa ??= empresaId;
 
     for (const sc of e.socios.filter((x) => x.incluir)) {
+      if (sc.tipo === "pj") {
+        const socia = await cadastrarEmpresaSocia(a, empresaId, {
+          nome: sc.nome,
+          documento: sc.documento,
+          qualificacao: sc.qualificacao,
+        });
+        if ("erro" in socia) r.falhas.push({ item: sc.nome, erro: socia });
+        else if (!sc.existenteId) r.empresasCriadas++;
+        continue;
+      }
       const pessoaId = await pessoaDe(sc);
       if (!pessoaId) continue;
       primeiraPessoa ??= pessoaId;
+      const socio = tipoDe(sc.qualificacao);
       if (!socio) continue;
       const [jaVinculada] = await comTenant(a.tenant.id, (tx) =>
         tx

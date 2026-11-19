@@ -3,6 +3,7 @@
 import { useId, useEffect, useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
+  adicionarParticipacaoAcao,
   adicionarVinculoAcao,
   cadastrarSocioAcao,
   consultarCepAcao,
@@ -323,11 +324,14 @@ export function SociosDaReceita({
 }) {
   const t = useTranslations("cadastros.formularios");
   const [estado, cadastrar, cadastrando] = useAcaoComAtualizacao(cadastrarSocioAcao);
-  const [socios, setSocios] = useState<{ nome: string; qualificacao: string }[] | null>(null);
+  const [socios, setSocios] = useState<
+    { nome: string; qualificacao: string; documentoParcial: string; tipo: string }[] | null
+  >(null);
   const [buscando, iniciar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
   const normalizar = (n: string) => n.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
   const existentes = new Set(jaCadastrados.map(normalizar));
+  // Sócios já ligados como pessoas ou como empresas sócias.
   return (
     <div>
       <Mensagem estado={estado} />
@@ -354,7 +358,9 @@ export function SociosDaReceita({
             <li key={s.nome} className="flex items-center justify-between gap-3 py-2">
               <span>
                 {s.nome}
-                <span className="text-muted block text-xs">{s.qualificacao}</span>
+                <span className="text-muted block text-xs">
+                  {[s.qualificacao, s.tipo === "pj" && t("empresaSocia")].filter(Boolean).join(" · ")}
+                </span>
               </span>
               {existentes.has(normalizar(s.nome)) ? (
                 <span className="text-success text-xs font-medium">{t("jaCadastrado")}</span>
@@ -362,8 +368,19 @@ export function SociosDaReceita({
                 <form action={cadastrar}>
                   <input type="hidden" name="empresaId" value={empresaId} />
                   <input type="hidden" name="nome" value={s.nome} />
-                  <button type="submit" disabled={cadastrando} className="text-primary text-xs font-medium">
-                    {t("cadastrarSocio")}
+                  <input type="hidden" name="qualificacao" value={s.qualificacao} />
+                  <input type="hidden" name="tipo" value={s.tipo} />
+                  <input type="hidden" name="documento" value={s.documentoParcial} />
+                  <button
+                    type="submit"
+                    disabled={cadastrando}
+                    className="text-primary text-right text-xs font-medium"
+                  >
+                    {s.tipo === "pj"
+                      ? t("cadastrarEmpresaSocia")
+                      : /s[óo]ci/i.test(s.qualificacao)
+                        ? t("cadastrarSocio")
+                        : t("cadastrarAdministrador")}
                   </button>
                 </form>
               )}
@@ -767,6 +784,49 @@ export function FormTipoDeVinculo({ tipo }: { tipo?: { id: string; nome: string;
           {tipo ? tc("salvar") : t("adicionarTipo")}
         </button>
       </div>
+    </form>
+  );
+}
+
+/** Liga uma empresa já cadastrada como sócia desta empresa. */
+export function FormNovaParticipacao({
+  empresaId,
+  empresas,
+}: {
+  empresaId: string;
+  empresas: { id: string; nome: string }[];
+}) {
+  const t = useTranslations("cadastros.participacoes");
+  const [estado, adicionar, adicionando] = useAcaoComAtualizacao(adicionarParticipacaoAcao);
+  return (
+    <form action={adicionar} className="border-border mt-4 border-t pt-3">
+      <p className="text-text mb-2 text-sm font-medium">{t("adicionarTitulo")}</p>
+      <Mensagem estado={estado} />
+      <input type="hidden" name="empresaId" value={empresaId} />
+      <label className="mb-3 block">
+        <span className="text-text mb-1 block text-sm font-medium">{t("socia")}</span>
+        <select name="sociaId" required defaultValue="" className={estiloCampo}>
+          <option value="" disabled />
+          {empresas.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.nome}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="grid gap-x-4 sm:grid-cols-2">
+        <label className="mb-3 block">
+          <span className="text-text mb-1 block text-sm font-medium">{t("qualificacao")}</span>
+          <input name="qualificacao" maxLength={120} className={estiloCampo} />
+        </label>
+        <label className="mb-3 block">
+          <span className="text-text mb-1 block text-sm font-medium">{t("percentual")}</span>
+          <input name="percentual" inputMode="decimal" className={estiloCampo} />
+        </label>
+      </div>
+      <Botao type="submit" disabled={adicionando}>
+        {t("adicionar")}
+      </Botao>
     </form>
   );
 }
