@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Acesso } from "./acesso";
-import { consultarCep, consultarCnpj } from "./consultas-publicas";
+import { consultarCep, consultarCnpj, limparCacheDeCnpj } from "./consultas-publicas";
 
 /** Consulta de CNPJ e CEP (BrasilAPI e ViaCEP), sem rede: as respostas são simuladas. */
 const acesso = {
@@ -43,9 +43,46 @@ function simularRespostas(respostas: Record<string, unknown>) {
   return chamadas;
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  limparCacheDeCnpj();
+});
 
 describe("CNPJ", () => {
+  it("BrasilAPI recusou (limite): usa a CNPJ.ws; a segunda consulta vem da memória", async () => {
+    const chamadas = simularRespostas({
+      "publica.cnpj.ws/cnpj/11222333000181": {
+        razao_social: "EMPRESA EXEMPLO LTDA",
+        estabelecimento: {
+          tipo_logradouro: "AVENIDA",
+          logradouro: "CENTRAL",
+          cep: "20000000",
+          cidade: { nome: "Rio de Janeiro" },
+          estado: { sigla: "RJ" },
+          atividade_principal: { id: "6911701", descricao: "Serviços advocatícios" },
+        },
+        socios: [
+          {
+            nome: "FULANA DE TAL",
+            qualificacao_socio: { descricao: "Sócio-Administrador" },
+            cpf_cnpj_socio: "***982247**",
+          },
+        ],
+      },
+    });
+    const d = await consultarCnpj(acesso, "11.222.333/0001-81");
+    expect(d).toMatchObject({
+      razaoSocial: "EMPRESA EXEMPLO LTDA",
+      endereco: { logradouro: "AVENIDA CENTRAL", cidade: "Rio de Janeiro", uf: "RJ" },
+      socios: [
+        { nome: "FULANA DE TAL", qualificacao: "Sócio-Administrador", documentoParcial: "***982247**" },
+      ],
+    });
+    const antes = chamadas.length;
+    expect(await consultarCnpj(acesso, "11222333000181")).toEqual(d);
+    expect(chamadas.length).toBe(antes);
+  });
+
   it("preenche os dados e lista os sócios; manda um User-Agent genérico", async () => {
     const chamadas = simularRespostas({
       "/cnpj/v1/11222333000181": {

@@ -58,7 +58,7 @@ projeto e em `docs/projeto/`.
 | Hooks do Claude Code | Após editar: Prettier + ESLint no arquivo (e aviso de CLAUDE.md > 80 linhas); após `pnpm add`: aviso de pacotes bloqueados; antes de commit: varredura de segredos; ao encerrar: tipos + testes ([.claude/hooks](../../.claude/hooks)) | 2026-11-17 |
 | Checklist ASVS | 253 requisitos L1/L2 classificados em [docs/seguranca/asvs-checklist.md](../seguranca/asvs-checklist.md) | 2026-11-17 |
 | Entrada de desenvolvimento | Só e-mail, ligada por variável, só em `*.localhost`; a aplicação recusa iniciar em produção com ela ([autenticacao-e-sessao.md](../projeto/autenticacao-e-sessao.md)) | 2026-11-18 |
-| Consulta de CNPJ e CEP | BrasilAPI (CNPJ, com quadro de sócios) e ViaCEP (CEP, com a BrasilAPI de reserva); gratuitos, sem chave; consulta pelo servidor; fora do ar, preenchimento manual | 2026-11-18 |
+| Consulta de CNPJ e CEP | BrasilAPI (CNPJ, com quadro de sócios; CNPJ.ws de reserva e resultado guardado 24 h na memória, ajuste de 2026-11-19) e ViaCEP (CEP, com a BrasilAPI de reserva); gratuitos, sem chave; consulta pelo servidor; fora do ar, preenchimento manual | 2026-11-18 |
 | Layout das áreas logadas | Inspirado no tema de referência indicado pelo responsável: menu lateral recolhível, cabeçalho flutuante com busca, sino de notificações e menu do usuário, rodapé em cartão; modo claro e escuro por usuário; menu lateral com grupos e favoritos guardados no banco | 2026-11-19 |
 | Nome do processo em PT-BR | "Negócio" nas telas, e-mails e textos; "deal" só como nome interno (código, banco, documentação) | 2026-11-19 |
 

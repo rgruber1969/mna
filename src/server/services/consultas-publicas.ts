@@ -3,8 +3,10 @@ import { exigirTenant, type Acesso } from "./acesso";
 
 /**
  * Consulta de CNPJ e CEP em serviços públicos e gratuitos (decisão menor
- * "Consulta de CNPJ e CEP"): BrasilAPI para CNPJ (com o quadro de sócios) e
- * ViaCEP para CEP, com a BrasilAPI de reserva. A consulta sai do servidor;
+ * "Consulta de CNPJ e CEP"): BrasilAPI para CNPJ (com o quadro de sócios), com
+ * a CNPJ.ws de reserva e resultado guardado na memória por 24 h (a BrasilAPI
+ * limita consultas seguidas); ViaCEP para CEP, com a BrasilAPI de reserva. A
+ * consulta sai do servidor;
  * só vai o número (CNPJ é público; CEP sozinho não identifica ninguém). Fora
  * do ar ou sem resposta em 5 s: devolve nada e a pessoa preenche à mão.
  * Nada do que volta é registrado em log.
@@ -49,11 +51,73 @@ async function buscarJson(url: string): Promise<unknown | null> {
 
 const texto = (v: unknown) => (typeof v === "string" ? v.trim() : typeof v === "number" ? String(v) : "");
 
-/** CNPJ na BrasilAPI. Só para quem está num tenant (evita uso como serviço aberto). */
+/** Resultados recentes de CNPJ (dado público), só na memória deste servidor. */
+const VALIDADE_CACHE_CNPJ_MS = 24 * 60 * 60 * 1000;
+const cacheCnpj = new Map<string, { dados: DadosDoCnpj; ate: number }>();
+
+/** Esvazia a memória das consultas (testes). */
+export function limparCacheDeCnpj(): void {
+  cacheCnpj.clear();
+}
+
+/**
+ * CNPJ: BrasilAPI e, se falhar (fora do ar, limite de consultas), CNPJ.ws.
+ * Só para quem está num tenant (evita uso como serviço aberto).
+ */
 export async function consultarCnpj(acesso: Acesso | null, cnpj: string): Promise<DadosDoCnpj | null> {
   exigirTenant(acesso);
   if (!cnpjValido(cnpj)) return null;
-  const d = (await buscarJson(`https://brasilapi.com.br/api/cnpj/v1/${soDigitos(cnpj)}`)) as Record<
+  const numero = soDigitos(cnpj);
+  const guardado = cacheCnpj.get(numero);
+  if (guardado && guardado.ate > Date.now()) return guardado.dados;
+  const dados = (await cnpjNaBrasilApi(numero)) ?? (await cnpjNaCnpjWs(numero));
+  if (dados) {
+    if (cacheCnpj.size > 1000) cacheCnpj.clear();
+    cacheCnpj.set(numero, { dados, ate: Date.now() + VALIDADE_CACHE_CNPJ_MS });
+  }
+  return dados;
+}
+
+/** Reserva: API pública da CNPJ.ws (gratuita, sem chave; limite de 3 consultas por minuto). */
+async function cnpjNaCnpjWs(numero: string): Promise<DadosDoCnpj | null> {
+  const d = (await buscarJson(`https://publica.cnpj.ws/cnpj/${numero}`)) as Record<string, unknown> | null;
+  if (!d || !texto(d.razao_social)) return null;
+  const e = (d.estabelecimento ?? {}) as Record<string, unknown>;
+  const atividade = (e.atividade_principal ?? {}) as Record<string, unknown>;
+  const cidade = (e.cidade ?? {}) as Record<string, unknown>;
+  const estado = (e.estado ?? {}) as Record<string, unknown>;
+  const tipo = texto(e.tipo_logradouro);
+  const logradouro = texto(e.logradouro);
+  return {
+    razaoSocial: texto(d.razao_social),
+    nomeFantasia: texto(e.nome_fantasia),
+    cnae: [texto(atividade.id), texto(atividade.descricao)].filter(Boolean).join(" - "),
+    telefone: [texto(e.ddd1), texto(e.telefone1)].join(""),
+    email: texto(e.email).toLowerCase(),
+    numero: texto(e.numero),
+    endereco: {
+      cep: soDigitos(texto(e.cep)),
+      logradouro:
+        tipo && !logradouro.toUpperCase().startsWith(tipo.toUpperCase())
+          ? `${tipo} ${logradouro}`
+          : logradouro,
+      complemento: texto(e.complemento),
+      bairro: texto(e.bairro),
+      cidade: texto(cidade.nome),
+      uf: texto(estado.sigla),
+    },
+    socios: (Array.isArray(d.socios) ? d.socios : [])
+      .map((x: Record<string, unknown>) => ({
+        nome: texto(x.nome),
+        qualificacao: texto(((x.qualificacao_socio ?? {}) as Record<string, unknown>).descricao),
+        documentoParcial: texto(x.cpf_cnpj_socio),
+      }))
+      .filter((x) => x.nome),
+  };
+}
+
+async function cnpjNaBrasilApi(numero: string): Promise<DadosDoCnpj | null> {
+  const d = (await buscarJson(`https://brasilapi.com.br/api/cnpj/v1/${numero}`)) as Record<
     string,
     unknown
   > | null;
