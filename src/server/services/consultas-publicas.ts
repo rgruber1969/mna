@@ -29,7 +29,8 @@ export type DadosDoCnpj = {
   email: string;
   numero: string;
   endereco: Endereco;
-  socios: { nome: string; qualificacao: string }[];
+  /** Sócios do quadro público; `documentoParcial` é o CPF mascarado pela Receita (ex.: "***456789**"). */
+  socios: { nome: string; qualificacao: string; documentoParcial: string }[];
 };
 
 async function buscarJson(url: string): Promise<unknown | null> {
@@ -81,6 +82,7 @@ export async function consultarCnpj(acesso: Acesso | null, cnpj: string): Promis
       .map((s: Record<string, unknown>) => ({
         nome: texto(s.nome_socio),
         qualificacao: texto(s.qualificacao_socio),
+        documentoParcial: texto(s.cnpj_cpf_do_socio),
       }))
       .filter((s) => s.nome),
   };

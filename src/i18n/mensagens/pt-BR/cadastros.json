@@ -278,6 +278,43 @@
         "formato": "Formato não aceito. Use PDF, PNG, JPG, WebP, DOCX ou XLSX.",
         "bloqueado": "O arquivo foi bloqueado pelo antivírus e não foi guardado. Os administradores foram avisados."
       }
+    },
+    "porDocumento": {
+      "botao": "A partir de documento",
+      "titulo": "Cadastrar a partir de documento",
+      "sobre": "Empresas e pessoas",
+      "voltarEmpresas": "← Empresas",
+      "voltarPessoas": "← Pessoas",
+      "explicacao": "Envie um PDF (por exemplo, o comprovante de CNPJ ou o contrato social). O sistema lê o documento aqui mesmo, sem enviá-lo a terceiros, procura CNPJs e CPFs e consulta a base pública da Receita para propor as empresas, os sócios e os vínculos. Nada é gravado antes da sua conferência.",
+      "arquivo": "Documento em PDF",
+      "ler": "Ler documento",
+      "lendo": "Lendo…",
+      "proposta": "Proposta de cadastro",
+      "semTexto": "Este PDF não tem texto (provavelmente foi escaneado) e não pôde ser lido. Cadastre à mão ou envie a versão digital do documento.",
+      "nadaEncontrado": "Nenhum CNPJ ou CPF válido foi encontrado no documento.",
+      "empresa": "Empresa {cnpj}",
+      "jaCadastrada": "já cadastrada",
+      "semConsulta": "A base pública não respondeu: preencha a razão social.",
+      "razaoSocial": "Razão social",
+      "socios": "Sócios (quadro público da Receita)",
+      "incluirSocio": "Incluir {nome}",
+      "nomeDe": "Nome de {nome}",
+      "outrasPessoas": "Outras pessoas encontradas (CPF no documento)",
+      "incluirPessoa": "Incluir a pessoa do CPF {cpf}",
+      "nomeDaPessoa": "Nome da pessoa",
+      "nomeDaPessoaCpf": "Nome da pessoa do CPF {cpf}",
+      "guardarNaEmpresa": "Guardar este documento como anexo da empresa",
+      "guardarNaPessoa": "Guardar este documento como anexo da pessoa",
+      "cadastrar": "Cadastrar o que está marcado",
+      "cadastrando": "Cadastrando…",
+      "resultado": "Cadastro feito: {empresas, plural, =0 {nenhuma empresa nova} one {# empresa nova} other {# empresas novas}}, {pessoas, plural, =0 {nenhuma pessoa nova} one {# pessoa nova} other {# pessoas novas}} e {vinculos, plural, =0 {nenhum vínculo novo} one {# vínculo novo} other {# vínculos novos}}.",
+      "anexoGuardado": "O documento foi guardado como anexo.",
+      "abrirCadastro": "Abrir o cadastro",
+      "erros": {
+        "escolhaArquivo": "Escolha um documento em PDF.",
+        "soPdf": "Só PDF pode ser lido. Outros formatos podem ser guardados como anexo no cadastro.",
+        "selecaoInvalida": "A seleção enviada não é válida. Leia o documento de novo."
+      }
     }
   }
 }

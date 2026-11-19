@@ -24,6 +24,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
   if (portao) return portao;
   if (!(await pode(acesso, "empresas", "ver"))) notFound();
   const t = await getTranslations("cadastros.empresas");
+  const tDoc = await getTranslations("cadastros.porDocumento");
   const tc = await getTranslations("comum");
   const filtro = await busca;
   const [empresas, grupos, podeCriar, podeExcluir] = await Promise.all([
@@ -40,12 +41,20 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
           <div className="flex items-start justify-between gap-4">
             <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
             {podeCriar && (
-              <Link
-                href="/empresas/nova"
-                className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
-              >
-                {t("nova")}
-              </Link>
+              <span className="flex shrink-0 flex-wrap justify-end gap-2">
+                <Link
+                  href="/cadastro-por-documento?de=empresas"
+                  className="border-primary text-primary shrink-0 rounded-md border px-3 py-2 text-sm font-medium"
+                >
+                  {tDoc("botao")}
+                </Link>
+                <Link
+                  href="/empresas/nova"
+                  className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
+                >
+                  {t("nova")}
+                </Link>
+              </span>
             )}
           </div>
           <form className="mb-4 flex flex-wrap items-center gap-3">
