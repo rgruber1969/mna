@@ -137,7 +137,7 @@ describe("perfis padrão", () => {
       "Gestor do contratante",
       "Usuário externo",
     ]);
-    expect(perfis.filter((p) => p.camada === "deal")).toHaveLength(11);
+    expect(perfis.filter((p) => p.camada === "deal")).toHaveLength(7);
   });
 
   it("só administradores administram perfis", async () => {

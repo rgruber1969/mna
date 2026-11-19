@@ -1,6 +1,8 @@
 import type { Acao, Camada, Matriz } from "./catalogo";
 
 /**
+ * Perfis de negócio por função, sem lado (decidido em 2026-11-19): o lado vem
+ * do papel da empresa e o sigilo, da lista de acesso de cada registro.
  * Perfis padrão aprovados em 2026-11-18 (perfis-e-permissoes.md, "Perfis
  * padrão"), copiados para cada tenant novo. Depois da cópia, são do tenant.
  * Mudanças aqui só valem para tenants criados depois (modelos centralizados:
@@ -71,10 +73,10 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     },
   },
   {
-    codigo: "advogado-vendedora",
+    codigo: "advogado",
     descricao:
-      "Advogado do lado vendedor: trabalha em etapas, documentos, tarefas, contratos e ofertas; comenta o e-book.",
-    nome: "Advogado da vendedora",
+      "Advogado de qualquer lado: trabalha em etapas, documentos, tarefas, contratos e ofertas; comenta o e-book. Vê só o que quem criou liberou para ele.",
+    nome: "Advogado",
     camada: "deal",
     matriz: {
       deal: V,
@@ -88,10 +90,10 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     },
   },
   {
-    codigo: "advisor-vendedora",
+    codigo: "advisor",
     descricao:
-      "Advisor do lado vendedor: trabalha em etapas, documentos, tarefas e ofertas; monta o e-book e o libera ao comprador.",
-    nome: "Advisor da vendedora",
+      "Advisor de qualquer lado: trabalha em etapas, documentos, tarefas, contratos e ofertas; monta o e-book e o libera. Vê só o que quem criou liberou para ele.",
+    nome: "Advisor",
     camada: "deal",
     matriz: {
       deal: V,
@@ -99,23 +101,23 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       documentos: VCEB,
       tarefas: VCE,
       mensagens: VC,
-      contratos: VB,
+      contratos: VCEB,
       ebook: [...VCEB, "liberar"],
       ofertas: VCE,
     },
   },
   {
-    codigo: "contador-vendedora",
-    descricao: "Contador do lado vendedor: envia e edita documentos e cuida das tarefas.",
-    nome: "Contador da vendedora",
+    codigo: "contador",
+    descricao: "Contador de qualquer lado: envia e edita documentos e cuida das tarefas.",
+    nome: "Contador",
     camada: "deal",
     matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
-    codigo: "vendedora",
+    codigo: "representante",
     descricao:
-      "Pessoa da empresa vendedora (ex.: sócio ou diretor): envia documentos, atualiza as próprias tarefas, comenta e aprova o e-book e acompanha as ofertas.",
-    nome: "Representante da vendedora",
+      "Pessoa de uma empresa do negócio (vendedora, compradora, sócios, investidores): envia documentos, atualiza as próprias tarefas, comenta e aprova o e-book e acompanha contratos e ofertas a que tem acesso.",
+    nome: "Representante da empresa",
     camada: "deal",
     matriz: {
       deal: V,
@@ -127,37 +129,6 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       ebook: ["ver", "comentar", "aprovar"],
       ofertas: V,
     },
-  },
-  {
-    codigo: "compradora",
-    descricao:
-      "Pessoa da empresa compradora: vê e baixa os documentos liberados, atualiza as próprias tarefas e vê o e-book liberado.",
-    nome: "Representante da compradora",
-    camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: VB, tarefas: VE, mensagens: VC, ebook: V },
-  },
-  {
-    codigo: "advisor-compradora",
-    descricao:
-      "Advisor do lado comprador: envia e baixa documentos, cuida das tarefas e vê o e-book depois que o lado vendedor o libera.",
-    nome: "Advisor da compradora",
-    camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: VCB, tarefas: VCE, mensagens: VC, ebook: V },
-  },
-  {
-    codigo: "advogado-compradora",
-    descricao:
-      "Advogado do lado comprador: vê, envia e baixa documentos, cuida de tarefas e vê o e-book liberado.",
-    nome: "Advogado da compradora",
-    camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: VCB, tarefas: VCE, mensagens: VC, ebook: V },
-  },
-  {
-    codigo: "contador-compradora",
-    descricao: "Contador do lado comprador: envia e edita documentos e cuida das tarefas.",
-    nome: "Contador da compradora",
-    camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
     codigo: "auditor",

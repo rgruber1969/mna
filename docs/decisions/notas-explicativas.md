@@ -313,7 +313,7 @@ Claude Code. Decisões em vigor: [README](README.md).
   menu, ex.: Documentos); ação é o que se faz nela (ver, criar, editar,
   excluir, baixar).
 * **Matriz de permissões:** tabela recurso × ação com "sim" ou "não".
-* **Perfil:** um nome para uma matriz (ex.: "Advisor da vendedora"),
+* **Perfil:** um nome para uma matriz (ex.: "Advisor"),
   criado e ajustado pelo administrador do tenant.
 * **Perfil no tenant × perfil no processo:** o primeiro vale para telas
   gerais (cadastros, configurações); o segundo, para o que está dentro de

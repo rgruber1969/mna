@@ -19,26 +19,26 @@ import { ligarContaAPessoa } from "./pessoas";
 
 /** Papéis de empresa padrão, com o perfil de deal sugerido (código do perfil padrão). */
 export const PAPEIS_PADRAO: { codigo: string; nome: string; perfil: string | null }[] = [
-  { codigo: "vendedora", nome: "Vendedora", perfil: "vendedora" },
-  { codigo: "compradora", nome: "Compradora", perfil: "compradora" },
-  { codigo: "advisor-vendedora", nome: "Advisor da vendedora", perfil: "advisor-vendedora" },
-  { codigo: "advisor-compradora", nome: "Advisor da compradora", perfil: "advisor-compradora" },
+  { codigo: "vendedora", nome: "Vendedora", perfil: "representante" },
+  { codigo: "compradora", nome: "Compradora", perfil: "representante" },
+  { codigo: "advisor-vendedora", nome: "Advisor da vendedora", perfil: "advisor" },
+  { codigo: "advisor-compradora", nome: "Advisor da compradora", perfil: "advisor" },
   {
     codigo: "escritorio-vendedora",
     nome: "Escritório de advocacia da vendedora",
-    perfil: "advogado-vendedora",
+    perfil: "advogado",
   },
   {
     codigo: "escritorio-compradora",
     nome: "Escritório de advocacia da compradora",
-    perfil: "advogado-compradora",
+    perfil: "advogado",
   },
-  { codigo: "contabilidade-vendedora", nome: "Contabilidade da vendedora", perfil: "contador-vendedora" },
-  { codigo: "contabilidade-compradora", nome: "Contabilidade da compradora", perfil: "contador-compradora" },
+  { codigo: "contabilidade-vendedora", nome: "Contabilidade da vendedora", perfil: "contador" },
+  { codigo: "contabilidade-compradora", nome: "Contabilidade da compradora", perfil: "contador" },
   { codigo: "auditora-vendedora", nome: "Auditora da vendedora", perfil: "auditor" },
   { codigo: "auditora-compradora", nome: "Auditora da compradora", perfil: "auditor" },
-  { codigo: "investidores-compradora", nome: "Investidores e sócios da compradora", perfil: "compradora" },
-  { codigo: "socios-vendedora", nome: "Sócios da vendedora", perfil: "vendedora" },
+  { codigo: "investidores-compradora", nome: "Investidores e sócios da compradora", perfil: "representante" },
+  { codigo: "socios-vendedora", nome: "Sócios da vendedora", perfil: "representante" },
 ];
 
 /** Tipos de vínculo padrão entre pessoa e empresa. */

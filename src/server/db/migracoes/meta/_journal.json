@@ -155,6 +155,13 @@
       "when": 1795073204884,
       "tag": "0021_nomenclatura_negocio",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795075507999,
+      "tag": "0022_perfis_por_funcao",
+      "breakpoints": true
     }
   ]
 }

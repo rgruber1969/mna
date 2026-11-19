@@ -89,8 +89,25 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
     confundir os nomes, os perfis padrão "Vendedora" e "Compradora" viraram
     "Representante da vendedora" e "Representante da compradora", e entrou
     o perfil "Advisor da compradora".
+  * **Perfis por função, sem lado (decidido em 2026-11-19):** o lado
+    (vendedor ou comprador) vem do **papel da empresa**; o perfil diz só o
+    tipo de trabalho. Os pares "da vendedora" / "da compradora" viraram
+    **Advogado**, **Advisor**, **Contador** e **Representante da empresa**.
+    O sigilo entre os lados vem da lista de acesso definida por quem cria
+    cada registro (abaixo), não da matriz do perfil.
 * **Auditoria:** consultável por quem tiver essa permissão concedida pelos
   administradores do tenant.
+* **Lista de acesso definida por quem cria** (decidido em 2026-11-19 para
+  todos os registros do negócio): versões de documento, **contratos de
+  serviço**, **versões do e-book e do OnePager**, **ofertas** e valuation.
+  Contrato e e-book são tratados como documentos: quem os cria decide quem
+  vê.
+  * **Pré-preenchida com "o meu lado":** ao criar, a lista já vem com os
+    participantes do mesmo lado de quem cria (calculado pelo papel da
+    empresa de cada um no negócio); quem cria ajusta.
+  * **Liberar o e-book ao comprador** é incluir os participantes do lado
+    comprador na lista daquela versão (com aviso por e-mail). Aprovar uma
+    versão só vale antes de ela ser liberada.
 * **Lista de acesso por versão de documento** (áreas restritas):
   * Quem envia uma versão escolhe, por **perfil e/ou usuário**, quem pode
     **ver e baixar** aquela versão.
@@ -147,23 +164,19 @@ tipos de vínculo entre pessoa e empresa.
 | Perfil | Deal e participantes | Etapas | Documentos² | Tarefas | Mensagens | Contratos | E-book / OnePager | Ofertas |
 |---|---|---|---|---|---|---|---|---|
 | **Coordenador do deal** | V E | V C E X | V C E X B | V C E X | V C | V C E X B | V C E X B Li | V C E X |
-| **Advogado da vendedora** | V | V E | V C E B | V C E | V C | V C E B | V Co | V C E |
-| **Advisor da vendedora** | V | V E | V C E B | V C E | V C | V B | V C E B Li | V C E |
-| **Contador da vendedora** | V | V | V C E B | V C E | V C | — | — | — |
-| **Representante da vendedora** | V | V | V C B | V E | V C | V B | V Co Ap | V |
-| **Representante da compradora** | V | V | V B | V E | V C | — | V³ | — |
-| **Advisor da compradora** | V | V | V C B | V C E | V C | — | V³ | — |
-| **Advogado da compradora** | V | V | V C B | V C E | V C | — | V³ | — |
-| **Contador da compradora** | V | V | V C E B | V C E | V C | — | — | — |
+| **Advogado** | V | V E | V C E B | V C E | V C | V C E B | V Co | V C E |
+| **Advisor** | V | V E | V C E B | V C E | V C | V C E B | V C E B Li | V C E |
+| **Contador** | V | V | V C E B | V C E | V C | — | — | — |
+| **Representante da empresa** | V | V | V C B | V E | V C | V B | V Co Ap | V |
 | **Auditor (diligência)** | V | V | V C E B | V C E | V C | — | — | — |
 | **Somente leitura** | V | V | V | V | V | — | — | — |
 
-² Sempre só nas versões a que a pessoa recebeu acesso de quem as enviou
-(lista de acesso por versão); "C" é enviar documento ou nova versão.
-³ Só depois que o lado vendedor libera (Li).
+² Sempre só nos registros a que a pessoa recebeu acesso de quem os criou
+(lista de acesso); vale também para contratos, e-book e ofertas. "C" é
+enviar documento ou nova versão.
 
 * Mensagens são imutáveis (sem editar nem excluir).
-* Em Tarefas, "E" da Vendedora e da Compradora serve para atualizar e
+* Em Tarefas, "E" do Representante da empresa serve para atualizar e
   concluir as próprias tarefas.
 * Valuation no deal segue a visibilidade definida pelo criador (fora da
   matriz).
@@ -179,8 +192,8 @@ faz a diligência jurídica. A Ana, desse escritório, tem duas participações:
 
 | Participação | Perfil | Alcance | Matriz (exemplo) |
 |---|---|---|---|
-| 1 | Advogado da compradora | Deal inteiro | Documentos: ver, baixar · Tarefas: ver |
-| 2 | Auditor jurídico da compradora | Subetapa "Diligência jurídica" | Documentos: ver, criar, editar, baixar · Tarefas: ver, criar, editar |
+| 1 | Advogado | Deal inteiro | Documentos: ver, baixar · Tarefas: ver |
+| 2 | Auditor (diligência) | Subetapa "Diligência jurídica" | Documentos: ver, criar, editar, baixar · Tarefas: ver, criar, editar |
 
 Resultado: na diligência jurídica, a Ana soma as duas matrizes; nas demais
 etapas, vale só a participação 1.

@@ -21,7 +21,7 @@ projeto e em `docs/projeto/`.
 | [0010](0010-white-label-tokens-por-tenant.md) | White label | Tokens limitados por tenant; tokens semânticos obrigatórios; logos PNG/JPG/WebP e e-mail com logo (adendo) |
 | [0011](0011-enderecos-subdominio-por-tenant-e-console.md) | Endereços | Subdomínio por tenant; console `admin.` na mesma aplicação |
 | [0012](0012-armazenamento-de-arquivos-s3.md) | Arquivos | Protocolo S3: RustFS (local) / R2 / S3 São Paulo |
-| [0013](0013-modelo-de-permissoes.md) | Permissões | Perfis configuráveis; participação com alcance; negado por padrão |
+| [0013](0013-modelo-de-permissoes.md) | Permissões | Perfis configuráveis, por função (lado vem do papel); participação com alcance; lista de acesso de quem cria; negado por padrão |
 | [0014](0014-envio-de-email.md) | E-mail | Mailpit / Resend / SES São Paulo |
 | [0015](0015-tarefas-em-segundo-plano-inngest.md) | Tarefas em segundo plano | Inngest; lógica separada da orquestração; só identificadores |
 | [0016](0016-antivirus-nos-uploads.md) | Antivírus | Simulado (local/demo), GuardDuty (produção); download só após "Disponível" |

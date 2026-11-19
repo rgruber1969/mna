@@ -181,3 +181,22 @@ Elementos:
   participação e pode ter mais de uma participação no mesmo processo
   (com soma). O banco garante o perfil único (índice único por tenant e
   usuário).
+* Adendo (2026-11-19): **perfis de processo por função, sem lado.** Escolha
+  do responsável entre: (A) perfis por função (advogado, advisor, contador,
+  representante etc.), com o lado vindo do papel da empresa no processo e o
+  sigilo entre os lados vindo da lista de acesso de cada registro; (B)
+  manter perfis duplicados por lado, com o bloqueio na matriz do perfil
+  (perfis em dobro e incompatível com contratante de qualquer lado); (C)
+  perfis por função mais uma restrição automática por lado, calculada pelo
+  papel (proteção dupla, mas regra escondida e mais complexa). Escolhida a
+  **A**. Consequências:
+  1. A **lista de acesso definida por quem cria** (adendo de 2026-11-17)
+     vale para todos os registros de conteúdo do processo, não só versões
+     de documento: contratos, materiais de apresentação, ofertas e
+     avaliações.
+  2. A lista vem **pré-preenchida com os participantes do mesmo lado** de
+     quem cria (pelo papel da empresa); sem ninguém marcado, ninguém vê
+     (negado por padrão). Liberar um material ao outro lado é incluí-lo na
+     lista.
+  3. Risco aceito: o sigilo depende da lista de cada registro; o
+     pré-preenchimento com o próprio lado reduz o risco de esquecimento.

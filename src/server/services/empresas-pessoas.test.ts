@@ -111,7 +111,7 @@ describe("cadastros padrão do tenant", () => {
     const papeis = await listarPapeis(a);
     expect(papeis).toHaveLength(12);
     expect(papeis.find((p) => p.nome === "Escritório de advocacia da compradora")?.perfilSugerido).toBe(
-      "Advogado da compradora",
+      "Advogado",
     );
     expect(await listarTiposDeVinculo(a)).toHaveLength(6);
     const empresas = await listarEmpresas(a);

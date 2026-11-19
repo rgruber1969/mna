@@ -227,6 +227,9 @@ principalmente pelo advisor.
 * Guarda a **estrutura de pagamento**: parcela à vista, parcelas a prazo,
   earnout e condições.
 * Comparação das ofertas com o valuation no painel visual.
+* **Quem vê:** definido por quem registra a oferta (lista de acesso,
+  pré-preenchida com o próprio lado), para que uma compradora não veja a
+  oferta de outra.
 * **Preço único para várias vendedoras:** o preço fechado (total, parcelas,
   earnout) é rateado entre as empresas vendedoras pelo percentual definido
   (ex.: 70% e 30%), com o critério registrado.
@@ -248,8 +251,10 @@ opcional).
 * **Versões e revisão:** cada versão recebe comentários da vendedora antes
   de o advisor produzir a próxima.
 * **Liberação ao comprador:** a vendedora muda o status para "disponível ao
-  comprador"; o sistema envia e-mail aos usuários do comprador com link para
-  a tela no sistema, onde visualizam ou baixam o PDF.
+  comprador", o que inclui os participantes do lado comprador na lista de
+  acesso daquela versão (e-book tratado como documento; ver
+  `perfis-e-permissoes.md`); o sistema envia e-mail aos usuários do
+  comprador com link para a tela no sistema, onde visualizam ou baixam o PDF.
 
 Estrutura sugerida (aprovada; referência complementar: info memo enviado
 pelo responsável):
@@ -286,6 +291,10 @@ Contrato de prestação de serviço ligado ao processo, com **tipo**:
 
 Campos de referência: partes, escopo, exclusividade, vigência, honorários,
 success fee e documentos.
+
+* **Quem vê:** definido por quem cria o contrato (lista de acesso,
+  pré-preenchida com o próprio lado); cada lado vê os seus contratos e os
+  que lhe forem liberados.
 
 ### Etapas
 
