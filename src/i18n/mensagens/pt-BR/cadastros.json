@@ -214,7 +214,8 @@
       "papelExcluido": "Papel excluído.",
       "tipoSalvo": "Tipo de vínculo salvo.",
       "tipoExcluido": "Tipo de vínculo excluído.",
-      "empresaSociaCadastrada": "Empresa cadastrada e ligada como sócia."
+      "empresaSociaCadastrada": "Empresa cadastrada e ligada como sócia.",
+      "socioJaCadastradoVinculado": "A pessoa já estava cadastrada: só o vínculo com a empresa foi criado."
     },
     "erros": {
       "textoLongo": "Texto muito longo.",

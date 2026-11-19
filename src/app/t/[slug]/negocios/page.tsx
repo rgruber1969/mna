@@ -116,7 +116,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                       {ordenavel(t("colNegocio"), "numero")}
                       <th className={estiloTabela.th}>{t("colVendedoras")}</th>
                       <th className={estiloTabela.th}>{t("colCompradora")}</th>
-                      <th className={estiloTabela.th}>{t("colPapel")}</th>
+                      <th className={estiloTabela.th}>{t("colDescricao")}</th>
                       {ordenavel(t("colSituacao"), "situacao")}
                       <th className={estiloTabela.th}>{t("colCoordenador")}</th>
                       {ordenavel(t("colInicio"), "inicio")}
@@ -140,8 +140,14 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                           )}
                         </td>
                         <td className={`${estiloTabela.td} text-xs`}>{n.compradoraEscolhida ?? "—"}</td>
-                        <td className={`${estiloTabela.td} text-muted text-xs`}>
-                          {n.papelDoContratante ?? "—"}
+                        <td className={`${estiloTabela.td} text-muted max-w-xs text-xs`}>
+                          {n.descricao ? (
+                            <span className="line-clamp-2" title={n.descricao}>
+                              {n.descricao}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td className={`${estiloTabela.td} text-xs whitespace-nowrap`}>{ts(n.situacao)}</td>
                         <td className={`${estiloTabela.td} text-muted text-xs`}>

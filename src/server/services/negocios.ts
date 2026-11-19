@@ -338,7 +338,8 @@ export type NegocioResumo = {
   nomeInterno: string | null;
   vendedoras: string[] | null;
   compradoraEscolhida: string | null;
-  papelDoContratante: string | null;
+  /** Descrição (pode citar a vendedora: só para quem já pode vê-la). */
+  descricao: string | null;
   tipo: string | null;
   situacao: SituacaoDoNegocio;
   coordenadores: string[];
@@ -365,6 +366,7 @@ export async function paginaDeNegocios(
         numero: deal.numero,
         codinome: deal.codinome,
         nomeInterno: deal.nomeInterno,
+        descricao: deal.descricao,
         situacao: deal.situacao,
         dataInicio: deal.dataInicio,
         tipoId: deal.tipoOperacaoId,
@@ -435,7 +437,7 @@ export async function paginaDeNegocios(
         : null,
       compradoraEscolhida:
         doNegocio.find((e) => e.situacaoFunil === "escolhida" && empresaVisivel(v, e))?.nome ?? null,
-      papelDoContratante: contratante?.papel ?? null,
+      descricao: v.podeVerVendedora ? l.descricao : null,
       ladoDoContratante: contratante?.lado ?? null,
       tipo: l.tipo,
       tipoId: l.tipoId,

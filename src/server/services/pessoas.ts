@@ -563,21 +563,55 @@ export async function removerVinculo(acesso: Acesso | null, vinculoId: string): 
   return { ok: true };
 }
 
-/**
- * Sócio sugerido pela consulta do CNPJ: cadastra a pessoa (só o nome) e o
- * vínculo de sócio com a empresa, depois de o usuário confirmar.
- */
 /** Quem é sócio no quadro da Receita (pela qualificação) vira "Sócio"; os demais, "Administrador". */
 export function vinculoDaQualificacao(qualificacao: string): "socio" | "administrador" {
   return /s[óo]ci/i.test(qualificacao) ? "socio" : "administrador";
 }
 
+const semAcento = (n: string) =>
+  n
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * Pessoa já cadastrada que corresponde a um sócio da Receita: mesmo nome (sem
+ * acentos e maiúsculas) e, quando a pessoa tem CPF, os seis dígitos do meio
+ * iguais aos que a Receita mostra (ex.: "***982247**"). Homônimo com CPF
+ * diferente não conta.
+ */
+async function pessoaDoSocio(
+  a: AcessoTenant,
+  nome: string,
+  documentoParcial: string,
+): Promise<string | null> {
+  const alvo = semAcento(nome);
+  const meio = /^\*{3}(\d{6})\*{2}$/.exec(documentoParcial.replace(/[^\d*]/g, ""))?.[1];
+  const candidatas = await comTenant(a.tenant.id, (tx) =>
+    tx.select({ id: pessoa.id, nome: pessoa.nome, cpfCifrado: pessoa.cpfCifrado }).from(pessoa),
+  );
+  for (const c of candidatas.filter((p) => semAcento(p.nome) === alvo)) {
+    if (!c.cpfCifrado || !meio) return c.id;
+    const cpf = await descriptografar(a.tenant.id, c.cpfCifrado);
+    if (cpf.slice(3, 9) === meio) return c.id;
+  }
+  return null;
+}
+
+/**
+ * Sócio ou administrador do quadro da Receita, depois de o usuário confirmar:
+ * se a pessoa já existe (mesmo nome e CPF compatível), só cria o vínculo;
+ * senão, cadastra a pessoa (só o nome) e o vínculo.
+ */
 export async function cadastrarSocioSugerido(
   acesso: Acesso | null,
   empresaId: string,
   nome: string,
   qualificacao = "",
-): Promise<ResultadoComId> {
+  documentoParcial = "",
+): Promise<{ id: string; existente: boolean } | ErroDeServico> {
   const a = await exigirPermissao(acesso, "empresas", "criar");
   if (!uuidValido(empresaId)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   const [socio] = await comTenant(a.tenant.id, (tx) =>
@@ -587,16 +621,36 @@ export async function cadastrarSocioSugerido(
       .where(eq(tipoVinculo.padrao, vinculoDaQualificacao(qualificacao))),
   );
   if (!socio) return { erro: "cadastros.erros.tipoSocioInexistente" };
-  const p = await criarPessoa(a, { ...pessoaVazia, nome: nomeProprio(nome) });
-  if ("erro" in p) return p;
+  const existente = await pessoaDoSocio(a, nome, documentoParcial);
+  if (existente) {
+    const [ja] = await comTenant(a.tenant.id, (tx) =>
+      tx
+        .select({ id: vinculoPessoaEmpresa.id })
+        .from(vinculoPessoaEmpresa)
+        .where(
+          and(
+            eq(vinculoPessoaEmpresa.pessoaId, existente),
+            eq(vinculoPessoaEmpresa.empresaId, empresaId),
+            eq(vinculoPessoaEmpresa.tipoId, socio.id),
+          ),
+        ),
+    );
+    if (ja) return { id: existente, existente: true };
+  }
+  let pessoaId = existente;
+  if (!pessoaId) {
+    const p = await criarPessoa(a, { ...pessoaVazia, nome: nomeProprio(nome) });
+    if ("erro" in p) return p;
+    pessoaId = p.id;
+  }
   const v = await adicionarVinculo(a, {
-    pessoaId: p.id,
+    pessoaId,
     empresaId,
     tipoId: socio.id,
     cargo: qualificacao.trim().slice(0, 120),
     percentual: "",
   });
-  return "erro" in v ? v : { id: p.id };
+  return "erro" in v ? v : { id: pessoaId, existente: Boolean(existente) };
 }
 
 /** "FULANO DE TAL" → "Fulano de Tal" (a Receita devolve em maiúsculas). */

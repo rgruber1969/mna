@@ -8,6 +8,7 @@ import { excluirTipoDeVinculo, listarPapeis, listarTiposDeVinculo, salvarTipoDeV
 import { criarEmpresa, editarEmpresa, excluirEmpresa, listarEmpresas, obterEmpresa } from "./empresas";
 import {
   adicionarVinculo,
+  cadastrarSocioSugerido,
   criarPessoa,
   editarPessoa,
   ligarContaAPessoa,
@@ -375,5 +376,37 @@ describe("notificações", () => {
     expect((await minhasNotificacoes(acesso(adminId, true))).naoLidas).toBe(0);
     await removerNotificacao(acesso(adminId, true), minhas.itens[0].id);
     expect((await minhasNotificacoes(acesso(adminId, true))).itens).toHaveLength(1);
+  });
+});
+
+describe("sócio da Receita já cadastrado", () => {
+  it("reaproveita a pessoa de mesmo nome e CPF compatível; homônimo com outro CPF vira outra pessoa", async () => {
+    const a = acesso(adminId, true);
+    const e1 = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Primeira Sociedade Ltda" });
+    const e2 = await criarEmpresa(a, { ...empresaVazia, razaoSocial: "Segunda Companhia S.A." });
+    if (!("id" in e1) || !("id" in e2)) throw new Error("empresas");
+    const p = await criarPessoa(a, { ...pessoaVazia, nome: "José da Silva Sócio", cpf: "111.444.777-35" });
+    if (!("id" in p)) throw new Error(p.erro);
+    const r1 = await cadastrarSocioSugerido(
+      a,
+      e1.id,
+      "JOSE DA SILVA SOCIO",
+      "Sócio-Administrador",
+      "***444777**",
+    );
+    expect(r1).toEqual({ id: p.id, existente: true });
+    // Outra empresa do mesmo sócio: mesma pessoa, novo vínculo; repetir não duplica.
+    expect(await cadastrarSocioSugerido(a, e2.id, "JOSE DA SILVA SOCIO", "Sócio", "***444777**")).toEqual({
+      id: p.id,
+      existente: true,
+    });
+    await cadastrarSocioSugerido(a, e2.id, "JOSE DA SILVA SOCIO", "Sócio", "***444777**");
+    const pessoa = await obterPessoa(a, p.id);
+    expect(pessoa?.vinculos.map((v) => v.empresa).sort()).toEqual([
+      "Primeira Sociedade Ltda",
+      "Segunda Companhia S.A.",
+    ]);
+    const homonimo = await cadastrarSocioSugerido(a, e1.id, "JOSE DA SILVA SOCIO", "Sócio", "***999999**");
+    expect(homonimo).toMatchObject({ existente: false });
   });
 });

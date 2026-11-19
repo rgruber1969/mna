@@ -80,7 +80,9 @@ Regras do cadastro (questionário `perguntas-empresas-pessoas.md`, 2026-11-18):
   vínculo "Administrador". O botão mostra a qualificação da Receita
   ("Cadastrar pessoa como Sócio-Administrador"). A base pública é mensal:
   a tela mostra a data da base quando o serviço a informa, e quem saiu da
-  sociedade em bases anteriores fica de fora.
+  sociedade em bases anteriores fica de fora. Pessoa já cadastrada com o
+  mesmo nome (e CPF compatível com os dígitos que a Receita mostra) é
+  reaproveitada: só o vínculo é criado (2026-11-19).
 * **Anexos e cadastro a partir de documento** (item 34, ADR-0021):
   documentos da empresa e da pessoa anexados ao cadastro, criptografados;
   um PDF pode ser lido para propor empresas, sócios e vínculos.
@@ -254,7 +256,7 @@ Regras do item 8 (questionário `perguntas-negocios.md`, respondido em
     abertas dela ficam "sem responsável" para o coordenador redistribuir; o
     acesso acaba na hora.
 * **Lista:** número, codinome (ou nome interno, para quem pode ver),
-  vendedora(s), compradora escolhida, papel do contratante, situação, etapa,
+  vendedora(s), compradora escolhida, descrição (só para quem pode ver a vendedora; trocada pelo papel do contratante em 2026-11-19), situação, etapa,
   coordenador e início; filtros por situação, lado e tipo; busca por nome,
   codinome, número ou empresa. Cada pessoa vê só os deals em que participa
   (administradores veem todos).

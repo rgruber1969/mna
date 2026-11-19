@@ -151,8 +151,10 @@ export async function cadastrarSocioAcao(_: Estado, f: FormData): Promise<Estado
     texto(f, "empresaId"),
     texto(f, "nome"),
     texto(f, "qualificacao"),
+    texto(f, "documento"),
   );
-  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("socioCadastrado") };
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: r.existente ? t("socioJaCadastradoVinculado") : t("socioCadastrado") };
 }
 
 export async function adicionarParticipacaoAcao(_: Estado, f: FormData): Promise<Estado> {
