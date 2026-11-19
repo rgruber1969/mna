@@ -7,7 +7,6 @@ import {
   adicionarParticipanteAcao,
   criarNegocioAcao,
   editarNegocioAcao,
-  salvarTipoDeOperacaoAcao,
 } from "@/app/acoes/negocios";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { useAbas } from "@/components/ui/abas";
@@ -504,26 +503,6 @@ export function FormIncluirParticipante({
       </Rotulo>
       <Botao type="submit" disabled={incluindo}>
         {t("incluir")}
-      </Botao>
-    </form>
-  );
-}
-
-/** Cadastro auxiliar: novo tipo de operação. */
-export function FormNovoTipoDeOperacao() {
-  const t = useTranslations("negocios.tipos");
-  const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarTipoDeOperacaoAcao);
-  return (
-    <form action={salvar} className="border-border mt-4 border-t pt-3">
-      <Mensagem estado={estado} />
-      <Rotulo texto={t("nome")}>
-        <input name="nome" required maxLength={120} className={estiloCampo} />
-      </Rotulo>
-      <label className="text-text mb-3 flex items-center gap-2 text-sm">
-        <input type="checkbox" name="comPercentual" value="sim" /> {t("comPercentual")}
-      </label>
-      <Botao type="submit" disabled={salvando}>
-        {t("adicionar")}
       </Botao>
     </form>
   );

@@ -65,7 +65,11 @@
       "dependenciaInvalida": "A dependência precisa ser outra etapa do mesmo nível.",
       "fimAntesDoInicio": "O fim previsto não pode ser antes do início previsto.",
       "situacaoInvalida": "Situação inválida.",
-      "soNaoIniciada": "Só dá para remover etapas não iniciadas."
-    }
+      "soNaoIniciada": "Só dá para remover etapas não iniciadas.",
+      "escalaInvalida": "Escala inválida: de 5% a 100%."
+    },
+    "escala": "Escala na linha do tempo (%)",
+    "escalaCurta": "escala {n}%",
+    "avisoEscala": "Etapas longas aparecem encolhidas pela escala definida (ex.: pós-closing a 20%)."
   }
 }

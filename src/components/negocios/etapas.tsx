@@ -26,6 +26,7 @@ type Etapa = {
   fimReal: string | null;
   dependeDeId: string | null;
   dependeDe: string | null;
+  escala: number;
   observacoes: string | null;
   podeEditar: boolean;
   subetapas: Etapa[];
@@ -107,6 +108,16 @@ function FormEtapa({
         {data("fimPrevisto", t("fimPrevisto"))}
         {data("inicioReal", t("inicioReal"))}
         {data("fimReal", t("fimReal"))}
+        <Rotulo texto={t("escala")}>
+          <input
+            type="number"
+            name="escala"
+            min={5}
+            max={100}
+            defaultValue={etapa.escala}
+            className={estiloCampo}
+          />
+        </Rotulo>
       </div>
       <div className="mt-2">
         <Rotulo texto={t("observacoes")}>
@@ -320,30 +331,53 @@ function NovaEtapa({ dealId, paiId }: { dealId: string; paiId?: string }) {
   );
 }
 
-/** Linha do tempo (só leitura): barras pelas datas reais ou previstas. */
+/**
+ * Linha do tempo (só leitura): barras pelas datas reais ou previstas. A
+ * escala de cada etapa (ex.: pós-closing a 20%) encolhe o período dela, para
+ * as etapas curtas não sumirem ao lado de uma que dura anos.
+ */
 function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
   const t = useTranslations("etapas");
   const linhas = etapas.flatMap((e) => [{ e, sub: false }, ...e.subetapas.map((s) => ({ e: s, sub: true }))]);
   const inicio = (e: Etapa) => e.inicioReal ?? e.inicioPrevisto;
   const fim = (e: Etapa) =>
     e.fimReal ?? e.fimPrevisto ?? (e.situacao === "andamento" ? hoje : null) ?? inicio(e);
+  const dia = (d: string) => Date.parse(`${d}T12:00:00Z`);
   const datas = linhas.flatMap(({ e }) => [inicio(e), fim(e)]).filter((d): d is string => Boolean(d));
   if (datas.length === 0) return <p className="text-muted text-sm">{t("semDatas")}</p>;
-  const min = Date.parse(datas.reduce((a, b) => (a < b ? a : b)));
-  const max = Math.max(Date.parse(datas.reduce((a, b) => (a > b ? a : b))), min + 86_400_000);
-  const pos = (d: string) => ((Date.parse(d) - min) / (max - min)) * 100;
+  const min = Math.min(...datas.map(dia));
+  const max = Math.max(...datas.map(dia), min + 86_400_000);
+  // Trechos entre as datas; cada um pesa a menor escala das etapas que o cobrem.
+  const comEscala = etapas.filter((e) => e.escala < 100 && inicio(e) && fim(e));
+  const marcos = [...new Set([min, max, ...comEscala.flatMap((e) => [dia(inicio(e)!), dia(fim(e)!)])])]
+    .filter((x) => x >= min && x <= max)
+    .sort((a, b) => a - b);
+  const trechos = marcos.slice(1).map((q, k) => {
+    const p = marcos[k];
+    const meio = (p + q) / 2;
+    const peso = Math.min(
+      1,
+      ...comEscala.filter((e) => dia(inicio(e)!) <= meio && meio <= dia(fim(e)!)).map((e) => e.escala / 100),
+    );
+    return { p, q, peso };
+  });
+  const visual = (x: number) =>
+    trechos.reduce((soma, { p, q, peso }) => soma + Math.max(0, Math.min(x, q) - p) * peso, 0);
+  const total = visual(max) || 1;
+  const pos = (d: string) => (visual(dia(d)) / total) * 100;
   const corBarra = {
     nao_iniciada: "bg-border",
     andamento: "bg-primary",
     concluida: "bg-success",
     pulada: "bg-border opacity-50",
   };
-  const hojeEmPos = Date.parse(hoje) >= min && Date.parse(hoje) <= max ? pos(hoje) : null;
+  const hojeEmPos = dia(hoje) >= min && dia(hoje) <= max ? pos(hoje) : null;
+  const brDe = (x: number) => br(new Date(x).toISOString().slice(0, 10));
   return (
     <div>
       <div className="text-muted mb-1 flex justify-between pl-[38%] text-xs">
-        <span>{br(new Date(min).toISOString().slice(0, 10))}</span>
-        <span>{br(new Date(max).toISOString().slice(0, 10))}</span>
+        <span>{brDe(min)}</span>
+        <span>{brDe(max)}</span>
       </div>
       <ul className="space-y-1.5">
         {linhas.map(({ e, sub }) => {
@@ -356,6 +390,9 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
                 title={e.nome}
               >
                 {e.nome}
+                {!sub && e.escala < 100 && (
+                  <span className="text-muted font-normal"> · {t("escalaCurta", { n: e.escala })}</span>
+                )}
               </span>
               <span className="bg-background relative h-4 flex-1 rounded">
                 {hojeEmPos !== null && (
@@ -367,7 +404,7 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
                 {i && f ? (
                   <span
                     className={`absolute top-0.5 bottom-0.5 rounded ${corBarra[e.situacao]}`}
-                    style={{ left: `${pos(i)}%`, width: `${Math.max(pos(f) - pos(i), 1)}%` }}
+                    style={{ left: `${pos(i)}%`, width: `${Math.max(pos(f) - pos(i), 0.8)}%` }}
                     title={`${t(`situacoes.${e.situacao}`)}: ${br(i)} – ${br(f)}`}
                   />
                 ) : (
@@ -378,7 +415,10 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
           );
         })}
       </ul>
-      <p className="text-muted mt-3 text-xs">{t("edicaoGraficaFutura")}</p>
+      <p className="text-muted mt-3 text-xs">
+        {comEscala.length > 0 && `${t("avisoEscala")} `}
+        {t("edicaoGraficaFutura")}
+      </p>
     </div>
   );
 }

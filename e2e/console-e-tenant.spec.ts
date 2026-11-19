@@ -238,8 +238,11 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Adicionar vínculo" }).click();
   await expect(admin.getByText("Vínculo adicionado.")).toBeVisible();
   await expect(admin.getByText("Sócio · 50%")).toBeVisible();
-  await admin.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Cadastros" }).click();
-  await expect(admin.getByRole("heading", { name: "Papéis de empresa" })).toBeVisible();
+  // Cadastros auxiliares ficam em Configurações, em abas e tabelas.
+  await admin.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Configurações" }).click();
+  await expect(admin.getByRole("heading", { name: "Configurações" })).toBeVisible();
+  await admin.getByRole("tab", { name: "Papéis de empresa" }).click();
+  await expect(admin.getByRole("textbox", { name: "Nome de Vendedora" })).toBeVisible();
 
   // Busca do cabeçalho (opções do menu); menu lateral com favoritos e recolher guardados no servidor.
   const menu = admin.getByRole("navigation", { name: "Menu" });

@@ -232,6 +232,13 @@
       "when": 1795112283710,
       "tag": "0032_etapas",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1795116045882,
+      "tag": "0033_escala_das_etapas",
+      "breakpoints": true
     }
   ]
 }

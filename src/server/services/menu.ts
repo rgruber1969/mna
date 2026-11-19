@@ -17,7 +17,7 @@ export type ItemDoMenu = { id: string; href: string; icone: string };
 export type GrupoDoMenu = { chave: string; itens: ItemDoMenu[] };
 export type Menu = { grupos: GrupoDoMenu[]; favoritos: string[]; recolhido: boolean };
 
-type Definicao = ItemDoMenu & { recurso?: Recurso; soAdministrador?: boolean };
+type Definicao = ItemDoMenu & { recurso?: Recurso; soAdministrador?: boolean; ouAdministrador?: boolean };
 
 const GRUPOS: { chave: string; itens: Definicao[] }[] = [
   { chave: "inicio", itens: [{ id: "painel", href: "/", icone: "casa" }] },
@@ -30,13 +30,6 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
     itens: [
       { id: "empresas", href: "/empresas", icone: "predio", recurso: "empresas" },
       { id: "pessoas", href: "/pessoas", icone: "pessoas", recurso: "empresas" },
-      {
-        id: "cadastros-auxiliares",
-
-        href: "/cadastros",
-        icone: "lista",
-        recurso: "cadastros",
-      },
     ],
   },
   {
@@ -51,7 +44,13 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
         icone: "paleta",
         soAdministrador: true,
       },
-      { id: "configuracoes", href: "/configuracoes", icone: "engrenagem", soAdministrador: true },
+      {
+        id: "configuracoes",
+        href: "/configuracoes",
+        icone: "engrenagem",
+        recurso: "cadastros",
+        ouAdministrador: true,
+      },
     ],
   },
 ];
@@ -60,6 +59,7 @@ const IDS = new Set(GRUPOS.flatMap((g) => g.itens.map((i) => i.id)));
 
 async function visivel(a: AcessoTenant, item: Definicao): Promise<boolean> {
   if (item.soAdministrador) return a.administrador;
+  if (item.ouAdministrador && a.administrador) return true;
   return item.recurso ? pode(a, item.recurso, "ver") : true;
 }
 

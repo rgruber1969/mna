@@ -343,7 +343,7 @@ describe("menu lateral", () => {
     const a = acesso(adminId, true);
     const inicial = await menuDoUsuario(a);
     expect(inicial.grupos.map((g) => g.chave)).toEqual(["inicio", "negocios", "cadastros", "administracao"]);
-    expect(inicial.grupos[2].itens.map((i) => i.id)).toEqual(["empresas", "pessoas", "cadastros-auxiliares"]);
+    expect(inicial.grupos[2].itens.map((i) => i.id)).toEqual(["empresas", "pessoas"]);
 
     expect(await alternarFavorito(a, "pessoas")).toEqual(["pessoas"]);
     expect(await alternarFavorito(a, "inexistente")).toEqual(["pessoas"]);

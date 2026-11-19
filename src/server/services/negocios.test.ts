@@ -30,7 +30,16 @@ import {
   prorrogarExclusividade,
   salvarDiasDeAviso,
 } from "./negocios-andamento";
-import { editarEtapa, etapasDoNegocio, incluirEtapa, mudarSituacaoDaEtapa, removerEtapa } from "./etapas";
+import {
+  editarEtapa,
+  etapasDoNegocio,
+  excluirEtapaPadrao,
+  incluirEtapa,
+  listarEtapasPadrao,
+  mudarSituacaoDaEtapa,
+  removerEtapa,
+  salvarEtapaPadrao,
+} from "./etapas";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -715,5 +724,19 @@ describe("etapas do negócio", () => {
     expect(await removerEtapa(g, negocioId, prospeccao.id)).toMatchObject({
       erro: "etapas.erros.soNaoIniciada",
     });
+  });
+});
+
+describe("etapas padrão", () => {
+  it("pós-closing com escala 20%; etapa criada por engano pode ser excluída", async () => {
+    const a = acesso("admin", true);
+    expect((await listarEtapasPadrao(a)).find((e) => e.nome === "Pós-closing")?.escala).toBe(20);
+    expect(await salvarEtapaPadrao(a, { nome: "Diligência → QPA" })).toEqual({ ok: true });
+    const criada = (await listarEtapasPadrao(a)).find((e) => e.nome === "Diligência → QPA")!;
+    expect(await salvarEtapaPadrao(a, { id: criada.id, nome: criada.nome, escala: "3" })).toMatchObject({
+      erro: "etapas.erros.escalaInvalida",
+    });
+    expect(await excluirEtapaPadrao(a, criada.id)).toEqual({ ok: true });
+    expect((await listarEtapasPadrao(a)).some((e) => e.nome === "Diligência → QPA")).toBe(false);
   });
 });

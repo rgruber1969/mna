@@ -427,5 +427,41 @@
         "contaNaoEncontrada": "Conta não encontrada."
       }
     }
+  },
+  "configuracoes": {
+    "titulo": "Configurações",
+    "sobre": "Administração",
+    "ajuda": "Regras gerais do tenant (administradores) e cadastros auxiliares usados nos negócios, nas empresas e nas pessoas.",
+    "abaGeral": "Geral",
+    "abaPapeis": "Papéis de empresa",
+    "abaVinculos": "Tipos de vínculo",
+    "abaOperacoes": "Tipos de operação",
+    "abaEtapas": "Etapas padrão",
+    "nome": "Nome",
+    "nomeDe": "Nome de {nome}",
+    "acoes": "Ações",
+    "adicionar": "Adicionar",
+    "perfilSugerido": "Perfil sugerido",
+    "semPerfil": "Sem perfil sugerido",
+    "lado": "Lado",
+    "semLado": "Sem lado",
+    "ladoVendedor": "Lado vendedor",
+    "ladoComprador": "Lado comprador",
+    "novoPapel": "Novo papel",
+    "papeisExplicacao": "O papel que uma empresa assume em cada negócio. O lado (vendedor ou comprador) vem do papel; o perfil sugerido é proposto às pessoas da empresa quando ela entra no negócio.",
+    "pedePercentual": "Pede percentual",
+    "emUso": "Em uso",
+    "uso": "{n, plural, =0 {sem uso} one {# vez} other {# vezes}}",
+    "novoVinculo": "Novo tipo de vínculo",
+    "novaOperacao": "Novo tipo de operação",
+    "vinculosExplicacao": "Tipos de vínculo entre pessoa e empresa (sócio, administrador, procurador etc.).",
+    "operacoesExplicacao": "Tipos de operação dos negócios, usados em filtros, relatórios e no e-book.",
+    "confirmarExcluir": "Excluir {nome}?",
+    "escala": "Escala na linha do tempo (%)",
+    "escalaExplicacao": "A escala encolhe etapas longas na linha do tempo do negócio (ex.: pós-closing a 20%), para as curtas não sumirem.",
+    "situacao": "Situação",
+    "ativa": "ativa",
+    "novaSubetapaDe": "Nova subetapa de {nome}",
+    "confirmarExcluirEtapa": "Excluir a etapa padrão {nome} (com as subetapas)? Os negócios existentes não mudam."
   }
 }

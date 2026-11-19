@@ -6,6 +6,7 @@ import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
   definirEtapaPadraoAtiva,
+  excluirEtapaPadrao,
   editarEtapa,
   incluirEtapa,
   moverEtapa,
@@ -46,6 +47,7 @@ export async function editarEtapaAcao(_: Estado, f: FormData): Promise<Estado> {
     fimReal: texto(f, "fimReal"),
     dependeDeId: texto(f, "dependeDeId"),
     observacoes: texto(f, "observacoes"),
+    escala: texto(f, "escala"),
   });
   return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("salva") };
 }
@@ -81,6 +83,7 @@ export async function salvarEtapaPadraoAcao(_: Estado, f: FormData): Promise<Est
     id: texto(f, "id") || undefined,
     nome: texto(f, "nome"),
     paiId: texto(f, "paiId") || undefined,
+    escala: f.has("escala") ? texto(f, "escala") : undefined,
   });
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("salva") };
 }
@@ -98,4 +101,10 @@ export async function definirEtapaPadraoAtivaAcao(_: Estado, f: FormData): Promi
   const t = await getTranslations("etapas.mensagens");
   const r = await definirEtapaPadraoAtiva(await acesso(), texto(f, "id"), texto(f, "ativa") === "sim");
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("salva") };
+}
+
+export async function excluirEtapaPadraoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("etapas.mensagens");
+  const r = await excluirEtapaPadrao(await acesso(), texto(f, "id"));
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("removida") };
 }

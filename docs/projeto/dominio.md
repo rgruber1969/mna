@@ -481,6 +481,12 @@ Regras construídas (itens 9 e 10, respostas E1–E7, 2026-11-19):
   participantes (sino).
 * **Alcance por etapa**: a participação pode valer só para algumas etapas
   ou subetapas; a pessoa vê só essas (e a etapa-mãe como contexto).
+* **Escala na linha do tempo** (2026-11-19): cada etapa padrão tem uma
+  escala (padrão 100%; pós-closing 20%, porque dura anos); a linha do tempo
+  encolhe o período dela na mesma proporção. Copiada para o negócio e
+  ajustável na etapa do negócio.
+* **Etapa padrão pode ser excluída** (com as subetapas): os negócios têm
+  cópias próprias e não mudam.
 * **Linha do tempo** (item 10): barras pelas datas, só leitura; a edição
   gráfica (arrastar e ligar dependências) aparece como demonstração.
 

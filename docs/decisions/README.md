@@ -63,6 +63,7 @@ projeto e em `docs/projeto/`.
 | Nome do processo em PT-BR | "Negócio" nas telas, e-mails e textos; "deal" só como nome interno (código, banco, documentação) | 2026-11-19 |
 | Listas | Paginação numerada no servidor (25 por página; 10, 50 ou 100), total visível, ordenação por coluna; página, busca, filtros e ordem no endereço; componente único para todas as listas | 2026-11-19 |
 | Telas de cadastro grandes | Abas por assunto, um único Salvar, aba com erro sinalizada e aberta sozinha, aba no endereço; criação com formulário curto e o restante nas abas | 2026-11-19 |
+| Configurações | Um item de menu "Configurações", com abas por assunto (Geral e os cadastros auxiliares); cadastros auxiliares em tabela, com as ações em colunas e inclusão na última linha ("Adicionar") | 2026-11-19 |
 
 ## Substituídas
 

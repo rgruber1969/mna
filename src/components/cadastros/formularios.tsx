@@ -11,9 +11,7 @@ import {
   criarGrupoAcao,
   revelarDadosSensiveisAcao,
   salvarEmpresaAcao,
-  salvarPapelAcao,
   salvarPessoaAcao,
-  salvarTipoDeVinculoAcao,
   type EstadoEmpresa,
 } from "@/app/acoes/cadastros";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
@@ -721,89 +719,6 @@ export function FormNovoVinculo({
 }
 
 // --- Cadastros gerais ------------------------------------------------------------------
-
-export function FormPapel({
-  papel,
-  perfis,
-}: {
-  papel?: { id: string; nome: string; perfilSugeridoId: string | null; lado: string | null };
-  perfis: { id: string; nome: string }[];
-}) {
-  const t = useTranslations("cadastros.formularios");
-  const tc = useTranslations("comum");
-  const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarPapelAcao);
-  return (
-    <form action={salvar} className="py-2">
-      <Mensagem estado={estado} />
-      {papel && <input type="hidden" name="id" value={papel.id} />}
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          name="nome"
-          aria-label={papel ? t("nomeDoPapel", { nome: papel.nome }) : t("nomeDoNovoPapel")}
-          defaultValue={papel?.nome}
-          placeholder={t("novoPapel")}
-          required
-          className={`${estiloCampo} sm:w-64`}
-        />
-        <select
-          name="perfilSugeridoId"
-          aria-label={papel ? t("perfilSugeridoPara", { nome: papel.nome }) : t("perfilSugeridoNovoPapel")}
-          defaultValue={papel?.perfilSugeridoId ?? ""}
-          className={`${estiloCampo} sm:w-56`}
-        >
-          <option value="">{t("semPerfilSugerido")}</option>
-          {perfis.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nome}
-            </option>
-          ))}
-        </select>
-        <select
-          name="lado"
-          aria-label={papel ? t("ladoDoPapelPara", { nome: papel.nome }) : t("ladoDoNovoPapel")}
-          defaultValue={papel?.lado ?? ""}
-          className={`${estiloCampo} sm:w-40`}
-        >
-          <option value="">{t("semLado")}</option>
-          <option value="vendedor">{t("ladoVendedor")}</option>
-          <option value="comprador">{t("ladoComprador")}</option>
-        </select>
-        <button type="submit" disabled={salvando} className="text-primary text-sm font-medium">
-          {papel ? tc("salvar") : t("adicionarPapel")}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-export function FormTipoDeVinculo({ tipo }: { tipo?: { id: string; nome: string; comPercentual: boolean } }) {
-  const t = useTranslations("cadastros.formularios");
-  const tc = useTranslations("comum");
-  const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarTipoDeVinculoAcao);
-  return (
-    <form action={salvar} className="py-2">
-      <Mensagem estado={estado} />
-      {tipo && <input type="hidden" name="id" value={tipo.id} />}
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          name="nome"
-          aria-label={tipo ? t("nomeDoTipo", { nome: tipo.nome }) : t("nomeDoNovoTipo")}
-          defaultValue={tipo?.nome}
-          placeholder={t("novoTipo")}
-          required
-          className={`${estiloCampo} sm:w-64`}
-        />
-        <label className="text-muted flex items-center gap-1 text-sm">
-          <input type="checkbox" name="comPercentual" value="sim" defaultChecked={tipo?.comPercentual} />{" "}
-          {t("comPercentual")}
-        </label>
-        <button type="submit" disabled={salvando} className="text-primary text-sm font-medium">
-          {tipo ? tc("salvar") : t("adicionarTipo")}
-        </button>
-      </div>
-    </form>
-  );
-}
 
 /** Liga uma empresa já cadastrada como sócia desta empresa. */
 export function FormNovaParticipacao({

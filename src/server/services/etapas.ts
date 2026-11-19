@@ -39,6 +39,7 @@ const Nome = z.string().trim().min(2, "etapas.erros.nomeObrigatorio").max(120, "
 export const ETAPAS_PADRAO: {
   codigo: string;
   nome: string;
+  escala?: number;
   subetapas?: { codigo: string; nome: string }[];
 }[] = [
   { codigo: "prospeccao", nome: "Prospecção" },
@@ -57,7 +58,7 @@ export const ETAPAS_PADRAO: {
   { codigo: "qpa", nome: "QPA" },
   { codigo: "condicoes", nome: "QPA → Closing" },
   { codigo: "closing", nome: "Closing" },
-  { codigo: "pos-closing", nome: "Pós-closing" },
+  { codigo: "pos-closing", nome: "Pós-closing", escala: 20 },
 ];
 
 /** Cria as etapas padrão do tenant, se ele não tiver nenhuma (cadastros padrão). */
@@ -68,7 +69,7 @@ export async function completarEtapasPadrao(tx: Tx, tenantId: string): Promise<v
   for (const e of ETAPAS_PADRAO) {
     const [pai] = await tx
       .insert(etapaPadrao)
-      .values({ tenantId, nome: e.nome, ordem: ordem++, padrao: e.codigo })
+      .values({ tenantId, nome: e.nome, ordem: ordem++, padrao: e.codigo, escala: e.escala ?? 100 })
       .returning({ id: etapaPadrao.id });
     let o = 1;
     for (const s of e.subetapas ?? [])
@@ -89,11 +90,21 @@ export async function copiarEtapasParaNegocio(tx: Tx, tenantId: string, dealId: 
   for (const p of padroes.filter((x) => !x.paiId)) {
     const [nova]: { id: string }[] = await tx
       .insert(dealEtapa)
-      .values({ tenantId, dealId, nome: p.nome, ordem: p.ordem, dependeDeId: anterior })
+      .values({
+        tenantId,
+        dealId,
+        etapaPadraoId: p.id,
+        nome: p.nome,
+        ordem: p.ordem,
+        escala: p.escala,
+        dependeDeId: anterior,
+      })
       .returning({ id: dealEtapa.id });
     anterior = nova.id;
     for (const s of padroes.filter((x) => x.paiId === p.id))
-      await tx.insert(dealEtapa).values({ tenantId, dealId, paiId: nova.id, nome: s.nome, ordem: s.ordem });
+      await tx
+        .insert(dealEtapa)
+        .values({ tenantId, dealId, paiId: nova.id, etapaPadraoId: s.id, nome: s.nome, ordem: s.ordem });
   }
 }
 
@@ -104,6 +115,7 @@ export type EtapaPadrao = {
   nome: string;
   ordem: number;
   ativa: boolean;
+  escala: number;
   subetapas: EtapaPadrao[];
 };
 
@@ -115,16 +127,26 @@ export async function listarEtapasPadrao(acesso: Acesso | null): Promise<EtapaPa
   const montar = (paiId: string | null): EtapaPadrao[] =>
     todas
       .filter((e) => e.paiId === paiId)
-      .map((e) => ({ id: e.id, nome: e.nome, ordem: e.ordem, ativa: e.ativa, subetapas: montar(e.id) }));
+      .map((e) => ({
+        id: e.id,
+        nome: e.nome,
+        ordem: e.ordem,
+        ativa: e.ativa,
+        escala: e.escala,
+        subetapas: montar(e.id),
+      }));
   return montar(null);
 }
 
 /** Inclui ou renomeia uma etapa (ou subetapa, com `paiId`) padrão. Negócios existentes não mudam. */
 export async function salvarEtapaPadrao(
   acesso: Acesso | null,
-  dados: { id?: string; nome: string; paiId?: string },
+  dados: { id?: string; nome: string; paiId?: string; escala?: string },
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "cadastros", dados.id ? "editar" : "criar");
+  const escala = dados.escala === undefined || dados.escala === "" ? undefined : Number(dados.escala);
+  if (escala !== undefined && !(Number.isInteger(escala) && escala >= 5 && escala <= 100))
+    return { erro: "etapas.erros.escalaInvalida", campo: "escala" };
   const nome = Nome.safeParse(dados.nome);
   if (!nome.success) return { erro: nome.error.issues[0]?.message ?? "etapas.erros.nomeObrigatorio" };
   const paiId = dados.paiId && uuidValido(dados.paiId) ? dados.paiId : null;
@@ -133,7 +155,7 @@ export async function salvarEtapaPadrao(
       if (!uuidValido(dados.id)) return { erro: "etapas.erros.naoEncontrada" };
       const feito = await tx
         .update(etapaPadrao)
-        .set({ nome: nome.data })
+        .set({ nome: nome.data, ...(escala !== undefined ? { escala } : {}) })
         .where(eq(etapaPadrao.id, dados.id))
         .returning({ id: etapaPadrao.id });
       return feito.length ? { ok: true } : { erro: "etapas.erros.naoEncontrada" };
@@ -184,6 +206,32 @@ export async function moverEtapaPadrao(
     await tx.update(etapaPadrao).set({ ordem: e.ordem }).where(eq(etapaPadrao.id, outra.id));
     return { ok: true } as const;
   });
+}
+
+/**
+ * Exclui uma etapa padrão (com as subetapas). Os negócios guardam cópias
+ * próprias das etapas, então nada muda neles (só perdem a ligação com a
+ * origem, usada para agrupar no kanban).
+ */
+export async function excluirEtapaPadrao(acesso: Acesso | null, id: string): Promise<Resultado> {
+  const a = await exigirPermissao(acesso, "cadastros", "excluir");
+  if (!uuidValido(id)) return { erro: "etapas.erros.naoEncontrada" };
+  const nome = await comTenant(a.tenant.id, async (tx) => {
+    const [e] = await tx.select().from(etapaPadrao).where(eq(etapaPadrao.id, id));
+    if (!e) return null;
+    const ids = [
+      id,
+      ...(await tx.select({ id: etapaPadrao.id }).from(etapaPadrao).where(eq(etapaPadrao.paiId, id))).map(
+        (x) => x.id,
+      ),
+    ];
+    await tx.update(dealEtapa).set({ etapaPadraoId: null }).where(inArray(dealEtapa.etapaPadraoId, ids));
+    await tx.delete(etapaPadrao).where(inArray(etapaPadrao.id, ids));
+    return e.nome;
+  });
+  if (!nome) return { erro: "etapas.erros.naoEncontrada" };
+  await auditar(a, "etapa_padrao.excluida", "tenant", a.tenant.id, { nome });
+  return { ok: true };
 }
 
 /** Desativa (não entra em negócios novos) ou reativa uma etapa padrão. */
@@ -290,6 +338,7 @@ export type EtapaDoNegocio = {
   fimReal: string | null;
   dependeDeId: string | null;
   dependeDe: string | null;
+  escala: number;
   responsaveis: string[];
   observacoes: string | null;
   podeEditar: boolean;
@@ -334,6 +383,7 @@ export async function etapasDoNegocio(
     fimReal: e.fimReal,
     dependeDeId: e.dependeDeId,
     dependeDe: e.dependeDeId ? (nomeDe.get(e.dependeDeId) ?? null) : null,
+    escala: e.escala,
     responsaveis: e.responsaveis,
     observacoes: e.observacoes,
     podeEditar: !fechado && concede(ctx.matrizNa(e.id), "etapas", "editar"),
@@ -373,6 +423,15 @@ const DadosEtapa = z.object({
     .trim()
     .max(2000, "etapas.erros.textoLongo")
     .transform((v) => v || null),
+  escala: z
+    .string()
+    .trim()
+    .default("")
+    .transform((v) => (v ? Number(v) : undefined))
+    .refine(
+      (v) => v === undefined || (Number.isInteger(v) && v >= 5 && v <= 100),
+      "etapas.erros.escalaInvalida",
+    ),
 });
 
 /** Edita nome, datas, dependência e observações da etapa ("Etapas × editar" naquela etapa). */

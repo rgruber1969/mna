@@ -919,6 +919,8 @@ export const etapaPadrao = pgTable(
     nome: text("nome").notNull(),
     ordem: integer("ordem").notNull(),
     ativa: boolean("ativa").notNull().default(true),
+    /** Escala da etapa na linha do tempo (100 = tamanho real; ex.: 20 para o pós-closing, que dura anos). */
+    escala: integer("escala").notNull().default(100),
     padrao: text("padrao"),
     criadoEm: criadoEm(),
   },
@@ -935,8 +937,12 @@ export const dealEtapa = pgTable(
       .notNull()
       .references(() => deal.id, { onDelete: "cascade" }),
     paiId: uuid("pai_id"),
+    /** Etapa padrão de origem (para agrupar negócios por etapa no kanban). */
+    etapaPadraoId: uuid("etapa_padrao_id"),
     nome: text("nome").notNull(),
     ordem: integer("ordem").notNull(),
+    /** Escala na linha do tempo (copiada da etapa padrão; 100 = real). */
+    escala: integer("escala").notNull().default(100),
     situacao: text("situacao")
       .$type<"nao_iniciada" | "andamento" | "concluida" | "pulada">()
       .notNull()
