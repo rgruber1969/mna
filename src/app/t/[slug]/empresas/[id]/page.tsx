@@ -7,7 +7,9 @@ import { getTranslations } from "next-intl/server";
 import { excluirEmpresaAcao, inativarEmpresaAcao, removerVinculoAcao } from "@/app/acoes/cadastros";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarTiposDeVinculo } from "@/server/services/cadastros";
+import { CATEGORIAS_DE_EMPRESA, listarAnexos } from "@/server/services/anexos";
 import { listarGrupos, obterEmpresa } from "@/server/services/empresas";
+import { AnexosDoCadastro } from "@/components/cadastros/anexos";
 import { listarPessoas } from "@/server/services/pessoas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCep, formatarCnpj } from "@/config/documentos";
@@ -28,11 +30,14 @@ async function Painel({ id }: { id: Promise<string> }) {
   const t = await getTranslations("cadastros.empresas");
   const e = await obterEmpresa(acesso, await id);
   if (!e) notFound();
-  const [grupos, podeEditar, podeExcluir, podeCriar] = await Promise.all([
+  const tAnexos = await getTranslations("cadastros.anexos");
+  const [grupos, podeEditar, podeExcluir, podeCriar, podeBaixar, anexos] = await Promise.all([
     listarGrupos(acesso),
     pode(acesso, "empresas", "editar"),
     pode(acesso, "empresas", "excluir"),
     pode(acesso, "empresas", "criar"),
+    pode(acesso, "empresas", "baixar"),
+    listarAnexos(acesso, { tipo: "empresa", id: e.id }),
   ]);
   const [tipos, pessoas] = podeEditar
     ? await Promise.all([listarTiposDeVinculo(acesso), listarPessoas(acesso)])
@@ -125,6 +130,16 @@ async function Painel({ id }: { id: Promise<string> }) {
                 tipos={tipos}
               />
             )}
+          </Cartao>
+          <Cartao largura="max-w-md">
+            <Titulo sobre={tAnexos("sobre")}>{tAnexos("titulo")}</Titulo>
+            <AnexosDoCadastro
+              alvo={{ tipo: "empresa", id: e.id }}
+              anexos={anexos}
+              categorias={CATEGORIAS_DE_EMPRESA}
+              podeEnviar={podeEditar}
+              podeBaixar={podeBaixar}
+            />
           </Cartao>
           {e.cnpj && podeCriar && podeEditar && (
             <Cartao largura="max-w-md">

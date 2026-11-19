@@ -1,7 +1,9 @@
 import { and, asc, count, eq, ilike, isNotNull, isNull, ne, or } from "drizzle-orm";
 import { z } from "zod";
 import { comTenant } from "@/server/db/cliente";
+import { apagarArquivo } from "@/server/arquivos/armazenamento";
 import {
+  anexoCadastro,
   empresa,
   eventoAuditoria,
   grupoEconomico,
@@ -311,7 +313,16 @@ export async function excluirEmpresa(acesso: Acesso | null, id: string): Promise
   );
   if (!e) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   if (e.doContratante) return { erro: "cadastros.erros.empresaContratanteNaoExcluivel" };
-  await comTenant(a.tenant.id, (tx) => tx.delete(empresa).where(eq(empresa.id, id)));
+  // Anexos saem junto (cascata no banco); os arquivos, do armazenamento.
+  const anexos = await comTenant(a.tenant.id, async (tx) => {
+    const chaves = await tx
+      .select({ chave: anexoCadastro.chave })
+      .from(anexoCadastro)
+      .where(eq(anexoCadastro.empresaId, id));
+    await tx.delete(empresa).where(eq(empresa.id, id));
+    return chaves;
+  });
+  await Promise.all(anexos.map((x) => apagarArquivo(x.chave).catch(() => undefined)));
   await auditar(a, "empresa.excluida", "empresa", id);
   return { ok: true };
 }

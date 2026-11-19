@@ -38,6 +38,13 @@ registrado.
       por tenant em envelope; falta o cofre de produção (hoje só o local,
       com a chave mestra no `.env`).
 
+- [ ] **Antivírus real na produção (ADR-0016):** hoje só o verificador
+      simulado (`services/antivirus.ts`). Atenção: os anexos do cadastro são
+      verificados **antes** de serem criptografados; um verificador que
+      lê o armazenamento (GuardDuty no S3) não enxerga arquivos
+      criptografados. Para eles, verificar no servidor antes da
+      criptografia (ex.: área de quarentena temporária ou ClamAV).
+
 - [ ] **Resumos automáticos com IA ou sem IA** (mensagens e histórico de
       documento): na produção, manter o resumo local sem IA (já usado no
       desenvolvimento e na demonstração) ou adotar IA, decidindo provedor e

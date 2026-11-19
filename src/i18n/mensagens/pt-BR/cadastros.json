@@ -238,6 +238,46 @@
       "tipoJaExiste": "Já existe um tipo de vínculo com este nome.",
       "tipoNaoEncontrado": "Tipo de vínculo não encontrado.",
       "tipoEmUso": "Tipo em uso em {n, plural, one {# vínculo} other {# vínculos}}: remova os vínculos antes."
+    },
+    "anexos": {
+      "titulo": "Documentos anexados",
+      "sobre": "Anexos",
+      "explicacao": "Guardados criptografados. Formatos: PDF, PNG, JPG, WebP, DOCX ou XLSX, até 10 MB.",
+      "nenhum": "Nenhum documento anexado.",
+      "categoria": "Tipo de documento",
+      "descricao": "Descrição (opcional)",
+      "arquivo": "Arquivo",
+      "enviar": "Anexar",
+      "enviando": "Enviando…",
+      "enviado": "Documento anexado.",
+      "baixar": "Baixar",
+      "remover": "Remover",
+      "removido": "Documento removido.",
+      "confirmarRemover": "Remover o documento {nome}? Não dá para desfazer.",
+      "enviadoPor": "{nome}, {data}",
+      "bloqueado": "Bloqueado pelo antivírus",
+      "verificando": "Verificando",
+      "categorias": {
+        "cartao-cnpj": "Comprovante de CNPJ",
+        "contrato-social": "Contrato social",
+        "alteracao-contratual": "Alteração contratual",
+        "procuracao": "Procuração",
+        "certidao": "Certidão",
+        "cpf": "CPF",
+        "rg": "RG",
+        "cnh": "CNH",
+        "comprovante-endereco": "Comprovante de endereço",
+        "certidao-estado-civil": "Certidão de nascimento ou casamento",
+        "outro": "Outro"
+      },
+      "erros": {
+        "categoria": "Escolha o tipo de documento.",
+        "naoEncontrado": "Documento ou cadastro não encontrado.",
+        "escolhaArquivo": "Escolha um arquivo.",
+        "grande": "O arquivo passa de 10 MB.",
+        "formato": "Formato não aceito. Use PDF, PNG, JPG, WebP, DOCX ou XLSX.",
+        "bloqueado": "O arquivo foi bloqueado pelo antivírus e não foi guardado. Os administradores foram avisados."
+      }
     }
   }
 }

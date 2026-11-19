@@ -3,6 +3,7 @@ import {
   bigint,
   date,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -608,6 +609,40 @@ export const vinculoPessoaEmpresa = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index("vinculo_pessoa_empresa_empresa_idx").on(t.tenantId, t.empresaId), isolamento()],
+).enableRLS();
+
+/**
+ * Anexo do cadastro de uma empresa ou de uma pessoa (ex.: comprovante de CNPJ,
+ * contrato social, RG). O arquivo vai para o armazenamento já criptografado
+ * com a chave do tenant (ADR-0017, adendo de 2026-11-19) e só é baixado pelo
+ * servidor, com permissão e auditoria. O nome do arquivo pode conter dado
+ * pessoal: fica criptografado também.
+ */
+export const anexoCadastro = pgTable(
+  "anexo_cadastro",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    empresaId: uuid("empresa_id").references(() => empresa.id, { onDelete: "cascade" }),
+    pessoaId: uuid("pessoa_id").references(() => pessoa.id, { onDelete: "cascade" }),
+    /** Categoria fixa (ex.: "contrato-social", "rg"); o texto vem das mensagens. */
+    categoria: text("categoria").notNull(),
+    descricao: text("descricao"),
+    nomeArquivoCifrado: text("nome_arquivo_cifrado").notNull(),
+    tipoDeConteudo: text("tipo_de_conteudo").notNull(),
+    tamanho: integer("tamanho").notNull(),
+    chave: text("chave").notNull(),
+    /** Verificação de antivírus (ADR-0016): verificando, disponivel ou bloqueado. */
+    situacao: text("situacao").notNull().default("verificando"),
+    enviadoPor: uuid("enviado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    check("anexo_cadastro_alvo_ck", sql`(empresa_id is null) <> (pessoa_id is null)`),
+    index("anexo_cadastro_empresa_idx").on(t.tenantId, t.empresaId),
+    index("anexo_cadastro_pessoa_idx").on(t.tenantId, t.pessoaId),
+    isolamento(),
+  ],
 ).enableRLS();
 
 /** Preferências do menu lateral de cada usuário no tenant: favoritos e recolhido. */

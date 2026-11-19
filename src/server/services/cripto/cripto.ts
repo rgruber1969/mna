@@ -204,3 +204,49 @@ export async function destruirChavesDoTenant(tenantId: string, db: Banco = banco
   cache.delete(tenantId);
   for (const id of chavesAntigas.keys()) if (id.startsWith(`${tenantId}:`)) chavesAntigas.delete(id);
 }
+
+// --- Arquivos (anexos do cadastro; ADR-0017, adendo de 2026-11-19) -----------------
+
+/** Formato binário do arquivo criptografado: 1 byte de formato, 4 da versão da chave, 12 do IV, cifra e etiqueta. */
+const FORMATO_ARQUIVO = 1;
+
+/**
+ * Criptografa um arquivo do tenant. O `contexto` (ex.: id do anexo) também
+ * amarra o arquivo: trocado de lugar, mesmo dentro do tenant, não abre.
+ */
+export async function criptografarArquivo(
+  tenantId: string,
+  contexto: string,
+  conteudo: Uint8Array,
+  db: Banco = banco(),
+): Promise<Uint8Array> {
+  const { versao, chave } = await chaveAtualDoTenant(tenantId, db);
+  const iv = randomBytes(12);
+  const c = createCipheriv(ALGORITMO, chave, iv);
+  c.setAAD(Buffer.from(`${tenantId}:${contexto}`));
+  const cabecalho = Buffer.alloc(5);
+  cabecalho.writeUInt8(FORMATO_ARQUIVO, 0);
+  cabecalho.writeUInt32BE(versao, 1);
+  return Buffer.concat([cabecalho, iv, c.update(conteudo), c.final(), c.getAuthTag()]);
+}
+
+/** Descriptografa um arquivo do tenant. Falha se for de outro tenant, de outro contexto ou tiver sido alterado. */
+export async function descriptografarArquivo(
+  tenantId: string,
+  contexto: string,
+  cifrado: Uint8Array,
+  db: Banco = banco(),
+): Promise<Uint8Array> {
+  const b = Buffer.from(cifrado);
+  if (b.length < 5 + 12 + 16 || b.readUInt8(0) !== FORMATO_ARQUIVO)
+    throw new Error("Arquivo criptografado em formato desconhecido.");
+  const chave = await chaveDaVersao(tenantId, b.readUInt32BE(1), db);
+  const d = createDecipheriv(ALGORITMO, chave, b.subarray(5, 17));
+  d.setAAD(Buffer.from(`${tenantId}:${contexto}`));
+  d.setAuthTag(b.subarray(-16));
+  try {
+    return Buffer.concat([d.update(b.subarray(17, -16)), d.final()]);
+  } catch {
+    throw new Error("Não foi possível descriptografar o arquivo (outro tenant, outro anexo ou alterado).");
+  }
+}

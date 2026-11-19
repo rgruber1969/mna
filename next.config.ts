@@ -8,9 +8,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
-  // Envio da foto da conta (até 2 MB) por server action.
+  // Envios por server action: foto da conta (até 2 MB) e anexos do cadastro (até 10 MB).
   experimental: {
-    serverActions: { bodySizeLimit: "3mb" },
+    serverActions: { bodySizeLimit: "11mb" },
     // Cache em disco do Turbopack no desenvolvimento desligado: neste Windows ele
     // entrava num ciclo de "restart" (página recarregando sem parar).
     turbopackFileSystemCacheForDev: false,

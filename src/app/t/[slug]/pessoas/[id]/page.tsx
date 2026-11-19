@@ -9,6 +9,8 @@ import { obterAcesso } from "@/server/services/acesso";
 import { listarTiposDeVinculo } from "@/server/services/cadastros";
 import { listarEmpresas } from "@/server/services/empresas";
 import { obterPessoa } from "@/server/services/pessoas";
+import { CATEGORIAS_DE_PESSOA, listarAnexos } from "@/server/services/anexos";
+import { AnexosDoCadastro } from "@/components/cadastros/anexos";
 import { pode } from "@/server/services/permissoes/verificador";
 import { formatarCep } from "@/config/documentos";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
@@ -28,10 +30,13 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
   const t = await getTranslations("cadastros.pessoas");
   const p = await obterPessoa(acesso, await id);
   if (!p) notFound();
-  const [podeEditar, podeExcluir, { parecidas }] = await Promise.all([
+  const tAnexos = await getTranslations("cadastros.anexos");
+  const [podeEditar, podeExcluir, { parecidas }, podeBaixar, anexos] = await Promise.all([
     pode(acesso, "empresas", "editar"),
     pode(acesso, "empresas", "excluir"),
     consulta,
+    pode(acesso, "empresas", "baixar"),
+    listarAnexos(acesso, { tipo: "pessoa", id: p.id }),
   ]);
   const [tipos, empresas] = podeEditar
     ? await Promise.all([listarTiposDeVinculo(acesso), listarEmpresas(acesso)])
@@ -133,6 +138,16 @@ async function Painel({ id, consulta }: { id: Promise<string>; consulta: Promise
                 tipos={tipos}
               />
             )}
+          </Cartao>
+          <Cartao largura="max-w-md">
+            <Titulo sobre={tAnexos("sobre")}>{tAnexos("titulo")}</Titulo>
+            <AnexosDoCadastro
+              alvo={{ tipo: "pessoa", id: p.id }}
+              anexos={anexos}
+              categorias={CATEGORIAS_DE_PESSOA}
+              podeEnviar={podeEditar}
+              podeBaixar={podeBaixar}
+            />
           </Cartao>
           <Cartao largura="max-w-md">
             <Titulo sobre={t("sobrePessoa")}>{t("acessoAoSistema")}</Titulo>

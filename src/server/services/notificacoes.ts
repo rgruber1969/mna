@@ -11,7 +11,12 @@ import { exigirTenant, type Acesso } from "./acesso";
  */
 
 /** Tipos existentes (cada um tem texto em `notificacoes.tipos.<tipo>` nas mensagens). */
-export const TIPOS_DE_NOTIFICACAO = ["convite_aceito", "perfil_alterado", "dois_fatores_redefinido"] as const;
+export const TIPOS_DE_NOTIFICACAO = [
+  "convite_aceito",
+  "perfil_alterado",
+  "dois_fatores_redefinido",
+  "arquivo_bloqueado",
+] as const;
 export type TipoDeNotificacao = (typeof TIPOS_DE_NOTIFICACAO)[number];
 
 type Tx = Parameters<Parameters<Banco["transaction"]>[0]>[0];

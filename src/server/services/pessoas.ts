@@ -1,7 +1,15 @@
 import { and, asc, eq, ilike, isNull, ne, or } from "drizzle-orm";
 import { z } from "zod";
 import { comTenant } from "@/server/db/cliente";
-import { empresa, pessoa, tipoVinculo, usuario, vinculoPessoaEmpresa } from "@/server/db/esquema";
+import { apagarArquivo } from "@/server/arquivos/armazenamento";
+import {
+  anexoCadastro,
+  empresa,
+  pessoa,
+  tipoVinculo,
+  usuario,
+  vinculoPessoaEmpresa,
+} from "@/server/db/esquema";
 import { enderecoDaFoto } from "./foto-da-conta";
 import { cpfValido, mascararCpf, mascararDocumento, soDigitos } from "@/config/documentos";
 import type { ErroDeServico } from "@/i18n/servidor";
@@ -408,7 +416,16 @@ export async function excluirPessoa(acesso: Acesso | null, id: string): Promise<
   );
   if (!p) return { erro: "cadastros.erros.pessoaNaoEncontrada" };
   if (p.usuarioId) return { erro: "cadastros.erros.pessoaTemAcesso" };
-  await comTenant(a.tenant.id, (tx) => tx.delete(pessoa).where(eq(pessoa.id, id)));
+  // Anexos saem junto (cascata no banco); os arquivos, do armazenamento.
+  const anexos = await comTenant(a.tenant.id, async (tx) => {
+    const chaves = await tx
+      .select({ chave: anexoCadastro.chave })
+      .from(anexoCadastro)
+      .where(eq(anexoCadastro.pessoaId, id));
+    await tx.delete(pessoa).where(eq(pessoa.id, id));
+    return chaves;
+  });
+  await Promise.all(anexos.map((x) => apagarArquivo(x.chave).catch(() => undefined)));
   await auditar(a, "pessoa.excluida", "pessoa", id);
   return { ok: true };
 }

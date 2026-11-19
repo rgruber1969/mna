@@ -55,7 +55,8 @@
     "tipos": {
       "convite_aceito": "{nome} aceitou o convite",
       "perfil_alterado": "Seu perfil no sistema foi alterado pelo administrador",
-      "dois_fatores_redefinido": "Sua verificação em duas etapas foi redefinida pelo administrador"
+      "dois_fatores_redefinido": "Sua verificação em duas etapas foi redefinida pelo administrador",
+      "arquivo_bloqueado": "Um arquivo enviado a um cadastro foi bloqueado pelo antivírus"
     }
   },
   "rodape": {

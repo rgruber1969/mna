@@ -5,6 +5,7 @@ import { obterStatusDoSistema } from "@/server/services/sistema";
 import { obterAcesso } from "@/server/services/acesso";
 import { lerFotoDaConta } from "@/server/services/foto-da-conta";
 import { lerImagemDaMarca } from "@/server/services/marca";
+import { baixarAnexo } from "@/server/services/anexos";
 import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
@@ -52,6 +53,25 @@ api.get("/conta/foto/:usuarioId", async (c) => {
     "content-type": "image/webp",
     "cache-control": "private, max-age=86400",
     "x-content-type-options": "nosniff",
+  });
+});
+
+/**
+ * Download de anexo do cadastro (uso interno das telas; fora do Swagger). O
+ * servidor confere a permissão, descriptografa e audita (anexos.ts); sempre
+ * como anexo, nunca exibido no navegador (ADR-0016).
+ */
+api.get("/anexos/:id", async (c) => {
+  const acesso = await obterAcesso(c.req.raw.headers);
+  const arquivo = await baixarAnexo(acesso, c.req.param("id")).catch(() => null);
+  if (!arquivo) return c.body(null, 404);
+  const nome = encodeURIComponent(arquivo.nome);
+  return c.body(arquivo.conteudo as Uint8Array<ArrayBuffer>, 200, {
+    "content-type": arquivo.tipo,
+    "content-disposition": `attachment; filename*=UTF-8''${nome}`,
+    "cache-control": "private, no-store",
+    "x-content-type-options": "nosniff",
+    "content-security-policy": "default-src 'none'",
   });
 });
 
