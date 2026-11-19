@@ -13,7 +13,7 @@ arquivo criado) ou `recusado`.
 
 | # | Instrução ou procedimento | Ocorrências | Proposta | Situação |
 |---|---|---|---|---|
-| 1 | Ao gravar um ADR, atualizar o README das decisões e, se houver conceito novo, as notas explicativas | 17 (ADR-0003 a 0019) | Skill "registrar ADR" (template MADR, numeração, README, notas, commit) | aprovado: [.claude/skills/registrar-adr](../../.claude/skills/registrar-adr/SKILL.md) |
+| 1 | Ao gravar um ADR, atualizar o README das decisões e, se houver conceito novo, as notas explicativas | 18 (ADR-0003 a 0020) | Skill "registrar ADR" (template MADR, numeração, README, notas, commit) | aprovado: [.claude/skills/registrar-adr](../../.claude/skills/registrar-adr/SKILL.md) |
 | 2 | Explicar em linguagem simples cada ferramenta ou conceito novo adotado | 5 | Já coberto pelo `~/.claude/CLAUDE.md` | observando |
 | 3 | Reiniciar o servidor de desenvolvimento (encerrar o processo da porta e subir `pnpm dev`) | 4 | Script `pnpm dev:reiniciar` | aprovado: [scripts/dev-reiniciar.mjs](../../scripts/dev-reiniciar.mjs) |
 | 4 | Ao instalar pacote, conferir builds bloqueados pelo pnpm e registrar em `pnpm-workspace.yaml` | 3 | Hook após `pnpm add` | aprovado: [.claude/hooks/apos-instalar.mjs](../../.claude/hooks/apos-instalar.mjs) |

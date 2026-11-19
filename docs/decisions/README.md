@@ -28,6 +28,7 @@ projeto e em `docs/projeto/`.
 | [0017](0017-gestao-de-chaves-de-criptografia.md) | Chaves | Envelope com chave por tenant em todos os ambientes; chave mestra no `.env` / Vercel (fora da produção) ou AWS KMS (produção) |
 | [0018](0018-ferramentas-de-desenvolvimento.md) | Ferramentas | Drizzle; shadcn/ui + Tailwind; Vitest + Playwright; ESLint + Prettier; pnpm |
 | [0019](0019-identidade-unica-e-vinculo-por-tenant.md) | Identidade | Conta única + vínculo por tenant (tabelas próprias, RLS); sessão única por endereço |
+| [0020](0020-internacionalizacao-preparada-desde-a-v1.md) | Idiomas | Base de idiomas (next-intl) desde a V1, só português; textos em arquivos de mensagens; idioma por usuário |
 
 ## Premissas de arquitetura
 
@@ -57,7 +58,7 @@ projeto e em `docs/projeto/`.
 | Checklist ASVS | 253 requisitos L1/L2 classificados em [docs/seguranca/asvs-checklist.md](../seguranca/asvs-checklist.md) | 2026-11-17 |
 | Entrada de desenvolvimento | Só e-mail, ligada por variável, só em `*.localhost`; a aplicação recusa iniciar em produção com ela ([autenticacao-e-sessao.md](../projeto/autenticacao-e-sessao.md)) | 2026-11-18 |
 | Consulta de CNPJ e CEP | BrasilAPI (CNPJ, com quadro de sócios) e ViaCEP (CEP, com a BrasilAPI de reserva); gratuitos, sem chave; consulta pelo servidor; fora do ar, preenchimento manual | 2026-11-18 |
-| Menu das áreas logadas | Menu lateral à esquerda, com grupos, recolher/expandir, busca nas opções e favoritos guardados no banco por usuário e tenant; no celular, gaveta | 2026-11-18 |
+| Layout das áreas logadas | Inspirado no tema de referência indicado pelo responsável: menu lateral recolhível, cabeçalho flutuante com busca, sino de notificações e menu do usuário, rodapé em cartão; modo claro e escuro por usuário; menu lateral com grupos e favoritos guardados no banco | 2026-11-19 |
 
 ## Substituídas
 

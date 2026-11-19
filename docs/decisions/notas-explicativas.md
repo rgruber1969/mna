@@ -502,3 +502,18 @@ Claude Code. Decisões em vigor: [README](README.md).
 * **Índice cego:** uma "impressão digital" do CPF (HMAC). Dois CPFs iguais
   dão a mesma impressão, então o sistema acha duplicados sem guardar o CPF
   legível; pela impressão não dá para voltar ao CPF.
+
+## Internacionalização (ADR-0020)
+
+* **Internacionalização (i18n):** preparar o sistema para vários idiomas.
+  Em vez de escrever "Salvar" no código, a tela pede a chave
+  `acoes.salvar`, e um arquivo por idioma diz o texto: `pt-BR.json` tem
+  "Salvar"; `en.json` teria "Save". É como um cardápio com a mesma
+  numeração em várias línguas: a cozinha (o código) só conhece o número.
+* **next-intl:** a biblioteca que faz essa troca no Next.js, nas telas
+  montadas no servidor e no navegador.
+* **Intl:** recurso do próprio navegador e do Node que formata datas,
+  números e moeda no jeito de cada país (18/11/2026 × 11/18/2026; 1.234,56 ×
+  1,234.56).
+* **Por que agora:** com o sistema ainda pequeno, mover os textos custa uma
+  etapa; depois, custaria passar por centenas de arquivos.

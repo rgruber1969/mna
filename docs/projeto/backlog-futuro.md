@@ -42,6 +42,12 @@ versão 1" é anotado aqui.
 
 ## Identidade visual e acesso
 
+- [ ] Traduções para inglês e espanhol (a base de idiomas está pronta desde a
+      V1, ADR-0020): traduzir os arquivos de mensagens e revisar com pessoa
+      fluente
+- [ ] Busca do cabeçalho também em registros (empresas, pessoas, deals),
+      respeitando as permissões; na V1 ela procura só as opções do menu
+
 - [ ] Login com Google e Microsoft (item 3 da V1, simulado na demonstração):
       contas OAuth nos consoles do Google e da Microsoft, só para e-mails
       já convidados (cadastro continua só por convite)
