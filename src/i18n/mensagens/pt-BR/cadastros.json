@@ -30,7 +30,8 @@
       "remover": "Remover",
       "receitaFederal": "Receita Federal",
       "quadroDeSocios": "Quadro de sócios",
-      "sociosExplicacao": "Os sócios informados pela Receita podem ser cadastrados como pessoas, um a um."
+      "sociosExplicacao": "Os sócios informados pela Receita podem ser cadastrados como pessoas, um a um.",
+      "avisoContratanteSemCnpj": "Esta é a empresa do contratante e está sem CNPJ. Preencha o CNPJ para evitar que ela seja cadastrada de novo."
     },
     "pessoas": {
       "sobre": "Cadastro",
@@ -177,7 +178,9 @@
       "nomeDoNovoTipo": "Nome do novo tipo de vínculo",
       "novoTipo": "Novo tipo de vínculo",
       "comPercentual": "Com percentual",
-      "adicionarTipo": "Adicionar tipo"
+      "adicionarTipo": "Adicionar tipo",
+      "completarExistente": "Sim, completar o cadastro de {nome}",
+      "criarOutra": "Não, cadastrar outra empresa"
     },
     "mensagens": {
       "empresaSalva": "Empresa salva.",
@@ -237,7 +240,8 @@
       "papelNaoEncontrado": "Papel não encontrado.",
       "tipoJaExiste": "Já existe um tipo de vínculo com este nome.",
       "tipoNaoEncontrado": "Tipo de vínculo não encontrado.",
-      "tipoEmUso": "Tipo em uso em {n, plural, one {# vínculo} other {# vínculos}}: remova os vínculos antes."
+      "tipoEmUso": "Tipo em uso em {n, plural, one {# vínculo} other {# vínculos}}: remova os vínculos antes.",
+      "empresaParecidaSemCnpj": "Já existe a empresa \"{nome}\", sem CNPJ, com nome parecido. É a mesma empresa?"
     },
     "anexos": {
       "titulo": "Documentos anexados",
@@ -314,7 +318,10 @@
         "escolhaArquivo": "Escolha um documento em PDF.",
         "soPdf": "Só PDF pode ser lido. Outros formatos podem ser guardados como anexo no cadastro.",
         "selecaoInvalida": "A seleção enviada não é válida. Leia o documento de novo."
-      }
+      },
+      "parecida": "Já existe \"{nome}\", sem CNPJ, com nome parecido:",
+      "completarParecida": "completar esse cadastro",
+      "criarNova": "cadastrar como nova empresa"
     }
   }
 }

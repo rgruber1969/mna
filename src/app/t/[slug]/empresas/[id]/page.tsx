@@ -57,6 +57,11 @@ async function Painel({ id }: { id: Promise<string> }) {
             {t("voltar")}
           </Link>
           <Titulo sobre={e.doContratante ? t("sobreContratante") : t("sobreEmpresa")}>{e.razaoSocial}</Titulo>
+          {e.doContratante && !e.cnpj && !e.identificadorEstrangeiro && (
+            <p className="text-warning bg-warning-surface mb-4 rounded-md px-3 py-2 text-sm">
+              {t("avisoContratanteSemCnpj")}
+            </p>
+          )}
           {e.inativaEm && (
             <p className="text-warning bg-warning-surface mb-4 rounded-md px-3 py-2 text-sm">
               {t("avisoInativa")}

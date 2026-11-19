@@ -5,7 +5,7 @@ import type { AcessoTenant } from "./acesso";
 import { listarAnexos } from "./anexos";
 import { completarCadastrosPadrao } from "./cadastros-padrao";
 import { confirmarCadastro, proporCadastro, type Proposta } from "./cadastro-por-documento";
-import { obterEmpresa } from "./empresas";
+import { completarEmpresa, criarEmpresa, nomesParecidos, obterEmpresa } from "./empresas";
 import { encontrarDocumentos, lerDocumento } from "./leitor-de-documentos";
 import { pdfComTexto } from "@/testes/pdf-de-teste";
 
@@ -198,6 +198,53 @@ describe("proposta e confirmação", () => {
     });
     expect(await confirmarCadastro(a, { empresas: "x" }, null)).toEqual({
       erro: "cadastros.porDocumento.erros.selecaoInvalida",
+    });
+  });
+});
+
+describe("empresa parecida sem CNPJ (ex.: a do contratante)", () => {
+  it("compara nomes palavra por palavra, sem forma jurídica nem acentos", () => {
+    expect(nomesParecidos("Bastos Tigre", "BASTOS-TIGRE, LOPES E FREITAS ADVOGADOS")).toBe(true);
+    expect(nomesParecidos("Padaria São João Ltda", "PADARIA SAO JOAO")).toBe(true);
+    expect(nomesParecidos("Bastos", "Bastos Tigre")).toBe(false);
+    expect(nomesParecidos("Tigre Bastos", "Bastos Tigre Advogados")).toBe(false);
+  });
+
+  it("ao criar, avisa da parecida; completar preenche a existente sem duplicar", async () => {
+    const a = acesso();
+    const dados = {
+      cnpj: "11.444.777/0001-61",
+      identificadorEstrangeiro: "",
+      razaoSocial: "POR DOCUMENTO CONSULTORIA LTDA",
+      nomeFantasia: "",
+      cnae: "",
+      cep: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "Rio de Janeiro",
+      uf: "RJ",
+      pais: "",
+      site: "",
+      telefone: "",
+      email: "",
+      observacoes: "",
+      grupoId: "",
+    };
+    const r = await criarEmpresa(a, dados);
+    if (!("erro" in r) || !r.parecida) throw new Error("devia avisar da parecida");
+    expect(r.erro).toBe("cadastros.erros.empresaParecidaSemCnpj");
+
+    const c = await completarEmpresa(a, r.parecida.id, dados);
+    if ("erro" in c) throw new Error(c.erro);
+    const e = await obterEmpresa(a, r.parecida.id);
+    expect(e).toMatchObject({
+      doContratante: true,
+      cnpj: "11444777000161",
+      razaoSocial: "POR DOCUMENTO CONSULTORIA LTDA",
+      nomeFantasia: "Por Documento",
+      cidade: "Rio de Janeiro",
     });
   });
 });

@@ -95,7 +95,8 @@ const DadosEmpresa = z.object({
 });
 
 export type DadosEmpresa = z.input<typeof DadosEmpresa>;
-export type ResultadoComId = { id: string } | (ErroDeServico & { existenteId?: string });
+export type ResultadoComId =
+  { id: string } | (ErroDeServico & { existenteId?: string; parecida?: { id: string; nome: string } });
 
 function validar(dados: DadosEmpresa) {
   const r = DadosEmpresa.safeParse(dados);
@@ -238,12 +239,124 @@ async function cnpjEmUso(a: AcessoTenant, cnpj: string | null, exceto?: string):
   return ja?.id ?? null;
 }
 
-export async function criarEmpresa(acesso: Acesso | null, dados: DadosEmpresa): Promise<ResultadoComId> {
+// --- Empresa parecida sem CNPJ ------------------------------------------------------
+
+/** Palavras que não distinguem empresas (forma jurídica e conectivos). */
+const PALAVRAS_GENERICAS = new Set([
+  "LTDA",
+  "SA",
+  "S",
+  "A",
+  "ME",
+  "EPP",
+  "EIRELI",
+  "E",
+  "DE",
+  "DA",
+  "DO",
+  "DAS",
+  "DOS",
+]);
+
+/** "Bastos-Tigre, Lopes e Freitas Ltda." → ["BASTOS", "TIGRE", "LOPES", "FREITAS"] */
+function palavrasDoNome(nome: string | null | undefined): string[] {
+  return (nome ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .split(" ")
+    .filter((p) => p && !PALAVRAS_GENERICAS.has(p));
+}
+
+/** Um nome está contido no outro, palavra por palavra e na ordem (ex.: "Bastos Tigre" em "Bastos-Tigre, Lopes e Freitas")? */
+export function nomesParecidos(a: string | null | undefined, b: string | null | undefined): boolean {
+  const [x, y] = [palavrasDoNome(a), palavrasDoNome(b)];
+  if (x.length === 0 || y.length === 0) return false;
+  const [curto, longo] = x.length <= y.length ? [x, y] : [y, x];
+  if (curto.length === 1 && longo.length > 1) return false; // uma palavra só é pouco para afirmar
+  const texto = ` ${longo.join(" ")} `;
+  return texto.includes(` ${curto.join(" ")} `);
+}
+
+/**
+ * Empresa do tenant sem CNPJ e sem identificador estrangeiro com nome parecido
+ * (ex.: a empresa do contratante, criada só com o nome). Evita cadastrar de
+ * novo quem já existe sem documento.
+ */
+export async function empresaParecidaSemCnpj(
+  a: AcessoTenant,
+  nomes: (string | null | undefined)[],
+): Promise<{ id: string; nome: string } | null> {
+  const candidatas = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .select({ id: empresa.id, razaoSocial: empresa.razaoSocial, nomeFantasia: empresa.nomeFantasia })
+      .from(empresa)
+      .where(and(isNull(empresa.cnpj), isNull(empresa.identificadorEstrangeiro))),
+  );
+  const achada = candidatas.find((c) =>
+    nomes.some((n) => nomesParecidos(n, c.razaoSocial) || nomesParecidos(n, c.nomeFantasia)),
+  );
+  return achada ? { id: achada.id, nome: achada.razaoSocial } : null;
+}
+
+/**
+ * Completa uma empresa existente com os dados novos: preenche só o que está
+ * vazio (inclusive o CNPJ), sem apagar nada do que já havia.
+ */
+export async function completarEmpresa(
+  acesso: Acesso | null,
+  id: string,
+  dados: DadosEmpresa,
+): Promise<ResultadoComId> {
+  const a = await exigirPermissao(acesso, "empresas", "editar");
+  if (!uuidValido(id)) return { erro: "cadastros.erros.empresaNaoEncontrada" };
+  const d = validar(dados);
+  if ("erro" in d) return d;
+  const existente = await cnpjEmUso(a, d.cnpj, id);
+  if (existente) return { erro: "cadastros.erros.empresaCnpjJaExisteOutra", existenteId: existente };
+  const [atual] = await comTenant(a.tenant.id, (tx) => tx.select().from(empresa).where(eq(empresa.id, id)));
+  if (!atual) return { erro: "cadastros.erros.empresaNaoEncontrada" };
+  const mudancas: Record<string, unknown> = {};
+  for (const [campo, valor] of Object.entries(d)) {
+    const antes = (atual as Record<string, unknown>)[campo];
+    if (valor !== null && valor !== "" && (antes === null || antes === "" || antes === undefined))
+      mudancas[campo] = valor;
+  }
+  // A razão social oficial (com CNPJ) substitui o nome provisório de quem não tinha CNPJ.
+  if (!atual.cnpj && d.cnpj && d.razaoSocial) mudancas.razaoSocial = d.razaoSocial;
+  if (!atual.nomeFantasia && !d.nomeFantasia && mudancas.razaoSocial)
+    mudancas.nomeFantasia = atual.razaoSocial;
+  if (Object.keys(mudancas).length > 0)
+    await comTenant(a.tenant.id, (tx) =>
+      tx
+        .update(empresa)
+        .set({ ...mudancas, atualizadoEm: new Date() })
+        .where(eq(empresa.id, id)),
+    );
+  await auditar(a, "empresa.completada", "empresa", id);
+  return { id };
+}
+
+export async function criarEmpresa(
+  acesso: Acesso | null,
+  dados: DadosEmpresa,
+  opcoes: { ignorarParecida?: boolean } = {},
+): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "empresas", "criar");
   const d = validar(dados);
   if ("erro" in d) return d;
   const existente = await cnpjEmUso(a, d.cnpj);
   if (existente) return { erro: "cadastros.erros.empresaCnpjJaExiste", existenteId: existente };
+  if (!opcoes.ignorarParecida) {
+    const parecida = await empresaParecidaSemCnpj(a, [d.razaoSocial, d.nomeFantasia]);
+    if (parecida)
+      return {
+        erro: "cadastros.erros.empresaParecidaSemCnpj",
+        parametros: { nome: parecida.nome },
+        parecida,
+      };
+  }
   const [e] = await comTenant(a.tenant.id, (tx) =>
     tx
       .insert(empresa)

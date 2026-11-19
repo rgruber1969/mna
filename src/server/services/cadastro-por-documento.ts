@@ -9,7 +9,7 @@ import { anexarArquivo, CATEGORIAS_DE_EMPRESA, CATEGORIAS_DE_PESSOA } from "./an
 import { verificarArquivo } from "./antivirus";
 import { consultarCnpj } from "./consultas-publicas";
 import { indiceCego } from "./cripto/cripto";
-import { auditar, criarEmpresa } from "./empresas";
+import { auditar, completarEmpresa, criarEmpresa, empresaParecidaSemCnpj } from "./empresas";
 import { lerDocumento, normalizarNome } from "./leitor-de-documentos";
 import { adicionarVinculo, criarPessoa, nomeProprio, pessoaVazia } from "./pessoas";
 import { exigirPermissao } from "./permissoes/verificador";
@@ -50,6 +50,8 @@ export type EmpresaProposta = {
   /** Dados vieram da base pública? (fora do ar: só o CNPJ) */
   consultada: boolean;
   existenteId: string | null;
+  /** Empresa já cadastrada sem CNPJ e com nome parecido (ex.: a do contratante): pode ser completada. */
+  parecida: { id: string; nome: string } | null;
   socios: SocioProposto[];
 };
 
@@ -151,6 +153,7 @@ export async function proporCadastro(
       uf: d?.endereco.uf ?? "",
       consultada: !!d,
       existenteId: existente?.id ?? null,
+      parecida: existente || !d ? null : await empresaParecidaSemCnpj(a, [d.razaoSocial, d.nomeFantasia]),
       socios,
     });
   }
@@ -180,6 +183,8 @@ const SelecaoSchema = z.object({
       z.object({
         incluir: z.boolean(),
         existenteId: uuidOuNulo,
+        /** Completar esta empresa existente (sem CNPJ) em vez de criar outra. */
+        completarId: uuidOuNulo.optional(),
         cnpj: z.string(),
         razaoSocial: Texto,
         nomeFantasia: Texto,
@@ -266,27 +271,36 @@ export async function confirmarCadastro(
 
   for (const e of s.data.empresas.filter((x) => x.incluir)) {
     let empresaId = e.existenteId;
-    if (!empresaId) {
-      const criada = await criarEmpresa(a, {
-        cnpj: formatarCnpj(e.cnpj),
-        identificadorEstrangeiro: "",
-        razaoSocial: e.razaoSocial,
-        nomeFantasia: e.nomeFantasia,
-        cnae: e.cnae,
-        cep: e.cep ? formatarCep(e.cep) : "",
-        logradouro: e.logradouro,
-        numero: e.numero,
-        complemento: e.complemento,
-        bairro: e.bairro,
-        cidade: e.cidade,
-        uf: e.uf,
-        pais: "",
-        site: "",
-        telefone: e.telefone,
-        email: e.email,
-        observacoes: "",
-        grupoId: "",
-      });
+    const dados = {
+      cnpj: formatarCnpj(e.cnpj),
+      identificadorEstrangeiro: "",
+      razaoSocial: e.razaoSocial,
+      nomeFantasia: e.nomeFantasia,
+      cnae: e.cnae,
+      cep: e.cep ? formatarCep(e.cep) : "",
+      logradouro: e.logradouro,
+      numero: e.numero,
+      complemento: e.complemento,
+      bairro: e.bairro,
+      cidade: e.cidade,
+      uf: e.uf,
+      pais: "",
+      site: "",
+      telefone: e.telefone,
+      email: e.email,
+      observacoes: "",
+      grupoId: "",
+    };
+    if (!empresaId && e.completarId) {
+      const completada = await completarEmpresa(a, e.completarId, dados);
+      if ("erro" in completada) {
+        r.falhas.push({ item: e.razaoSocial || formatarCnpj(e.cnpj), erro: completada });
+        continue;
+      }
+      empresaId = completada.id;
+    } else if (!empresaId) {
+      // A escolha entre completar e criar já foi feita na conferência.
+      const criada = await criarEmpresa(a, dados, { ignorarParecida: true });
       if ("erro" in criada) {
         r.falhas.push({ item: e.razaoSocial || formatarCnpj(e.cnpj), erro: criada });
         continue;

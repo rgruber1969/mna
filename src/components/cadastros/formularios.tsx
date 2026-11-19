@@ -13,6 +13,7 @@ import {
   salvarPapelAcao,
   salvarPessoaAcao,
   salvarTipoDeVinculoAcao,
+  type EstadoEmpresa,
 } from "@/app/acoes/cadastros";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso, Botao } from "@/components/ui/basicos";
@@ -155,6 +156,7 @@ export function FormEmpresa({
 }) {
   const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarEmpresaAcao);
+  const parecida = (estado as EstadoEmpresa)?.parecida;
   const [valores, mudar] = useValores(inicial);
   const [buscando, iniciar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -183,7 +185,31 @@ export function FormEmpresa({
   return (
     <form action={salvar}>
       {id && <input type="hidden" name="id" value={id} />}
-      <Mensagem estado={estado} />
+      {parecida ? (
+        <div
+          role="alert"
+          className="border-warning bg-warning-surface mb-4 rounded-md border px-3 py-3 text-sm"
+        >
+          <p className="text-text mb-2">{estado?.erro}</p>
+          <input type="hidden" name="parecidaId" value={parecida.id} />
+          <div className="flex flex-wrap gap-2">
+            <Botao type="submit" name="decisao" value="completar" disabled={salvando}>
+              {t("completarExistente", { nome: parecida.nome })}
+            </Botao>
+            <button
+              type="submit"
+              name="decisao"
+              value="criar"
+              disabled={salvando}
+              className="border-border text-text rounded-md border px-3 py-2 text-sm font-medium"
+            >
+              {t("criarOutra")}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <Mensagem estado={estado} />
+      )}
       <fieldset disabled={!podeSalvar}>
         <Secao titulo={t("identificacao")}>
           <div className="sm:col-span-2">

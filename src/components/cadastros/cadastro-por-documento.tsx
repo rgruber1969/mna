@@ -14,6 +14,7 @@ import { Aviso, Botao } from "@/components/ui/basicos";
 
 type EmpresaSel = Omit<Proposta["empresas"][number], "socios"> & {
   incluir: boolean;
+  completarId: string | null;
   socios: (Proposta["empresas"][number]["socios"][number] & { incluir: boolean })[];
 };
 type PessoaSel = Proposta["pessoas"][number] & { incluir: boolean };
@@ -66,6 +67,7 @@ export function CadastroPorDocumento() {
         p.empresas.map((e) => ({
           ...e,
           incluir: true,
+          completarId: e.parecida?.id ?? null,
           socios: e.socios.map((s) => ({ ...s, incluir: true })),
         })),
       );
@@ -163,6 +165,29 @@ export function CadastroPorDocumento() {
               {situacao(e.existenteId)}
               {!e.consultada && !e.existenteId && (
                 <p className="text-warning mb-2 text-xs">{t("semConsulta")}</p>
+              )}
+              {e.parecida && !e.existenteId && (
+                <div className="text-text mb-2 text-xs">
+                  <p className="mb-1">{t("parecida", { nome: e.parecida.nome })}</p>
+                  <label className="mr-4 inline-flex items-center gap-1">
+                    <input
+                      type="radio"
+                      name={`parecida-${i}`}
+                      checked={e.completarId === e.parecida.id}
+                      onChange={() => mudarEmpresa(i, { completarId: e.parecida!.id })}
+                    />
+                    {t("completarParecida")}
+                  </label>
+                  <label className="inline-flex items-center gap-1">
+                    <input
+                      type="radio"
+                      name={`parecida-${i}`}
+                      checked={e.completarId === null}
+                      onChange={() => mudarEmpresa(i, { completarId: null })}
+                    />
+                    {t("criarNova")}
+                  </label>
+                </div>
               )}
               {!e.existenteId && (
                 <label className="mb-2 block text-xs">

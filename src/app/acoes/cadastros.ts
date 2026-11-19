@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
+  completarEmpresa,
   criarEmpresa,
   criarGrupo,
   definirEmpresaInativa,
@@ -84,13 +85,22 @@ export async function consultarCepAcao(cep: string): Promise<Endereco | null> {
 
 // --- Empresas ----------------------------------------------------------------------------
 
-export async function salvarEmpresaAcao(_: Estado, f: FormData): Promise<Estado> {
+export type EstadoEmpresa = (NonNullable<Estado> & { parecida?: { id: string; nome: string } }) | undefined;
+
+export async function salvarEmpresaAcao(_: EstadoEmpresa, f: FormData): Promise<EstadoEmpresa> {
   const t = await getTranslations("cadastros.mensagens");
   const id = texto(f, "id");
+  const decisao = texto(f, "decisao");
+  // Empresa parecida sem CNPJ: o usuário escolheu completar a existente ou criar outra.
+  if (!id && decisao === "completar") {
+    const alvo = texto(f, "parecidaId");
+    const r = await completarEmpresa(await acesso(), alvo, dadosEmpresa(f));
+    return "erro" in r ? { erro: await traduzirErro(r) } : { destino: `/empresas/${r.id}` };
+  }
   const r = id
     ? await editarEmpresa(await acesso(), id, dadosEmpresa(f))
-    : await criarEmpresa(await acesso(), dadosEmpresa(f));
-  if ("erro" in r) return { erro: await traduzirErro(r) };
+    : await criarEmpresa(await acesso(), dadosEmpresa(f), { ignorarParecida: decisao === "criar" });
+  if ("erro" in r) return { erro: await traduzirErro(r), parecida: r.parecida };
   return id ? { ok: t("empresaSalva") } : { destino: `/empresas/${r.id}` };
 }
 
