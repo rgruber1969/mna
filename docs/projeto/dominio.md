@@ -156,6 +156,19 @@ banco e estes documentos). Pontos-chave:
   deal.
 * Participantes: empresas com seus papéis e usuários com seu perfil naquele
   deal.
+* **Participação e lado** (decidido em 2026-11-19):
+  * Cada participação registra **qual empresa a pessoa representa** naquele
+    deal; o lado (vendedor ou comprador) vem do papel dessa empresa. A mesma
+    pessoa pode estar em lados diferentes em deals diferentes, com o mesmo
+    perfil.
+  * Ao incluir a pessoa, o sistema oferece só as empresas dela (vínculos)
+    que já estão no deal: se houver uma, escolhe sozinho; se houver mais de
+    uma, pede para escolher.
+  * **Pessoa sem empresa** (ex.: consultor autônomo): o lado é escolhido
+    direto na participação.
+  * **Mesma empresa nos dois lados do mesmo deal** (conflito de interesse):
+    o sistema avisa e só prossegue com confirmação expressa, registrada na
+    auditoria (pode ser endurecido para bloqueio).
 * Contém etapas, documentos, tarefas e contratos de serviço.
 * **Logomarca da empresa vendedora** pode ser enviada no próprio deal (usada
   no e-book e no OnePager). A marca do sistema continua a do tenant (white
