@@ -22,6 +22,7 @@ import {
   encerrarAcessosExternos,
   prorrogarExclusividade,
   salvarDiasDeAviso,
+  salvarObservacoesDoFunil,
 } from "@/server/services/negocios-andamento";
 import type { Estado } from "./acesso";
 
@@ -163,4 +164,15 @@ export async function salvarDiasDeAvisoAcao(_: Estado, f: FormData): Promise<Est
   const t = await getTranslations("negocios.mensagens");
   const r = await salvarDiasDeAviso(await acesso(), texto(f, "dias"));
   return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("configuracoesSalvas") };
+}
+
+export async function salvarObservacoesDoFunilAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await salvarObservacoesDoFunil(
+    await acesso(),
+    texto(f, "dealId"),
+    texto(f, "id"),
+    texto(f, "observacoes"),
+  );
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("observacoesSalvas") };
 }

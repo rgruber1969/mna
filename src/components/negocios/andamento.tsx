@@ -9,6 +9,7 @@ import {
   definirExclusividadeAcao,
   encerrarAcessosExternosAcao,
   prorrogarExclusividadeAcao,
+  salvarObservacoesDoFunilAcao,
   salvarDiasDeAvisoAcao,
 } from "@/app/acoes/negocios";
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
@@ -35,7 +36,65 @@ type Cartao = {
   situacao: string;
   equipe: string[];
   historico: { de: string; para: string; quando: Date; ator: string | null }[];
+  observacoes: string | null;
 };
+
+/** Observações do cartão: texto livre, editado ali mesmo. */
+function ObservacoesDoCartao({
+  dealId,
+  cartao,
+  podeEditar,
+}: {
+  dealId: string;
+  cartao: Cartao;
+  podeEditar: boolean;
+}) {
+  const t = useTranslations("negocios.andamento");
+  const [editando, setEditando] = useState(false);
+  const [estado, salvar, salvando] = useAcaoComAtualizacao(async (anterior, dados) => {
+    const r = await salvarObservacoesDoFunilAcao(anterior, dados);
+    if (r?.ok) setEditando(false);
+    return r;
+  });
+  if (editando)
+    return (
+      <form action={salvar} className="mt-2">
+        {estado?.erro && <Aviso>{estado.erro}</Aviso>}
+        <input type="hidden" name="dealId" value={dealId} />
+        <input type="hidden" name="id" value={cartao.id} />
+        <textarea
+          name="observacoes"
+          rows={4}
+          maxLength={4000}
+          defaultValue={cartao.observacoes ?? ""}
+          aria-label={t("observacoesDe", { nome: cartao.nome })}
+          className="border-border bg-background text-text focus:border-primary w-full rounded-md border px-2 py-1 text-xs outline-none"
+        />
+        <span className="flex gap-2">
+          <button type="submit" disabled={salvando} className="text-primary text-xs font-medium">
+            {t("salvarObservacoes")}
+          </button>
+          <button type="button" onClick={() => setEditando(false)} className="text-muted text-xs">
+            {t("cancelar")}
+          </button>
+        </span>
+      </form>
+    );
+  return (
+    <div className="mt-1">
+      {cartao.observacoes && (
+        <p className="text-text line-clamp-3 text-xs whitespace-pre-line" title={cartao.observacoes}>
+          {cartao.observacoes}
+        </p>
+      )}
+      {podeEditar && (
+        <button type="button" onClick={() => setEditando(true)} className="text-primary text-xs">
+          {cartao.observacoes ? t("editarObservacoes") : t("adicionarObservacoes")}
+        </button>
+      )}
+    </div>
+  );
+}
 
 /**
  * Funil de compradoras em kanban: arrastar o cartão muda a situação. Para
@@ -119,7 +178,9 @@ export function KanbanDoFunil({
       {cartoes.length === 0 ? (
         <p className="text-muted text-sm">{t("funilVazio")}</p>
       ) : (
-        <div className={`-mx-1 flex gap-3 overflow-x-auto pb-2 ${movendo ? "opacity-70" : ""}`}>
+        <div
+          className={`grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6 ${movendo ? "opacity-70" : ""}`}
+        >
           {FUNIL.map((coluna) => {
             const daColuna = cartoes.filter((c) => c.situacao === coluna);
             return (
@@ -138,7 +199,7 @@ export function KanbanDoFunil({
                   if (arrastado) mover(arrastado, coluna);
                   setArrastado(null);
                 }}
-                className={`bg-background w-56 shrink-0 rounded-lg border p-2 ${sobre === coluna ? "border-primary" : "border-border"}`}
+                className={`bg-background min-w-0 rounded-lg border p-2 ${sobre === coluna ? "border-primary" : "border-border"}`}
               >
                 <h3 className="text-muted mb-2 flex items-center justify-between px-1 text-xs font-semibold tracking-wide uppercase">
                   {tf(coluna)}
@@ -156,7 +217,7 @@ export function KanbanDoFunil({
                       onDragEnd={() => setArrastado(null)}
                       className={`border-border bg-surface rounded-md border p-2 text-sm shadow-sm ${podeEditar ? "cursor-grab" : ""}`}
                     >
-                      <p className="text-text font-medium">{c.nome}</p>
+                      <p className="text-text text-xs font-semibold break-words">{c.nome}</p>
                       {c.equipe.length > 0 && (
                         <p className="text-muted text-xs">{t("equipe", { nomes: c.equipe.join(", ") })}</p>
                       )}
@@ -187,6 +248,7 @@ export function KanbanDoFunil({
                           </button>
                         )}
                       </div>
+                      <ObservacoesDoCartao dealId={dealId} cartao={c} podeEditar={podeEditar} />
                       {aberto === c.id && (
                         <ol className="border-border text-muted mt-2 border-t pt-1 text-xs">
                           {c.historico.map((h, i) => (

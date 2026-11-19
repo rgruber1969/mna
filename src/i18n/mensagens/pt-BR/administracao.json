@@ -217,7 +217,6 @@
     },
     "permissoes": {
       "menu": "Menu",
-      "legenda": "{sigla} = {acao}",
       "acoes": {
         "ver": "Ver",
         "criar": "Criar",
@@ -227,16 +226,6 @@
         "comentar": "Comentar",
         "aprovar": "Aprovar",
         "liberar": "Liberar ao comprador"
-      },
-      "siglas": {
-        "ver": "V",
-        "criar": "C",
-        "editar": "E",
-        "excluir": "X",
-        "baixar": "B",
-        "comentar": "Co",
-        "aprovar": "Ap",
-        "liberar": "Li"
       },
       "recursos": {
         "painel": "Painel",
@@ -261,7 +250,11 @@
         "documentos": "Só nas versões a que a pessoa recebeu acesso de quem as enviou.",
         "mensagens": "Mensagens são imutáveis.",
         "funil": "Só para quem está do lado vendedor do negócio."
-      }
+      },
+      "todas": "Todas",
+      "nenhuma": "Nenhuma",
+      "permitido": "permitido",
+      "negado": "não permitido"
     },
     "identidade": {
       "sobre": "Administração",

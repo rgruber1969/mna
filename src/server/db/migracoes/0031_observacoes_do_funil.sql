@@ -1,0 +1,1 @@
+ALTER TABLE "deal_empresa" ADD COLUMN "observacoes" text;

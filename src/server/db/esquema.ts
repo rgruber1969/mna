@@ -796,6 +796,8 @@ export const dealEmpresa = pgTable(
      * etc.): a compradora para quem trabalha. Vê o negócio como ela.
      */
     atuaParaId: uuid("atua_para_id").references(() => empresa.id, { onDelete: "no action" }),
+    /** Observações sobre a compradora no funil (cartão do kanban; lado vendedor). */
+    observacoes: text("observacoes"),
     criadoEm: criadoEm(),
   },
   (t) => [

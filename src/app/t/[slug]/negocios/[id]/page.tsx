@@ -94,7 +94,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
-        <Cartao largura="max-w-4xl">
+        <Cartao largura="max-w-6xl">
           <Link href="/negocios" className="text-primary text-sm">
             {t("voltar")}
           </Link>

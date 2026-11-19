@@ -145,7 +145,8 @@
       "externosEncerrados": "Acessos externos encerrados.",
       "exclusividadeDefinida": "Exclusividade definida.",
       "exclusividadeProrrogada": "Exclusividade prorrogada.",
-      "configuracoesSalvas": "Configurações salvas."
+      "configuracoesSalvas": "Configurações salvas.",
+      "observacoesSalvas": "Observação salva."
     },
     "erros": {
       "textoLongo": "Texto longo demais.",
@@ -247,7 +248,11 @@
       "equipe": "Equipe: {nomes}",
       "moverPara": "Mover {nome} para",
       "moverParaCurto": "Mover para…",
-      "historicoDoCartao": "Histórico ({n})"
+      "historicoDoCartao": "Histórico ({n})",
+      "observacoesDe": "Observações sobre {nome}",
+      "salvarObservacoes": "Salvar",
+      "adicionarObservacoes": "+ Observação",
+      "editarObservacoes": "Editar observação"
     },
     "historico": {
       "nenhum": "Nenhum evento registrado.",
@@ -262,7 +267,8 @@
         "negocio_participante_removido": "{pessoa} removido(a) do negócio",
         "negocio_exclusividade_definida": "Exclusividade com {empresa} de {inicio} a {fim}",
         "negocio_exclusividade_prorrogada": "Exclusividade prorrogada de {de} para {para}",
-        "negocio_acessos_externos_encerrados": "Acessos externos encerrados ({quantidade})"
+        "negocio_acessos_externos_encerrados": "Acessos externos encerrados ({quantidade})",
+        "negocio_funil_observacoes": "{empresa}: observação do funil alterada"
       }
     },
     "configuracoes": {

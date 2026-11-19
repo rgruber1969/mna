@@ -87,3 +87,4 @@ versão 1" é anotado aqui.
 
 - [ ] Servidor MCP (arquitetura já preparada)
 - [ ] Sistemas externos consumindo a API (a identificar)
+- [ ] Anonimização: importar planilhas fora do modelo (e até PDF ou DOCX), interpretando colunas e formatos diferentes (resposta X3, 2026-11-19)

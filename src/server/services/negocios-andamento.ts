@@ -132,6 +132,7 @@ export type CartaoDoFunil = {
   /** Escritórios, advisors etc. que trabalham para esta compradora. */
   equipe: string[];
   historico: { de: string; para: string; quando: Date; ator: string | null }[];
+  observacoes: string | null;
 };
 
 /** Funil de compradoras do negócio (aba kanban), ou null se a pessoa não o vê. */
@@ -166,6 +167,14 @@ export async function funilDoNegocio(
       )
       .orderBy(desc(eventoAuditoria.ocorridoEm));
     const fechado = n?.situacao === "concluido" || n?.situacao === "encerrado";
+    const obs = new Map(
+      (
+        await tx
+          .select({ id: dealEmpresa.id, observacoes: dealEmpresa.observacoes })
+          .from(dealEmpresa)
+          .where(eq(dealEmpresa.dealId, dealId))
+      ).map((o) => [o.id, o.observacoes]),
+    );
     return {
       podeEditar: !fechado && (a.administrador || (visao.matriz.funil ?? []).includes("editar")),
       cartoes: empresas
@@ -175,6 +184,7 @@ export async function funilDoNegocio(
           empresaId: e.empresaId,
           nome: nomes.get(e.empresaId) ?? "—",
           situacao: e.situacaoFunil!,
+          observacoes: obs.get(e.id) ?? null,
           equipe: empresas
             .filter((x) => x.atuaParaId === e.empresaId)
             .map((x) => nomes.get(x.empresaId) ?? "—"),
@@ -189,6 +199,36 @@ export async function funilDoNegocio(
         })),
     };
   });
+}
+
+/** Observações do cartão da compradora no funil (quem pode mexer no funil). */
+export async function salvarObservacoesDoFunil(
+  acesso: Acesso | null,
+  dealId: string,
+  dealEmpresaId: string,
+  texto: string,
+): Promise<Resultado> {
+  const a = await exigirFunil(acesso, dealId, "editar");
+  const fechado = await negocioFechado(a, dealId);
+  if (fechado) return fechado;
+  if (!uuidValido(dealEmpresaId)) return { erro: "negocios.erros.empresaNaoEncontrada" };
+  const valor = texto.trim().slice(0, 4000) || null;
+  const feito = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .update(dealEmpresa)
+      .set({ observacoes: valor })
+      .where(
+        and(
+          eq(dealEmpresa.id, dealEmpresaId),
+          eq(dealEmpresa.dealId, dealId),
+          isNotNull(dealEmpresa.situacaoFunil),
+        ),
+      )
+      .returning({ empresaId: dealEmpresa.empresaId }),
+  );
+  if (!feito[0]) return { erro: "negocios.erros.naoECompradora" };
+  await auditar(a, "negocio.funil_observacoes", "deal", dealId, { empresaId: feito[0].empresaId });
+  return { ok: true };
 }
 
 /**

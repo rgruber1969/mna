@@ -328,15 +328,19 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(admin.getByRole("link", { name: "Coordenador do negócio" })).toBeVisible();
   await admin.getByRole("link", { name: "Usuário externo" }).click();
   const visivel = (l: ReturnType<Page["getByLabel"]>) => l.filter({ visible: true });
-  await expect(visivel(admin.getByLabel("Painel: Ver"))).toBeChecked();
-  await visivel(admin.getByLabel("Auditoria: Ver")).check();
+  // Cada permissão é um botão que acende; a caixa de marcar fica por trás (acessível).
+  const permissao = (nome: string) =>
+    admin.locator("label").filter({ visible: true, has: admin.getByRole("checkbox", { name: nome }) });
+  await expect(permissao("Painel: Ver").getByRole("checkbox")).toBeChecked();
+  await permissao("Auditoria: Ver").click();
+  await expect(permissao("Auditoria: Ver").getByRole("checkbox")).toBeChecked();
   await admin.getByRole("button", { name: "Salvar permissões" }).click();
   await expect(admin.getByText("Permissões salvas.")).toBeVisible();
   await admin.getByRole("button", { name: "Excluir perfil" }).click();
   await expect(admin.getByText("Perfil em uso por 1 usuário(s)", { exact: false })).toBeVisible();
   await admin.getByRole("link", { name: "Usuária E2E" }).click();
   await expect(visivel(admin.getByLabel("Usuário externo"))).toBeChecked();
-  await expect(visivel(admin.getByLabel("Auditoria: Ver"))).toHaveText("✓");
+  await expect(visivel(admin.getByLabel("Auditoria: Ver: permitido"))).toBeVisible();
 
   // 4. O administrador passa a exigir 2FA dela: no próximo acesso, só a configuração.
   await admin.reload();

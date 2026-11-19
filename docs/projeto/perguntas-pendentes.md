@@ -211,28 +211,28 @@ nunca some.
 **Sugestão:** A fazer · Em andamento · Aguardando terceiros · Concluída ·
 Cancelada.
 
-**Resposta:**
+**Resposta:** OK
 
 **T2. Prioridade.**
 
 **Sugestão:** Baixa · Normal · Alta · Urgente (só para ordenar e filtrar;
 sem regra automática).
 
-**Resposta:**
+**Resposta:** OK
 
 **T3. Responsável que é perfil** (ex.: "todos os Advogados"): quem conclui?
 
 **Sugestão:** qualquer pessoa com aquele perfil no negócio conclui, e fica
 registrado quem foi.
 
-**Resposta:**
+**Resposta:** não entendi "Responsável que é perfil** (ex.: "todos os Advogados"): quem conclui?", dê exemplos.
 
 **T4. Lembretes de prazo.**
 
 **Sugestão:** aviso no sino e por e-mail 2 dias antes e no dia do prazo
 (antecedência configurável pelo administrador, como a da exclusividade).
 
-**Resposta:**
+**Resposta:** OK.
 
 **T5. Tarefas automáticas (simuladas na V1).** Quais gatilhos aparecem como
 exemplo?
@@ -241,7 +241,10 @@ exemplo?
 de diligência'"; "Documento pedido sem envio há 7 dias → lembrar quem deve
 enviar"; "Exclusividade termina em 5 dias → tarefa para o Coordenador".
 
-**Resposta:**
+**Resposta:** 
+
+Essa tarefa é criada para o comprador? criar tarefa 'Enviar checklist de diligência'"
+7 dias e 5 dias nos outros exemplos precisam ser confugráveis no Tenant, agrupando todos esses prazos em um bloco tipo "Prazos de notificações e tarefas", por exemplo.
 
 ---
 
@@ -252,7 +255,7 @@ enviar"; "Exclusividade termina em 5 dias → tarefa para o Coordenador".
 **Sugestão:** entram na V1. A @menção só oferece quem tem acesso àquela
 conversa, e a pessoa mencionada recebe aviso no sino e por e-mail.
 
-**Resposta:**
+**Resposta:** OK.
 
 **M2. Aviso de mensagem nova por e-mail.**
 
@@ -260,7 +263,7 @@ conversa, e a pessoa mencionada recebe aviso no sino e por e-mail.
 novas em 2 negócios"), nunca um e-mail por mensagem. Cada pessoa pode
 desligar o resumo.
 
-**Resposta:**
+**Resposta:** OK. Quantidade de horas pode ser 1, mas permitir configurar pelo Tenant.
 
 **M3. Configurações gerais do tenant** (administrador): o que entra nessa
 tela além dos prazos de aviso?
@@ -269,7 +272,7 @@ tela além dos prazos de aviso?
 participações); avisos por e-mail, só no sino ou ambos, por tipo de
 evento; fuso horário (padrão São Paulo).
 
-**Resposta:**
+**Resposta:** OK.
 
 ---
 
@@ -285,7 +288,7 @@ evento; fuso horário (padrão São Paulo).
   (exclusividade, tarefas e participações, com linha do tempo);
 - **embaixo:** gráfico de negócios por etapa.
 
-**Resposta:**
+**Resposta:** OK.
 
 **P2. Dados de exemplo para a demonstração** (você pediu alertas de exemplo
 no sino e na tela principal).
@@ -295,7 +298,7 @@ que cria um negócio fictício completo (empresas, participantes, etapas,
 documentos, tarefas, mensagens e alertas), marcado como exemplo, com aviso
 visível e um botão para apagar tudo. Nada misturado com os dados reais.
 
-**Resposta:**
+**Resposta:** OK.
 
 **P3. Kanban de negócios: arrastar o cartão muda a etapa?**
 
@@ -303,7 +306,7 @@ visível e um botão para apagar tudo. Nada misturado com os dados reais.
 para a frente conclui a etapa atual e inicia a nova, depois de uma
 confirmação.
 
-**Resposta:**
+**Resposta:** OK.
 
 ---
 
@@ -318,7 +321,7 @@ honorários fixos (valor e periodicidade), success fee (percentual e/ou
 valor mínimo), forma de pagamento, conta bancária para pagamento (escolhida
 entre as contas da contratada) e arquivos (versões, como nos documentos).
 
-**Resposta:**
+**Resposta:** contratante e contratada - ambas pode ser mais de uma. Outros atributos: Se os honorários fixos (retainer) são descontados em caso de success fee.
 
 **C2. Contrato sem negócio.** Um mandato pode existir antes do negócio
 (ex.: advisor contratado para procurar compradores)?
@@ -326,7 +329,7 @@ entre as contas da contratada) e arquivos (versões, como nos documentos).
 **Sugestão:** sim. O contrato pode nascer avulso e ser ligado a um negócio
 depois.
 
-**Resposta:**
+**Resposta:** OK.
 
 **C3. Cobrança dos honorários.**
 
@@ -334,7 +337,7 @@ depois.
 estimado sobre o valor da oferta escolhida; emitir cobrança ou nota fiscal
 fica fora.
 
-**Resposta:**
+**Resposta:** OK. Na v1 pode existir um recurso para enviar um e-mail para o setor financeiro da empresa (dados necessários poderiam estar na aba de dados bancários da empresa ou numa aba específica) com os dados para emissão da NF e cobrança.
 
 **C4. Anexo de contas bancárias dos assessores** (como o que você mandou,
 "Anexo 3.1.1(i)(b)").
@@ -343,7 +346,7 @@ fica fora.
 agência, conta, CNPJ e chave Pix das empresas escolhidas), pronto para
 colar no contrato ou exportar em DOCX/XLSX.
 
-**Resposta:**
+**Resposta:** Seria interssante esse botão, gerando este documento e outros, mais especificamente na fase de produção dos anexos do QPA, onde 1 deles apenas descreve os assessores, por exmeplo.
 
 ---
 
@@ -357,14 +360,16 @@ parcelas a prazo (valor e data de cada uma), earnout (fórmula em texto e
 valor estimado), retenções/escrow, condições precedentes (texto), validade
 da oferta e arquivo.
 
-**Resposta:**
+**Resposta:** OK, mas acrescentar: garantias do comprador, garantias do vendedor, índice e condições de correção das parcelas à prazo, condições de transição, período de exclusividade, observações gerais, período de no-compete.
+
+A oferta se conecta no funil Principal / sub funil Compradora? Como?
 
 **O2. Várias versões da oferta da mesma compradora** (contrapropostas).
 
 **Sugestão:** cada nova proposta é um registro, ligado à anterior
 ("rodada 2"), e o histórico mostra a evolução dos valores.
 
-**Resposta:**
+**Resposta:** OK.
 
 **O3. Comparação entre ofertas.**
 
@@ -373,7 +378,7 @@ parcelas trazidas a valor presente por uma taxa informada no negócio) e a
 faixa do valuation (mínimo–máximo). Só quem vê todas as ofertas vê a
 comparação.
 
-**Resposta:**
+**Resposta:** OK
 
 **O4. Rateio entre vendedoras.** Já decidido: pelo percentual definido. O
 percentual é por negócio ou pode mudar por oferta?
@@ -381,7 +386,7 @@ percentual é por negócio ou pode mudar por oferta?
 **Sugestão:** é por negócio, com a possibilidade de ajustar numa oferta
 específica (fica registrado o critério).
 
-**Resposta:**
+**Resposta:** OK.
 
 ---
 
@@ -393,7 +398,7 @@ específica (fica registrado o critério).
 criar/editar). A tabela de correspondência (código × nome) só é vista por
 quem o criador liberar.
 
-**Resposta:**
+**Resposta:** OK
 
 **X2. Código do cliente.** Já decidido: `C00001`, com sufixo de grupo
 (`C00087.001`). O prefixo "C" pode ser trocado por anonimização (ex.: "F"
@@ -401,7 +406,7 @@ para fornecedores)?
 
 **Sugestão:** sim. Prefixo configurável em cada anonimização, padrão "C".
 
-**Resposta:**
+**Resposta:** OK.
 
 **X3. Modelo da planilha de importação.**
 
@@ -409,7 +414,7 @@ para fornecedores)?
 econômico (opcional), variações de grafia (separadas por ";"). Uma tela
 mostra a prévia, avisa de duplicados e importa só depois de você conferir.
 
-**Resposta:**
+**Resposta:** OK para a versão 1. Para backlog, possibilidade de tentar intepretar planilhas (ou até PDF ou DOCX) um pouco diferentes.
 
 **X4. Busca dos nomes nos documentos.** Sem diferenciar maiúsculas e
 acentos?
@@ -418,29 +423,29 @@ acentos?
 Ltda." encontra "PAO QUENTE LTDA"), mas só palavras inteiras (para "Sol"
 não trocar dentro de "Solução").
 
-**Resposta:**
+**Resposta:** OK.
 
 **X5. Prévia antes de trocar.**
 
 **Sugestão:** antes de enviar, uma lista "encontramos 37 ocorrências de 12
 clientes", em que dá para desmarcar um cliente ou uma ocorrência específica.
 
-**Resposta:**
+**Resposta:** OK.
 
 **X6. Em planilhas, onde trocar?**
 
 **Sugestão:** em todas as abas e células de texto, inclusive nos nomes das
 abas e nos comentários; fórmulas não são alteradas (só os valores de
-texto).
+texto). 
 
-**Resposta:**
+**Resposta:** OK, lembrando de manter a versão original intacta para quem tem acesso.
 
 **X7. Clientes que são pessoas físicas** (nome de pessoa nos documentos).
 
 **Sugestão:** entram também, com código `P00001`. Nome de pessoa é dado
 pessoal: a tabela de correspondência fica criptografada.
 
-**Resposta:**
+**Resposta:** OK.
 
 ---
 

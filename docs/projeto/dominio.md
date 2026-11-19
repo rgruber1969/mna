@@ -576,3 +576,34 @@ Etapas padrão:
 ## Pendências de domínio
 
 * Gatilhos de tarefas automáticas (a informar).
+
+## Decisões do questionário de pendências (2026-11-19)
+
+Respostas completas em `perguntas-pendentes.md` (as sugestões marcadas "OK"
+valem como regra). Ajustes e acréscimos do responsável:
+
+* **Pedido de documentos (D4):** entidade própria **Pedido** (número, data,
+  descrição, quem pediu), com **itens**; é comum o pedido chegar como
+  planilha com várias abas (uma por assunto) e muitas linhas. Em cada item,
+  o pedinte informa ao menos número, tipo de documento, documento,
+  observações e situação; a vendedora responde com observação, onde obter o
+  documento e onde ele está no data room. Importação da planilha do pedido.
+* **Onde obter cada documento (D4):** catálogo de documentos comuns em M&A
+  com a fonte (órgão, site, gratuito ou pago), para ajudar a vendedora a
+  buscar. O responsável pode enviar uma planilha-base.
+* **Prazos configuráveis (T5, M2):** um bloco **"Prazos de notificações e
+  tarefas"** nas Configurações gerais reúne todos os prazos (avisos da
+  exclusividade, lembretes de tarefa, dias sem envio de documento,
+  intervalo do resumo de mensagens por e-mail, padrão 1 hora).
+* **Contratos (C1, C3, C4):** contratante e contratada podem ser **mais de
+  uma empresa**; registrar se os honorários fixos (retainer) são
+  **descontados do success fee**. Na V1, botão para **enviar ao financeiro**
+  da empresa os dados para nota fiscal e cobrança (contatos e dados na aba
+  de dados bancários ou numa aba própria). Geração de documentos do
+  processo, como o anexo de assessores do QPA, a partir dos cadastros.
+* **Ofertas (O1):** campos a mais: garantias da compradora, garantias da
+  vendedora, índice e condições de correção das parcelas a prazo,
+  condições de transição, período de exclusividade proposto, período de
+  não concorrência (no-compete) e observações gerais.
+* **Anonimização (X6):** o arquivo original fica intacto para quem tem
+  acesso a ele.

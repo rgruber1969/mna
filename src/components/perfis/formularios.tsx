@@ -12,19 +12,33 @@ import {
 } from "@/app/acoes/perfis";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso, Botao, Campo, OpcoesDePerfil } from "@/components/ui/basicos";
-import { ACOES, RECURSOS, type Acao, type Matriz, type Recurso } from "@/server/services/permissoes/catalogo";
+import { RECURSOS, type Matriz, type Recurso } from "@/server/services/permissoes/catalogo";
 
 const temNota = (r: Recurso): boolean => Boolean((RECURSOS[r] as { nota?: true }).nota);
 
-/** Colunas da grade: todas as ações usadas pelos recursos mostrados. */
-function colunas(recursos: Recurso[]): Acao[] {
-  const usadas = new Set(recursos.flatMap((r) => RECURSOS[r].acoes));
-  return ACOES.filter((a) => usadas.has(a));
+/** Ícone de "marcado" dentro do botão da ação. */
+function Marca() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-3.5 w-3.5"
+      aria-hidden="true"
+    >
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
 }
 
 /**
- * Grade recurso × ação. Editável (caixas "m" = "recurso:acao") ou só leitura.
- * Ações que não se aplicam ao recurso aparecem como "—".
+ * Permissões de cada item de menu: as ações por extenso, como botões que
+ * acendem quando marcados (editável, caixas "m" = "recurso:acao") ou só
+ * leitura. Só aparecem as ações que se aplicam ao item. "Todas" / "Nenhuma"
+ * marcam a linha inteira.
  */
 export function GradeDaMatriz({
   recursos,
@@ -35,63 +49,77 @@ export function GradeDaMatriz({
   matriz: Matriz;
   editavel?: boolean;
 }) {
-  const acoes = colunas(recursos);
   const t = useTranslations("administracao.permissoes");
+  const marcarLinha = (botao: HTMLElement, valor: boolean) =>
+    botao
+      .closest("[data-linha]")
+      ?.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+      .forEach((c) => (c.checked = valor));
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-muted">
-          <tr>
-            <th className="py-2 pr-3 text-left font-medium">{t("menu")}</th>
-            {acoes.map((a) => (
-              <th key={a} className="px-1 py-2 text-center font-medium" title={t(`acoes.${a}`)}>
-                {t(`siglas.${a}`)}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-border divide-y">
-          {recursos.map((r) => (
-            <tr key={r}>
-              <td className="text-text py-2 pr-3">
-                {t(`recursos.${r}`)}
-                {temNota(r) && <span className="text-muted block text-xs">{t(`notas.${r}`)}</span>}
-              </td>
-              {acoes.map((a) => {
-                const aplica = (RECURSOS[r].acoes as readonly Acao[]).includes(a);
-                const marcado = matriz[r]?.includes(a) ?? false;
-                return (
-                  <td key={a} className="px-1 py-2 text-center">
-                    {!aplica ? (
-                      <span className="text-muted">—</span>
-                    ) : editavel ? (
-                      <input
-                        type="checkbox"
-                        name="m"
-                        value={`${r}:${a}`}
-                        defaultChecked={marcado}
-                        aria-label={`${t(`recursos.${r}`)}: ${t(`acoes.${a}`)}`}
-                      />
-                    ) : marcado ? (
-                      <span className="text-success" aria-label={`${t(`recursos.${r}`)}: ${t(`acoes.${a}`)}`}>
-                        ✓
-                      </span>
-                    ) : (
-                      <span className="text-muted">·</span>
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p className="text-muted mt-2 text-xs">
-        {acoes
-          .map((a) => t("legenda", { sigla: t(`siglas.${a}`), acao: t(`acoes.${a}`).toLowerCase() }))
-          .join(" · ")}
-      </p>
-    </div>
+    <ul className="divide-border mb-4 divide-y">
+      {recursos.map((r) => (
+        <li key={r} data-linha className="grid gap-2 py-3 md:grid-cols-[15rem_1fr] md:items-center">
+          <div>
+            <span className="text-text text-sm font-medium">{t(`recursos.${r}`)}</span>
+            {temNota(r) && <span className="text-muted block text-xs">{t(`notas.${r}`)}</span>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {RECURSOS[r].acoes.map((a) => {
+              const marcado = matriz[r]?.includes(a) ?? false;
+              const rotulo = t(`acoes.${a}`);
+              const aria = `${t(`recursos.${r}`)}: ${rotulo}`;
+              const pilula =
+                "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors";
+              return editavel ? (
+                <label key={a} className="relative">
+                  <input
+                    type="checkbox"
+                    name="m"
+                    value={`${r}:${a}`}
+                    defaultChecked={marcado}
+                    aria-label={aria}
+                    className="peer sr-only"
+                  />
+                  <span
+                    className={`${pilula} border-border text-muted hover:border-primary peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-primary peer-focus-visible:ring-2 [&>svg]:hidden peer-checked:[&>svg]:block`}
+                  >
+                    <Marca />
+                    {rotulo}
+                  </span>
+                </label>
+              ) : (
+                <span
+                  key={a}
+                  aria-label={`${aria}: ${marcado ? t("permitido") : t("negado")}`}
+                  className={`${pilula} ${marcado ? "border-success text-success" : "border-border text-muted line-through opacity-60"}`}
+                >
+                  {marcado && <Marca />}
+                  {rotulo}
+                </span>
+              );
+            })}
+            {editavel && (
+              <span className="text-muted ml-1 flex gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={(e) => marcarLinha(e.currentTarget, true)}
+                  className="hover:text-primary underline"
+                >
+                  {t("todas")}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => marcarLinha(e.currentTarget, false)}
+                  className="hover:text-primary underline"
+                >
+                  {t("nenhuma")}
+                </button>
+              </span>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
