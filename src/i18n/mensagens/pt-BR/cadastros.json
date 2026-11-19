@@ -71,7 +71,7 @@
     "auxiliares": {
       "sobre": "Cadastros auxiliares",
       "papeisTitulo": "Papéis de empresa",
-      "papeisExplicacao": "O papel que uma empresa assume em cada negócio. O perfil sugerido é proposto às pessoas da empresa quando ela entra no negócio; o administrador confirma.",
+      "papeisExplicacao": "O papel que uma empresa assume em cada negócio e o lado (vendedor ou comprador) que ele define. O perfil sugerido é proposto às pessoas da empresa quando ela entra no negócio; o administrador confirma.",
       "semPerfilSugerido": "Sem perfil sugerido",
       "confirmarExcluirPapel": "Excluir o papel {nome}?",
       "tiposTitulo": "Tipos de vínculo",
@@ -190,7 +190,12 @@
       "cadastrarPessoaComo": "Cadastrar pessoa como {qualificacao}",
       "socio": "Sócio",
       "baseDaReceitaDe": "Quadro da base pública da Receita de {data}. Alterações registradas depois dessa data ainda não aparecem; confira no comprovante de CNPJ se houver mudança recente.",
-      "baseDaReceita": "Quadro da base pública da Receita, que é atualizada uma vez por mês: alterações recentes podem ainda não aparecer. Confira no comprovante de CNPJ se houver mudança recente."
+      "baseDaReceita": "Quadro da base pública da Receita, que é atualizada uma vez por mês: alterações recentes podem ainda não aparecer. Confira no comprovante de CNPJ se houver mudança recente.",
+      "ladoDoPapelPara": "Lado no negócio do papel {nome}",
+      "ladoDoNovoPapel": "Lado no negócio do novo papel",
+      "semLado": "Sem lado",
+      "ladoVendedor": "Lado vendedor",
+      "ladoComprador": "Lado comprador"
     },
     "mensagens": {
       "empresaSalva": "Empresa salva.",
@@ -252,7 +257,8 @@
       "tipoJaExiste": "Já existe um tipo de vínculo com este nome.",
       "tipoNaoEncontrado": "Tipo de vínculo não encontrado.",
       "tipoEmUso": "Tipo em uso em {n, plural, one {# vínculo} other {# vínculos}}: remova os vínculos antes.",
-      "empresaParecidaSemCnpj": "Já existe a empresa \"{nome}\", sem CNPJ, com nome parecido. É a mesma empresa?"
+      "empresaParecidaSemCnpj": "Já existe a empresa \"{nome}\", sem CNPJ, com nome parecido. É a mesma empresa?",
+      "papelEmUso": "Este papel está em uso em algum negócio e não pode ser excluído."
     },
     "anexos": {
       "titulo": "Documentos anexados",

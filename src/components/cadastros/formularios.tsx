@@ -726,7 +726,7 @@ export function FormPapel({
   papel,
   perfis,
 }: {
-  papel?: { id: string; nome: string; perfilSugeridoId: string | null };
+  papel?: { id: string; nome: string; perfilSugeridoId: string | null; lado: string | null };
   perfis: { id: string; nome: string }[];
 }) {
   const t = useTranslations("cadastros.formularios");
@@ -757,6 +757,16 @@ export function FormPapel({
               {p.nome}
             </option>
           ))}
+        </select>
+        <select
+          name="lado"
+          aria-label={papel ? t("ladoDoPapelPara", { nome: papel.nome }) : t("ladoDoNovoPapel")}
+          defaultValue={papel?.lado ?? ""}
+          className={`${estiloCampo} sm:w-40`}
+        >
+          <option value="">{t("semLado")}</option>
+          <option value="vendedor">{t("ladoVendedor")}</option>
+          <option value="comprador">{t("ladoComprador")}</option>
         </select>
         <button type="submit" disabled={salvando} className="text-primary text-sm font-medium">
           {papel ? tc("salvar") : t("adicionarPapel")}

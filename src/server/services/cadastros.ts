@@ -29,6 +29,8 @@ export type Papel = {
   nome: string;
   perfilSugeridoId: string | null;
   perfilSugerido: string | null;
+  /** Lado no negócio de quem tem o papel (vazio = sem lado). */
+  lado: "vendedor" | "comprador" | null;
 };
 
 export async function listarPapeis(acesso: Acesso | null): Promise<Papel[]> {
@@ -40,6 +42,7 @@ export async function listarPapeis(acesso: Acesso | null): Promise<Papel[]> {
         nome: papelEmpresa.nome,
         perfilSugeridoId: papelEmpresa.perfilSugeridoId,
         perfilSugerido: perfil.nome,
+        lado: papelEmpresa.lado,
       })
       .from(papelEmpresa)
       .leftJoin(perfil, eq(perfil.id, papelEmpresa.perfilSugeridoId))
@@ -70,7 +73,7 @@ async function perfilDeDealValido(tenantId: string, id: string | null): Promise<
 
 export async function salvarPapel(
   acesso: Acesso | null,
-  dados: { id?: string; nome: string; perfilSugeridoId: string },
+  dados: { id?: string; nome: string; perfilSugeridoId: string; lado?: string },
 ): Promise<ResultadoComId> {
   const a = await exigirPermissao(acesso, "cadastros", dados.id ? "editar" : "criar");
   const nome = Nome.safeParse(dados.nome);
@@ -78,18 +81,19 @@ export async function salvarPapel(
   const perfilId = dados.perfilSugeridoId || null;
   if (!(await perfilDeDealValido(a.tenant.id, perfilId)))
     return { erro: "cadastros.erros.perfilDeDealInvalido" };
+  const lado = dados.lado === "vendedor" || dados.lado === "comprador" ? dados.lado : null;
   const r = await comTenant(a.tenant.id, async (tx) => {
     if (dados.id) {
       if (!uuidValido(dados.id)) return null;
       return tx
         .update(papelEmpresa)
-        .set({ nome: nome.data, perfilSugeridoId: perfilId })
+        .set({ nome: nome.data, perfilSugeridoId: perfilId, lado })
         .where(eq(papelEmpresa.id, dados.id))
         .returning({ id: papelEmpresa.id });
     }
     return tx
       .insert(papelEmpresa)
-      .values({ tenantId: a.tenant.id, nome: nome.data, perfilSugeridoId: perfilId })
+      .values({ tenantId: a.tenant.id, nome: nome.data, perfilSugeridoId: perfilId, lado })
       .returning({ id: papelEmpresa.id });
   }).catch(() => "duplicado" as const);
   if (r === "duplicado") return { erro: "cadastros.erros.papelJaExiste" };
@@ -98,13 +102,14 @@ export async function salvarPapel(
   return { id: r[0].id };
 }
 
-/** Papel em uso nos deals não pode ser excluído (verificação chega com os deals, item 8). */
+/** Papel em uso em algum negócio não pode ser excluído. */
 export async function excluirPapel(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "cadastros", "excluir");
   if (!uuidValido(id)) return { erro: "cadastros.erros.papelNaoEncontrado" };
   const feito = await comTenant(a.tenant.id, (tx) =>
     tx.delete(papelEmpresa).where(eq(papelEmpresa.id, id)).returning({ id: papelEmpresa.id }),
-  );
+  ).catch(() => "emUso" as const);
+  if (feito === "emUso") return { erro: "cadastros.erros.papelEmUso" };
   if (feito.length === 0) return { erro: "cadastros.erros.papelNaoEncontrado" };
   await auditar(a, "papel.excluido", "papel_empresa", id);
   return { ok: true };

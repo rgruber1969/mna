@@ -518,6 +518,8 @@ export const papelEmpresa = pgTable(
     nome: text("nome").notNull(),
     /** Perfil de deal sugerido às pessoas da empresa com este papel. */
     perfilSugeridoId: uuid("perfil_sugerido_id").references(() => perfil.id, { onDelete: "set null" }),
+    /** Lado no negócio de quem tem este papel; vazio = papel sem lado. */
+    lado: text("lado").$type<"vendedor" | "comprador">(),
     padrao: text("padrao"),
     criadoEm: criadoEm(),
   },
@@ -709,4 +711,113 @@ export const notificacao = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index("notificacao_usuario_idx").on(t.tenantId, t.usuarioId, t.criadoEm), isolamento()],
+).enableRLS();
+
+// --- Negócios (deals; dominio.md, "Deal (Negócio)") --------------------------
+
+/** Tipo de operação do negócio (cadastro auxiliar do tenant). */
+export const tipoOperacao = pgTable(
+  "tipo_operacao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    /** Pede percentual (ex.: aquisição parcial). */
+    comPercentual: boolean("com_percentual").notNull().default(false),
+    padrao: text("padrao"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("tipo_operacao_nome_uq").on(t.tenantId, t.nome), isolamento()],
+).enableRLS();
+
+/** Negócio (deal). Número sequencial por tenant; nas telas, "número + codinome". */
+export const deal = pgTable(
+  "deal",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    numero: integer("numero").notNull(),
+    nomeInterno: text("nome_interno").notNull(),
+    codinome: text("codinome").notNull(),
+    tipoOperacaoId: uuid("tipo_operacao_id").references(() => tipoOperacao.id, { onDelete: "no action" }),
+    /** Percentual da operação (ex.: aquisição parcial). */
+    percentual: numeric("percentual", { precision: 7, scale: 4 }),
+    /** "empresas": empresas específicas; "grupo": o grupo econômico inteiro. */
+    objeto: text("objeto").$type<"empresas" | "grupo">().notNull().default("empresas"),
+    grupoId: uuid("grupo_id").references(() => grupoEconomico.id, { onDelete: "set null" }),
+    dataInicio: date("data_inicio").notNull(),
+    previsaoFechamento: date("previsao_fechamento"),
+    valorEstimado: numeric("valor_estimado", { precision: 18, scale: 2 }),
+    descricao: text("descricao"),
+    situacao: text("situacao")
+      .$type<"andamento" | "suspenso" | "concluido" | "encerrado">()
+      .notNull()
+      .default("andamento"),
+    motivoEncerramento: text("motivo_encerramento"),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [uniqueIndex("deal_numero_uq").on(t.tenantId, t.numero), isolamento()],
+).enableRLS();
+
+/** Empresa num negócio, com um papel (a mesma empresa pode ter vários papéis do mesmo lado). */
+export const dealEmpresa = pgTable(
+  "deal_empresa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id, { onDelete: "no action" }),
+    papelId: uuid("papel_id")
+      .notNull()
+      .references(() => papelEmpresa.id, { onDelete: "no action" }),
+    /** Situação no funil (só compradoras potenciais). */
+    situacaoFunil: text("situacao_funil").$type<
+      "prospectada" | "teaser" | "nda" | "proposta" | "escolhida" | "descartada"
+    >(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    uniqueIndex("deal_empresa_uq").on(t.tenantId, t.dealId, t.empresaId, t.papelId),
+    index("deal_empresa_empresa_idx").on(t.tenantId, t.empresaId),
+    isolamento(),
+  ],
+).enableRLS();
+
+/**
+ * Participação de uma pessoa num negócio (ADR-0013): perfil de deal (vazio =
+ * contato sem acesso), empresa que representa (o lado vem do papel dela) ou
+ * lado escolhido (pessoa sem empresa), alcance e prazo opcional.
+ */
+export const participacaoDeal = pgTable(
+  "participacao_deal",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    pessoaId: uuid("pessoa_id")
+      .notNull()
+      .references(() => pessoa.id, { onDelete: "no action" }),
+    empresaId: uuid("empresa_id").references(() => empresa.id, { onDelete: "no action" }),
+    lado: text("lado").$type<"vendedor" | "comprador">(),
+    perfilId: uuid("perfil_id").references(() => perfil.id, { onDelete: "no action" }),
+    /** "deal": o negócio inteiro (por etapas chega com o item 9). */
+    alcance: text("alcance").$type<"deal">().notNull().default("deal"),
+    /** Último dia de acesso (opcional). */
+    prazo: date("prazo"),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    index("participacao_deal_deal_idx").on(t.tenantId, t.dealId),
+    index("participacao_deal_pessoa_idx").on(t.tenantId, t.pessoaId),
+    isolamento(),
+  ],
 ).enableRLS();

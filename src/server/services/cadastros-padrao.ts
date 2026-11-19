@@ -5,6 +5,7 @@ import {
   papelEmpresa,
   perfil,
   tenant,
+  tipoOperacao,
   tipoVinculo,
   usuario,
   vinculoTenant,
@@ -39,6 +40,22 @@ export const PAPEIS_PADRAO: { codigo: string; nome: string; perfil: string | nul
   { codigo: "auditora-compradora", nome: "Auditora da compradora", perfil: "auditor" },
   { codigo: "investidores-compradora", nome: "Investidores e sócios da compradora", perfil: "representante" },
   { codigo: "socios-vendedora", nome: "Sócios da vendedora", perfil: "representante" },
+];
+
+/** Lado do papel padrão, pelo código ("-vendedora" / "-compradora"). */
+export function ladoDoPapelPadrao(codigo: string): "vendedor" | "comprador" | null {
+  if (codigo === "vendedora" || codigo.endsWith("-vendedora")) return "vendedor";
+  if (codigo === "compradora" || codigo.endsWith("-compradora")) return "comprador";
+  return null;
+}
+
+/** Tipos de operação padrão dos negócios. */
+export const TIPOS_DE_OPERACAO_PADRAO: { codigo: string; nome: string; comPercentual: boolean }[] = [
+  { codigo: "aquisicao-total", nome: "Aquisição total", comPercentual: false },
+  { codigo: "aquisicao-parcial", nome: "Aquisição parcial", comPercentual: true },
+  { codigo: "fusao", nome: "Fusão", comPercentual: false },
+  { codigo: "incorporacao", nome: "Incorporação", comPercentual: false },
+  { codigo: "investimento", nome: "Investimento (aporte)", comPercentual: false },
 ];
 
 /** Tipos de vínculo padrão entre pessoa e empresa. */
@@ -84,6 +101,7 @@ export async function completarCadastrosPadrao(tenantId: string): Promise<void> 
           tenantId,
           nome: p.nome,
           padrao: p.codigo,
+          lado: ladoDoPapelPadrao(p.codigo),
           perfilSugeridoId: (p.perfil && idDo.get(p.perfil)) || null,
         })),
       );
@@ -96,6 +114,16 @@ export async function completarCadastrosPadrao(tenantId: string): Promise<void> 
           nome: v.nome,
           padrao: v.codigo,
           comPercentual: v.comPercentual,
+        })),
+      );
+    const [{ tipos }] = await tx.select({ tipos: count() }).from(tipoOperacao);
+    if (tipos === 0)
+      await tx.insert(tipoOperacao).values(
+        TIPOS_DE_OPERACAO_PADRAO.map((o) => ({
+          tenantId,
+          nome: o.nome,
+          padrao: o.codigo,
+          comPercentual: o.comPercentual,
         })),
       );
     const [doContratante] = await tx

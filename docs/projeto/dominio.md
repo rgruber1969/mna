@@ -270,6 +270,21 @@ Regras do item 8 (questionário `perguntas-negocios.md`, respondido em
   vencimento do prazo de participação etc.
 * **API:** junto com as chaves de API (itens 25 e 26). **Sem dados de
   demonstração** por enquanto (o responsável cadastra um caso real).
+* **Lado do contratante pelo papel** (ajuste de 2026-11-19, na construção):
+  ao criar, escolhe-se o **papel** da empresa do contratante (ex.:
+  "Escritório de advocacia da vendedora"); o lado vem desse papel. Cada
+  papel tem um **lado** (vendedor, comprador ou nenhum), editável nos
+  cadastros auxiliares. As empresas do objeto entram com o papel
+  "Vendedora".
+* **Regras de apoio** (2026-11-19): o negócio não fica sem Coordenador; a
+  empresa do contratante fica com ao menos um papel; empresa com
+  participantes só sai depois deles; papel e tipo de operação em uso não
+  podem ser excluídos.
+* **Sigilo do lado comprador na primeira entrega:** pessoas do lado
+  comprador veem só as próprias empresas (nunca as outras compradoras) e
+  as vendedoras só depois do NDA da sua empresa. Advogados e advisors da
+  compradora, que não estão no funil, veem só número e codinome até haver
+  regra própria (a definir com o funil).
 
 ### Valuation
 

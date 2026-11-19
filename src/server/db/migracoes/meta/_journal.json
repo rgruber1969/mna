@@ -183,6 +183,13 @@
       "when": 1795084700232,
       "tag": "0025_participacao_entre_empresas",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795091854120,
+      "tag": "0026_negocios",
+      "breakpoints": true
     }
   ]
 }

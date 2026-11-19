@@ -22,6 +22,10 @@ type Definicao = ItemDoMenu & { recurso?: Recurso; soAdministrador?: boolean };
 const GRUPOS: { chave: string; itens: Definicao[] }[] = [
   { chave: "inicio", itens: [{ id: "painel", href: "/", icone: "casa" }] },
   {
+    chave: "negocios",
+    itens: [{ id: "negocios", href: "/negocios", icone: "maleta", recurso: "deals" }],
+  },
+  {
     chave: "cadastros",
     itens: [
       { id: "empresas", href: "/empresas", icone: "predio", recurso: "empresas" },

@@ -3,12 +3,14 @@
     "rotulo": "Menu",
     "grupos": {
       "inicio": "Início",
+      "negocios": "Negócios",
       "cadastros": "Cadastros",
       "administracao": "Administração",
       "favoritos": "Favoritos"
     },
     "itens": {
       "painel": "Painel",
+      "negocios": "Negócios",
       "empresas": "Empresas",
       "pessoas": "Pessoas",
       "cadastros-auxiliares": "Cadastros auxiliares",
@@ -56,7 +58,9 @@
       "convite_aceito": "{nome} aceitou o convite",
       "perfil_alterado": "Seu perfil no sistema foi alterado pelo administrador",
       "dois_fatores_redefinido": "Sua verificação em duas etapas foi redefinida pelo administrador",
-      "arquivo_bloqueado": "Um arquivo enviado a um cadastro foi bloqueado pelo antivírus"
+      "arquivo_bloqueado": "Um arquivo enviado a um cadastro foi bloqueado pelo antivírus",
+      "negocio_incluido": "Você foi incluído no negócio {negocio}",
+      "negocio_removido": "Você foi removido do negócio {negocio}"
     }
   },
   "rodape": {

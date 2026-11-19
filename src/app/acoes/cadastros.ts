@@ -232,6 +232,7 @@ export async function salvarPapelAcao(_: Estado, f: FormData): Promise<Estado> {
     id: texto(f, "id") || undefined,
     nome: texto(f, "nome"),
     perfilSugeridoId: texto(f, "perfilSugeridoId"),
+    lado: texto(f, "lado"),
   });
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("papelSalvo") };
 }

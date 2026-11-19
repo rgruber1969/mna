@@ -5,7 +5,16 @@ import { IDIOMA_PADRAO, type Idioma } from "./idiomas";
  * cada área seja editada sem conflito. Cada arquivo tem chaves de primeiro
  * nível próprias (ex.: `cadastros`), e todos são juntados aqui.
  */
-export const AREAS = ["comum", "layout", "erros", "acesso", "cadastros", "administracao", "emails"] as const;
+export const AREAS = [
+  "comum",
+  "layout",
+  "erros",
+  "acesso",
+  "cadastros",
+  "negocios",
+  "administracao",
+  "emails",
+] as const;
 
 export type Mensagens = Record<string, unknown>;
 

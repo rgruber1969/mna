@@ -16,6 +16,8 @@ export const TIPOS_DE_NOTIFICACAO = [
   "perfil_alterado",
   "dois_fatores_redefinido",
   "arquivo_bloqueado",
+  "negocio_incluido",
+  "negocio_removido",
 ] as const;
 export type TipoDeNotificacao = (typeof TIPOS_DE_NOTIFICACAO)[number];
 
