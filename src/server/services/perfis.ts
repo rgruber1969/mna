@@ -1,3 +1,4 @@
+import { notificar } from "./notificacoes";
 import { and, asc, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { banco, comTenant } from "@/server/db/cliente";
@@ -358,6 +359,7 @@ export async function definirPerfisDoUsuario(
     if (!u) return { erro: "Usuário não encontrado." };
     const ids = await filtrarPerfisDoTenant(tx, perfilIds);
     await atribuirPerfis(tx, a.tenant.id, u.id, ids);
+    if (u.id !== a.usuario.id) await notificar(tx, a.tenant.id, u.id, "perfil_alterado", {}, "/seguranca");
     return { ok: true };
   });
   if ("ok" in r)

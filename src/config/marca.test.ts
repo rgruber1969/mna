@@ -7,6 +7,8 @@ import {
   problemasDeContraste,
   textoSobre,
   variaveisDoTema,
+  variaveisDoTemaEscuro,
+  FUNDO_ESCURO,
 } from "./marca";
 
 /** Cálculos do white label (ADR-0010): contraste WCAG e tons derivados. */
@@ -63,6 +65,13 @@ describe("tema gerado", () => {
 
   it("aceita a Lato (fonte do site do tenant piloto)", () => {
     expect(variaveisDoTema({}, "lato")).toEqual({ "--fonte-marca": "var(--font-lato)" });
+  });
+
+  it("no tema escuro, clareia as cores do tenant até ficarem legíveis", () => {
+    const css = cssDoTema({ primaria: "#7a1238", destaque: "#c2410c" });
+    expect(css).toContain(':root[data-tema="escuro"]{--primary:');
+    const escura = variaveisDoTemaEscuro({ primaria: "#7a1238" })["--primary"];
+    expect(contraste(escura, FUNDO_ESCURO)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("ignora valores inválidos: o CSS só leva cores #RRGGBB e fontes da lista", () => {

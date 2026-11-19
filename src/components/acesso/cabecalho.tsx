@@ -1,10 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Avatar } from "@/components/ui/basicos";
+import { getTranslations } from "next-intl/server";
+import { AssinaturaRgruber, Avatar } from "@/components/ui/basicos";
+import { produto } from "@/config/produto";
 import { FormSair } from "./formularios";
 import { CascaDoTenant } from "./casca-do-tenant";
 import type { AcessoTenant } from "@/server/services/acesso";
+import { marcaPorSlug } from "@/server/services/marca";
 import { menuDoUsuario } from "@/server/services/menu";
+import { minhasNotificacoes } from "@/server/services/notificacoes";
 
 /** Usuário (com foto), "Minha conta" e sair: comum ao console e ao tenant. */
 function Usuario({ usuario }: { usuario: { nome: string; foto?: string | null } }) {
@@ -52,17 +56,40 @@ export function Cabecalho({
 
 /**
  * Estrutura das telas do tenant: menu lateral com os itens que a pessoa pode
- * ver (grupos, busca, favoritos, recolher) e a barra superior com o usuário.
+ * ver (grupos, favoritos, recolher), cabeçalho (busca, notificações, usuário
+ * com tema) e rodapé.
  */
 export async function EstruturaDoTenant({ acesso, children }: { acesso: AcessoTenant; children: ReactNode }) {
-  const menu = await menuDoUsuario(acesso);
+  const [menu, notificacoes, marca, t] = await Promise.all([
+    menuDoUsuario(acesso),
+    minhasNotificacoes(acesso),
+    marcaPorSlug(acesso.tenant.slug),
+    getTranslations("rodape"),
+  ]);
   return (
     <CascaDoTenant
       grupos={menu.grupos}
       favoritosIniciais={menu.favoritos}
       recolhidoInicial={menu.recolhido}
-      marca={{ nome: acesso.tenant.nomeExibido, logo: acesso.tenant.logo }}
-      barra={<Usuario usuario={acesso.usuario} />}
+      marca={{
+        nome: acesso.tenant.nomeExibido,
+        logoClaro: marca?.logoClaro ?? null,
+        logoEscuro: marca?.logoEscuro ?? null,
+        icone: marca?.icone ?? null,
+      }}
+      usuario={{
+        nome: acesso.usuario.nome,
+        foto: acesso.usuario.foto,
+        papel: acesso.administrador ? "administrador" : "usuario",
+      }}
+      tema={acesso.usuario.tema ?? "claro"}
+      notificacoes={notificacoes}
+      rodape={
+        <>
+          <span>{t("direitos", { ano: new Date().getFullYear(), produto: produto.nome })}</span>
+          <AssinaturaRgruber className="" escuro="auto" />
+        </>
+      }
     >
       {children}
     </CascaDoTenant>

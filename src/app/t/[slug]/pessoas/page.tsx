@@ -27,7 +27,7 @@ async function Painel({ busca }: { busca: Promise<{ busca?: string; inativas?: s
 
   return (
     <EstruturaDoTenant acesso={acesso}>
-      <main className="bg-surface flex flex-1 justify-center px-4 py-10">
+      <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-3xl">
           <div className="flex items-start justify-between gap-4">
             <Titulo sobre="Cadastro">Pessoas</Titulo>

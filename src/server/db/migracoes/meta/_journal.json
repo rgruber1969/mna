@@ -134,6 +134,20 @@
       "when": 1795035709877,
       "tag": "0018_preferencia_menu",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1795049105909,
+      "tag": "0019_tema_do_usuario",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1795049134159,
+      "tag": "0020_notificacoes",
+      "breakpoints": true
     }
   ]
 }

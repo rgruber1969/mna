@@ -12,22 +12,23 @@ import { pode } from "./permissoes/verificador";
  * usuário e tenant.
  */
 
-export type ItemDoMenu = { id: string; rotulo: string; href: string; icone: string };
-export type GrupoDoMenu = { titulo: string; itens: ItemDoMenu[] };
+/** Texto de cada item e grupo: `menu.itens.<id>` e `menu.grupos.<chave>` nas mensagens. */
+export type ItemDoMenu = { id: string; href: string; icone: string };
+export type GrupoDoMenu = { chave: string; itens: ItemDoMenu[] };
 export type Menu = { grupos: GrupoDoMenu[]; favoritos: string[]; recolhido: boolean };
 
 type Definicao = ItemDoMenu & { recurso?: Recurso; soAdministrador?: boolean };
 
-const GRUPOS: { titulo: string; itens: Definicao[] }[] = [
-  { titulo: "Início", itens: [{ id: "painel", rotulo: "Painel", href: "/", icone: "casa" }] },
+const GRUPOS: { chave: string; itens: Definicao[] }[] = [
+  { chave: "inicio", itens: [{ id: "painel", href: "/", icone: "casa" }] },
   {
-    titulo: "Cadastros",
+    chave: "cadastros",
     itens: [
-      { id: "empresas", rotulo: "Empresas", href: "/empresas", icone: "predio", recurso: "empresas" },
-      { id: "pessoas", rotulo: "Pessoas", href: "/pessoas", icone: "pessoas", recurso: "empresas" },
+      { id: "empresas", href: "/empresas", icone: "predio", recurso: "empresas" },
+      { id: "pessoas", href: "/pessoas", icone: "pessoas", recurso: "empresas" },
       {
         id: "cadastros-auxiliares",
-        rotulo: "Cadastros auxiliares",
+
         href: "/cadastros",
         icone: "lista",
         recurso: "cadastros",
@@ -35,13 +36,13 @@ const GRUPOS: { titulo: string; itens: Definicao[] }[] = [
     ],
   },
   {
-    titulo: "Administração",
+    chave: "administracao",
     itens: [
-      { id: "usuarios", rotulo: "Usuários", href: "/usuarios", icone: "usuario", soAdministrador: true },
-      { id: "perfis", rotulo: "Perfis", href: "/perfis", icone: "escudo", soAdministrador: true },
+      { id: "usuarios", href: "/usuarios", icone: "usuario", soAdministrador: true },
+      { id: "perfis", href: "/perfis", icone: "escudo", soAdministrador: true },
       {
         id: "identidade-visual",
-        rotulo: "Identidade visual",
+
         href: "/identidade-visual",
         icone: "paleta",
         soAdministrador: true,
@@ -72,10 +73,8 @@ export async function menuDoUsuario(acesso: Acesso | null): Promise<Menu> {
   const grupos: GrupoDoMenu[] = [];
   for (const g of GRUPOS) {
     const vis = await Promise.all(g.itens.map((i) => visivel(a, i)));
-    const itens = g.itens
-      .filter((_, n) => vis[n])
-      .map(({ id, rotulo, href, icone }) => ({ id, rotulo, href, icone }));
-    if (itens.length) grupos.push({ titulo: g.titulo, itens });
+    const itens = g.itens.filter((_, n) => vis[n]).map(({ id, href, icone }) => ({ id, href, icone }));
+    if (itens.length) grupos.push({ chave: g.chave, itens });
   }
   const p = await preferencias(a);
   const visiveis = new Set(grupos.flatMap((g) => g.itens.map((i) => i.id)));

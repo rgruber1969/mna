@@ -46,28 +46,40 @@ export function AssinaturaRgruber({
   escuro = false,
   className = "mt-10",
 }: {
-  escuro?: boolean;
+  /** true: fundo escuro fixo (login); "auto": segue o tema claro/escuro da interface. */
+  escuro?: boolean | "auto";
   className?: string;
 }) {
+  const logo = (negativa: boolean, extra = "") => (
+    <Image
+      src={negativa ? "/marca/rgruber-horizontal-negativa.svg" : "/marca/rgruber-horizontal-positiva.svg"}
+      alt="RGRUBER Consultoria"
+      width={120}
+      height={34}
+      unoptimized
+      className={extra}
+    />
+  );
   return (
     <footer
-      className={`${escuro ? "text-backdrop-foreground" : "text-muted"} ${className} flex items-center gap-2 text-xs opacity-60`}
+      className={`${escuro === true ? "text-backdrop-foreground" : "text-muted"} ${className} flex items-center gap-2 text-xs opacity-60`}
     >
       <span>Copyright by</span>
-      <Image
-        src={escuro ? "/marca/rgruber-horizontal-negativa.svg" : "/marca/rgruber-horizontal-positiva.svg"}
-        alt="RGRUBER Consultoria"
-        width={120}
-        height={34}
-        unoptimized
-      />
+      {escuro === "auto" ? (
+        <>
+          {logo(false, "dark:hidden")}
+          {logo(true, "hidden dark:block")}
+        </>
+      ) : (
+        logo(escuro)
+      )}
     </footer>
   );
 }
 
 export function Cartao({ children, largura = "max-w-md" }: { children: ReactNode; largura?: string }) {
   return (
-    <section className={`border-border bg-background w-full ${largura} rounded-lg border p-8`}>
+    <section className={`bg-background shadow-cartao w-full ${largura} rounded-[10px] p-6 sm:p-7`}>
       {children}
     </section>
   );
@@ -77,7 +89,7 @@ export function Titulo({ sobre, children }: { sobre?: string; children: ReactNod
   return (
     <header className="mb-6">
       {sobre && <p className="text-accent text-xs font-semibold tracking-widest uppercase">{sobre}</p>}
-      <h1 className="text-primary mt-1 text-2xl font-semibold">{children}</h1>
+      <h1 className="text-text mt-1 text-xl font-bold">{children}</h1>
     </header>
   );
 }

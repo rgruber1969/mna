@@ -1,3 +1,4 @@
+import { notificar } from "./notificacoes";
 import { and, desc, eq, gt, isNull, ne } from "drizzle-orm";
 import { z } from "zod";
 import { banco, comTenant } from "@/server/db/cliente";
@@ -389,6 +390,9 @@ export async function redefinirDoisFatoresDoUsuario(
   if (await outroTenantExigeDoisFatores(v.id, a.tenant.id)) return { erro: REDEFINICAO_PELA_PLATAFORMA };
   await apagarTodosOsFatores(v.id);
   await auditar(a, "usuario.2fa.redefinido", "usuario", v.id);
+  await comTenant(a.tenant.id, (tx) =>
+    notificar(tx, a.tenant.id, v.id, "dois_fatores_redefinido", {}, "/seguranca"),
+  );
   await avisarMudancaNosFatores(
     v.id,
     "A verificação em duas etapas da sua conta foi redefinida pelo administrador",

@@ -6,5 +6,61 @@
     "fechar": "Fechar",
     "verTodas": "Ver todas",
     "nadaEncontrado": "Nada encontrado."
+  },
+  "menu": {
+    "rotulo": "Menu",
+    "grupos": {
+      "inicio": "Início",
+      "cadastros": "Cadastros",
+      "administracao": "Administração",
+      "favoritos": "Favoritos"
+    },
+    "itens": {
+      "painel": "Painel",
+      "empresas": "Empresas",
+      "pessoas": "Pessoas",
+      "cadastros-auxiliares": "Cadastros auxiliares",
+      "usuarios": "Usuários",
+      "perfis": "Perfis",
+      "identidade-visual": "Identidade visual"
+    },
+    "recolher": "Recolher menu",
+    "expandir": "Expandir menu",
+    "abrir": "Abrir menu",
+    "fecharMenu": "Fechar menu",
+    "favoritar": "Favoritar {item}",
+    "desfavoritar": "Tirar {item} dos favoritos"
+  },
+  "cabecalho": {
+    "procurar": "Procurar no menu",
+    "procurarDica": "Procurar no menu...",
+    "menuDoUsuario": "Menu do usuário",
+    "administrador": "Administrador",
+    "usuario": "Usuário",
+    "minhaConta": "Minha conta",
+    "sair": "Sair",
+    "tema": "Tema",
+    "temas": {
+      "claro": "Claro",
+      "escuro": "Escuro",
+      "sistema": "Igual ao sistema"
+    }
+  },
+  "notificacoes": {
+    "titulo": "Notificações",
+    "abrir": "Notificações ({quantidade, plural, =0 {nenhuma nova} one {# nova} other {# novas}})",
+    "marcarTodas": "Marcar todas como lidas",
+    "nenhuma": "Nenhuma notificação.",
+    "remover": "Remover notificação",
+    "verTodas": "Ver todas",
+    "pagina": "Todas as notificações",
+    "tipos": {
+      "convite_aceito": "{nome} aceitou o convite",
+      "perfil_alterado": "Seu perfil no sistema foi alterado pelo administrador",
+      "dois_fatores_redefinido": "Sua verificação em duas etapas foi redefinida pelo administrador"
+    }
+  },
+  "rodape": {
+    "direitos": "© {ano} {produto}"
   }
 }

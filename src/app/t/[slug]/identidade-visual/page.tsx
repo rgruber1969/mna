@@ -23,7 +23,7 @@ async function Painel() {
 
   return (
     <EstruturaDoTenant acesso={acesso}>
-      <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
+      <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-lg">
           <Titulo sobre="Administração">Identidade visual</Titulo>
           <p className="text-muted mb-4 text-sm">

@@ -19,6 +19,7 @@ import { produto } from "@/config/produto";
 import { entrar, gerarToken, hashDoToken, tenantPorSlug, type ResultadoLogin } from "./acesso";
 import { atribuirPerfis, filtrarPerfisDoTenant } from "./perfis";
 import { ligarContaAPessoa } from "./pessoas";
+import { notificar } from "./notificacoes";
 
 /**
  * Convites (ADR-0019, regra 4; docs/projeto/autenticacao-e-sessao.md):
@@ -150,6 +151,8 @@ type ConviteValido = {
   /** Marcação individual de 2FA a gravar no vínculo. */
   exigeDoisFatores: boolean;
   tenant: { id: string; slug: string; nome: string } | null;
+  /** Quem convidou (avisado quando o convite é aceito). */
+  criadoPor?: string | null;
 };
 
 async function conviteValido(host: string | null, token: string): Promise<ConviteValido | null> {
@@ -197,6 +200,7 @@ async function conviteValido(host: string | null, token: string): Promise<Convit
           perfis: c.perfis,
           exigeDoisFatores: c.exigeDoisFatores,
           tenant: t,
+          criadoPor: c.criadoPor,
         }
       : null;
   }
@@ -291,6 +295,15 @@ export async function aceitarConvite(
       // A conta passa a ser uma pessoa do tenant (ligada pelo e-mail, se já cadastrada).
       await ligarContaAPessoa(tx, t.id, { usuarioId, nome: u?.nome ?? c.nome, email: c.email });
       await tx.update(convite).set({ aceitoEm: new Date() }).where(eq(convite.id, c.id));
+      if (c.criadoPor && c.criadoPor !== usuarioId)
+        await notificar(
+          tx,
+          t.id,
+          c.criadoPor,
+          "convite_aceito",
+          { nome: u?.nome ?? c.nome },
+          `/usuarios/${usuarioId}`,
+        );
       await tx.insert(eventoAuditoria).values({
         tenantId: t.id,
         tipo: "convite.aceito",

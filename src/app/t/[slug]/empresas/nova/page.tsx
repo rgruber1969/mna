@@ -21,7 +21,7 @@ async function Painel() {
   const grupos = await listarGrupos(acesso);
   return (
     <EstruturaDoTenant acesso={acesso}>
-      <main className="bg-surface flex flex-1 justify-center px-4 py-10">
+      <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
           <Link href="/empresas" className="text-primary text-sm">
             ← Empresas

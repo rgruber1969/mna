@@ -47,7 +47,7 @@ async function Painel() {
 
   return (
     <EstruturaDoTenant acesso={acesso}>
-      <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
+      <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <Cartao largura="max-w-2xl">
             <Titulo sobre="Administração">Perfis do tenant</Titulo>

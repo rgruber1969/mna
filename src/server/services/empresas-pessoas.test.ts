@@ -336,16 +336,12 @@ describe("menu lateral", () => {
   it("mostra só o permitido; favoritos e recolhido ficam guardados por usuário", async () => {
     const { alternarFavorito, definirMenuRecolhido, menuDoUsuario } = await import("./menu");
     const semPerfil = await menuDoUsuario(acesso(semPerfilId, false));
-    expect(semPerfil.grupos.map((g) => g.titulo)).toEqual(["Início"]);
+    expect(semPerfil.grupos.map((g) => g.chave)).toEqual(["inicio"]);
 
     const a = acesso(adminId, true);
     const inicial = await menuDoUsuario(a);
-    expect(inicial.grupos.map((g) => g.titulo)).toEqual(["Início", "Cadastros", "Administração"]);
-    expect(inicial.grupos[1].itens.map((i) => i.rotulo)).toEqual([
-      "Empresas",
-      "Pessoas",
-      "Cadastros auxiliares",
-    ]);
+    expect(inicial.grupos.map((g) => g.chave)).toEqual(["inicio", "cadastros", "administracao"]);
+    expect(inicial.grupos[1].itens.map((i) => i.id)).toEqual(["empresas", "pessoas", "cadastros-auxiliares"]);
 
     expect(await alternarFavorito(a, "pessoas")).toEqual(["pessoas"]);
     expect(await alternarFavorito(a, "inexistente")).toEqual(["pessoas"]);

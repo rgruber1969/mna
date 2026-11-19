@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { obterAcesso } from "@/server/services/acesso";
 import { enviarFotoDaConta, removerFotoDaConta } from "@/server/services/foto-da-conta";
+import { definirTema } from "@/server/services/preferencias-da-conta";
 import type { Estado } from "./acesso";
 
 /** Ações da própria conta: só repassam para a camada de serviços (ADR-0004). */
@@ -18,4 +19,8 @@ export async function enviarFotoAcao(_: Estado, f: FormData): Promise<Estado> {
 export async function removerFotoAcao(): Promise<Estado> {
   const r = await removerFotoDaConta(await acesso());
   return "erro" in r ? { erro: r.erro } : { ok: "Foto removida." };
+}
+
+export async function definirTemaAcao(tema: string): Promise<void> {
+  await definirTema(await acesso(), tema);
 }

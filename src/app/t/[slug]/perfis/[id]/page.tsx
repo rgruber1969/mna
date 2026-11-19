@@ -26,7 +26,7 @@ async function Detalhe({ id }: { id: Promise<string> }) {
 
   return (
     <EstruturaDoTenant acesso={acesso}>
-      <main className="bg-surface flex flex-1 flex-wrap items-start justify-center gap-6 px-4 py-10">
+      <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
           <Link href="/perfis" className="text-primary text-sm">
             ← Perfis

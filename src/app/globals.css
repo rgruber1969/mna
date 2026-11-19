@@ -1,21 +1,27 @@
 @import "tailwindcss";
 
+/* Variante "dark:" do Tailwind ligada ao tema escolhido pelo usuário (atributo no <html>). */
+@custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
+
 /*
  * Tokens semânticos (ADR-0010). Os componentes usam SOMENTE estes nomes
  * (bg-primary, text-muted, border-border...), nunca cores fixas.
  * Valores padrão: identidade RGRUBER (docs/marca/rgruber). O white label de
- * cada tenant sobrescreve estas variáveis em tempo real.
+ * cada tenant sobrescreve estas variáveis em tempo real, nos dois temas.
  */
 :root {
+  color-scheme: light;
   --primary: #123e7a;
   --primary-foreground: #ffffff;
+  /* Fundo suave da cor primária (item ativo do menu, etiquetas). */
+  --primary-soft: color-mix(in srgb, var(--primary) 10%, var(--background));
   --accent: #5e8fd3;
   --accent-foreground: #ffffff;
   --background: #ffffff;
-  --surface: #e8edf3;
+  --surface: #f2f4f7;
   --text: #0f172a;
   --text-muted: #5e6470;
-  --border: #e2e8f0;
+  --border: #e6e9ef;
   --danger: #b42318;
   --success: #067647;
   /* Avisos (ex.: modo desenvolvimento). */
@@ -24,13 +30,41 @@
   /* Fundo de telas de destaque (login), azul noite da marca; texto por cima. */
   --backdrop: #021b3a;
   --backdrop-foreground: #ffffff;
+  /* Sombra suave dos cartões, do cabeçalho e do menu. */
+  --sombra: 0 4px 20px color-mix(in srgb, var(--primary) 8%, transparent);
   /* Fonte: a padrão (Manrope) ou a escolhida pelo tenant (white label). */
   --fonte-marca: var(--font-manrope);
+}
+
+/*
+ * Tema escuro (decisão menor "Layout das áreas logadas"): mesma lista de
+ * tokens, com valores para fundo escuro. A primária fica mais clara para
+ * manter o contraste; o white label do tenant traz a sua versão clareada.
+ */
+:root[data-tema="escuro"] {
+  color-scheme: dark;
+  --primary: #8fb3ea;
+  --primary-foreground: #0b1220;
+  --accent: #8fb3ea;
+  --accent-foreground: #0b1220;
+  --background: #151c2c;
+  --surface: #0d1320;
+  --text: #e6e9f0;
+  --text-muted: #9aa3b5;
+  --border: #263044;
+  --danger: #f97066;
+  --success: #47cd89;
+  --warning: #fdb022;
+  --warning-surface: #2a2111;
+  --backdrop: #070b14;
+  --backdrop-foreground: #ffffff;
+  --sombra: 0 4px 20px rgb(0 0 0 / 0.35);
 }
 
 @theme inline {
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-background: var(--background);
@@ -44,11 +78,12 @@
   --color-warning-surface: var(--warning-surface);
   --color-backdrop: var(--backdrop);
   --color-backdrop-foreground: var(--backdrop-foreground);
+  --shadow-cartao: var(--sombra);
   /* Fonte do tenant (white label) ou a padrão. */
   --font-sans: var(--fonte-marca);
 }
 
 body {
-  background: var(--background);
+  background: var(--surface);
   color: var(--text);
 }

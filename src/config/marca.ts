@@ -119,11 +119,46 @@ export function variaveisDoTema(cores: Partial<Cores>, fonte?: string | null): R
   return v;
 }
 
-/** Bloco CSS `:root { ... }` com as variáveis do tenant (vazio = tema padrão). */
-export function cssDoTema(cores: Partial<Cores>, fonte?: string | null): string {
-  const v = variaveisDoTema(cores, fonte);
+/** Fundo dos cartões no tema escuro (espelha `--background` escuro de globals.css). */
+export const FUNDO_ESCURO = "#151c2c";
+
+/** Clareia a cor até ter contraste de texto sobre o fundo escuro (tema escuro). */
+export function clarearParaFundoEscuro(cor: string, minimo = CONTRASTE_TEXTO): string {
+  for (let q = 0; q <= 1; q += 0.05) {
+    const c = misturar(cor, "#ffffff", q);
+    if (contraste(c, FUNDO_ESCURO) >= minimo) return c;
+  }
+  return "#ffffff";
+}
+
+/** Variáveis do tenant no tema escuro: as mesmas cores, clareadas para manter a legibilidade. */
+export function variaveisDoTemaEscuro(cores: Partial<Cores>): Record<string, string> {
+  const v: Record<string, string> = {};
+  if (corValida(cores.primaria)) {
+    const p = clarearParaFundoEscuro(cores.primaria);
+    v["--primary"] = p;
+    v["--primary-foreground"] = textoSobre(p);
+    v["--backdrop"] = misturar(cores.primaria, "#000000", 0.82);
+  }
+  if (corValida(cores.destaque)) {
+    const d = clarearParaFundoEscuro(cores.destaque, CONTRASTE_GRAFICO);
+    v["--accent"] = d;
+    v["--accent-foreground"] = textoSobre(d);
+  }
+  return v;
+}
+
+const bloco = (seletor: string, v: Record<string, string>) => {
   const linhas = Object.entries(v).map(([k, valor]) => `${k}:${valor}`);
-  return linhas.length ? `:root{${linhas.join(";")}}` : "";
+  return linhas.length ? `${seletor}{${linhas.join(";")}}` : "";
+};
+
+/** CSS com as variáveis do tenant nos dois temas (vazio = tema padrão). */
+export function cssDoTema(cores: Partial<Cores>, fonte?: string | null): string {
+  return (
+    bloco(":root", variaveisDoTema(cores, fonte)) +
+    bloco(':root[data-tema="escuro"]', variaveisDoTemaEscuro(cores))
+  );
 }
 
 /** Endereço público de uma imagem da marca; o nome do arquivo muda a cada envio (sem cache antigo). */

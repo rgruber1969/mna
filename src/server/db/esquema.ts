@@ -75,6 +75,8 @@ export const usuario = pgTable("usuario", {
   twoFactorEnabled: boolean("dois_fatores_ativo").notNull().default(false),
   /** Papel na plataforma (console). Só vale no endereço do console. */
   papelPlataforma: text("papel_plataforma"),
+  /** Tema da interface escolhido pela pessoa: claro, escuro ou igual ao sistema. */
+  tema: text("tema").$type<"claro" | "escuro" | "sistema">().notNull().default("claro"),
   createdAt: criadoEm(),
   updatedAt: atualizadoEm(),
 });
@@ -622,4 +624,27 @@ export const preferenciaMenu = pgTable(
     atualizadoEm: atualizadoEm(),
   },
   (t) => [uniqueIndex("preferencia_menu_uq").on(t.tenantId, t.usuarioId), isolamento()],
+).enableRLS();
+
+/**
+ * Notificação para um usuário no tenant (sino do cabeçalho). Guarda o tipo e
+ * os parâmetros, não a frase: o texto vem dos arquivos de mensagens, no idioma
+ * de quem lê (ADR-0020). Parâmetros sem dados pessoais sensíveis.
+ */
+export const notificacao = pgTable(
+  "notificacao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    tipo: text("tipo").notNull(),
+    parametros: jsonb("parametros").$type<Record<string, string>>().notNull().default({}),
+    /** Endereço aberto ao clicar (dentro do tenant). */
+    link: text("link"),
+    lidaEm: timestamp("lida_em", { withTimezone: true }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("notificacao_usuario_idx").on(t.tenantId, t.usuarioId, t.criadoEm), isolamento()],
 ).enableRLS();

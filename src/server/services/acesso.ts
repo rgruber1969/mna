@@ -8,6 +8,7 @@ import {
   eventoPlataforma,
   sessao,
   tenant,
+  usuario as usuarioTabela,
   vinculoTenant,
 } from "@/server/db/esquema";
 import { resolverArea } from "@/server/enderecos";
@@ -33,6 +34,8 @@ export type UsuarioDoAcesso = {
   doisFatoresAtivo: boolean;
   /** Endereço da foto da conta, se houver (foto-da-conta.ts). */
   foto?: string | null;
+  /** Tema da interface (claro, escuro ou igual ao sistema). */
+  tema?: "claro" | "escuro" | "sistema";
 };
 export type TenantDoAcesso = {
   id: string;
@@ -150,6 +153,10 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     .where(eq(chaveDeAcesso.userId, u.id))
     .limit(1);
   const temAutenticador = Boolean(u.twoFactorEnabled);
+  const [preferencias] = await banco()
+    .select({ tema: usuarioTabela.tema })
+    .from(usuarioTabela)
+    .where(eq(usuarioTabela.id, u.id));
   const usuario: UsuarioDoAcesso = {
     id: u.id,
     nome: u.name,
@@ -158,6 +165,7 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     temPasskey: Boolean(chave),
     doisFatoresAtivo: temAutenticador || Boolean(chave),
     foto: enderecoDaFoto(u.id, u.image),
+    tema: preferencias?.tema ?? "claro",
   };
   const segundoFatorNaSessao = Boolean(s.segundoFator);
 

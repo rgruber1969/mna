@@ -19,7 +19,7 @@ async function Painel() {
   if (!(await pode(acesso, "empresas", "criar"))) notFound();
   return (
     <EstruturaDoTenant acesso={acesso}>
-      <main className="bg-surface flex flex-1 justify-center px-4 py-10">
+      <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-2xl">
           <Link href="/pessoas" className="text-primary text-sm">
             ← Pessoas
