@@ -605,5 +605,8 @@ valem como regra). Ajustes e acréscimos do responsável:
   vendedora, índice e condições de correção das parcelas a prazo,
   condições de transição, período de exclusividade proposto, período de
   não concorrência (no-compete) e observações gerais.
+* **Tarefa automática "Enviar checklist de diligência" (T5):** vai para o
+  **lado comprador** (equipe da compradora escolhida: auditoria e advogados),
+  que normalmente manda a lista de pedidos.
 * **Anonimização (X6):** o arquivo original fica intacto para quem tem
   acesso a ele.
