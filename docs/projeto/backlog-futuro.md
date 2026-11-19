@@ -53,6 +53,9 @@ versão 1" é anotado aqui.
 - [ ] Traduções para inglês e espanhol (a base de idiomas está pronta desde a
       V1, ADR-0020): traduzir os arquivos de mensagens e revisar com pessoa
       fluente
+- [ ] Lançador de módulos no cabeçalho (ícone de grade de quadrados, com
+      atalhos para outros módulos e aplicações); o botão de recolher o menu
+      lateral usa o ícone padrão de três linhas
 - [ ] Busca do cabeçalho também em registros (empresas, pessoas, deals),
       respeitando as permissões; na V1 ela procura só as opções do menu
 

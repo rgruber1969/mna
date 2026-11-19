@@ -63,14 +63,9 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M20 20l-3.5-3.5" />
     </>
   ),
-  grade: (
-    <>
-      <rect x="4" y="4" width="6" height="6" rx="1.5" />
-      <rect x="14" y="4" width="6" height="6" rx="1.5" />
-      <rect x="4" y="14" width="6" height="6" rx="1.5" />
-      <rect x="14" y="14" width="6" height="6" rx="1.5" />
-    </>
-  ),
+  // Botão padrão de recolher/expandir o menu lateral (três linhas). A grade
+  // de quadrados fica reservada para o lançador de módulos (backlog).
+  menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   sino: (
     <>
       <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z" />
@@ -588,7 +583,7 @@ export function CascaDoTenant({
             aria-label={recolhido ? t("expandir") : t("recolher")}
             className={botaoRedondo}
           >
-            <Icone nome="grade" />
+            <Icone nome="menu" />
           </button>
           <BuscaNoMenu itens={todos.map((item) => ({ item, rotulo: rotulo(item) }))} />
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
