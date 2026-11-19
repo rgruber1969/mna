@@ -90,6 +90,8 @@ export async function adicionarParticipanteAcao(_: Estado, f: FormData): Promise
     empresaId: texto(f, "empresaId"),
     lado: texto(f, "lado"),
     prazo: texto(f, "prazo"),
+    alcance: texto(f, "alcance"),
+    etapaIds: f.getAll("etapaIds").map(String),
   });
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("participanteIncluido") };
 }

@@ -10,6 +10,7 @@ import {
   usuario,
   vinculoTenant,
 } from "@/server/db/esquema";
+import { completarEtapasPadrao } from "./etapas";
 import { copiarPerfisPadrao } from "./perfis";
 import { ligarContaAPessoa } from "./pessoas";
 
@@ -126,6 +127,7 @@ export async function completarCadastrosPadrao(tenantId: string): Promise<void> 
           comPercentual: o.comPercentual,
         })),
       );
+    await completarEtapasPadrao(tx, tenantId);
     const [doContratante] = await tx
       .select({ id: empresa.id })
       .from(empresa)

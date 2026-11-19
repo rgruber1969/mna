@@ -464,6 +464,26 @@ success fee e documentos.
 * **Visualização e manuseio gráficos** das etapas do deal (forte desejo de
   usabilidade).
 
+Regras construídas (itens 9 e 10, respostas E1–E7, 2026-11-19):
+
+* **Cadastro auxiliar "Etapas padrão"**: incluir, renomear, reordenar,
+  desativar; subetapas padrão (Diligência jurídica, contábil e financeira,
+  fiscal e trabalhista). Copiadas para cada negócio novo; negócios
+  existentes não mudam.
+* **No negócio** (aba Etapas): situação Não iniciada · Em andamento ·
+  Concluída · Pulada; datas previstas e reais (iniciar e concluir preenchem
+  as reais); incluir, remover (só não iniciadas), reordenar; um nível de
+  subetapas; quem tem "Etapas × editar" naquela etapa muda a situação.
+* **Dependência só avisa**: por padrão cada etapa depende da anterior;
+  iniciar antes pede confirmação. "Sem dependência" = em paralelo.
+* **Etapa principal**: a em andamento mais avançada ("+1 em paralelo");
+  aparece no cabeçalho e na lista de negócios; a troca avisa os
+  participantes (sino).
+* **Alcance por etapa**: a participação pode valer só para algumas etapas
+  ou subetapas; a pessoa vê só essas (e a etapa-mãe como contexto).
+* **Linha do tempo** (item 10): barras pelas datas, só leitura; a edição
+  gráfica (arrastar e ligar dependências) aparece como demonstração.
+
 Etapas padrão:
 
 1. **Prospecção** (com e-book e valuation como tarefas opcionais em

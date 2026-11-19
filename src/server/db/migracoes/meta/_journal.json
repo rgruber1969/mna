@@ -225,6 +225,13 @@
       "when": 1795109323731,
       "tag": "0031_observacoes_do_funil",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795112283710,
+      "tag": "0032_etapas",
+      "breakpoints": true
     }
   ]
 }

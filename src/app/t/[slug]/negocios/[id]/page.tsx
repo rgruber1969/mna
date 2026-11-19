@@ -27,6 +27,8 @@ import {
 } from "@/components/negocios/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { KanbanDoFunil, PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
+import { etapasDoNegocio, opcoesDeAlcance } from "@/server/services/etapas";
+import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -75,6 +77,10 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
     andamentoDoNegocio(acesso, n.id),
   ]);
   const funil = await funilDoNegocio(acesso, n.id);
+  const [etapas, alcances] = await Promise.all([
+    etapasDoNegocio(acesso, n.id),
+    n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
+  ]);
   if (!andamento) notFound();
   const hoje = hojeEmSaoPaulo();
   const temEscolhida = n.empresas.some((e) => e.situacaoFunil === "escolhida");
@@ -106,6 +112,10 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
               n.nomeInterno,
               n.tipo,
               ts(n.situacao),
+              etapas?.principal &&
+                (etapas.principal.paralelas
+                  ? t("etapaComParalelas", { etapa: etapas.principal.nome, n: etapas.principal.paralelas })
+                  : t("etapaAtual", { etapa: etapas.principal.nome })),
               n.objeto === "grupo" && n.grupo && t("grupo", { grupo: n.grupo }),
             ]
               .filter(Boolean)
@@ -120,6 +130,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
             inicial={await aba}
             abas={[
               { id: "resumo", rotulo: t("abaResumo") },
+              ...(etapas ? [{ id: "etapas", rotulo: t("abaEtapas") }] : []),
               ...(funil ? [{ id: "funil", rotulo: `${t("abaFunil")} (${funil.cartoes.length})` }] : []),
               { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
               { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
@@ -215,6 +226,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                           p.empresa ? tp("representando", { empresa: p.empresa }) : null,
                           lado(p.lado),
                           p.prazo && tp("ate", { data: p.prazo.split("-").reverse().join("/") }),
+                          p.alcance && tp("alcanceEtapas", { etapas: p.alcance.join(", ") }),
                         ]
                           .filter(Boolean)
                           .join(" · ")}
@@ -237,12 +249,24 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                   dealId={n.id}
                   pessoas={opcoesPart.pessoas}
                   perfis={opcoesPart.perfis}
+                  etapas={alcances}
                 />
               )}
             </PainelDeAba>
             {funil && (
               <PainelDeAba id="funil">
                 <KanbanDoFunil dealId={n.id} cartoes={funil.cartoes} podeEditar={funil.podeEditar} />
+              </PainelDeAba>
+            )}
+            {etapas && (
+              <PainelDeAba id="etapas">
+                <EtapasDoNegocio
+                  dealId={n.id}
+                  etapas={etapas.etapas}
+                  podeIncluir={etapas.podeIncluir}
+                  podeExcluir={etapas.podeExcluir}
+                  hoje={hoje}
+                />
               </PainelDeAba>
             )}
             <PainelDeAba id="exclusividade">

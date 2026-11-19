@@ -827,7 +827,9 @@ export const participacaoDeal = pgTable(
     lado: text("lado").$type<"vendedor" | "comprador">(),
     perfilId: uuid("perfil_id").references(() => perfil.id, { onDelete: "no action" }),
     /** "deal": o negócio inteiro (por etapas chega com o item 9). */
-    alcance: text("alcance").$type<"deal">().notNull().default("deal"),
+    alcance: text("alcance").$type<"deal" | "etapas">().notNull().default("deal"),
+    /** Alcance "etapas": as etapas ou subetapas a que a participação dá acesso. */
+    etapaIds: jsonb("etapa_ids").$type<string[]>().notNull().default([]),
     /** Último dia de acesso (opcional). */
     prazo: date("prazo"),
     /**
@@ -900,4 +902,56 @@ export const prorrogacaoExclusividade = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index("prorrogacao_exclusividade_deal_idx").on(t.tenantId, t.dealId), isolamento()],
+).enableRLS();
+
+// --- Etapas (itens 9 e 10; dominio.md, "Etapas"; respostas E1–E7) -----------
+
+/**
+ * Etapa padrão do tenant (cadastro auxiliar), copiada para cada negócio novo.
+ * `paiId` preenchido = subetapa padrão (um nível só).
+ */
+export const etapaPadrao = pgTable(
+  "etapa_padrao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    paiId: uuid("pai_id"),
+    nome: text("nome").notNull(),
+    ordem: integer("ordem").notNull(),
+    ativa: boolean("ativa").notNull().default(true),
+    padrao: text("padrao"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("etapa_padrao_tenant_idx").on(t.tenantId, t.paiId, t.ordem), isolamento()],
+).enableRLS();
+
+/** Etapa (ou subetapa, com `paiId`) de um negócio, adaptável por negócio. */
+export const dealEtapa = pgTable(
+  "deal_etapa",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    paiId: uuid("pai_id"),
+    nome: text("nome").notNull(),
+    ordem: integer("ordem").notNull(),
+    situacao: text("situacao")
+      .$type<"nao_iniciada" | "andamento" | "concluida" | "pulada">()
+      .notNull()
+      .default("nao_iniciada"),
+    inicioPrevisto: date("inicio_previsto"),
+    fimPrevisto: date("fim_previsto"),
+    inicioReal: date("inicio_real"),
+    fimReal: date("fim_real"),
+    /** Etapa que deveria terminar antes (só avisa; não bloqueia). */
+    dependeDeId: uuid("depende_de_id"),
+    /** Responsáveis (pessoas) da subetapa. */
+    responsaveis: jsonb("responsaveis").$type<string[]>().notNull().default([]),
+    observacoes: text("observacoes"),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("deal_etapa_deal_idx").on(t.tenantId, t.dealId, t.paiId, t.ordem), isolamento()],
 ).enableRLS();

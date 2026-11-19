@@ -102,6 +102,12 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.getByLabel("Duração (dias)").fill("30");
   await page.getByRole("button", { name: "Definir exclusividade" }).click();
   await expect(page.getByText(/^Exclusividade de /)).toBeVisible();
+  // Etapas: iniciar a Prospecção vira a etapa atual do negócio.
+  await page.getByRole("tab", { name: "Etapas" }).click();
+  await page.getByRole("button", { name: "Iniciar" }).first().click();
+  await expect(page.getByText(/Etapa: Prospecção/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Linha do tempo" }).click();
+  await expect(page.getByText(/edição gráfica/)).toBeVisible();
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByText("Negócio criado")).toBeVisible();
   await page.getByRole("tab", { name: /Participantes/ }).click();

@@ -392,14 +392,17 @@ export function FormIncluirParticipante({
   dealId,
   pessoas,
   perfis,
+  etapas = [],
 }: {
   dealId: string;
   pessoas: (Opcao & { temUsuario: boolean; empresas: Opcao[] })[];
   perfis: Opcao[];
+  etapas?: Opcao[];
 }) {
   const t = useTranslations("negocios.participantes");
   const [estado, incluir, incluindo] = useAcaoComAtualizacao(adicionarParticipanteAcao);
   const [pessoaId, setPessoaId] = useState("");
+  const [alcance, setAlcance] = useState<"deal" | "etapas">("deal");
   const escolhida = pessoas.find((p) => p.id === pessoaId);
   const empresas = escolhida?.empresas ?? [];
   return (
@@ -460,6 +463,40 @@ export function FormIncluirParticipante({
           </select>
           <span className="text-muted mt-1 block text-xs">{t("semEmpresaAjuda")}</span>
         </Rotulo>
+      )}
+      {escolhida?.temUsuario && etapas.length > 0 && (
+        <fieldset className="mb-3">
+          <legend className="text-text mb-1 text-sm font-medium">{t("alcance")}</legend>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="alcance"
+              value="deal"
+              checked={alcance === "deal"}
+              onChange={() => setAlcance("deal")}
+            />
+            {t("alcanceDeal")}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="alcance"
+              value="etapas"
+              checked={alcance === "etapas"}
+              onChange={() => setAlcance("etapas")}
+            />
+            {t("alcanceSoEtapas")}
+          </label>
+          {alcance === "etapas" && (
+            <div className="border-border mt-2 max-h-48 overflow-y-auto rounded-md border p-2 text-sm">
+              {etapas.map((e) => (
+                <label key={e.id} className="flex items-center gap-2 py-0.5">
+                  <input type="checkbox" name="etapaIds" value={e.id} /> {e.nome}
+                </label>
+              ))}
+            </div>
+          )}
+        </fieldset>
       )}
       <Rotulo texto={t("prazo")}>
         <input type="date" name="prazo" className={estiloCampo} />

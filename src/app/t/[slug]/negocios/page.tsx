@@ -120,6 +120,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                       <th className={estiloTabela.th}>{t("colCompradora")}</th>
                       <th className={estiloTabela.th}>{t("colDescricao")}</th>
                       {ordenavel(t("colSituacao"), "situacao")}
+                      <th className={estiloTabela.th}>{t("colEtapa")}</th>
                       <th className={estiloTabela.th}>{t("colCoordenador")}</th>
                       {ordenavel(t("colInicio"), "inicio")}
                     </tr>
@@ -152,6 +153,14 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                           )}
                         </td>
                         <td className={`${estiloTabela.td} text-xs whitespace-nowrap`}>{ts(n.situacao)}</td>
+                        <td className={`${estiloTabela.td} text-xs`}>
+                          {n.etapa ?? "—"}
+                          {n.etapasEmParalelo > 0 && (
+                            <span className="text-muted block">
+                              {t("emParalelo", { n: n.etapasEmParalelo })}
+                            </span>
+                          )}
+                        </td>
                         <td className={`${estiloTabela.td} text-muted text-xs`}>
                           {n.coordenadores.join(", ") || "—"}
                         </td>

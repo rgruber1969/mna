@@ -30,6 +30,7 @@ import {
   prorrogarExclusividade,
   salvarDiasDeAviso,
 } from "./negocios-andamento";
+import { editarEtapa, etapasDoNegocio, incluirEtapa, mudarSituacaoDaEtapa, removerEtapa } from "./etapas";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -637,5 +638,82 @@ describe("permissão do funil de compradoras", () => {
     await expect(
       alterarSituacaoNoFunil(acesso("adva"), negocioId, { dealEmpresaId: b.id, situacao: "descartada" }),
     ).rejects.toBeInstanceOf(AcessoNegado);
+  });
+});
+
+describe("etapas do negócio", () => {
+  it("copiadas do padrão; dependência só avisa; etapa principal; aviso de troca", async () => {
+    const g = acesso("gestor");
+    const r = await etapasDoNegocio(g, negocioId);
+    expect(r?.etapas.map((e) => e.nome)).toEqual([
+      "Prospecção",
+      "Negociação informal",
+      "Term Sheet",
+      "Diligência",
+      "QPA",
+      "QPA → Closing",
+      "Closing",
+      "Pós-closing",
+    ]);
+    expect(r?.etapas.find((e) => e.nome === "Diligência")?.subetapas).toHaveLength(4);
+    const id = (nome: string) => r!.etapas.find((e) => e.nome === nome)!.id;
+    expect(await mudarSituacaoDaEtapa(g, negocioId, id("Negociação informal"), "andamento")).toEqual({
+      aviso: "dependencia",
+      etapa: "Prospecção",
+    });
+    expect(await mudarSituacaoDaEtapa(g, negocioId, id("Negociação informal"), "andamento", true)).toEqual({
+      ok: true,
+    });
+    await mudarSituacaoDaEtapa(g, negocioId, id("Prospecção"), "andamento");
+    const depois = await etapasDoNegocio(g, negocioId);
+    expect(depois?.principal).toEqual({ nome: "Negociação informal", paralelas: 1 });
+    expect(depois?.etapas.find((e) => e.nome === "Prospecção")?.inicioReal).not.toBeNull();
+    const n = await dono.query(
+      `select count(*)::int n from notificacao where usuario_id = $1 and tipo = 'negocio_etapa'`,
+      [contas.adva],
+    );
+    expect(n.rows[0].n).toBe(1);
+  });
+
+  it("alcance só numa subetapa: vê só ela; incluir e remover etapas", async () => {
+    const g = acesso("gestor");
+    const r = await etapasDoNegocio(g, negocioId);
+    const dil = r!.etapas.find((e) => e.nome === "Diligência")!;
+    const juridica = dil.subetapas.find((s) => s.nome === "Diligência jurídica")!;
+    await criarConta("audj", "usuario-externo");
+    expect(
+      await adicionarParticipante(g, negocioId, {
+        pessoaId: await pessoaDe("audj"),
+        perfilId: await perfilDeDeal("auditor"),
+        empresaId: "",
+        lado: "vendedor",
+        prazo: "",
+        alcance: "etapas",
+        etapaIds: [juridica.id],
+      }),
+    ).toEqual({ ok: true });
+    const visto = await etapasDoNegocio(acesso("audj"), negocioId);
+    expect(visto?.etapas.map((e) => [e.nome, e.subetapas.map((s) => s.nome)])).toEqual([
+      ["Diligência", ["Diligência jurídica"]],
+    ]);
+    await expect(
+      editarEtapa(acesso("audj"), negocioId, juridica.id, {
+        nome: "X",
+        inicioPrevisto: "",
+        fimPrevisto: "",
+        inicioReal: "",
+        fimReal: "",
+        dependeDeId: "",
+        observacoes: "",
+      }),
+    ).rejects.toBeInstanceOf(AcessoNegado);
+    expect(await incluirEtapa(g, negocioId, { nome: "Assinatura" })).toEqual({ ok: true });
+    const comNova = await etapasDoNegocio(g, negocioId);
+    const nova = comNova!.etapas.find((e) => e.nome === "Assinatura")!;
+    expect(await removerEtapa(g, negocioId, nova.id)).toEqual({ ok: true });
+    const prospeccao = comNova!.etapas.find((e) => e.nome === "Prospecção")!;
+    expect(await removerEtapa(g, negocioId, prospeccao.id)).toMatchObject({
+      erro: "etapas.erros.soNaoIniciada",
+    });
   });
 });

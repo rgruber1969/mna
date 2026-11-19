@@ -38,7 +38,9 @@
       "colCoordenador": "Coordenador",
       "colInicio": "Início",
       "sigilo": "Em sigilo",
-      "ajuda": "Os negócios de que você participa (administradores veem todos). Todos veem o número e o codinome; o nome interno e as vendedoras aparecem só para quem já pode vê-los."
+      "ajuda": "Os negócios de que você participa (administradores veem todos). Todos veem o número e o codinome; o nome interno e as vendedoras aparecem só para quem já pode vê-los.",
+      "colEtapa": "Etapa",
+      "emParalelo": "+{n} em paralelo"
     },
     "novo": {
       "titulo": "Novo negócio",
@@ -87,7 +89,10 @@
       "ajuda": "Dados, empresas e participantes do negócio. As demais abas (etapas, documentos, tarefas etc.) aparecem quando existirem.",
       "abaExclusividade": "Exclusividade",
       "abaHistorico": "Histórico",
-      "abaFunil": "Funil de compradoras"
+      "abaFunil": "Funil de compradoras",
+      "abaEtapas": "Etapas",
+      "etapaAtual": "Etapa: {etapa}",
+      "etapaComParalelas": "Etapa: {etapa} (+{n} em paralelo)"
     },
     "empresas": {
       "contratante": "contratante",
@@ -120,7 +125,11 @@
       "semEmpresaAjuda": "A pessoa não tem vínculo com nenhuma empresa do negócio: escolha o lado.",
       "prazo": "Prazo da participação (opcional)",
       "prazoAjuda": "Depois desta data, o acesso acaba sozinho.",
-      "incluir": "Incluir"
+      "incluir": "Incluir",
+      "alcance": "Alcance",
+      "alcanceDeal": "Negócio inteiro",
+      "alcanceSoEtapas": "Só algumas etapas",
+      "alcanceEtapas": "só em: {etapas}"
     },
     "tipos": {
       "titulo": "Tipos de operação",
@@ -201,7 +210,8 @@
       "exclusividadeJaDefinida": "A exclusividade já está definida: use \"Prorrogar\".",
       "semExclusividade": "Este negócio não tem exclusividade definida.",
       "prorrogacaoAntes": "A nova data precisa ser depois do fim atual.",
-      "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula."
+      "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula.",
+      "escolhaEtapas": "Escolha ao menos uma etapa para o alcance."
     },
     "andamento": {
       "situacaoTitulo": "Situação do negócio",
@@ -268,7 +278,11 @@
         "negocio_exclusividade_definida": "Exclusividade com {empresa} de {inicio} a {fim}",
         "negocio_exclusividade_prorrogada": "Exclusividade prorrogada de {de} para {para}",
         "negocio_acessos_externos_encerrados": "Acessos externos encerrados ({quantidade})",
-        "negocio_funil_observacoes": "{empresa}: observação do funil alterada"
+        "negocio_funil_observacoes": "{empresa}: observação do funil alterada",
+        "negocio_etapa_situacao": "Etapa \"{etapa}\": {para}",
+        "negocio_etapa_editada": "Etapa \"{etapa}\" alterada",
+        "negocio_etapa_incluida": "Etapa \"{etapa}\" incluída",
+        "negocio_etapa_removida": "Etapa \"{etapa}\" removida"
       }
     },
     "configuracoes": {

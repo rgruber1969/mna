@@ -6,6 +6,7 @@ import { comTenant } from "@/server/db/cliente";
 import {
   deal,
   dealEmpresa,
+  dealEtapa,
   empresa,
   grupoEconomico,
   papelEmpresa,
@@ -19,6 +20,7 @@ import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./ac
 import { auditar } from "./empresas";
 import { notificar } from "./notificacoes";
 import { avisarPorEmail } from "./negocios-avisos";
+import { copiarEtapasParaNegocio, etapaPrincipal } from "./etapas";
 import { exigirPermissao, permissoesNoDeal, pode } from "./permissoes/verificador";
 import { concede, type Matriz } from "./permissoes/catalogo";
 
@@ -358,6 +360,9 @@ export type NegocioResumo = {
   tipo: string | null;
   situacao: SituacaoDoNegocio;
   coordenadores: string[];
+  /** Etapa principal (a em andamento mais avançada) e quantas outras estão em paralelo. */
+  etapa: string | null;
+  etapasEmParalelo: number;
   dataInicio: string;
 };
 
@@ -427,6 +432,23 @@ export async function paginaDeNegocios(
       : [],
   ]);
   const minhasPor = Map.groupBy(minhas, (p) => p.dealId);
+  const etapasPor = Map.groupBy(
+    ids.length
+      ? await comTenant(a.tenant.id, (tx) =>
+          tx
+            .select({
+              dealId: dealEtapa.dealId,
+              paiId: dealEtapa.paiId,
+              nome: dealEtapa.nome,
+              ordem: dealEtapa.ordem,
+              situacao: dealEtapa.situacao,
+            })
+            .from(dealEtapa)
+            .where(inArray(dealEtapa.dealId, ids)),
+        )
+      : [],
+    (e) => e.dealId,
+  );
   const empresasPor = Map.groupBy(
     empresas.map((e) => ({ ...e, compradora: e.papelPadrao === "compradora" })),
     (e) => e.dealId,
@@ -459,6 +481,8 @@ export async function paginaDeNegocios(
       situacao: l.situacao,
       coordenadores: (coordPor.get(l.id) ?? []).map((c) => c.nome),
       dataInicio: l.dataInicio,
+      etapa: etapaPrincipal(etapasPor.get(l.id) ?? [])?.nome ?? null,
+      etapasEmParalelo: etapaPrincipal(etapasPor.get(l.id) ?? [])?.paralelas ?? 0,
     });
   }
   const busca = filtro.busca?.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -620,6 +644,7 @@ export async function criarNegocio(
         .insert(dealEmpresa)
         .values(entradas.map((e) => ({ tenantId: a.tenant.id, dealId: novo.id, ...e })))
         .onConflictDoNothing();
+      await copiarEtapasParaNegocio(tx, a.tenant.id, novo.id);
       await tx.insert(participacaoDeal).values({
         tenantId: a.tenant.id,
         dealId: novo.id,
@@ -682,6 +707,8 @@ export type NegocioDetalhe = {
     empresa: string | null;
     lado: Lado | null;
     prazo: string | null;
+    /** Etapas do alcance; null = negócio inteiro. */
+    alcance: string[] | null;
     coordenador: boolean;
   }[];
 };
@@ -750,6 +777,8 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
         empresa: empresa.razaoSocial,
         lado: participacaoDeal.lado,
         prazo: participacaoDeal.prazo,
+        alcance: participacaoDeal.alcance,
+        etapaIds: participacaoDeal.etapaIds,
       })
       .from(participacaoDeal)
       .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
@@ -759,6 +788,13 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
       .orderBy(asc(pessoa.nome)),
   ]);
   const verTudo = visao.administrador || visao.lados.has("vendedor");
+  const nomeDaEtapa = new Map(
+    (
+      await comTenant(a.tenant.id, (tx) =>
+        tx.select({ id: dealEtapa.id, nome: dealEtapa.nome }).from(dealEtapa).where(eq(dealEtapa.dealId, id)),
+      )
+    ).map((e) => [e.id, e.nome]),
+  );
   // Do lado comprador, os participantes da própria equipe (empresas visíveis do lado comprador).
   const equipe = new Set(
     empresas.filter((e) => e.lado === "comprador" && empresaVisivel(visao, e)).map((e) => e.empresaId),
@@ -822,6 +858,7 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
         empresa: p.empresa,
         lado: ladoDaParticipacao(empresas, p),
         prazo: p.prazo,
+        alcance: p.alcance === "etapas" ? p.etapaIds.map((id) => nomeDaEtapa.get(id) ?? "—") : null,
         coordenador: p.perfilPadrao === "coordenador-deal",
       })),
   };
@@ -1110,6 +1147,13 @@ const DadosParticipante = z.object({
     .trim()
     .transform((v) => (v === "vendedor" || v === "comprador" ? v : null)),
   prazo: dataOpcional,
+  /** "deal" (negócio inteiro) ou "etapas" (só as etapas/subetapas escolhidas). */
+  alcance: z
+    .string()
+    .trim()
+    .default("deal")
+    .transform((v) => (v === "etapas" ? ("etapas" as const) : ("deal" as const))),
+  etapaIds: z.array(z.string()).default([]),
 });
 
 /**
@@ -1130,6 +1174,13 @@ export async function adicionarParticipante(
   const r = DadosParticipante.safeParse(dados);
   if (!r.success) return erroDeValidacao(r);
   const d = r.data;
+  const etapasDoDeal = await comTenant(a.tenant.id, (tx) =>
+    tx.select({ id: dealEtapa.id }).from(dealEtapa).where(eq(dealEtapa.dealId, dealId)),
+  );
+  const alcanceEtapas =
+    d.alcance === "etapas" ? d.etapaIds.filter((id) => etapasDoDeal.some((e) => e.id === id)) : [];
+  if (d.alcance === "etapas" && alcanceEtapas.length === 0)
+    return { erro: "negocios.erros.escolhaEtapas", campo: "etapaIds" };
   const empresas = await empresasDoNegocio(a, dealId);
   const feito = await comTenant(
     a.tenant.id,
@@ -1190,6 +1241,8 @@ export async function adicionarParticipante(
         lado: empresaId && ladoDaEmpresa(empresas, empresaId) ? null : (lado ?? d.lado),
         perfilId,
         prazo: d.prazo,
+        alcance: d.alcance,
+        etapaIds: alcanceEtapas,
         criadoPor: a.usuario.id,
       });
       if (p.usuarioId && perfilId && p.usuarioId !== a.usuario.id)

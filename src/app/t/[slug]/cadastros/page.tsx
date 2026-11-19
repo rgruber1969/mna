@@ -9,6 +9,8 @@ import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/servi
 import { listarTiposDeOperacao } from "@/server/services/negocios";
 import { excluirTipoDeOperacaoAcao } from "@/app/acoes/negocios";
 import { FormNovoTipoDeOperacao } from "@/components/negocios/formularios";
+import { EtapasPadrao } from "@/components/cadastros/etapas-padrao";
+import { listarEtapasPadrao } from "@/server/services/etapas";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
@@ -36,6 +38,8 @@ async function Painel() {
     pode(acesso, "cadastros", "excluir"),
     listarTiposDeOperacao(acesso),
   ]);
+  const etapasPadrao = await listarEtapasPadrao(acesso);
+  const tEt = await getTranslations("etapas.padrao");
 
   return (
     <EstruturaDoTenant acesso={acesso}>
@@ -130,6 +134,12 @@ async function Painel() {
             ))}
           </ul>
           {podeCriar && <FormNovoTipoDeOperacao />}
+        </Cartao>
+        <Cartao largura="max-w-2xl">
+          <Titulo sobre={tr("sobre")} ajuda={tEt("explicacao")}>
+            {tEt("titulo")}
+          </Titulo>
+          <EtapasPadrao etapas={etapasPadrao} podeEditar={podeEditar && podeCriar} />
         </Cartao>
       </main>
     </EstruturaDoTenant>

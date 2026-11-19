@@ -1,0 +1,71 @@
+{
+  "etapas": {
+    "situacoes": {
+      "nao_iniciada": "Não iniciada",
+      "andamento": "Em andamento",
+      "concluida": "Concluída",
+      "pulada": "Pulada"
+    },
+    "vista": "Forma de ver as etapas",
+    "vistaLista": "Lista",
+    "vistaTempo": "Linha do tempo",
+    "nome": "Nome",
+    "dependeDe": "Depende de",
+    "semDependencia": "Sem dependência (em paralelo)",
+    "dependeDeNome": "depende de {nome}",
+    "inicioPrevisto": "Início previsto",
+    "fimPrevisto": "Fim previsto",
+    "inicioReal": "Início real",
+    "fimReal": "Fim real",
+    "real": "real {de} – {ate}",
+    "previsto": "previsto {de} – {ate}",
+    "observacoes": "Observações",
+    "iniciar": "Iniciar",
+    "pular": "Pular",
+    "concluir": "Concluir",
+    "reabrir": "Reabrir",
+    "editar": "Editar",
+    "remover": "Remover",
+    "confirmarRemover": "Remover a etapa {nome} deste negócio (com as subetapas)?",
+    "avisoDependencia": "A etapa \"{nome}\" ainda não terminou. Iniciar mesmo assim?",
+    "iniciarMesmoAssim": "Iniciar mesmo assim",
+    "cancelar": "Cancelar",
+    "novaEtapa": "+ Etapa",
+    "novaSubetapa": "+ Subetapa",
+    "nomeDaEtapa": "Nome da nova etapa",
+    "nomeDaSubetapa": "Nome da nova subetapa",
+    "incluir": "Incluir",
+    "semDatas": "Preencha as datas previstas ou reais das etapas para ver a linha do tempo.",
+    "semDatasCurto": "sem datas",
+    "edicaoGraficaFutura": "Funcionalidade em demonstração: a edição gráfica (arrastar as barras e ligar dependências) chega numa próxima versão; por enquanto, edite pela lista.",
+    "padrao": {
+      "titulo": "Etapas padrão",
+      "explicacao": "Copiadas para cada negócio novo, onde podem ser adaptadas. Mudanças aqui não alteram os negócios já existentes.",
+      "desativada": "desativada",
+      "desativar": "Desativar",
+      "reativar": "Reativar",
+      "nomeDe": "Nome da etapa {nome}",
+      "novaEtapa": "Nova etapa",
+      "novaSubetapa": "Nova subetapa"
+    },
+    "mensagens": {
+      "situacaoAlterada": "Situação da etapa alterada.",
+      "salva": "Etapa salva.",
+      "incluida": "Etapa incluída.",
+      "removida": "Etapa removida."
+    },
+    "erros": {
+      "nomeObrigatorio": "Informe o nome da etapa.",
+      "nomeLongo": "Nome longo demais.",
+      "naoEncontrada": "Etapa não encontrada.",
+      "umNivel": "Subetapas têm um nível só (não há subetapa de subetapa).",
+      "dataInvalida": "Data inválida.",
+      "textoLongo": "Texto longo demais.",
+      "dadosInvalidos": "Dados inválidos.",
+      "dependenciaInvalida": "A dependência precisa ser outra etapa do mesmo nível.",
+      "fimAntesDoInicio": "O fim previsto não pode ser antes do início previsto.",
+      "situacaoInvalida": "Situação inválida.",
+      "soNaoIniciada": "Só dá para remover etapas não iniciadas."
+    }
+  }
+}
