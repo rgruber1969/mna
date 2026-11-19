@@ -40,6 +40,7 @@ import {
   removerEtapa,
   salvarEtapaPadrao,
 } from "./etapas";
+import { moverNegocioParaEtapa, quadroDeNegocios } from "./negocios-kanban";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -745,5 +746,26 @@ describe("etapas padrão", () => {
       (e) => e.nome === "Pós-closing",
     );
     expect(doNegocio?.escala).toBe(10);
+  });
+});
+
+describe("kanban de negócios", () => {
+  it("cartão na coluna da etapa atual; mover conclui a atual e inicia a nova", async () => {
+    const g = acesso("gestor");
+    const q = await quadroDeNegocios(g, { situacao: "abertos" });
+    const coluna = (nome: string) => q.colunas.find((c) => c.nome === nome)!.id;
+    const cartao = q.cartoes.find((c) => c.id === negocioId)!;
+    expect(cartao.colunaId).toBe(coluna("Negociação informal"));
+    expect(cartao.podeMover).toBe(true);
+    expect(cartao.funil).toMatchObject({ escolhida: 1 });
+    expect(await moverNegocioParaEtapa(g, negocioId, coluna("Term Sheet"))).toEqual({ ok: true });
+    const depois = await quadroDeNegocios(g, { situacao: "abertos" });
+    expect(depois.cartoes.find((c) => c.id === negocioId)?.colunaId).toBe(coluna("Term Sheet"));
+    const etapas = (await etapasDoNegocio(g, negocioId))!.etapas;
+    expect(etapas.find((e) => e.nome === "Negociação informal")?.situacao).toBe("concluida");
+    // Quem não pode editar etapas não move.
+    await expect(moverNegocioParaEtapa(acesso("audj"), negocioId, coluna("QPA"))).rejects.toBeInstanceOf(
+      AcessoNegado,
+    );
   });
 });

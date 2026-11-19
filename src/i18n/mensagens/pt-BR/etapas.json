@@ -66,7 +66,8 @@
       "fimAntesDoInicio": "O fim previsto não pode ser antes do início previsto.",
       "situacaoInvalida": "Situação inválida.",
       "soNaoIniciada": "Só dá para remover etapas não iniciadas.",
-      "escalaInvalida": "Escala inválida: de 5% a 100%."
+      "escalaInvalida": "Escala inválida: de 5% a 100%.",
+      "etapaForaDoNegocio": "Este negócio não tem essa etapa (ela foi removida ou criada só no negócio)."
     },
     "escala": "Escala na linha do tempo (%)",
     "escalaCurta": "escala {n}%",

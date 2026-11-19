@@ -7,6 +7,9 @@ import { getTranslations } from "next-intl/server";
 import { obterAcesso } from "@/server/services/acesso";
 import { listarTiposDeOperacao, ORDENS_DE_NEGOCIOS, paginaDeNegocios } from "@/server/services/negocios";
 import { lerPedido } from "@/config/paginacao";
+import { quadroDeNegocios } from "@/server/services/negocios-kanban";
+import { hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
+import { KanbanDeNegocios } from "@/components/negocios/kanban";
 import { Paginacao, TituloOrdenavel } from "@/components/ui/lista";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
@@ -25,10 +28,14 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
   const ts = await getTranslations("negocios.situacoes");
   const parametros = await busca;
   const um = (k: string) => (typeof parametros[k] === "string" ? (parametros[k] as string) : "");
-  const filtro = { busca: um("busca"), situacao: um("situacao"), tipo: um("tipo"), lado: um("lado") };
+  const kanban = um("vista") === "kanban";
+  // No kanban, o padrão é mostrar só os negócios em aberto (em andamento e suspensos).
+  const situacao = typeof parametros.situacao === "string" ? um("situacao") : kanban ? "abertos" : "";
+  const filtro = { busca: um("busca"), situacao, tipo: um("tipo"), lado: um("lado") };
   const pedido = lerPedido(parametros, ORDENS_DE_NEGOCIOS, "numero", "desc");
-  const [pagina, tipos, podeCriar] = await Promise.all([
+  const [pagina, quadro, tipos, podeCriar] = await Promise.all([
     paginaDeNegocios(acesso, filtro, pedido),
+    kanban ? quadroDeNegocios(acesso, filtro) : null,
     listarTiposDeOperacao(acesso),
     pode(acesso, "deals", "criar"),
   ]);
@@ -47,7 +54,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
-        <Cartao largura="max-w-6xl">
+        <Cartao largura={kanban ? "max-w-none" : "max-w-6xl"}>
           <div className="flex items-start justify-between gap-4">
             <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
               {t("titulo")}
@@ -61,7 +68,26 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
               </Link>
             )}
           </div>
+          <nav className="mb-3 flex gap-2" aria-label={t("vista")}>
+            {(["lista", "kanban"] as const).map((v) => {
+              const q = new URLSearchParams();
+              for (const k of ["busca", "tipo", "lado"]) if (um(k)) q.set(k, um(k));
+              if (v === "kanban") q.set("vista", "kanban");
+              const ativo = (v === "kanban") === kanban;
+              return (
+                <Link
+                  key={v}
+                  href={`/negocios${q.size ? `?${q}` : ""}`}
+                  aria-current={ativo ? "page" : undefined}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium ${ativo ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted"}`}
+                >
+                  {t(v === "kanban" ? "vistaKanban" : "vistaLista")}
+                </Link>
+              );
+            })}
+          </nav>
           <form className="mb-4 flex flex-wrap items-center gap-3">
+            {kanban && <input type="hidden" name="vista" value="kanban" />}
             <input
               name="busca"
               defaultValue={filtro.busca}
@@ -76,6 +102,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
               className={estiloFiltro}
             >
               <option value="">{t("todasSituacoes")}</option>
+              <option value="abertos">{t("emAberto")}</option>
               {(["andamento", "suspenso", "concluido", "encerrado"] as const).map((s) => (
                 <option key={s} value={s}>
                   {ts(s)}
@@ -107,7 +134,9 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
             </select>
             <button className="text-primary text-sm font-medium">{t("buscar")}</button>
           </form>
-          {pagina.total === 0 ? (
+          {quadro ? (
+            <KanbanDeNegocios colunas={quadro.colunas} cartoes={quadro.cartoes} hoje={hojeEmSaoPaulo()} />
+          ) : pagina.total === 0 ? (
             <p className="text-muted text-sm">{t("nenhum")}</p>
           ) : (
             <>

@@ -543,6 +543,16 @@ Etapas padrão:
 
 ### Kanban de deals
 
+* **Construído (item 15, 2026-11-19):** Negócios → "Kanban" (ao lado de
+  "Lista", com os mesmos filtros; padrão: só os em aberto). Coluna "A
+  iniciar" + as etapas padrão ativas; cada negócio na coluna da etapa
+  principal (etapa criada só no negócio conta pela etapa padrão anterior).
+  Arrastar ou "Mover para" pede confirmação, conclui a etapa atual (ou a
+  volta a não iniciada, se a nova estiver antes) e inicia a nova; só quem
+  tem "Etapas × editar" no negócio. O cartão mostra vendedoras (se
+  visíveis), coordenador, situação, etapas em paralelo e o resumo do funil
+  (lado vendedor). Clicar abre um painel lateral com as etapas (editáveis)
+  e os últimos eventos.
 * **Pedido de 2026-11-19:** um kanban com todos os negócios que o usuário
   vê, colunas = etapas, com ações direto no cartão (editar a etapa, mover
   de etapa e, depois do data room, ligar documentos) sem abrir o negócio.

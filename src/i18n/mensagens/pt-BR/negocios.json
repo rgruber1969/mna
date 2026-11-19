@@ -40,7 +40,11 @@
       "sigilo": "Em sigilo",
       "ajuda": "Os negócios de que você participa (administradores veem todos). Todos veem o número e o codinome; o nome interno e as vendedoras aparecem só para quem já pode vê-los.",
       "colEtapa": "Etapa",
-      "emParalelo": "+{n} em paralelo"
+      "emParalelo": "+{n} em paralelo",
+      "vista": "Forma de ver os negócios",
+      "vistaLista": "Lista",
+      "vistaKanban": "Kanban",
+      "emAberto": "Em aberto"
     },
     "novo": {
       "titulo": "Novo negócio",
@@ -297,6 +301,22 @@
       "diasAviso": "Avisos antes do fim da exclusividade (dias)",
       "diasAvisoAjuda": "Ex.: \"15, 5\": o lado vendedor é avisado 15 e 5 dias antes do fim, além do início e do último dia.",
       "salvar": "Salvar"
+    },
+    "kanban": {
+      "aIniciar": "A iniciar",
+      "confirmarMover": "Mover {negocio} para \"{etapa}\"? A etapa atual é concluída (ou volta a não iniciada, se a nova estiver antes) e a nova é iniciada.",
+      "moverPara": "Mover {negocio} para",
+      "moverParaCurto": "Mover para…",
+      "emParalelo": "+{n} etapa(s) em paralelo",
+      "etapa": "Etapa: {etapa}",
+      "abrirNegocio": "Abrir o negócio",
+      "fechar": "Fechar",
+      "carregando": "Carregando…",
+      "semAcesso": "Você não tem acesso a este negócio.",
+      "etapas": "Etapas",
+      "ultimosEventos": "Últimos eventos",
+      "semEventos": "Nenhum evento.",
+      "verHistorico": "Ver o histórico completo"
     }
   }
 }

@@ -489,7 +489,9 @@ export async function paginaDeNegocios(
   const semAcento = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   const filtrados = visiveis.filter(
     (n) =>
-      (!filtro.situacao || n.situacao === filtro.situacao) &&
+      (!filtro.situacao ||
+        n.situacao === filtro.situacao ||
+        (filtro.situacao === "abertos" && (n.situacao === "andamento" || n.situacao === "suspenso"))) &&
       (!filtro.tipo || n.tipoId === filtro.tipo) &&
       (!filtro.lado || n.ladoDoContratante === filtro.lado) &&
       (!busca ||
