@@ -55,7 +55,9 @@ describe("criptografar e descriptografar", () => {
   it("dado de um tenant não abre em outro, nem alterado", async () => {
     const a = await criptografar(tenants.A, CPF);
     await expect(descriptografar(tenants.B, a)).rejects.toThrow();
-    const alterado = a.slice(0, -3) + (a.endsWith("A") ? "B" : "A") + a.slice(-2);
+    // Troca um caractere do meio do corpo por outro, sempre diferente do original.
+    const i = a.length - 10;
+    const alterado = a.slice(0, i) + (a[i] === "A" ? "B" : "A") + a.slice(i + 1);
     await expect(descriptografar(tenants.A, alterado)).rejects.toThrow();
   });
 
