@@ -184,7 +184,8 @@
       "comPercentual": "Com percentual",
       "adicionarTipo": "Adicionar tipo",
       "completarExistente": "Sim, completar o cadastro de {nome}",
-      "criarOutra": "Não, cadastrar outra empresa"
+      "criarOutra": "Não, cadastrar outra empresa",
+      "criacaoCurta": "Comece pelo essencial. Depois de cadastrar, a tela da pessoa abre com as abas para completar documentos, endereço, cônjuge, empresas e anexos."
     },
     "mensagens": {
       "empresaSalva": "Empresa salva.",
@@ -332,6 +333,17 @@
       "parecida": "Já existe \"{nome}\", sem CNPJ, com nome parecido:",
       "completarParecida": "completar esse cadastro",
       "criarNova": "cadastrar como nova empresa"
+    },
+    "abas": {
+      "dados": "Dados",
+      "documentos": "Documentos",
+      "endereco": "Endereço",
+      "conjuge": "Cônjuge",
+      "empresas": "Empresas",
+      "pessoas": "Pessoas",
+      "anexos": "Anexos",
+      "acesso": "Acesso",
+      "receita": "Sócios na Receita"
     }
   }
 }

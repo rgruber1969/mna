@@ -100,7 +100,7 @@ export async function salvarEmpresaAcao(_: EstadoEmpresa, f: FormData): Promise<
   const r = id
     ? await editarEmpresa(await acesso(), id, dadosEmpresa(f))
     : await criarEmpresa(await acesso(), dadosEmpresa(f), { ignorarParecida: decisao === "criar" });
-  if ("erro" in r) return { erro: await traduzirErro(r), parecida: r.parecida };
+  if ("erro" in r) return { erro: await traduzirErro(r), parecida: r.parecida, campo: r.campo };
   return id ? { ok: t("empresaSalva") } : { destino: `/empresas/${r.id}` };
 }
 
@@ -143,10 +143,10 @@ export async function salvarPessoaAcao(_: Estado, f: FormData): Promise<Estado> 
   const id = texto(f, "id");
   if (id) {
     const r = await editarPessoa(await acesso(), id, dadosPessoa(f), f.getAll("limpar").map(String));
-    return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("pessoaSalva") };
+    return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("pessoaSalva") };
   }
   const r = await criarPessoa(await acesso(), dadosPessoa(f));
-  if ("erro" in r) return { erro: await traduzirErro(r) };
+  if ("erro" in r) return { erro: await traduzirErro(r), campo: r.campo };
   return { destino: `/pessoas/${r.id}${r.parecidas ? "?parecidas=1" : ""}` };
 }
 

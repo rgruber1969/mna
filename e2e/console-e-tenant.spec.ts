@@ -226,8 +226,12 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
     "placeholder",
     "Atual: ***.982.247-**",
   );
+  // Tela da pessoa em abas: documentos e empresas ficam cada um na sua.
+  await admin.getByRole("tab", { name: "Documentos" }).click();
+  await expect(admin).toHaveURL(/aba=documentos/);
   await admin.getByRole("button", { name: "Mostrar dados sensíveis" }).click();
   await expect(admin.getByRole("region", { name: "Dados sensíveis" })).toContainText("52998224725");
+  await admin.getByRole("tab", { name: /^Empresas/ }).click();
   await admin.getByLabel("Empresa", { exact: true }).selectOption({ label: "Alfa E2E Ltda" });
   await admin.getByLabel("Tipo de vínculo").selectOption({ label: "Sócio" });
   await admin.getByLabel("Percentual de participação").fill("50");

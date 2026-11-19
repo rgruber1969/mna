@@ -107,7 +107,12 @@ export type DadosPessoa = z.input<typeof DadosPessoa>;
 
 function validar(dados: DadosPessoa) {
   const r = DadosPessoa.safeParse(dados);
-  return r.success ? r.data : { erro: r.error.issues[0]?.message ?? "cadastros.erros.dadosInvalidos" };
+  if (r.success) return r.data;
+  const problema = r.error.issues[0];
+  return {
+    erro: problema?.message ?? "cadastros.erros.dadosInvalidos",
+    campo: problema?.path[0] !== undefined ? String(problema.path[0]) : undefined,
+  };
 }
 
 type Validados = z.output<typeof DadosPessoa>;

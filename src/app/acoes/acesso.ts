@@ -28,7 +28,7 @@ import { convidarAdministradorDoTenant, criarTenant } from "@/server/services/co
  * Os caminhos são relativos ao endereço atual (console ou tenant).
  */
 
-export type Estado = { erro?: string; ok?: string; destino?: string } | undefined;
+export type Estado = { erro?: string; ok?: string; destino?: string; campo?: string } | undefined;
 
 const cabecalhos = async () => new Headers(await headers());
 const texto = (f: FormData, nome: string) => String(f.get(nome) ?? "");

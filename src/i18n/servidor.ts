@@ -21,7 +21,12 @@ export async function tradutor(idioma: Idioma = IDIOMA_PADRAO): Promise<Tradutor
  * Erro devolvido pela camada de serviços: uma chave das mensagens (ex.:
  * "cadastros.erros.cnpjInvalido") e, se preciso, parâmetros. Nunca a frase.
  */
-export type ErroDeServico = { erro: string; parametros?: Record<string, string | number> };
+export type ErroDeServico = {
+  erro: string;
+  parametros?: Record<string, string | number>;
+  /** Campo do formulário com o problema (a tela abre a aba dele). */
+  campo?: string;
+};
 
 /** Traduz o erro de um serviço para a frase no idioma do usuário (usado pelas ações). */
 export async function traduzirErro(e: ErroDeServico, idioma: Idioma = IDIOMA_PADRAO): Promise<string> {

@@ -28,7 +28,7 @@ async function Painel() {
           </Link>
           <Titulo sobre={t("sobre")}>{t("nova")}</Titulo>
           <p className="text-muted mb-4 text-sm">{t("avisoNova")}</p>
-          <FormPessoa inicial={{ pais: "Brasil" }} mascarados={{}} podeSalvar />
+          <FormPessoa inicial={{ pais: "Brasil" }} mascarados={{}} podeSalvar curto />
         </Cartao>
       </main>
     </EstruturaDoTenant>

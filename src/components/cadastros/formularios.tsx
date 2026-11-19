@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useTransition, type ReactNode } from "react";
+import { useId, useEffect, useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
   adicionarVinculoAcao,
@@ -16,6 +16,7 @@ import {
   type EstadoEmpresa,
 } from "@/app/acoes/cadastros";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
+import { PainelDeAba, SoNasAbas, useAbas } from "@/components/ui/abas";
 import { Aviso, Botao } from "@/components/ui/basicos";
 import { cepValido, cnpjValido, formatarCep, formatarCnpj, soDigitos } from "@/config/documentos";
 
@@ -61,6 +62,14 @@ function Campo({
       )}
     </div>
   );
+}
+
+/** Abre a aba do campo apontado pelo servidor (erro de validação). */
+function useCampoComErro(estado: { campo?: string } | undefined) {
+  const abas = useAbas();
+  useEffect(() => {
+    if (estado?.campo) abas?.revelarCampo(estado.campo);
+  }, [estado, abas]);
 }
 
 function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
@@ -157,6 +166,7 @@ export function FormEmpresa({
   const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarEmpresaAcao);
   const parecida = (estado as EstadoEmpresa)?.parecida;
+  useCampoComErro(estado);
   const [valores, mudar] = useValores(inicial);
   const [buscando, iniciar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -211,82 +221,90 @@ export function FormEmpresa({
         <Mensagem estado={estado} />
       )}
       <fieldset disabled={!podeSalvar}>
-        <Secao titulo={t("identificacao")}>
-          <div className="sm:col-span-2">
-            <span className="text-text mb-1 block text-sm font-medium">{t("cnpj")}</span>
-            <div className="mb-1 flex gap-2">
-              <input
-                name="cnpj"
-                aria-label={t("cnpj")}
-                value={valores.cnpj ?? ""}
-                onChange={(e) => mudar("cnpj", e.target.value)}
-                inputMode="numeric"
-                className={estiloCampo}
-              />
-              <button
-                type="button"
-                onClick={buscarCnpj}
-                disabled={buscando}
-                className="border-border text-primary shrink-0 rounded-md border px-3 text-sm font-medium"
-              >
-                {buscando ? t("buscando") : t("buscarDados")}
-              </button>
+        <PainelDeAba id="dados">
+          <Secao titulo={t("identificacao")}>
+            <div className="sm:col-span-2">
+              <span className="text-text mb-1 block text-sm font-medium">{t("cnpj")}</span>
+              <div className="mb-1 flex gap-2">
+                <input
+                  name="cnpj"
+                  aria-label={t("cnpj")}
+                  value={valores.cnpj ?? ""}
+                  onChange={(e) => mudar("cnpj", e.target.value)}
+                  inputMode="numeric"
+                  className={estiloCampo}
+                />
+                <button
+                  type="button"
+                  onClick={buscarCnpj}
+                  disabled={buscando}
+                  className="border-border text-primary shrink-0 rounded-md border px-3 text-sm font-medium"
+                >
+                  {buscando ? t("buscando") : t("buscarDados")}
+                </button>
+              </div>
+              <span className="text-muted mb-3 block text-xs">{aviso ?? t("cnpjAjuda")}</span>
             </div>
-            <span className="text-muted mb-3 block text-xs">{aviso ?? t("cnpjAjuda")}</span>
-          </div>
-          <Campo
-            rotulo={t("razaoSocial")}
-            nome="razaoSocial"
-            valores={valores}
-            mudar={mudar}
-            required
-            className="sm:col-span-2"
-          />
-          <Campo rotulo={t("nomeFantasia")} nome="nomeFantasia" valores={valores} mudar={mudar} />
-          <Campo
-            rotulo={t("identificadorEstrangeiro")}
-            nome="identificadorEstrangeiro"
-            valores={valores}
-            mudar={mudar}
-          />
-          <Campo rotulo={t("cnae")} nome="cnae" valores={valores} mudar={mudar} className="sm:col-span-2" />
-          <label className="mb-3 block sm:col-span-2">
-            <span className="text-text mb-1 block text-sm font-medium">{t("grupoEconomico")}</span>
-            <select
-              name="grupoId"
-              value={valores.grupoId ?? ""}
-              onChange={(e) => mudar("grupoId", e.target.value)}
+            <Campo
+              rotulo={t("razaoSocial")}
+              nome="razaoSocial"
+              valores={valores}
+              mudar={mudar}
+              required
+              className="sm:col-span-2"
+            />
+            <Campo rotulo={t("nomeFantasia")} nome="nomeFantasia" valores={valores} mudar={mudar} />
+            <Campo
+              rotulo={t("identificadorEstrangeiro")}
+              nome="identificadorEstrangeiro"
+              valores={valores}
+              mudar={mudar}
+            />
+            <Campo rotulo={t("cnae")} nome="cnae" valores={valores} mudar={mudar} className="sm:col-span-2" />
+            <label className="mb-3 block sm:col-span-2">
+              <span className="text-text mb-1 block text-sm font-medium">{t("grupoEconomico")}</span>
+              <select
+                name="grupoId"
+                value={valores.grupoId ?? ""}
+                onChange={(e) => mudar("grupoId", e.target.value)}
+                className={estiloCampo}
+              >
+                <option value="">{t("nenhum")}</option>
+                {grupos.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </Secao>
+        </PainelDeAba>
+        <PainelDeAba id="endereco">
+          <CamposDeEndereco valores={valores} mudar={mudar} />
+        </PainelDeAba>
+        <PainelDeAba id="dados">
+          <Secao titulo={t("contato")}>
+            <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
+            <Campo rotulo={t("emailGeral")} nome="email" valores={valores} mudar={mudar} type="email" />
+            <Campo rotulo={t("site")} nome="site" valores={valores} mudar={mudar} className="sm:col-span-2" />
+          </Secao>
+          <label className="mb-4 block">
+            <span className="text-text mb-1 block text-sm font-medium">{t("observacoes")}</span>
+            <textarea
+              name="observacoes"
+              value={valores.observacoes ?? ""}
+              onChange={(e) => mudar("observacoes", e.target.value)}
+              rows={3}
               className={estiloCampo}
-            >
-              <option value="">{t("nenhum")}</option>
-              {grupos.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.nome}
-                </option>
-              ))}
-            </select>
+            />
           </label>
-        </Secao>
-        <CamposDeEndereco valores={valores} mudar={mudar} />
-        <Secao titulo={t("contato")}>
-          <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
-          <Campo rotulo={t("emailGeral")} nome="email" valores={valores} mudar={mudar} type="email" />
-          <Campo rotulo={t("site")} nome="site" valores={valores} mudar={mudar} className="sm:col-span-2" />
-        </Secao>
-        <label className="mb-4 block">
-          <span className="text-text mb-1 block text-sm font-medium">{t("observacoes")}</span>
-          <textarea
-            name="observacoes"
-            value={valores.observacoes ?? ""}
-            onChange={(e) => mudar("observacoes", e.target.value)}
-            rows={3}
-            className={estiloCampo}
-          />
-        </label>
+        </PainelDeAba>
         {podeSalvar && (
-          <Botao type="submit" disabled={salvando}>
-            {salvando ? t("salvando") : id ? t("salvarEmpresa") : t("cadastrarEmpresa")}
-          </Botao>
+          <SoNasAbas ids={["dados", "endereco"]}>
+            <Botao type="submit" disabled={salvando}>
+              {salvando ? t("salvando") : id ? t("salvarEmpresa") : t("cadastrarEmpresa")}
+            </Botao>
+          </SoNasAbas>
         )}
       </fieldset>
     </form>
@@ -428,6 +446,7 @@ export function FormPessoa({
   mascarados,
   podeSalvar,
   emailDeLogin,
+  curto = false,
 }: {
   id?: string;
   inicial: Valores;
@@ -435,18 +454,21 @@ export function FormPessoa({
   podeSalvar: boolean;
   /** Pessoa com conta: o e-mail é o de login e só muda pela própria conta. */
   emailDeLogin?: boolean;
+  /** Criação: só o essencial (nome, e-mail, telefone e CPF); o resto, depois, nas abas. */
+  curto?: boolean;
 }) {
   const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarPessoaAcao);
   const [valores, mudar] = useValores(inicial);
+  useCampoComErro(estado);
   const sensivel = (campo: Sensivel) => (
     <CampoSensivel campo={campo} mascarado={mascarados[campo] ?? null} valores={valores} mudar={mudar} />
   );
-  return (
-    <form action={salvar}>
-      {id && <input type="hidden" name="id" value={id} />}
-      <Mensagem estado={estado} />
-      <fieldset disabled={!podeSalvar}>
+  if (curto)
+    return (
+      <form action={salvar}>
+        <Mensagem estado={estado} />
+        <p className="text-muted mb-4 text-sm">{t("criacaoCurta")}</p>
         <Secao titulo={t("dadosPessoais")}>
           <Campo
             rotulo={t("nomeCompleto")}
@@ -456,52 +478,85 @@ export function FormPessoa({
             required
             className="sm:col-span-2"
           />
-          <Campo
-            rotulo={t("email")}
-            nome="email"
-            valores={valores}
-            mudar={mudar}
-            type="email"
-            readOnly={emailDeLogin}
-            ajuda={emailDeLogin ? t("emailDeLogin") : undefined}
-          />
+          <Campo rotulo={t("email")} nome="email" valores={valores} mudar={mudar} type="email" />
           <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
-          <Campo rotulo={t("nacionalidade")} nome="nacionalidade" valores={valores} mudar={mudar} />
-          <Campo rotulo={t("estadoCivil")} nome="estadoCivil" valores={valores} mudar={mudar} />
-          <Campo rotulo={t("profissao")} nome="profissao" valores={valores} mudar={mudar} />
-          <Campo
-            rotulo={t("dataNascimento")}
-            nome="dataNascimento"
-            valores={valores}
-            mudar={mudar}
-            type="date"
-          />
-        </Secao>
-        <Secao titulo={t("documentos")}>
           {sensivel("cpf")}
-          {sensivel("rg")}
-          <Campo rotulo={t("rgOrgao")} nome="rgOrgao" valores={valores} mudar={mudar} />
-          <Campo rotulo={t("rgUf")} nome="rgUf" valores={valores} mudar={mudar} maxLength={2} />
-          {sensivel("documentoEstrangeiro")}
         </Secao>
-        <CamposDeEndereco valores={valores} mudar={mudar} />
-        <Secao titulo={t("conjuge")}>
-          <Campo rotulo={t("conjugeNome")} nome="conjugeNome" valores={valores} mudar={mudar} />
-          <Campo
-            rotulo={t("conjugeEmail")}
-            nome="conjugeEmail"
-            valores={valores}
-            mudar={mudar}
-            type="email"
-          />
-          {sensivel("conjugeCpf")}
-          {sensivel("conjugeRg")}
-          {sensivel("conjugeRegime")}
-        </Secao>
+        <Botao type="submit" disabled={salvando}>
+          {salvando ? t("salvando") : t("cadastrarPessoa")}
+        </Botao>
+      </form>
+    );
+  return (
+    <form action={salvar}>
+      {id && <input type="hidden" name="id" value={id} />}
+      <Mensagem estado={estado} />
+      <fieldset disabled={!podeSalvar}>
+        <PainelDeAba id="dados">
+          <Secao titulo={t("dadosPessoais")}>
+            <Campo
+              rotulo={t("nomeCompleto")}
+              nome="nome"
+              valores={valores}
+              mudar={mudar}
+              required
+              className="sm:col-span-2"
+            />
+            <Campo
+              rotulo={t("email")}
+              nome="email"
+              valores={valores}
+              mudar={mudar}
+              type="email"
+              readOnly={emailDeLogin}
+              ajuda={emailDeLogin ? t("emailDeLogin") : undefined}
+            />
+            <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
+            <Campo rotulo={t("nacionalidade")} nome="nacionalidade" valores={valores} mudar={mudar} />
+            <Campo rotulo={t("estadoCivil")} nome="estadoCivil" valores={valores} mudar={mudar} />
+            <Campo rotulo={t("profissao")} nome="profissao" valores={valores} mudar={mudar} />
+            <Campo
+              rotulo={t("dataNascimento")}
+              nome="dataNascimento"
+              valores={valores}
+              mudar={mudar}
+              type="date"
+            />
+          </Secao>
+        </PainelDeAba>
+        <PainelDeAba id="documentos">
+          <Secao titulo={t("documentos")}>
+            {sensivel("cpf")}
+            {sensivel("rg")}
+            <Campo rotulo={t("rgOrgao")} nome="rgOrgao" valores={valores} mudar={mudar} />
+            <Campo rotulo={t("rgUf")} nome="rgUf" valores={valores} mudar={mudar} maxLength={2} />
+            {sensivel("documentoEstrangeiro")}
+          </Secao>
+        </PainelDeAba>
+        <PainelDeAba id="endereco">
+          <CamposDeEndereco valores={valores} mudar={mudar} />
+        </PainelDeAba>
+        <PainelDeAba id="conjuge">
+          <Secao titulo={t("conjuge")}>
+            <Campo rotulo={t("conjugeNome")} nome="conjugeNome" valores={valores} mudar={mudar} />
+            <Campo
+              rotulo={t("conjugeEmail")}
+              nome="conjugeEmail"
+              valores={valores}
+              mudar={mudar}
+              type="email"
+            />
+            {sensivel("conjugeCpf")}
+            {sensivel("conjugeRg")}
+            {sensivel("conjugeRegime")}
+          </Secao>
+        </PainelDeAba>
         {podeSalvar && (
-          <Botao type="submit" disabled={salvando}>
-            {salvando ? t("salvando") : id ? t("salvarPessoa") : t("cadastrarPessoa")}
-          </Botao>
+          <SoNasAbas ids={["dados", "documentos", "endereco", "conjuge"]}>
+            <Botao type="submit" disabled={salvando}>
+              {salvando ? t("salvando") : id ? t("salvarPessoa") : t("cadastrarPessoa")}
+            </Botao>
+          </SoNasAbas>
         )}
       </fieldset>
     </form>
