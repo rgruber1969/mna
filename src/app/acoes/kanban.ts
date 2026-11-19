@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import { etapasDoNegocio } from "@/server/services/etapas";
+import { dataRoomDoNegocio } from "@/server/services/documentos";
 import { andamentoDoNegocio } from "@/server/services/negocios-andamento";
 import { moverNegocioParaEtapa } from "@/server/services/negocios-kanban";
 
@@ -23,7 +24,11 @@ export async function moverNegocioParaEtapaAcao(
 /** Dados do painel lateral do cartão: etapas do negócio e os últimos eventos. */
 export async function painelDoNegocioAcao(dealId: string) {
   const a = await acesso();
-  const [etapas, andamento] = await Promise.all([etapasDoNegocio(a, dealId), andamentoDoNegocio(a, dealId)]);
+  const [etapas, andamento, dataRoom] = await Promise.all([
+    etapasDoNegocio(a, dealId),
+    andamentoDoNegocio(a, dealId),
+    dataRoomDoNegocio(a, dealId),
+  ]);
   if (!andamento) return null;
   // Chave montada em tempo de execução (tipo do evento): tradutor sem tipagem estrita.
   const th = (await getTranslations("negocios.historico")) as unknown as {
@@ -44,5 +49,5 @@ export async function painelDoNegocioAcao(dealId: string) {
         .join(" · "),
     };
   });
-  return { etapas, historico };
+  return { etapas, historico, dataRoom };
 }

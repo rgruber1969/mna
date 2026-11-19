@@ -147,4 +147,10 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(
     page.getByRole("dialog", { name: "N-0001 Projeto Teste" }).getByText("Últimos eventos"),
   ).toBeVisible();
+  // O painel do cartão também mostra os documentos do negócio.
+  await expect(
+    page
+      .getByRole("dialog", { name: "N-0001 Projeto Teste" })
+      .getByRole("button", { name: /Contrato social/ }),
+  ).toBeVisible();
 });

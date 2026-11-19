@@ -80,7 +80,9 @@ function FormEnvio({
   etapaInicial,
   inicial,
   fechar,
+  aoEnviar,
 }: {
+  aoEnviar?: () => void;
   dealId: string;
   dr: DataRoom;
   documento?: Documento;
@@ -131,6 +133,7 @@ function FormEnvio({
     if (fim.erro) return setErro(fim.erro);
     fechar();
     router.refresh();
+    aoEnviar?.();
   }
   return (
     <form action={enviar} className="border-border bg-background mb-4 rounded-md border p-3">
@@ -245,10 +248,13 @@ export function DataRoomDoNegocio({
   dealId,
   dr,
   etapaFiltro,
+  aoMudar,
 }: {
   dealId: string;
   dr: DataRoom;
   etapaFiltro: string;
+  /** Chamado depois de enviar (ex.: o painel do kanban recarrega a lista). */
+  aoMudar?: () => void;
 }) {
   const t = useTranslations("documentos");
   const [filtro, setFiltro] = useState(etapaFiltro);
@@ -309,6 +315,7 @@ export function DataRoomDoNegocio({
           }
           inicial={envio.inicial}
           fechar={() => setEnvio(null)}
+          aoEnviar={aoMudar}
         />
       )}
       {lista.length === 0 ? (

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { moverNegocioParaEtapaAcao, painelDoNegocioAcao } from "@/app/acoes/kanban";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
+import { DataRoomDoNegocio } from "@/components/negocios/documentos";
 import { Aviso } from "@/components/ui/basicos";
 
 /**
@@ -222,6 +223,19 @@ export function KanbanDeNegocios({
                       podeIncluir={aberto.painel.etapas.podeIncluir}
                       podeExcluir={aberto.painel.etapas.podeExcluir}
                       hoje={hoje}
+                    />
+                  </section>
+                )}
+                {aberto.painel.dataRoom && (
+                  <section className="mb-5">
+                    <h3 className="text-accent mb-2 text-xs font-semibold tracking-widest uppercase">
+                      {t("documentos")}
+                    </h3>
+                    <DataRoomDoNegocio
+                      dealId={aberto.cartao.id}
+                      dr={aberto.painel.dataRoom}
+                      etapaFiltro=""
+                      aoMudar={() => abrir(aberto.cartao)}
                     />
                   </section>
                 )}
