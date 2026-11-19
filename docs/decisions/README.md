@@ -61,6 +61,8 @@ projeto e em `docs/projeto/`.
 | Consulta de CNPJ e CEP | BrasilAPI (CNPJ, com quadro de sócios; CNPJ.ws de reserva e resultado guardado 24 h na memória, ajuste de 2026-11-19) e ViaCEP (CEP, com a BrasilAPI de reserva); gratuitos, sem chave; consulta pelo servidor; fora do ar, preenchimento manual | 2026-11-18 |
 | Layout das áreas logadas | Inspirado no tema de referência indicado pelo responsável: menu lateral recolhível, cabeçalho flutuante com busca, sino de notificações e menu do usuário, rodapé em cartão; modo claro e escuro por usuário; menu lateral com grupos e favoritos guardados no banco | 2026-11-19 |
 | Nome do processo em PT-BR | "Negócio" nas telas, e-mails e textos; "deal" só como nome interno (código, banco, documentação) | 2026-11-19 |
+| Listas | Paginação numerada no servidor (25 por página; 10, 50 ou 100), total visível, ordenação por coluna; página, busca, filtros e ordem no endereço; componente único para todas as listas | 2026-11-19 |
+| Telas de cadastro grandes | Abas por assunto, um único Salvar, aba com erro sinalizada e aberta sozinha, aba no endereço; criação com formulário curto e o restante nas abas | 2026-11-19 |
 
 ## Substituídas
 
