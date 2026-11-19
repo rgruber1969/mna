@@ -536,8 +536,18 @@ Etapas padrão:
 * Sem marca d'água ou bloqueio de download: vale a permissão do usuário.
 * O conjunto de documentos do deal, filtrado por permissão, funciona como
   **data room**.
+* **Documentos por etapa** (pedido de 2026-11-19): cada etapa do negócio
+  mostra e liga facilmente os documentos daquela etapa; uma tela lista
+  todos os documentos do negócio com a etapa a que cada um está ligado
+  (ou "geral", quando vale para o negócio todo).
 
 ### Kanban de deals
+
+* **Pedido de 2026-11-19:** um kanban com todos os negócios que o usuário
+  vê, colunas = etapas, com ações direto no cartão (editar a etapa, mover
+  de etapa e, depois do data room, ligar documentos) sem abrir o negócio.
+  As colunas são as etapas padrão do tenant; cada negócio fica na coluna da
+  sua etapa principal (pela etapa padrão de origem).
 
 * **Funil por etapa:** colunas = etapas do deal (configuráveis, com padrão
   igual às etapas padrão); cartões = deals.
