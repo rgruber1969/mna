@@ -167,8 +167,7 @@ banco e estes documentos). Pontos-chave:
   * **Pessoa sem empresa** (ex.: consultor autônomo): o lado é escolhido
     direto na participação.
   * **Mesma empresa nos dois lados do mesmo deal** (conflito de interesse):
-    o sistema avisa e só prossegue com confirmação expressa, registrada na
-    auditoria (pode ser endurecido para bloqueio).
+    **bloqueado**: uma empresa só pode estar em um dos lados de cada deal.
 * Contém etapas, documentos, tarefas e contratos de serviço.
 * **Logomarca da empresa vendedora** pode ser enviada no próprio deal (usada
   no e-book e no OnePager). A marca do sistema continua a do tenant (white
