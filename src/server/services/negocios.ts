@@ -18,6 +18,7 @@ import {
 import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
 import { auditar } from "./empresas";
 import { notificar } from "./notificacoes";
+import { avisarPorEmail } from "./negocios-avisos";
 import { exigirPermissao, permissoesNoDeal, pode } from "./permissoes/verificador";
 import { concede, type Matriz } from "./permissoes/catalogo";
 
@@ -68,6 +69,17 @@ const decimal = (max: number, erro: string) =>
     .trim()
     .transform((v) => v.replace(/\./g, "").replace(",", ".") || null)
     .refine((v) => v === null || (/^\d+(\.\d{1,4})?$/.test(v) && Number(v) <= max), erro);
+
+/** Concluído ou encerrado: só para consulta (reabrir é com os administradores). */
+export async function negocioFechado(a: AcessoTenant, dealId: string): Promise<ErroDeServico | null> {
+  if (!uuidValido(dealId)) return null;
+  const [d] = await comTenant(a.tenant.id, (tx) =>
+    tx.select({ situacao: deal.situacao }).from(deal).where(eq(deal.id, dealId)),
+  );
+  return d && (d.situacao === "concluido" || d.situacao === "encerrado")
+    ? { erro: "negocios.erros.negocioFechado" }
+    : null;
+}
 
 /** "N-0001 Projeto Gadol": o nome que todos veem. */
 export function nomeVisivel(numero: number, codinome: string): string {
@@ -191,7 +203,7 @@ export async function opcoesParaNovoNegocio(acesso: Acesso | null) {
 // --- Visão da pessoa sobre um negócio ----------------------------------------------------
 
 type Participacao = typeof participacaoDeal.$inferSelect;
-type EmpresaNoNegocio = {
+export type EmpresaNoNegocio = {
   id: string;
   empresaId: string;
   papelId: string;
@@ -216,16 +228,19 @@ export type Visao = {
   matriz: Matriz;
 };
 
-function ladoDaEmpresa(empresas: EmpresaNoNegocio[], empresaId: string | null): Lado | null {
+export function ladoDaEmpresa(empresas: EmpresaNoNegocio[], empresaId: string | null): Lado | null {
   if (!empresaId) return null;
   return empresas.find((e) => e.empresaId === empresaId && e.lado)?.lado ?? null;
 }
 
-function ladoDaParticipacao(empresas: EmpresaNoNegocio[], p: Pick<Participacao, "empresaId" | "lado">) {
+export function ladoDaParticipacao(
+  empresas: EmpresaNoNegocio[],
+  p: Pick<Participacao, "empresaId" | "lado">,
+) {
   return ladoDaEmpresa(empresas, p.empresaId) ?? p.lado;
 }
 
-async function empresasDoNegocio(a: AcessoTenant, dealId: string): Promise<EmpresaNoNegocio[]> {
+export async function empresasDoNegocio(a: AcessoTenant, dealId: string): Promise<EmpresaNoNegocio[]> {
   return comTenant(a.tenant.id, (tx) =>
     tx
       .select({
@@ -300,7 +315,7 @@ function montarVisao(
 }
 
 /** Visão da pessoa sobre um negócio; nega (AcessoNegado) a quem não participa nem administra. */
-async function visaoDoNegocio(
+export async function visaoDoNegocio(
   a: AcessoTenant,
   dealId: string,
 ): Promise<{ visao: Visao; empresas: EmpresaNoNegocio[] }> {
@@ -315,7 +330,7 @@ async function visaoDoNegocio(
 }
 
 /** Empresas que a pessoa pode ver no negócio (sigilo entre compradoras e antes do NDA). */
-function empresaVisivel(v: Visao, e: EmpresaNoNegocio): boolean {
+export function empresaVisivel(v: Visao, e: EmpresaNoNegocio): boolean {
   if (v.administrador || v.lados.has("vendedor")) return true;
   if (v.minhasEmpresas.has(e.empresaId)) return true;
   if (e.lado === "vendedor") return v.podeVerVendedora;
@@ -750,7 +765,8 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
   );
   const nomeDa = new Map(detalheEmpresas.map((e) => [e.empresaId, e.nome]));
   const m = visao.matriz;
-  const podeEditar = a.administrador || concede(m, "deal", "editar");
+  const fechado = d.n.situacao === "concluido" || d.n.situacao === "encerrado";
+  const podeEditar = (a.administrador || concede(m, "deal", "editar")) && !fechado;
   return {
     id: d.n.id,
     numero: d.n.numero,
@@ -847,6 +863,8 @@ export async function editarNegocio(
   dados: DadosNegocio,
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deal", "editar", { dealId: id });
+  const fechado = await negocioFechado(a, id);
+  if (fechado) return fechado;
   if (!uuidValido(id)) return { erro: "negocios.erros.naoEncontrado" };
   const r = DadosNegocio.safeParse(dados);
   if (!r.success) return erroDeValidacao(r);
@@ -926,6 +944,8 @@ export async function adicionarEmpresaAoNegocio(
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deal", "editar", { dealId });
   if (!uuidValido(dealId)) return { erro: "negocios.erros.naoEncontrado" };
+  const fechado = await negocioFechado(a, dealId);
+  if (fechado) return fechado;
   if (!uuidValido(dados.empresaId)) return { erro: "negocios.erros.escolhaEmpresa", campo: "empresaId" };
   if (!uuidValido(dados.papelId)) return { erro: "negocios.erros.escolhaPapel", campo: "papelId" };
   const empresas = await empresasDoNegocio(a, dealId);
@@ -987,6 +1007,8 @@ export async function removerEmpresaDoNegocio(
   id: string,
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deal", "editar", { dealId });
+  const fechado = await negocioFechado(a, dealId);
+  if (fechado) return fechado;
   if (!uuidValido(id) || !uuidValido(dealId)) return { erro: "negocios.erros.empresaNaoEncontrada" };
   const feito = await comTenant(a.tenant.id, async (tx): Promise<Resultado | { empresaId: string }> => {
     const [alvo] = await tx
@@ -1103,6 +1125,8 @@ export async function adicionarParticipante(
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deal", "editar", { dealId });
   if (!uuidValido(dealId)) return { erro: "negocios.erros.naoEncontrado" };
+  const fechado = await negocioFechado(a, dealId);
+  if (fechado) return fechado;
   const r = DadosParticipante.safeParse(dados);
   if (!r.success) return erroDeValidacao(r);
   const d = r.data;
@@ -1182,6 +1206,8 @@ export async function adicionarParticipante(
   );
   if ("erro" in feito) return feito;
   await auditar(a, "negocio.participante_incluido", "deal", dealId, { pessoaId: d.pessoaId });
+  if (feito.usuarioId && feito.usuarioId !== a.usuario.id && d.perfilId)
+    await avisarPorEmail(a, [feito.usuarioId], "incluido", nomeVisivel(feito.numero, feito.codinome), dealId);
   return { ok: true };
 }
 
@@ -1195,6 +1221,8 @@ export async function removerParticipante(
   id: string,
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deal", "editar", { dealId });
+  const fechado = await negocioFechado(a, dealId);
+  if (fechado) return fechado;
   if (!uuidValido(id) || !uuidValido(dealId)) return { erro: "negocios.erros.participanteNaoEncontrado" };
   const feito = await comTenant(a.tenant.id, async (tx): Promise<ErroDeServico | { pessoaId: string }> => {
     const todas = await tx

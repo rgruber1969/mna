@@ -204,6 +204,13 @@
       "when": 1795099837717,
       "tag": "0028_contas_bancarias",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1795102397599,
+      "tag": "0029_negocios_situacao_exclusividade",
+      "breakpoints": true
     }
   ]
 }

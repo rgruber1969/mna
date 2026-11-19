@@ -26,8 +26,25 @@ import {
   FormIncluirParticipante,
 } from "@/components/negocios/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
+import { FormFunil, PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
+import { andamentoDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+
+/** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
+function traduzirParametros(
+  tipo: string,
+  p: Record<string, string>,
+  ts: (k: string) => string,
+  tf: (k: string) => string,
+): Record<string, string> {
+  const r = { ...p };
+  if (tipo === "negocio.situacao" && r.para) r.para = ts(r.para);
+  if (tipo === "negocio.funil" && r.para) r.para = tf(r.para);
+  for (const k of ["de", "para", "inicio", "fim"])
+    if (r[k] && /^\d{4}-\d{2}-\d{2}$/.test(r[k])) r[k] = r[k].split("-").reverse().join("/");
+  return r;
+}
 
 /** Tela do negócio: cabeçalho e abas Resumo, Empresas e Participantes (dominio.md). */
 async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | undefined> }) {
@@ -49,11 +66,17 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
   const tf = await getTranslations("negocios.funil");
   const te = await getTranslations("negocios.empresas");
   const tp = await getTranslations("negocios.participantes");
-  const [tipos, opcoesEmp, opcoesPart] = await Promise.all([
+  const tt = await getTranslations("negocios.andamento");
+  const th = await getTranslations("negocios.historico");
+  const [tipos, opcoesEmp, opcoesPart, andamento] = await Promise.all([
     listarTiposDeOperacao(acesso),
     n.podeEditar ? opcoesDeEmpresas(acesso, n.id) : null,
     n.podeGerirParticipantes ? opcoesDeParticipantes(acesso, n.id) : null,
+    andamentoDoNegocio(acesso, n.id),
   ]);
+  if (!andamento) notFound();
+  const hoje = hojeEmSaoPaulo();
+  const temEscolhida = n.empresas.some((e) => e.situacaoFunil === "escolhida");
   const inicial: Record<string, string> = {
     codinome: n.codinome,
     nomeInterno: n.nomeInterno ?? "",
@@ -98,6 +121,10 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
               { id: "resumo", rotulo: t("abaResumo") },
               { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
               { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
+              ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)
+                ? [{ id: "exclusividade", rotulo: t("abaExclusividade") }]
+                : []),
+              { id: "historico", rotulo: t("abaHistorico") },
             ]}
           >
             <PainelDeAba id="resumo">
@@ -108,6 +135,18 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                 podeSalvar={n.podeEditar}
                 mostraNomeInterno={n.podeVerVendedora}
               />
+              <PainelSituacao
+                dealId={n.id}
+                situacao={andamento.situacao}
+                podeMudar={andamento.podeMudarSituacao}
+                podeReabrir={andamento.podeReabrir}
+                podeEncerrarExternos={andamento.podeEncerrarExternos}
+              />
+              {andamento.motivoEncerramento && (
+                <p className="text-muted mt-2 text-sm">
+                  {tt("motivoRegistrado", { motivo: tt(`motivos.${andamento.motivoEncerramento}`) })}
+                </p>
+              )}
               {n.podeExcluir && (
                 <div className="border-border mt-6 border-t pt-4">
                   <BotaoDeAcao
@@ -140,6 +179,9 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
+                      {n.podeEditar && e.situacaoFunil && (
+                        <FormFunil dealId={n.id} id={e.id} situacao={e.situacaoFunil} nome={e.nome} />
+                      )}
                     </span>
                     {n.podeEditar && (
                       <BotaoDeAcao
@@ -197,6 +239,39 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                   pessoas={opcoesPart.pessoas}
                   perfis={opcoesPart.perfis}
                 />
+              )}
+            </PainelDeAba>
+            <PainelDeAba id="exclusividade">
+              <PainelExclusividade
+                dealId={n.id}
+                exclusividade={andamento.exclusividade}
+                podeEditar={n.podeEditar}
+                hoje={hoje}
+              />
+            </PainelDeAba>
+            <PainelDeAba id="historico">
+              {andamento.historico.length === 0 ? (
+                <p className="text-muted text-sm">{th("nenhum")}</p>
+              ) : (
+                <ul className="divide-border divide-y text-sm">
+                  {andamento.historico.map((h, i) => (
+                    <li key={i} className="py-2">
+                      <span>
+                        {th.has(`tipos.${h.tipo.replaceAll(".", "_")}`)
+                          ? th(
+                              `tipos.${h.tipo.replaceAll(".", "_")}`,
+                              traduzirParametros(h.tipo, h.parametros, ts, tf),
+                            )
+                          : h.tipo}
+                      </span>
+                      <span className="text-muted block text-xs">
+                        {[h.ator, h.quando.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
             </PainelDeAba>
           </Abas>

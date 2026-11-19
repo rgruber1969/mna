@@ -55,6 +55,8 @@ export const tenant = pgTable("tenant", {
   logoClaro: text("logo_claro"),
   logoEscuro: text("logo_escuro"),
   icone: text("icone"),
+  /** Configurações gerais do tenant: dias de antecedência dos avisos de fim da exclusividade. */
+  diasAvisoExclusividade: jsonb("dias_aviso_exclusividade").$type<number[]>().notNull().default([15, 5]),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -754,6 +756,15 @@ export const deal = pgTable(
       .notNull()
       .default("andamento"),
     motivoEncerramento: text("motivo_encerramento"),
+    encerradoEm: timestamp("encerrado_em", { withTimezone: true }),
+    /** Exclusividade com a compradora escolhida (dominio.md). */
+    exclusividadeEmpresaId: uuid("exclusividade_empresa_id").references(() => empresa.id, {
+      onDelete: "no action",
+    }),
+    exclusividadeInicio: date("exclusividade_inicio"),
+    exclusividadeFim: date("exclusividade_fim"),
+    /** Avisos de prazo já enviados (chave "tipo:data"), para não repetir. */
+    avisosEnviados: jsonb("avisos_enviados").$type<string[]>().notNull().default([]),
     criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
     criadoEm: criadoEm(),
     atualizadoEm: atualizadoEm(),
@@ -817,6 +828,15 @@ export const participacaoDeal = pgTable(
     alcance: text("alcance").$type<"deal">().notNull().default("deal"),
     /** Último dia de acesso (opcional). */
     prazo: date("prazo"),
+    /**
+     * Acesso cortado (compradora descartada ou acessos externos encerrados):
+     * quando e o prazo de antes, para devolver se a compradora voltar.
+     */
+    cortadaEm: timestamp("cortada_em", { withTimezone: true }),
+    prazoAntesDoCorte: date("prazo_antes_do_corte"),
+    motivoDoCorte: text("motivo_do_corte").$type<"descarte" | "externos">(),
+    /** O coordenador já foi avisado do vencimento do prazo. */
+    vencimentoAvisado: boolean("vencimento_avisado").notNull().default(false),
     criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
     criadoEm: criadoEm(),
   },
@@ -860,4 +880,22 @@ export const contaBancaria = pgTable(
     index("conta_bancaria_pessoa_idx").on(t.tenantId, t.pessoaId),
     isolamento(),
   ],
+).enableRLS();
+
+/** Prorrogações do período de exclusividade (histórico). */
+export const prorrogacaoExclusividade = pgTable(
+  "prorrogacao_exclusividade",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    fimAnterior: date("fim_anterior").notNull(),
+    novoFim: date("novo_fim").notNull(),
+    motivo: text("motivo"),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("prorrogacao_exclusividade_deal_idx").on(t.tenantId, t.dealId), isolamento()],
 ).enableRLS();

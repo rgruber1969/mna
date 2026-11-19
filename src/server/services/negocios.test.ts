@@ -19,6 +19,16 @@ import {
   removerEmpresaDoNegocio,
   removerParticipante,
 } from "./negocios";
+import {
+  alterarSituacaoDoNegocio,
+  alterarSituacaoNoFunil,
+  andamentoDoNegocio,
+  definirExclusividade,
+  enviarAvisosDePrazo,
+  obterDiasDeAviso,
+  prorrogarExclusividade,
+  salvarDiasDeAviso,
+} from "./negocios-andamento";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -475,5 +485,112 @@ describe("equipe da compradora (escritório, advisor)", () => {
     });
     const d2 = await obterNegocio(g, r.id);
     expect(d2?.empresas.find((e) => e.nome === "Banca Jurídica Ltda")?.atuaPara).toBe("Compradora B S.A.");
+  });
+});
+
+describe("andamento: funil, exclusividade, situação e histórico", () => {
+  const hoje = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+  const linhaDe = async (empresaId: string) =>
+    (
+      await dono.query<{ id: string; situacao_funil: string }>(
+        `select id, situacao_funil from deal_empresa where deal_id = $1 and empresa_id = $2 and situacao_funil is not null`,
+        [negocioId, empresaId],
+      )
+    ).rows[0];
+
+  it("escolher descarta as outras (se pedido); descartada perde o acesso e o recupera ao voltar", async () => {
+    const g = acesso("gestor");
+    const a = await linhaDe(compradoraA);
+    expect(
+      await alterarSituacaoNoFunil(g, negocioId, {
+        dealEmpresaId: a.id,
+        situacao: "escolhida",
+        descartarOutras: true,
+      }),
+    ).toEqual({ ok: true });
+    expect((await linhaDe(compradoraB)).situacao_funil).toBe("descartada");
+    expect(
+      await alterarSituacaoNoFunil(g, negocioId, { dealEmpresaId: a.id, situacao: "descartada" }),
+    ).toEqual({ ok: true });
+    await expect(obterNegocio(acesso("adva"), negocioId)).rejects.toBeInstanceOf(AcessoNegado);
+    await alterarSituacaoNoFunil(g, negocioId, { dealEmpresaId: a.id, situacao: "escolhida" });
+    expect((await obterNegocio(acesso("adva"), negocioId))?.nome).toBe("N-0001 Projeto Gadol");
+  });
+
+  it("exclusividade: avisos ao lado vendedor uma vez só; prorrogação recomeça os avisos", async () => {
+    const g = acesso("gestor");
+    expect(await definirExclusividade(g, negocioId, { inicio: hoje(), dias: "10" })).toEqual({ ok: true });
+    const t = { id: tenantId, slug: `ng-${sufixo}` };
+    await enviarAvisosDePrazo(t);
+    const tipos = async (u: string) =>
+      (
+        await dono.query(
+          `select tipo from notificacao where usuario_id = $1 and tipo like 'exclusividade%' order by tipo`,
+          [u],
+        )
+      ).rows.map((r) => r.tipo);
+    // Lado vendedor: início e o aviso de antecedência mais próximo (faltam 10 dias: o de 15).
+    expect(await tipos(contas.gestor)).toEqual(["exclusividade_aviso", "exclusividade_inicio"]);
+    await enviarAvisosDePrazo(t);
+    expect(await tipos(contas.gestor)).toHaveLength(2); // sem repetir
+    expect(await tipos(contas.adva)).toEqual([]); // lado comprador nunca
+    expect(await definirExclusividade(g, negocioId, { inicio: hoje(), dias: "5" })).toMatchObject({
+      erro: "negocios.erros.exclusividadeJaDefinida",
+    });
+    const fim = (await dono.query(`select exclusividade_fim from deal where id = $1`, [negocioId])).rows[0]
+      .exclusividade_fim;
+    expect(await prorrogarExclusividade(g, negocioId, { novoFim: "2020-01-01" })).toMatchObject({
+      erro: "negocios.erros.prorrogacaoAntes",
+    });
+    expect(
+      await prorrogarExclusividade(g, negocioId, { novoFim: "2099-12-31", motivo: "pedido da compradora" }),
+    ).toEqual({
+      ok: true,
+    });
+    const and = await andamentoDoNegocio(g, negocioId);
+    expect(and?.exclusividade?.prorrogacoes).toHaveLength(1);
+    expect(and?.exclusividade?.fim).toBe("2099-12-31");
+    void fim;
+  });
+
+  it("concluído fica só para consulta; só administrador reabre; histórico respeita o lado", async () => {
+    const g = acesso("gestor");
+    expect(await alterarSituacaoDoNegocio(g, negocioId, { situacao: "encerrado" })).toMatchObject({
+      erro: "negocios.erros.motivoObrigatorio",
+    });
+    expect(await alterarSituacaoDoNegocio(g, negocioId, { situacao: "concluido" })).toEqual({ ok: true });
+    expect(
+      await adicionarEmpresaAoNegocio(g, negocioId, {
+        empresaId: compradoraB,
+        papelId: await papel("compradora"),
+      }),
+    ).toMatchObject({ erro: "negocios.erros.negocioFechado" });
+    expect((await obterNegocio(g, negocioId))?.podeEditar).toBe(false);
+    expect(await alterarSituacaoDoNegocio(g, negocioId, { situacao: "andamento" })).toMatchObject({
+      erro: "negocios.erros.soAdministradorReabre",
+    });
+    expect(
+      await alterarSituacaoDoNegocio(acesso("admin", true), negocioId, { situacao: "andamento" }),
+    ).toEqual({ ok: true });
+    const n = await dono.query(
+      `select count(*)::int n from notificacao where usuario_id = $1 and tipo = 'negocio_situacao'`,
+      [contas.adva],
+    );
+    expect(n.rows[0].n).toBe(2);
+    const doVendedor = (await andamentoDoNegocio(g, negocioId))!.historico.map((h) => h.tipo);
+    expect(doVendedor).toEqual(
+      expect.arrayContaining(["negocio.funil", "negocio.exclusividade_definida", "negocio.situacao"]),
+    );
+    const doComprador = (await andamentoDoNegocio(acesso("adva"), negocioId))!.historico.map((h) => h.tipo);
+    expect(doComprador).not.toContain("negocio.funil");
+    expect(doComprador).toContain("negocio.situacao");
+  });
+
+  it("configurações: dias de aviso da exclusividade (administradores)", async () => {
+    expect(await salvarDiasDeAviso(acesso("admin", true), "0")).toMatchObject({
+      erro: "negocios.erros.diasDeAvisoInvalidos",
+    });
+    expect(await salvarDiasDeAviso(acesso("admin", true), "3, 10")).toEqual({ ok: true });
+    expect(await obterDiasDeAviso(acesso("gestor"))).toEqual([10, 3]);
   });
 });

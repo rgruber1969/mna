@@ -83,14 +83,14 @@ padrão?
 **Sugestão:** sim, no cadastro auxiliar "Etapas padrão" (incluir,
 renomear, reordenar, desativar). Negócios já existentes não mudam.
 
-**Resposta:**
+**Resposta:** OK
 
 **E2. Situação de cada etapa no negócio.**
 
 **Sugestão:** Não iniciada · Em andamento · Concluída · Pulada, com data de
 início e de conclusão (previstas e reais).
 
-**Resposta:**
+**Resposta:** OK.
 
 **E3. Quem marca a etapa como iniciada ou concluída?**
 
@@ -98,14 +98,14 @@ início e de conclusão (previstas e reais).
 advogados e advisors, pelos perfis padrão), com auditoria e aviso aos
 participantes.
 
-**Resposta:**
+**Resposta:** OK
 
 **E4. Etapa principal (para o kanban e os KPIs).**
 
 **Sugestão:** é a etapa em andamento mais avançada na ordem. O negócio
 aparece só nela, com um indicador "+1 em paralelo".
 
-**Resposta:**
+**Resposta:** OK. 
 
 **E5. Subetapas.** Quantos níveis?
 
@@ -113,7 +113,7 @@ aparece só nela, com um indicador "+1 em paralelo".
 contábil, trabalhista. Cada subetapa tem situação, datas e responsáveis
 próprios.
 
-**Resposta:**
+**Resposta:** OK.
 
 **E6. Dependência entre etapas** ("só começa depois de outra").
 
@@ -121,7 +121,7 @@ próprios.
 cuja anterior não terminou, o sistema pergunta "iniciar mesmo assim?". Na
 prática, M&A raramente segue a ordem à risca.
 
-**Resposta:**
+**Resposta:** OK.
 
 **E7. Alcance por etapa nas participações.** Já decidido que o alcance
 pode ser "deal inteiro" ou etapas/subetapas. Quem tem alcance só numa
@@ -130,7 +130,7 @@ subetapa (ex.: auditor da diligência contábil) vê o quê do negócio?
 **Sugestão:** o cabeçalho do negócio (número, codinome, situação) e só a
 sua subetapa, com os documentos, tarefas e mensagens dela.
 
-**Resposta:**
+**Resposta:** OK.
 
 ---
 
@@ -142,7 +142,7 @@ sua subetapa, com os documentos, tarefas e mensagens dela.
 for de etapa), com filtros por categoria, empresa vendedora, situação e
 quem enviou. Nada de pastas livres criadas pelo usuário na V1.
 
-**Resposta:**
+**Resposta:** OK.
 
 **D2. Categorias (classificação).**
 
@@ -151,7 +151,7 @@ Contábil/Financeiro, Fiscal, Trabalhista, Contratos comerciais,
 Imobiliário, Ambiental, Propriedade intelectual, Tecnologia, Contencioso,
 Outros.
 
-**Resposta:**
+**Resposta:** OK.
 
 **D3. Situação de um documento pedido** (o checklist de diligência).
 
@@ -159,7 +159,7 @@ Outros.
 observações · Não aplicável. Quem pediu muda a situação; quem envia vê o
 que falta.
 
-**Resposta:**
+**Resposta:** OK.
 
 **D4. Pedidos de documento por empresa vendedora.** Com várias vendedoras,
 cada item do checklist vira um pedido por empresa?
@@ -167,14 +167,16 @@ cada item do checklist vira um pedido por empresa?
 **Sugestão:** sim, mas só quando o item é marcado "por empresa" no
 catálogo. Itens gerais (ex.: organograma do grupo) ficam um só.
 
-**Resposta:**
+**Resposta:** OK. Importante existir o conceito/entidade do Pedido (com numeração, data, descrição, pelo menos), pois é comum a auditoria da Compradora ou a própria Compradora mandar "lotes" de perguntas, na prática um Pedido representado por uma planilha cheia de abas, onde cada aba é um assunto e possui diversas linhas a serem respondidas pela parte Vendedora. Em cada linha o Comprador informa, pelo menos, por exemplo, Numeração/Tipo de Documento/Documento/Observações/Status e o Vendedor tem uma espaço para observação, onde buscar esse documento***, local do documento na pasta de arquivos devolvida etc.
+
+*** seria muito bom ter um recurso para ajudar o usuário a localizar na internet onde obter os documentos, preferencialmente de graça. Normalmente os documentos que dependem da Junta Comercial são pagos, mas a maioria é gratuita. Pra ajudar nessa tarefa, imagino que o sistema precisa armazenar uma lista de documentos comuns pedidos em operações de M&A e onde buscá-los. Se precisar, mando uma planilha que trata essas questões abordadas na minha resposta.
 
 **D5. Tamanho máximo por arquivo.**
 
 **Sugestão:** 200 MB por arquivo; envio de vários arquivos de uma vez,
 arrastando para a tela.
 
-**Resposta:**
+**Resposta:** OK.
 
 **D6. Baixar vários de uma vez** (pasta inteira em ZIP).
 
@@ -182,7 +184,7 @@ arrastando para a tela.
 segundo plano e com aviso no sino quando estiver pronto. Cada download fica
 na auditoria.
 
-**Resposta:**
+**Resposta:** OK.
 
 **D7. Templates DOCX (simulado na V1).** Quais modelos aparecem na
 demonstração?
@@ -190,7 +192,7 @@ demonstração?
 **Sugestão:** NDA, Term Sheet e Procuração, com campos preenchidos do
 negócio (partes, CNPJs, endereços, datas).
 
-**Resposta:**
+**Resposta:** OK.
 
 **D8. Excluir documento.**
 
@@ -198,7 +200,7 @@ negócio (partes, CNPJs, endereços, datas).
 se ninguém a tiver baixado. Depois disso, só uma nova versão; o histórico
 nunca some.
 
-**Resposta:**
+**Resposta:** OK.
 
 ---
 

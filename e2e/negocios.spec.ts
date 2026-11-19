@@ -92,6 +92,16 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.getByRole("button", { name: "Incluir", exact: true }).click();
   await expect(page.getByText("Compradora · lado comprador · Prospectada", { exact: true })).toBeVisible();
 
+  // Funil: escolhida → aparece a aba Exclusividade.
+  await page.getByLabel("Situação de Compradora de Teste S.A. no funil").selectOption("escolhida");
+  await page.getByRole("button", { name: "Aplicar" }).click();
+  await expect(page.getByText("Situação da compradora alterada.")).toBeVisible();
+  await page.getByRole("tab", { name: "Exclusividade" }).click();
+  await page.getByLabel("Duração (dias)").fill("30");
+  await page.getByRole("button", { name: "Definir exclusividade" }).click();
+  await expect(page.getByText(/^Exclusividade de /)).toBeVisible();
+  await page.getByRole("tab", { name: "Histórico" }).click();
+  await expect(page.getByText("Negócio criado")).toBeVisible();
   await page.getByRole("tab", { name: /Participantes/ }).click();
   await expect(
     page.getByText(/Coordenador do negócio · representando Escritório de Teste · lado vendedor/),

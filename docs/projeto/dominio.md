@@ -282,6 +282,27 @@ Regras do item 8 (questionário `perguntas-negocios.md`, respondido em
   empresa do contratante fica com ao menos um papel; empresa com
   participantes só sai depois deles; papel e tipo de operação em uso não
   podem ser excluídos.
+* **Andamento do negócio** (respostas N1–N6, 2026-11-19):
+  * **Funil:** Coordenador e administradores mudam a situação de cada
+    compradora; ao marcar "Escolhida", o sistema oferece descartar as
+    demais. **Descartada perde o acesso na hora**, com a sua equipe; se
+    voltar ao funil, os acessos voltam como estavam.
+  * **Exclusividade:** com a compradora escolhida; início e duração (ou
+    data de fim); **prorrogações** com histórico (de, para, motivo). Avisos
+    (sino e e-mail) ao lado vendedor no início, no último dia e com as
+    antecedências das **Configurações gerais** (padrão 15 e 5 dias); cada
+    aviso sai uma vez; a prorrogação recomeça os avisos. Tarefa diária às
+    8 h (Brasília), que também avisa o Coordenador quando vence o prazo de
+    uma participação.
+  * **Situação:** suspender, retomar, concluir e encerrar (com motivo) por
+    quem edita o negócio; concluído e encerrado ficam só para consulta;
+    reabrir só administradores. Participantes são avisados (sino; e-mail
+    para suspenso, concluído e encerrado). Administradores podem **encerrar
+    os acessos externos** (quem não representa o contratante) de uma vez.
+  * **E-mail ao incluir participante** com usuário (número + codinome e
+    link); contato sem usuário não recebe.
+  * **Histórico:** aba com os eventos do negócio; o lado comprador vê só os
+    eventos gerais (criação, edição, situação).
 * **Equipe da compradora** (decidido em 2026-11-19): empresa do lado
   comprador que não é compradora (escritório, advisor, contabilidade,
   auditora) fica ligada à compradora **para quem trabalha** e vê o negócio

@@ -84,7 +84,9 @@
       "ladoComprador": "lado comprador",
       "excluir": "Excluir negócio",
       "confirmarExcluir": "Excluir o negócio {nome}? Esta ação não pode ser desfeita.",
-      "ajuda": "Dados, empresas e participantes do negócio. As demais abas (etapas, documentos, tarefas etc.) aparecem quando existirem."
+      "ajuda": "Dados, empresas e participantes do negócio. As demais abas (etapas, documentos, tarefas etc.) aparecem quando existirem.",
+      "abaExclusividade": "Exclusividade",
+      "abaHistorico": "Histórico"
     },
     "empresas": {
       "contratante": "contratante",
@@ -136,7 +138,13 @@
       "participanteIncluido": "Participante incluído.",
       "participanteRemovido": "Participante removido.",
       "tipoSalvo": "Tipo de operação salvo.",
-      "tipoExcluido": "Tipo de operação excluído."
+      "tipoExcluido": "Tipo de operação excluído.",
+      "funilAlterado": "Situação da compradora alterada.",
+      "situacaoAlterada": "Situação do negócio alterada.",
+      "externosEncerrados": "Acessos externos encerrados.",
+      "exclusividadeDefinida": "Exclusividade definida.",
+      "exclusividadeProrrogada": "Exclusividade prorrogada.",
+      "configuracoesSalvas": "Configurações salvas."
     },
     "erros": {
       "textoLongo": "Texto longo demais.",
@@ -178,7 +186,83 @@
       "tipoNaoEncontrado": "Tipo de operação não encontrado.",
       "tipoEmUso": "Este tipo de operação está em uso e não pode ser excluído.",
       "escolhaCompradora": "Há mais de uma compradora: escolha para qual delas esta empresa trabalha.",
-      "compradoraComEquipe": "Há empresas trabalhando para esta compradora (escritório, advisor etc.): remova-as antes."
+      "compradoraComEquipe": "Há empresas trabalhando para esta compradora (escritório, advisor etc.): remova-as antes.",
+      "negocioFechado": "Este negócio está concluído ou encerrado: só para consulta.",
+      "situacaoInvalida": "Situação inválida.",
+      "naoECompradora": "Esta empresa não é compradora neste negócio.",
+      "motivoObrigatorio": "Escolha o motivo do encerramento.",
+      "mesmaSituacao": "O negócio já está nesta situação.",
+      "soAdministradorReabre": "Só administradores reabrem um negócio concluído ou encerrado.",
+      "fimOuDias": "Informe a duração em dias ou a data de fim.",
+      "fimAntesDoInicio": "O fim não pode ser antes do início.",
+      "semCompradoraEscolhida": "Marque uma compradora como \"Escolhida\" antes de definir a exclusividade.",
+      "exclusividadeJaDefinida": "A exclusividade já está definida: use \"Prorrogar\".",
+      "semExclusividade": "Este negócio não tem exclusividade definida.",
+      "prorrogacaoAntes": "A nova data precisa ser depois do fim atual.",
+      "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula."
+    },
+    "andamento": {
+      "situacaoNoFunilDe": "Situação de {nome} no funil",
+      "descartarOutras": "Marcar as demais compradoras como Descartadas?",
+      "avisoDescarte": "A compradora e a equipe dela perdem o acesso na hora.",
+      "aplicar": "Aplicar",
+      "situacaoTitulo": "Situação do negócio",
+      "soConsulta": "Negócio concluído ou encerrado: só para consulta.",
+      "suspender": "Suspender",
+      "retomar": "Retomar",
+      "concluir": "Concluir",
+      "confirmarConcluir": "Concluir o negócio? Ele fica só para consulta; só administradores reabrem.",
+      "encerrar": "Encerrar sem conclusão",
+      "motivo": "Motivo do encerramento",
+      "motivos": {
+        "desistencia_vendedora": "Desistência da vendedora",
+        "desistencia_compradora": "Desistência da compradora",
+        "preco": "Preço",
+        "diligencia": "Diligência",
+        "outro": "Outro"
+      },
+      "motivoRegistrado": "Motivo do encerramento: {motivo}.",
+      "confirmarEncerramento": "Encerrar",
+      "cancelar": "Cancelar",
+      "reabrir": "Reabrir",
+      "confirmarReabrir": "Reabrir o negócio? Ele volta a \"Em andamento\".",
+      "encerrarExternos": "Encerrar acessos externos",
+      "confirmarEncerrarExternos": "Encerrar agora o acesso de todos que não representam o contratante? O histórico continua.",
+      "exclusividadeExplicacao": "Período de exclusividade com a compradora escolhida. O lado vendedor recebe avisos no início, no fim e com a antecedência definida nas configurações gerais.",
+      "inicio": "Início",
+      "dias": "Duração (dias)",
+      "ouFim": "ou data de fim",
+      "definir": "Definir exclusividade",
+      "semExclusividade": "Sem exclusividade definida.",
+      "periodo": "Exclusividade de {inicio} a {fim}",
+      "prorrogada": "Prorrogada de {de} para {para}",
+      "prorrogar": "Prorrogar",
+      "novoFim": "Novo fim",
+      "motivoOpcional": "Motivo (opcional)"
+    },
+    "historico": {
+      "nenhum": "Nenhum evento registrado.",
+      "tipos": {
+        "negocio_criado": "Negócio criado",
+        "negocio_editado": "Dados do negócio alterados",
+        "negocio_situacao": "Situação alterada para \"{para}\"",
+        "negocio_funil": "{empresa}: funil passou para \"{para}\"",
+        "negocio_empresa_incluida": "{empresa} incluída no negócio",
+        "negocio_empresa_removida": "{empresa}: papel retirado do negócio",
+        "negocio_participante_incluido": "{pessoa} incluído(a) como participante",
+        "negocio_participante_removido": "{pessoa} removido(a) do negócio",
+        "negocio_exclusividade_definida": "Exclusividade com {empresa} de {inicio} a {fim}",
+        "negocio_exclusividade_prorrogada": "Exclusividade prorrogada de {de} para {para}",
+        "negocio_acessos_externos_encerrados": "Acessos externos encerrados ({quantidade})"
+      }
+    },
+    "configuracoes": {
+      "titulo": "Configurações gerais",
+      "sobre": "Administração",
+      "ajuda": "Regras gerais do tenant, definidas pelos administradores.",
+      "diasAviso": "Avisos antes do fim da exclusividade (dias)",
+      "diasAvisoAjuda": "Ex.: \"15, 5\": o lado vendedor é avisado 15 e 5 dias antes do fim, além do início e do último dia.",
+      "salvar": "Salvar"
     }
   }
 }

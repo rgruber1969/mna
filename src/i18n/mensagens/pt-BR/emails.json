@@ -30,6 +30,33 @@
       "locais": {
         "consoleDaPlataforma": "console da plataforma"
       }
+    },
+    "negocio": {
+      "botao": "Abrir o negócio",
+      "incluido": {
+        "assunto": "Você foi incluído no negócio {negocio}",
+        "paragrafo": "Você foi incluído no negócio {negocio}. Use o link abaixo para acessá-lo."
+      },
+      "situacao": {
+        "assunto": "Negócio {negocio}: {situacao}",
+        "paragrafo": "A situação do negócio {negocio} mudou para \"{situacao}\"."
+      },
+      "exclusividadeInicio": {
+        "assunto": "Negócio {negocio}: começa hoje a exclusividade",
+        "paragrafo": "O período de exclusividade do negócio {negocio} começa hoje e vai até {fim}."
+      },
+      "exclusividadeAviso": {
+        "assunto": "Negócio {negocio}: exclusividade termina em {dias} dias",
+        "paragrafo": "O período de exclusividade do negócio {negocio} termina em {dias} dias, em {fim}."
+      },
+      "exclusividadeFim": {
+        "assunto": "Negócio {negocio}: a exclusividade termina hoje",
+        "paragrafo": "O período de exclusividade do negócio {negocio} termina hoje ({fim})."
+      },
+      "participacaoVencida": {
+        "assunto": "Negócio {negocio}: venceu o prazo de acesso de {pessoa}",
+        "paragrafo": "O prazo de participação de {pessoa} no negócio {negocio} venceu, e o acesso dessa pessoa terminou."
+      }
     }
   }
 }

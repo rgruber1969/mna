@@ -16,7 +16,8 @@
       "cadastros-auxiliares": "Cadastros auxiliares",
       "usuarios": "Usuários",
       "perfis": "Perfis",
-      "identidade-visual": "Identidade visual"
+      "identidade-visual": "Identidade visual",
+      "configuracoes": "Configurações gerais"
     },
     "recolher": "Recolher menu",
     "expandir": "Expandir menu",
@@ -60,7 +61,12 @@
       "dois_fatores_redefinido": "Sua verificação em duas etapas foi redefinida pelo administrador",
       "arquivo_bloqueado": "Um arquivo enviado a um cadastro foi bloqueado pelo antivírus",
       "negocio_incluido": "Você foi incluído no negócio {negocio}",
-      "negocio_removido": "Você foi removido do negócio {negocio}"
+      "negocio_removido": "Você foi removido do negócio {negocio}",
+      "negocio_situacao": "O negócio {negocio} mudou para \"{situacao}\"",
+      "exclusividade_inicio": "Negócio {negocio}: começa hoje a exclusividade (até {fim})",
+      "exclusividade_aviso": "Negócio {negocio}: a exclusividade termina em {dias} dias ({fim})",
+      "exclusividade_fim": "Negócio {negocio}: a exclusividade termina hoje",
+      "participacao_vencida": "Negócio {negocio}: venceu o prazo de acesso de {pessoa}"
     }
   },
   "rodape": {

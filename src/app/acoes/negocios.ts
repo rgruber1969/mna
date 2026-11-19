@@ -15,6 +15,14 @@ import {
   removerParticipante,
   salvarTipoDeOperacao,
 } from "@/server/services/negocios";
+import {
+  alterarSituacaoDoNegocio,
+  alterarSituacaoNoFunil,
+  definirExclusividade,
+  encerrarAcessosExternos,
+  prorrogarExclusividade,
+  salvarDiasDeAviso,
+} from "@/server/services/negocios-andamento";
 import type { Estado } from "./acesso";
 
 /** Negócios: só repassam para a camada de serviços (ADR-0004). */
@@ -105,4 +113,54 @@ export async function excluirTipoDeOperacaoAcao(_: Estado, f: FormData): Promise
   const t = await getTranslations("negocios.mensagens");
   const r = await excluirTipoDeOperacao(await acesso(), texto(f, "id"));
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("tipoExcluido") };
+}
+
+export async function alterarSituacaoNoFunilAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await alterarSituacaoNoFunil(await acesso(), texto(f, "dealId"), {
+    dealEmpresaId: texto(f, "id"),
+    situacao: texto(f, "situacao"),
+    descartarOutras: texto(f, "descartarOutras") === "sim",
+  });
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("funilAlterado") };
+}
+
+export async function alterarSituacaoDoNegocioAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await alterarSituacaoDoNegocio(await acesso(), texto(f, "dealId"), {
+    situacao: texto(f, "situacao"),
+    motivo: texto(f, "motivo"),
+  });
+  return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("situacaoAlterada") };
+}
+
+export async function encerrarAcessosExternosAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await encerrarAcessosExternos(await acesso(), texto(f, "dealId"));
+  return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("externosEncerrados") };
+}
+
+export async function definirExclusividadeAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await definirExclusividade(await acesso(), texto(f, "dealId"), {
+    inicio: texto(f, "inicio"),
+    fim: texto(f, "fim"),
+    dias: texto(f, "dias"),
+  });
+  return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("exclusividadeDefinida") };
+}
+
+export async function prorrogarExclusividadeAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await prorrogarExclusividade(await acesso(), texto(f, "dealId"), {
+    novoFim: texto(f, "novoFim"),
+    motivo: texto(f, "motivo"),
+  });
+  return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("exclusividadeProrrogada") };
+}
+
+export async function salvarDiasDeAvisoAcao(_: Estado, f: FormData): Promise<Estado> {
+  const t = await getTranslations("negocios.mensagens");
+  const r = await salvarDiasDeAviso(await acesso(), texto(f, "dias"));
+  return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("configuracoesSalvas") };
 }

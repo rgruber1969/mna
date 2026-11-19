@@ -51,6 +51,7 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
         icone: "paleta",
         soAdministrador: true,
       },
+      { id: "configuracoes", href: "/configuracoes", icone: "engrenagem", soAdministrador: true },
     ],
   },
 ];
