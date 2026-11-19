@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Lato, Manrope, Montserrat, Open_Sans, Roboto } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
 import { produto } from "@/config/produto";
+import { IDIOMA_PADRAO } from "@/i18n/idiomas";
 import "./globals.css";
 
 // Fontes da lista curta do white label (src/config/marca.ts). Só a escolhida
@@ -29,8 +31,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${fontes} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+    <html lang={IDIOMA_PADRAO} className={`${fontes} h-full antialiased`}>
+      <body className="flex min-h-full flex-col font-sans">
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      </body>
     </html>
   );
 }

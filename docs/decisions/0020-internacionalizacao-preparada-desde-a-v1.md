@@ -45,7 +45,7 @@ Regras:
    de cliente do Next.js.
 2. **Textos fora do código:** todo texto mostrado ao usuário (telas,
    mensagens de erro, avisos, e-mails) fica em arquivos de mensagens por
-   idioma (`messages/pt-BR.json` etc.), referido por chave. Código novo já
+   idioma (`src/i18n/mensagens/pt-BR.json` etc.), referido por chave. Código novo já
    nasce assim.
 3. **Serviços devolvem códigos, não frases:** a camada de serviços devolve
    um código de erro (com parâmetros); a tela, a API e o e-mail traduzem.

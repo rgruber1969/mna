@@ -3,3 +3,7 @@ allowBuilds:
   protobufjs: false
   sharp: false
   unrs-resolver: false
+  # Vêm com o next-intl (extração automática de mensagens, que não usamos);
+  # têm binários prontos por plataforma, sem precisar compilar.
+  "@parcel/watcher": false
+  "@swc/core": false
