@@ -329,6 +329,7 @@ export function SociosDaReceita({
   >(null);
   const [buscando, iniciar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
+  const [atualizadoEm, setAtualizadoEm] = useState<string | null>(null);
   const normalizar = (n: string) => n.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
   const existentes = new Set(jaCadastrados.map(normalizar));
   // Sócios já ligados como pessoas ou como empresas sócias.
@@ -345,6 +346,7 @@ export function SociosDaReceita({
               const d = await consultarCnpjAcao(cnpj);
               if (!d) return setAviso(t("consultaIndisponivel"));
               setSocios(d.socios);
+              setAtualizadoEm(d.sociosAtualizadosEm);
               if (d.socios.length === 0) setAviso(t("semSocios"));
             })
           }
@@ -378,15 +380,20 @@ export function SociosDaReceita({
                   >
                     {s.tipo === "pj"
                       ? t("cadastrarEmpresaSocia")
-                      : /s[óo]ci/i.test(s.qualificacao)
-                        ? t("cadastrarSocio")
-                        : t("cadastrarAdministrador")}
+                      : t("cadastrarPessoaComo", { qualificacao: s.qualificacao || t("socio") })}
                   </button>
                 </form>
               )}
             </li>
           ))}
         </ul>
+      )}
+      {socios && socios.length > 0 && (
+        <p className="text-muted mt-3 text-xs">
+          {atualizadoEm
+            ? t("baseDaReceitaDe", { data: atualizadoEm.split("-").reverse().join("/") })
+            : t("baseDaReceita")}
+        </p>
       )}
     </div>
   );

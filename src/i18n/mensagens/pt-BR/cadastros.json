@@ -127,7 +127,6 @@
       "consultando": "Consultando...",
       "consultarSocios": "Consultar sócios na Receita",
       "jaCadastrado": "já cadastrado",
-      "cadastrarSocio": "Cadastrar como pessoa e sócio",
       "nomeDoGrupo": "Nome do grupo",
       "criarGrupo": "Criar grupo",
       "sensiveis": {
@@ -188,7 +187,10 @@
       "criacaoCurta": "Comece pelo essencial. Depois de cadastrar, a tela da pessoa abre com as abas para completar documentos, endereço, cônjuge, empresas e anexos.",
       "empresaSocia": "empresa sócia",
       "cadastrarEmpresaSocia": "Cadastrar como empresa e sócia",
-      "cadastrarAdministrador": "Cadastrar como pessoa e administrador"
+      "cadastrarPessoaComo": "Cadastrar pessoa como {qualificacao}",
+      "socio": "Sócio",
+      "baseDaReceitaDe": "Quadro da base pública da Receita de {data}. Alterações registradas depois dessa data ainda não aparecem; confira no comprovante de CNPJ se houver mudança recente.",
+      "baseDaReceita": "Quadro da base pública da Receita, que é atualizada uma vez por mês: alterações recentes podem ainda não aparecer. Confira no comprovante de CNPJ se houver mudança recente."
     },
     "mensagens": {
       "empresaSalva": "Empresa salva.",

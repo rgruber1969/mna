@@ -67,10 +67,3 @@ projeto e em `docs/projeto/`.
 ## Substituídas
 
 Nenhuma até o momento.
-
-## Como manter
-
-* Novo ADR → nova linha em "Decisões em vigor", no mesmo commit; frase curta.
-* ADR substituído → linha vai para "Substituídas", com link para o novo.
-* Conceitos e ferramentas → [notas-explicativas.md](notas-explicativas.md)
-  (não carregado nas sessões); decisões do projeto → `docs/projeto/`.

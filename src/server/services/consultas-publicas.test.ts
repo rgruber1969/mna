@@ -83,6 +83,39 @@ describe("CNPJ", () => {
     expect(chamadas.length).toBe(antes);
   });
 
+  it("CNPJ.ws: deixa de fora quem saiu da sociedade (não atualizado na base mais recente)", async () => {
+    simularRespostas({
+      "publica.cnpj.ws/cnpj/11222333000181": {
+        razao_social: "EMPRESA EXEMPLO LTDA",
+        estabelecimento: {},
+        socios: [
+          {
+            nome: "SOCIO ANTIGO",
+            qualificacao_socio: { descricao: "Sócio" },
+            atualizado_em: "2026-07-11T03:00:00.000Z",
+          },
+          {
+            nome: "HOLDING DE TESTE S.A.",
+            qualificacao_socio: { descricao: "Sócio" },
+            tipo: "Pessoa Jurídica",
+            atualizado_em: "2026-10-10T03:00:00.000Z",
+          },
+          {
+            nome: "CICLANO ADMINISTRADOR",
+            qualificacao_socio: { descricao: "Administrador " },
+            atualizado_em: "2026-10-10T03:00:00.000Z",
+          },
+        ],
+      },
+    });
+    const d = await consultarCnpj(acesso, "11222333000181");
+    expect(d?.socios.map((s) => [s.nome, s.qualificacao, s.tipo])).toEqual([
+      ["HOLDING DE TESTE S.A.", "Sócio", "pj"],
+      ["CICLANO ADMINISTRADOR", "Administrador", "pf"],
+    ]);
+    expect(d?.sociosAtualizadosEm).toBe("2026-10-10");
+  });
+
   it("preenche os dados e lista os sócios; manda um User-Agent genérico", async () => {
     const chamadas = simularRespostas({
       "/cnpj/v1/11222333000181": {

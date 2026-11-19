@@ -77,7 +77,10 @@ Regras do cadastro (questionário `perguntas-empresas-pessoas.md`, 2026-11-18):
   documento.
 * **Quadro de sócios × vínculo:** quem é sócio na Receita vira vínculo
   "Sócio" (a qualificação vai para o cargo); quem é só administrador vira
-  vínculo "Administrador".
+  vínculo "Administrador". O botão mostra a qualificação da Receita
+  ("Cadastrar pessoa como Sócio-Administrador"). A base pública é mensal:
+  a tela mostra a data da base quando o serviço a informa, e quem saiu da
+  sociedade em bases anteriores fica de fora.
 * **Anexos e cadastro a partir de documento** (item 34, ADR-0021):
   documentos da empresa e da pessoa anexados ao cadastro, criptografados;
   um PDF pode ser lido para propor empresas, sócios e vínculos.

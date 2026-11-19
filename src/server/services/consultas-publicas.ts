@@ -36,6 +36,8 @@ export type DadosDoCnpj = {
   endereco: Endereco;
   /** Sócios do quadro público; `documentoParcial` é o CPF mascarado pela Receita (ex.: "***456789**"). */
   socios: { nome: string; qualificacao: string; documentoParcial: string; tipo: TipoDeSocio }[];
+  /** Data (AAAA-MM-DD) da base da Receita de onde veio o quadro de sócios, quando o serviço informa. */
+  sociosAtualizadosEm: string | null;
 };
 
 async function buscarJson(url: string): Promise<unknown | null> {
@@ -91,6 +93,12 @@ async function cnpjNaCnpjWs(numero: string): Promise<DadosDoCnpj | null> {
   const estado = (e.estado ?? {}) as Record<string, unknown>;
   const tipo = texto(e.tipo_logradouro);
   const logradouro = texto(e.logradouro);
+  // A CNPJ.ws acumula as bases mensais da Receita e não apaga quem saiu da
+  // sociedade: quem continua no quadro foi atualizado na base mais recente.
+  // Ficam só os sócios com a data de atualização mais nova.
+  const todos = (Array.isArray(d.socios) ? d.socios : []) as Record<string, unknown>[];
+  const ultima = todos.map((x) => texto(x.atualizado_em)).reduce((a, b) => (b > a ? b : a), "");
+  const atuais = ultima ? todos.filter((x) => texto(x.atualizado_em) === ultima) : todos;
   return {
     razaoSocial: texto(d.razao_social),
     nomeFantasia: texto(e.nome_fantasia),
@@ -109,8 +117,9 @@ async function cnpjNaCnpjWs(numero: string): Promise<DadosDoCnpj | null> {
       cidade: texto(cidade.nome),
       uf: texto(estado.sigla),
     },
-    socios: (Array.isArray(d.socios) ? d.socios : [])
-      .map((x: Record<string, unknown>) => ({
+    sociosAtualizadosEm: ultima ? ultima.slice(0, 10) : null,
+    socios: atuais
+      .map((x) => ({
         nome: texto(x.nome),
         qualificacao: texto(((x.qualificacao_socio ?? {}) as Record<string, unknown>).descricao),
         documentoParcial: texto(x.cpf_cnpj_socio),
@@ -150,6 +159,8 @@ async function cnpjNaBrasilApi(numero: string): Promise<DadosDoCnpj | null> {
       cidade: texto(d.municipio),
       uf: texto(d.uf),
     },
+    // A BrasilAPI não informa a data da base.
+    sociosAtualizadosEm: null,
     socios: (Array.isArray(d.qsa) ? d.qsa : [])
       .map((s: Record<string, unknown>) => ({
         nome: texto(s.nome_socio),
