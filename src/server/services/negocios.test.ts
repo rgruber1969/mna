@@ -1143,3 +1143,59 @@ describe("tarefas: sigilo entre compradoras", () => {
     );
   });
 });
+
+describe("data room: sigilo entre lados e compradoras", () => {
+  it("acesso por perfil fica no grupo de quem enviou; listas sem as outras compradoras", async () => {
+    const g = acesso("gestor");
+    const adm = acesso("admin", true);
+    // Advogado do lado vendedor (o "advv" saiu do negócio no teste de tarefas).
+    await criarConta("advv2", "usuario-externo");
+    const [{ id: contratante }] = (
+      await dono.query(`select id from empresa where tenant_id = $1 and do_contratante`, [tenantId])
+    ).rows as { id: string }[];
+    const [{ id: contato }] = (
+      await dono.query(`select id from tipo_vinculo where tenant_id = $1 and padrao = 'contato'`, [tenantId])
+    ).rows as { id: string }[];
+    await adicionarVinculo(adm, {
+      pessoaId: await pessoaDe("advv2"),
+      empresaId: contratante,
+      tipoId: contato,
+      cargo: "",
+      percentual: "",
+    });
+    await adicionarParticipante(g, negocioId, {
+      pessoaId: await pessoaDe("advv2"),
+      perfilId: await perfilDeDeal("advogado"),
+      empresaId: "",
+      lado: "",
+      prazo: "",
+    });
+    const pdf = pdfComTexto(["MEMORANDO INTERNO"]);
+    const r = await iniciarEnvio(g, negocioId, {
+      titulo: "Memorando dos advogados",
+      etapaId: null,
+      nomeArquivo: "memo.pdf",
+      tamanho: pdf.length,
+      perfis: [await perfilDeDeal("advogado")],
+      usuarios: [],
+    });
+    if (!("url" in r)) throw new Error(r.erro);
+    await fetch(r.url, {
+      method: "PUT",
+      body: Buffer.from(pdf),
+      headers: { "content-type": "application/octet-stream" },
+    });
+    expect(await concluirEnvio(g, r.versaoId)).toEqual({ ok: true });
+    const ve = async (nome: string) =>
+      (await dataRoomDoNegocio(acesso(nome), negocioId))!.documentos.some(
+        (d) => d.titulo === "Memorando dos advogados",
+      );
+    expect(await ve("advv2")).toBe(true); // advogado do lado vendedor
+    expect(await ve("adva")).toBe(false); // advogado da compradora: mesmo perfil, outro lado
+    const deA = await dataRoomDoNegocio(acesso("adva"), negocioId);
+    expect(deA!.opcoesDeAcesso.usuarios.some((u) => u.id === contas.compb2)).toBe(false);
+    expect(deA!.meuLado).not.toContain(contas.compb2);
+    const deB = await dataRoomDoNegocio(acesso("compb2"), negocioId);
+    expect(deB!.opcoesDeAcesso.usuarios.some((u) => u.id === contas.adva)).toBe(false);
+  });
+});

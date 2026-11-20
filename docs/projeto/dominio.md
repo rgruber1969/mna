@@ -593,6 +593,19 @@ Etapas padrão:
 * **Visão em tabela** como alternativa.
 * Kanban de tarefas gerais (fora de deal): backlog.
 
+### Sigilo entre compradoras no data room (ajuste de 2026-11-19)
+
+* **Acesso por perfil** vale só no grupo de quem enviou: lado vendedor, ou
+  a equipe de uma compradora. Ex.: documento do lado vendedor liberado ao
+  perfil "Advogado" não abre para o advogado da compradora; documento da
+  equipe da Compradora A liberado a um perfil não abre para a Compradora B.
+  Para liberar ao outro lado, escolhe-se a pessoa ou "Todos os
+  participantes".
+* Na lista "Quem pode ver", quem é do lado comprador só vê a própria equipe
+  (e o lado vendedor, depois do NDA); "Meu lado" marca só a própria equipe.
+* "Todos os participantes" continua abrindo para todos os que participam,
+  inclusive todas as compradoras ativas (uso típico: QPA assinado).
+
 ### Tarefas e pendências
 
 * **Construído (item 27, 2026-11-19):** aba Tarefas no negócio (filtros

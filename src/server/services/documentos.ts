@@ -27,7 +27,7 @@ import { tipoRealDoArquivo, verificarArquivo } from "./antivirus";
 import { auditar } from "./empresas";
 import { contextoDeEtapas } from "./etapas";
 import { ordenarEtapas } from "./tarefas";
-import { empresasDoNegocio, ladoDaParticipacao, negocioFechado } from "./negocios";
+import { compradoraDaEmpresa, empresasDoNegocio, ladoDaParticipacao, negocioFechado } from "./negocios";
 import { notificar } from "./notificacoes";
 import { concede, type Acao } from "./permissoes/catalogo";
 import { exigirPermissao, pode } from "./permissoes/verificador";
@@ -226,7 +226,41 @@ async function contextoDoDataRoom(a: AcessoTenant, dealId: string) {
         .map((p) => p.perfilId!),
     );
   const pode = (etapaId: string | null, acao: Acao) => concede(ctx.matrizNa(etapaId), "documentos", acao);
-  return { ...ctx, perfisNa, podeDoc: pode };
+  // Grupo de cada participante: "vendedor" ou a compradora (ela e quem trabalha para ela).
+  const [todos, empresas] = await Promise.all([
+    comTenant(a.tenant.id, (tx) =>
+      tx
+        .select({
+          usuarioId: pessoa.usuarioId,
+          empresaId: participacaoDeal.empresaId,
+          lado: participacaoDeal.lado,
+        })
+        .from(participacaoDeal)
+        .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
+        .where(and(eq(participacaoDeal.dealId, dealId), sql`${pessoa.usuarioId} is not null`)),
+    ),
+    empresasDoNegocio(a, dealId),
+  ]);
+  const gruposDe = new Map<string, Set<string>>();
+  for (const p of todos) {
+    const lado = ladoDaParticipacao(empresas, p);
+    const grupo =
+      lado === "vendedor"
+        ? "vendedor"
+        : lado === "comprador"
+          ? `c:${compradoraDaEmpresa(empresas, p.empresaId) ?? "-"}`
+          : null;
+    if (!grupo) continue;
+    gruposDe.set(p.usuarioId!, (gruposDe.get(p.usuarioId!) ?? new Set()).add(grupo));
+  }
+  const meusGrupos = gruposDe.get(a.usuario.id) ?? new Set<string>();
+  /** Mesmo grupo de quem enviou (acesso por perfil não atravessa lados nem compradoras). */
+  const mesmoGrupo = (usuarioId: string | null) => {
+    const deles = usuarioId ? gruposDe.get(usuarioId) : undefined;
+    if (!deles || deles.size === 0) return true; // quem enviou saiu do negócio: vale o perfil
+    return [...deles].some((g) => meusGrupos.has(g));
+  };
+  return { ...ctx, perfisNa, podeDoc: pode, gruposDe, meusGrupos, mesmoGrupo };
 }
 
 function versaoVisivel(
@@ -234,10 +268,13 @@ function versaoVisivel(
   v: { enviadoPor: string | null; todos: boolean },
   acessos: { perfilId: string | null; usuarioId: string | null }[],
   perfis: Set<string>,
+  mesmoGrupo: (usuarioId: string | null) => boolean,
 ) {
   // "Todos os participantes": quem chega aqui já participa e pode ver documentos na etapa.
   if (a.administrador || v.enviadoPor === a.usuario.id || v.todos) return true;
-  return acessos.some((x) => x.usuarioId === a.usuario.id || (x.perfilId !== null && perfis.has(x.perfilId)));
+  if (acessos.some((x) => x.usuarioId === a.usuario.id)) return true;
+  // Por perfil: só no grupo de quem enviou (o "Advogado" da vendedora não abre para o da compradora).
+  return mesmoGrupo(v.enviadoPor) && acessos.some((x) => x.perfilId !== null && perfis.has(x.perfilId));
 }
 
 // --- Consulta --------------------------------------------------------------------------------
@@ -369,7 +406,7 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
     if (!ctx.podeDoc(d.etapaId, "ver")) continue;
     const visiveis = (versoesPor.get(d.id) ?? []).filter(
       ({ v }) =>
-        versaoVisivel(a, v, acessosPor.get(v.id) ?? [], perfis) &&
+        versaoVisivel(a, v, acessosPor.get(v.id) ?? [], perfis, ctx.mesmoGrupo) &&
         (v.situacao === "disponivel" || v.enviadoPor === a.usuario.id || a.administrador),
     );
     if (visiveis.length === 0) continue;
@@ -425,14 +462,30 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
     const oy = ordemDe.get(ey.paiId ?? ey.id)! * 1000 + (ey.paiId ? ey.ordem : 0);
     return ox - oy;
   });
-  const meus = participantes.filter((p) => p.usuarioId === a.usuario.id);
-  const meusLados = new Set(meus.map((p) => ladoDaParticipacao(empresas, p)).filter(Boolean));
+  const vendedor = a.administrador || ctx.meusGrupos.has("vendedor");
+  const podeVerVendedora =
+    vendedor ||
+    empresas.some(
+      (e) =>
+        e.compradora &&
+        ctx.meusGrupos.has(`c:${e.empresaId}`) &&
+        e.situacaoFunil !== null &&
+        ["nda", "proposta", "escolhida"].includes(e.situacaoFunil),
+    );
+  const pessoaVisivel = (usuarioId: string) => {
+    if (vendedor) return true;
+    const deles = ctx.gruposDe.get(usuarioId) ?? new Set<string>();
+    if (deles.has("vendedor")) return podeVerVendedora;
+    return [...deles].some((g) => ctx.meusGrupos.has(g));
+  };
   const usuarios = [
     ...new Map(
-      participantes.map((p) => [
-        p.usuarioId!,
-        { id: p.usuarioId!, nome: p.nome, lado: ladoDaParticipacao(empresas, p) },
-      ]),
+      participantes
+        .filter((p) => pessoaVisivel(p.usuarioId!))
+        .map((p) => [
+          p.usuarioId!,
+          { id: p.usuarioId!, nome: p.nome, lado: ladoDaParticipacao(empresas, p) },
+        ]),
     ).values(),
   ].sort((x, y) => x.nome.localeCompare(y.nome));
   return {
@@ -447,7 +500,10 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
       usuarios,
     },
     meuLado: usuarios
-      .filter((u) => u.lado && meusLados.has(u.lado) && u.id !== a.usuario.id)
+      .filter(
+        (u) =>
+          u.id !== a.usuario.id && [...(ctx.gruposDe.get(u.id) ?? [])].some((g) => ctx.meusGrupos.has(g)),
+      )
       .map((u) => u.id),
     fechado,
   };
@@ -649,7 +705,10 @@ async function versaoAcessivel(a: AcessoTenant, versaoId: string) {
       .from(versaoAcesso)
       .where(eq(versaoAcesso.versaoId, versaoId)),
   );
-  if (!ctx.podeDoc(linha.etapaId, "ver") || !versaoVisivel(a, linha.v, acessos, ctx.perfisNa(linha.etapaId)))
+  if (
+    !ctx.podeDoc(linha.etapaId, "ver") ||
+    !versaoVisivel(a, linha.v, acessos, ctx.perfisNa(linha.etapaId), ctx.mesmoGrupo)
+  )
     return null;
   return { ...linha, ctx };
 }
