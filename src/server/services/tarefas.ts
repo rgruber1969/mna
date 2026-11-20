@@ -19,7 +19,13 @@ import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./ac
 import { dataRoomDoNegocio } from "./documentos";
 import { auditar } from "./empresas";
 import { contextoDeEtapas } from "./etapas";
-import { empresasDoNegocio, ladoDaParticipacao, negocioFechado, visaoDoNegocio } from "./negocios";
+import {
+  compradoraDaEmpresa,
+  empresasDoNegocio,
+  ladoDaParticipacao,
+  negocioFechado,
+  visaoDoNegocio,
+} from "./negocios";
 import { concede, type Acao } from "./permissoes/catalogo";
 
 /**
@@ -74,10 +80,10 @@ async function negar(a: AcessoTenant, acao: Acao, dealId: string): Promise<never
 /** O que a pessoa pode no negócio: matriz por etapa, lados e perfis. */
 async function contexto(a: AcessoTenant, dealId: string) {
   const ctx = await contextoDeEtapas(a, dealId);
-  const [lados, meusPerfis] = await Promise.all([
+  const [visao, meusPerfis] = await Promise.all([
     visaoDoNegocio(a, dealId)
-      .then((r) => r.visao.lados as Set<string>)
-      .catch(() => new Set<string>()),
+      .then((r) => r.visao)
+      .catch(() => null),
     comTenant(a.tenant.id, (tx) =>
       tx
         .select({ perfilId: participacaoDeal.perfilId })
@@ -94,7 +100,13 @@ async function contexto(a: AcessoTenant, dealId: string) {
     ).then((l) => new Set(l.map((x) => x.perfilId!))),
   ]);
   const pode = (etapaId: string | null, acao: Acao) => concede(ctx.matrizNa(etapaId), "tarefas", acao);
-  return { ...ctx, lados, meusPerfis, pode };
+  const lados = (visao?.lados ?? new Set<string>()) as Set<string>;
+  const minhasCompradoras = visao?.minhasCompradoras ?? new Set<string>();
+  const podeVerVendedora = visao?.podeVerVendedora ?? false;
+  /** Lado comprador: só a equipe da mesma compradora (tarefas antigas, sem compradora, valem para o lado). */
+  const mesmaCompradora = (compradoraId: string | null) =>
+    a.administrador || lados.has("vendedor") || compradoraId === null || minhasCompradoras.has(compradoraId);
+  return { ...ctx, lados, meusPerfis, pode, minhasCompradoras, podeVerVendedora, mesmaCompradora };
 }
 
 type Ctx = Awaited<ReturnType<typeof contexto>>;
@@ -105,8 +117,15 @@ type Responsavel = { usuarioId: string | null; perfilId: string | null };
  * do mesmo lado da tarefa ("Advogado" do lado vendedor não inclui o advogado
  * da compradora).
  */
-function souResponsavel(a: AcessoTenant, ctx: Ctx, resp: Responsavel[], lado: string | null) {
-  const mesmoLado = lado === null || ctx.lados.has(lado);
+function souResponsavel(
+  a: AcessoTenant,
+  ctx: Ctx,
+  resp: Responsavel[],
+  t: { lado: string | null; compradoraId: string | null },
+) {
+  const mesmoLado =
+    t.lado === null ||
+    (ctx.lados.has(t.lado) && (t.lado !== "comprador" || ctx.mesmaCompradora(t.compradoraId)));
   return resp.some(
     (r) =>
       r.usuarioId === a.usuario.id || (mesmoLado && r.perfilId !== null && ctx.meusPerfis.has(r.perfilId)),
@@ -116,11 +135,12 @@ function souResponsavel(a: AcessoTenant, ctx: Ctx, resp: Responsavel[], lado: st
 function tarefaVisivel(
   a: AcessoTenant,
   ctx: Ctx,
-  t: { criadoPor: string | null; lado: string | null; etapaId: string | null },
+  t: { criadoPor: string | null; lado: string | null; etapaId: string | null; compradoraId: string | null },
   resp: Responsavel[],
 ) {
-  if (a.administrador || t.criadoPor === a.usuario.id || souResponsavel(a, ctx, resp, t.lado)) return true;
+  if (a.administrador || t.criadoPor === a.usuario.id || souResponsavel(a, ctx, resp, t)) return true;
   if (!ctx.pode(t.etapaId, "ver")) return false;
+  if (t.lado === "comprador") return ctx.lados.has("comprador") && ctx.mesmaCompradora(t.compradoraId);
   return t.lado === null || ctx.lados.has(t.lado);
 }
 
@@ -237,6 +257,14 @@ async function tarefasDoNegocioSemCache(
     empresasDoNegocio(a, dealId),
     dataRoomDoNegocio(a, dealId),
   ]);
+  // Quem é do lado comprador só vê a própria equipe (e o lado vendedor, depois do NDA).
+  const pessoaVisivel = (p: (typeof participantes)[number]) => {
+    if (a.administrador || ctx.lados.has("vendedor")) return true;
+    const ladoDela = ladoDaParticipacao(empresas, p);
+    if (ladoDela === "vendedor") return ctx.podeVerVendedora;
+    if (ladoDela === "comprador") return ctx.mesmaCompradora(compradoraDaEmpresa(empresas, p.empresaId));
+    return false;
+  };
   const visiveisDocs = new Map((dataRoom?.documentos ?? []).map((d) => [d.id, d.titulo]));
   const respPor = Map.groupBy(responsaveis, (r) => r.tarefaId);
   const itensPor = Map.groupBy(itens, (i) => i.tarefaId);
@@ -246,7 +274,7 @@ async function tarefasDoNegocioSemCache(
     .filter(({ t }) => tarefaVisivel(a, ctx, t, respPor.get(t.id) ?? []))
     .map(({ t, quemConcluiu }) => {
       const resp = respPor.get(t.id) ?? [];
-      const responsavel = souResponsavel(a, ctx, resp, t.lado);
+      const responsavel = souResponsavel(a, ctx, resp, t);
       const editar = !fechado && (a.administrador || ctx.pode(t.etapaId, "editar"));
       return {
         id: t.id,
@@ -301,10 +329,12 @@ async function tarefasDoNegocioSemCache(
     opcoes: {
       usuarios: [
         ...new Map(
-          participantes.map((p) => [
-            p.usuarioId!,
-            { id: p.usuarioId!, nome: p.nome, lado: ladoDaParticipacao(empresas, p) },
-          ]),
+          participantes
+            .filter(pessoaVisivel)
+            .map((p) => [
+              p.usuarioId!,
+              { id: p.usuarioId!, nome: p.nome, lado: ladoDaParticipacao(empresas, p) },
+            ]),
         ).values(),
       ].sort((x, y) => x.nome.localeCompare(y.nome)),
       perfis: [
@@ -408,6 +438,7 @@ export async function criarTarefa(
     return { erro: "tarefas.erros.etapaInvalida" };
   if (!a.administrador && !ctx.pode(d.etapaId, "criar")) await negar(a, "criar", dealId);
   const lado = ctx.lados.has("vendedor") ? "vendedor" : ctx.lados.has("comprador") ? "comprador" : null;
+  const compradoraId = lado === "comprador" ? ([...ctx.minhasCompradoras][0] ?? null) : null;
   const [nova] = await comTenant(a.tenant.id, async (tx) => {
     const criada = await tx
       .insert(tarefa)
@@ -420,6 +451,7 @@ export async function criarTarefa(
         prioridade: d.prioridade,
         prazo: d.prazo,
         lado,
+        compradoraId,
         criadoPor: a.usuario.id,
       })
       .returning({ id: tarefa.id });
@@ -456,7 +488,7 @@ async function tarefaDoContexto(a: AcessoTenant, tarefaId: string) {
       .where(eq(tarefaResponsavel.tarefaId, tarefaId)),
   );
   if (!tarefaVisivel(a, ctx, t, resp)) return null;
-  return { t, ctx, responsavel: souResponsavel(a, ctx, resp, t.lado) };
+  return { t, ctx, responsavel: souResponsavel(a, ctx, resp, t) };
 }
 
 export async function editarTarefa(

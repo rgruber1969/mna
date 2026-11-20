@@ -1118,3 +1118,28 @@ describe("mensageria", () => {
     });
   });
 });
+
+describe("tarefas: sigilo entre compradoras", () => {
+  it("tarefa da equipe da Compradora A não aparece para a Compradora B, nem por perfil", async () => {
+    const representante = await perfilDeDeal("representante");
+    const r = await criarTarefa(acesso("adva"), negocioId, {
+      titulo: "Tarefa interna da Compradora A",
+      descricao: "",
+      etapaId: "",
+      prazo: "",
+      perfis: [representante],
+    });
+    if (!("id" in r)) throw new Error(r.erro);
+    const [t] = (await dono.query(`select compradora_id from tarefa where id = $1`, [r.id])).rows;
+    expect(t.compradora_id).toBe(compradoraA);
+    const deB = await tarefasDoNegocio(acesso("compb2"), negocioId);
+    expect(deB?.tarefas.some((x) => x.id === r.id)).toBe(false);
+    expect(deB?.opcoes.usuarios.some((u) => u.id === contas.adva)).toBe(false);
+    const deA = await tarefasDoNegocio(acesso("adva"), negocioId);
+    expect(deA?.tarefas.some((x) => x.id === r.id)).toBe(true);
+    expect(deA?.opcoes.usuarios.some((u) => u.id === contas.compb2)).toBe(false);
+    expect((await tarefasDoNegocio(acesso("gestor"), negocioId))?.tarefas.some((x) => x.id === r.id)).toBe(
+      false,
+    );
+  });
+});

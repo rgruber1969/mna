@@ -302,7 +302,12 @@ export const MOTIVOS_DE_ENCERRAMENTO = [
 async function usuariosDoNegocio(
   tx: Tx,
   dealId: string,
-  filtro?: (p: { lado: string | null; padrao: string | null; perfilId: string }) => boolean,
+  filtro?: (p: {
+    lado: string | null;
+    padrao: string | null;
+    perfilId: string;
+    compradora: string | null;
+  }) => boolean,
 ) {
   const linhas = await tx
     .select({
@@ -323,18 +328,33 @@ async function usuariosDoNegocio(
       ),
     );
   const papeis = await tx
-    .select({ empresaId: dealEmpresa.empresaId, lado: papelEmpresa.lado })
+    .select({
+      empresaId: dealEmpresa.empresaId,
+      lado: papelEmpresa.lado,
+      padrao: papelEmpresa.padrao,
+      atuaParaId: dealEmpresa.atuaParaId,
+    })
     .from(dealEmpresa)
     .innerJoin(papelEmpresa, eq(papelEmpresa.id, dealEmpresa.papelId))
     .where(eq(dealEmpresa.dealId, dealId));
   const ladoDe = (empresaId: string | null, lado: string | null) =>
     (empresaId && papeis.find((p) => p.empresaId === empresaId && p.lado)?.lado) || lado;
+  const compradoraDe = (empresaId: string | null) => {
+    const e = papeis.find((p) => p.empresaId === empresaId && p.lado === "comprador");
+    return e ? (e.padrao === "compradora" ? e.empresaId : e.atuaParaId) : null;
+  };
   return [
     ...new Set(
       linhas
         .filter(
           (l) =>
-            !filtro || filtro({ lado: ladoDe(l.empresaId, l.lado), padrao: l.padrao, perfilId: l.perfilId }),
+            !filtro ||
+            filtro({
+              lado: ladoDe(l.empresaId, l.lado),
+              padrao: l.padrao,
+              perfilId: l.perfilId,
+              compradora: compradoraDe(l.empresaId),
+            }),
         )
         .map((l) => l.usuarioId!),
     ),
@@ -636,6 +656,7 @@ export async function enviarAvisosDePrazo(
           titulo: tarefa.titulo,
           prazo: tarefa.prazo,
           lado: tarefa.lado,
+          compradoraId: tarefa.compradoraId,
           enviados: tarefa.lembretesEnviados,
         })
         .from(tarefa)
@@ -663,7 +684,10 @@ export async function enviarAvisosDePrazo(
               await usuariosDoNegocio(
                 tx,
                 n.id,
-                (p) => perfis.includes(p.perfilId) && (tf.lado === null || p.lado === tf.lado),
+                (p) =>
+                  perfis.includes(p.perfilId) &&
+                  (tf.lado === null || p.lado === tf.lado) &&
+                  (tf.compradoraId === null || p.compradora === tf.compradoraId),
               )
             ).map((usuarioId) => ({ usuarioId }))
           : [];

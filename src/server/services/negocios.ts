@@ -246,6 +246,13 @@ export function ladoDaParticipacao(
   return ladoDaEmpresa(empresas, p.empresaId) ?? p.lado;
 }
 
+/** Lado comprador: a compradora da empresa (ela mesma, ou aquela para quem trabalha). */
+export function compradoraDaEmpresa(empresas: EmpresaNoNegocio[], empresaId: string | null): string | null {
+  const e = empresas.find((x) => x.empresaId === empresaId && x.lado === "comprador");
+  if (!e) return null;
+  return e.compradora ? e.empresaId : e.atuaParaId;
+}
+
 async function empresasDoNegocioSemCache(a: AcessoTenant, dealId: string): Promise<EmpresaNoNegocio[]> {
   return comTenant(a.tenant.id, (tx) =>
     tx

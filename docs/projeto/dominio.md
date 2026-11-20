@@ -607,8 +607,12 @@ Etapas padrão:
 * **Decidido em 2026-11-19:** a tarefa é vista pelo lado de quem a criou,
   pelos responsáveis e pelos administradores; responsável por perfil vale
   só para quem tem o perfil do mesmo lado da tarefa (o perfil "Advogado" do
-  lado vendedor não inclui o advogado da compradora). Ainda não: comentários
-  (com a mensageria) e tarefas automáticas (item 28, simulado).
+  lado vendedor não inclui o advogado da compradora). No lado comprador, a
+  tarefa é só da **equipe da compradora** de quem criou (ajuste de
+  2026-11-19, sigilo entre compradoras): as outras compradoras não a veem,
+  não aparecem na lista de responsáveis e não recebem lembretes por perfil.
+  Conversa da tarefa: na mensageria (link "Conversa"). Ainda não: tarefas
+  automáticas (item 28, simulado).
 
 * Campos: título, descrição, responsáveis, prazo, prioridade,
   etapa/subetapa, documentos ligados, checklist e comentários; atributos

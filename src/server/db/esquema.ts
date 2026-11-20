@@ -1079,6 +1079,8 @@ export const tarefa = pgTable(
       .default("a_fazer"),
     /** Lado de quem criou: a tarefa é vista por esse lado, pelos responsáveis e pelos administradores. */
     lado: text("lado").$type<"vendedor" | "comprador">(),
+    /** Lado comprador: a compradora de quem criou (as outras compradoras nunca veem a tarefa). */
+    compradoraId: uuid("compradora_id").references(() => empresa.id, { onDelete: "set null" }),
     concluidaPor: uuid("concluida_por").references(() => usuario.id, { onDelete: "set null" }),
     concluidaEm: timestamp("concluida_em", { withTimezone: true }),
     /** Gerada por gatilho automático (simulado na V1). */
