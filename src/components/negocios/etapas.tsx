@@ -511,9 +511,12 @@ export function EtapasDoNegocio({
   hoje,
   documentosPorEtapa,
   tarefasPorEtapa,
+  soLinhaDoTempo = false,
 }: {
   dealId: string;
   etapas: Etapa[];
+  /** Painel do kanban: só a linha do tempo, sem a lista (que edita as etapas). */
+  soLinhaDoTempo?: boolean;
   podeIncluir: boolean;
   podeExcluir: boolean;
   hoje: string;
@@ -524,6 +527,7 @@ export function EtapasDoNegocio({
 }) {
   const t = useTranslations("etapas");
   const [vista, setVista] = useState<"lista" | "tempo">("lista");
+  if (soLinhaDoTempo) return <LinhaDoTempo etapas={etapas} hoje={hoje} />;
   return (
     <div>
       <div className="mb-3 flex gap-2" role="group" aria-label={t("vista")}>

@@ -3,8 +3,8 @@
     "titulo": "Mensagens",
     "aba": "Mensagens",
     "geral": "Geral do negócio",
-    "grupoEtapas": "Etapas",
-    "grupoOutros": "Documentos e tarefas",
+    "grupoEtapas": "Conversas por etapa",
+    "grupoOutros": "Conversas em documentos e tarefas",
     "tipos": {
       "deal": "Negócio",
       "etapa": "Etapa",

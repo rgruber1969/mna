@@ -631,6 +631,7 @@ export function KanbanDeNegocios({
                       podeIncluir={p.etapas.podeIncluir}
                       podeExcluir={p.etapas.podeExcluir}
                       hoje={hoje}
+                      soLinhaDoTempo
                     />
                   )}
                   {aberto.aba === "empresas" && (

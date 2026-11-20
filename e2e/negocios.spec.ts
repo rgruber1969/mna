@@ -189,5 +189,19 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(painel.getByRole("tab", { name: "Resumo" })).toBeVisible();
   await painel.getByRole("tab", { name: "Documentos" }).click();
   await expect(painel.getByRole("button", { name: /Contrato social/ })).toBeVisible();
+  // Enviar pelo painel: o aviso de sucesso continua visível depois de recarregar a lista.
+  await painel.getByRole("button", { name: "Enviar documento" }).click();
+  await painel.getByLabel("Título").fill("Ata pelo painel");
+  await painel.getByLabel("Arquivo").setInputFiles({
+    name: "ata.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from(pdfComTexto(["ATA"])),
+  });
+  await painel.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(painel.getByText("Arquivo gravado com sucesso!")).toBeVisible({ timeout: 30_000 });
+  await expect(painel.getByRole("button", { name: /Ata pelo painel/ })).toBeVisible();
+  // Etapas no painel: só a linha do tempo.
+  await painel.getByRole("tab", { name: "Etapas" }).click();
+  await expect(painel.getByRole("button", { name: "Lista" })).toHaveCount(0);
   if (process.env.CAPTURAS) await page.screenshot({ path: `${process.env.CAPTURAS}/kanban-painel.png` });
 });
