@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, asc, eq, inArray, isNull, max, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
@@ -278,7 +279,7 @@ export async function definirEtapaPadraoAtiva(
 type Linha = typeof dealEtapa.$inferSelect;
 
 /** Matriz da pessoa numa etapa: soma das participações que alcançam a etapa (ou a etapa-mãe). */
-export async function contextoDeEtapas(a: AcessoTenant, dealId: string) {
+async function contextoDeEtapasSemCache(a: AcessoTenant, dealId: string) {
   const [etapas, minhas] = await comTenant(a.tenant.id, async (tx) => [
     await tx.select().from(dealEtapa).where(eq(dealEtapa.dealId, dealId)).orderBy(asc(dealEtapa.ordem)),
     a.administrador
@@ -688,3 +689,6 @@ export async function opcoesDeAlcance(acesso: Acesso | null, dealId: string) {
       ...etapas.filter((s) => s.paiId === e.id).map((s) => ({ id: s.id, nome: `${e.nome} › ${s.nome}` })),
     ]);
 }
+
+/** Reaproveitado dentro do mesmo carregamento de página (React cache; gravações não usam). */
+export const contextoDeEtapas = cache(contextoDeEtapasSemCache);

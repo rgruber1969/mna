@@ -26,7 +26,7 @@
     "arquivoAjuda": "Até 200 MB: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem.",
     "comentario": "Comentário (opcional)",
     "quemVe": "Quem pode ver esta versão",
-    "quemVeAjuda": "Já vem marcado com o seu lado (ou com a lista da versão anterior). Você e os administradores sempre veem.",
+    "quemVeAjuda": "Já vem marcado com o seu lado (ou com a lista da versão anterior). Você e os administradores sempre veem. Para liberar ao outro lado depois, use \"Alterar quem vê\" na versão.",
     "porPerfil": "Por perfil",
     "porPessoa": "Por pessoa",
     "lados": {
@@ -63,6 +63,14 @@
       "categoriaJaExiste": "Já existe uma categoria com este nome.",
       "categoriaNaoEncontrada": "Categoria não encontrada.",
       "categoriaEmUso": "Esta categoria está em uso e não pode ser excluída."
-    }
+    },
+    "todosParticipantes": "Todos os participantes do negócio (os dois lados)",
+    "meuLado": "Meu lado",
+    "ladoVendedor": "Lado vendedor",
+    "ladoComprador": "Lado comprador",
+    "limpar": "Limpar",
+    "soQuemTemUsuario": "Aparecem só os participantes com usuário no sistema; contatos sem usuário não acessam documentos.",
+    "alterarQuemVe": "Alterar quem vê",
+    "salvarAcesso": "Salvar quem vê"
   }
 }

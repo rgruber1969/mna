@@ -548,6 +548,12 @@ Etapas padrão:
   filtrada. Ainda não: baixar em ZIP (D6), comentários por versão (com a
   mensageria), pedidos de documentos (aguarda o recorte) e ligar documentos
   pelo cartão do kanban.
+* **Quem vê, ajuste de 2026-11-19:** opção "Todos os participantes do negócio
+  (os dois lados)", que vale também para quem entrar depois; atalhos Meu
+  lado, Lado vendedor, Lado comprador e Limpar; **"Alterar quem vê"** numa
+  versão já enviada (quem enviou ou administradores, com auditoria), que é
+  como se libera um documento ao outro lado depois do envio. A lista mostra
+  só participantes com usuário (contatos não acessam documentos).
 * **Documentos por etapa** (pedido de 2026-11-19): cada etapa do negócio
   mostra e liga facilmente os documentos daquela etapa; uma tela lista
   todos os documentos do negócio com a etapa a que cada um está ligado

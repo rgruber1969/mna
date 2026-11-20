@@ -1018,6 +1018,8 @@ export const documentoVersao = pgTable(
     /** enviando, disponivel ou bloqueado. */
     situacao: text("situacao").$type<"enviando" | "disponivel" | "bloqueado">().notNull().default("enviando"),
     comentario: text("comentario"),
+    /** Visível a todos os participantes do negócio (os dois lados, inclusive quem entrar depois). */
+    todos: boolean("todos").notNull().default(false),
     enviadoPor: uuid("enviado_por").references(() => usuario.id, { onDelete: "set null" }),
     /** Alguém além de quem enviou já baixou (depois disso a versão não pode ser excluída). */
     baixadaPorOutros: boolean("baixada_por_outros").notNull().default(false),

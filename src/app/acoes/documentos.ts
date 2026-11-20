@@ -6,6 +6,7 @@ import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
   acessoDaUltimaVersao,
+  alterarAcessoDaVersao,
   concluirEnvio,
   excluirCategoria,
   excluirVersao,
@@ -32,6 +33,7 @@ export async function iniciarEnvioAcao(
     comentario?: string;
     perfis: string[];
     usuarios: string[];
+    todos?: boolean;
   },
 ): Promise<{ versaoId?: string; url?: string; erro?: string }> {
   const r = await iniciarEnvio(await acesso(), dealId, dados);
@@ -71,4 +73,12 @@ export async function excluirCategoriaAcao(_: Estado, f: FormData): Promise<Esta
   const t = await getTranslations("documentos.mensagens");
   const r = await excluirCategoria(await acesso(), texto(f, "id"));
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("categoriaExcluida") };
+}
+
+export async function alterarAcessoDaVersaoAcao(
+  versaoId: string,
+  dados: { todos: boolean; perfis: string[]; usuarios: string[] },
+): Promise<{ erro?: string }> {
+  const r = await alterarAcessoDaVersao(await acesso(), versaoId, dados);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
 }

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -230,11 +231,12 @@ async function contextoDoDataRoom(a: AcessoTenant, dealId: string) {
 
 function versaoVisivel(
   a: AcessoTenant,
-  v: { enviadoPor: string | null },
+  v: { enviadoPor: string | null; todos: boolean },
   acessos: { perfilId: string | null; usuarioId: string | null }[],
   perfis: Set<string>,
 ) {
-  if (a.administrador || v.enviadoPor === a.usuario.id) return true;
+  // "Todos os participantes": quem chega aqui já participa e pode ver documentos na etapa.
+  if (a.administrador || v.enviadoPor === a.usuario.id || v.todos) return true;
   return acessos.some((x) => x.usuarioId === a.usuario.id || (x.perfilId !== null && perfis.has(x.perfilId)));
 }
 
@@ -250,6 +252,9 @@ export type VersaoNaTela = {
   criadoEm: Date;
   comentario: string | null;
   acesso: string[];
+  /** Lista atual (para "Alterar quem vê"). */
+  acessoIds: { todos: boolean; perfis: string[]; usuarios: string[] };
+  podeAlterarAcesso: boolean;
   podeBaixar: boolean;
   podeExcluir: boolean;
 };
@@ -281,7 +286,7 @@ export type DataRoom = {
 };
 
 /** Documentos do negócio que a pessoa vê (só as versões liberadas a ela). */
-export async function dataRoomDoNegocio(acesso: Acesso | null, dealId: string): Promise<DataRoom | null> {
+async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string): Promise<DataRoom | null> {
   const a = exigirTenant(acesso);
   if (!uuidValido(dealId)) return null;
   const ctx = await contextoDoDataRoom(a, dealId);
@@ -382,7 +387,13 @@ export async function dataRoomDoNegocio(acesso: Acesso | null, dealId: string): 
         enviadoPor: autor,
         criadoEm: v.criadoEm,
         comentario: v.comentario,
-        acesso: (acessosPor.get(v.id) ?? []).map((x) => x.perfil ?? x.usuario ?? "—"),
+        acesso: v.todos ? [TODOS] : (acessosPor.get(v.id) ?? []).map((x) => x.perfil ?? x.usuario ?? "—"),
+        acessoIds: {
+          todos: v.todos,
+          perfis: (acessosPor.get(v.id) ?? []).flatMap((x) => (x.perfilId ? [x.perfilId] : [])),
+          usuarios: (acessosPor.get(v.id) ?? []).flatMap((x) => (x.usuarioId ? [x.usuarioId] : [])),
+        },
+        podeAlterarAcesso: !fechado && (v.enviadoPor === a.usuario.id || a.administrador),
         podeBaixar: v.situacao === "disponivel" && ctx.podeDoc(d.etapaId, "baixar"),
         podeExcluir:
           !fechado &&
@@ -451,6 +462,7 @@ const DadosEnvio = z.object({
   comentario: z.string().trim().max(2000).optional(),
   perfis: z.array(z.string()).default([]),
   usuarios: z.array(z.string()).default([]),
+  todos: z.boolean().default(false),
 });
 
 /**
@@ -535,6 +547,7 @@ export async function iniciarEnvio(
       tamanho: d.tamanho,
       chave,
       comentario: d.comentario || null,
+      todos: d.todos,
       enviadoPor: a.usuario.id,
     });
     const linhas = [
@@ -680,6 +693,51 @@ export async function excluirVersao(acesso: Acesso | null, versaoId: string): Pr
   return { ok: true };
 }
 
+/** Marcador que a tela traduz como "Todos os participantes". */
+const TODOS = "__todos__";
+
+/**
+ * Altera quem vê uma versão já enviada (quem a enviou ou os administradores),
+ * por exemplo para liberá-la ao outro lado. A lista só restringe a quem
+ * participa do negócio; a mudança fica na auditoria.
+ */
+export async function alterarAcessoDaVersao(
+  acesso: Acesso | null,
+  versaoId: string,
+  dados: { todos: boolean; perfis: string[]; usuarios: string[] },
+): Promise<Resultado> {
+  const a = exigirTenant(acesso);
+  const x = await versaoAcessivel(a, versaoId);
+  if (!x) return { erro: "documentos.erros.naoEncontrado" };
+  const fechado = await negocioFechado(a, x.dealId);
+  if (fechado) return fechado;
+  if (x.v.enviadoPor !== a.usuario.id && !a.administrador) await negar(a, "editar", x.dealId);
+  const validos = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .select({ perfilId: participacaoDeal.perfilId, usuarioId: pessoa.usuarioId })
+      .from(participacaoDeal)
+      .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
+      .where(eq(participacaoDeal.dealId, x.dealId)),
+  );
+  const perfis = [...new Set(dados.perfis)].filter((p) => validos.some((v) => v.perfilId === p));
+  const usuarios = [...new Set(dados.usuarios)].filter((u) => validos.some((v) => v.usuarioId === u));
+  await comTenant(a.tenant.id, async (tx) => {
+    await tx.update(documentoVersao).set({ todos: dados.todos }).where(eq(documentoVersao.id, versaoId));
+    await tx.delete(versaoAcesso).where(eq(versaoAcesso.versaoId, versaoId));
+    const linhas = [
+      ...perfis.map((perfilId) => ({ tenantId: a.tenant.id, versaoId, perfilId })),
+      ...usuarios.map((usuarioId) => ({ tenantId: a.tenant.id, versaoId, usuarioId })),
+    ];
+    if (linhas.length) await tx.insert(versaoAcesso).values(linhas);
+  });
+  await auditar(a, "documento.acesso_alterado", "deal", x.dealId, {
+    titulo: x.titulo,
+    versao: x.v.numero,
+    todos: dados.todos,
+  });
+  return { ok: true };
+}
+
 /** Lista de acesso da última versão (pré-preenchimento de uma nova versão). */
 export async function acessoDaUltimaVersao(acesso: Acesso | null, documentoId: string) {
   const a = exigirTenant(acesso);
@@ -692,7 +750,8 @@ export async function acessoDaUltimaVersao(acesso: Acesso | null, documentoId: s
       .orderBy(desc(documentoVersao.numero))
       .limit(1),
   );
-  if (!ultima || !(await versaoAcessivel(a, ultima.id))) return { perfis: [], usuarios: [] };
+  const visivel = ultima ? await versaoAcessivel(a, ultima.id) : null;
+  if (!ultima || !visivel) return { perfis: [], usuarios: [] };
   const linhas = await comTenant(a.tenant.id, (tx) =>
     tx
       .select({ perfilId: versaoAcesso.perfilId, usuarioId: versaoAcesso.usuarioId })
@@ -700,7 +759,11 @@ export async function acessoDaUltimaVersao(acesso: Acesso | null, documentoId: s
       .where(eq(versaoAcesso.versaoId, ultima.id)),
   );
   return {
+    todos: visivel.v.todos,
     perfis: linhas.flatMap((l) => (l.perfilId ? [l.perfilId] : [])),
     usuarios: linhas.flatMap((l) => (l.usuarioId ? [l.usuarioId] : [])),
   };
 }
+
+/** Reaproveitado dentro do mesmo carregamento de página (React cache; gravações não usam). */
+export const dataRoomDoNegocio = cache(dataRoomDoNegocioSemCache);

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { paginarEmMemoria, type Pagina, type PedidoDePagina } from "@/config/paginacao";
@@ -242,7 +243,7 @@ export function ladoDaParticipacao(
   return ladoDaEmpresa(empresas, p.empresaId) ?? p.lado;
 }
 
-export async function empresasDoNegocio(a: AcessoTenant, dealId: string): Promise<EmpresaNoNegocio[]> {
+async function empresasDoNegocioSemCache(a: AcessoTenant, dealId: string): Promise<EmpresaNoNegocio[]> {
   return comTenant(a.tenant.id, (tx) =>
     tx
       .select({
@@ -317,7 +318,7 @@ function montarVisao(
 }
 
 /** Visão da pessoa sobre um negócio; nega (AcessoNegado) a quem não participa nem administra. */
-export async function visaoDoNegocio(
+async function visaoDoNegocioSemCache(
   a: AcessoTenant,
   dealId: string,
 ): Promise<{ visao: Visao; empresas: EmpresaNoNegocio[] }> {
@@ -1329,3 +1330,9 @@ function semCamposInternos(
   delete copia.ladoDoContratante;
   return copia as NegocioResumo;
 }
+
+/** Reaproveitado dentro do mesmo carregamento de página (React cache; gravações não usam). */
+export const visaoDoNegocio = cache(visaoDoNegocioSemCache);
+
+/** Reaproveitado dentro do mesmo carregamento de página (React cache; gravações não usam). */
+export const empresasDoNegocio = cache(empresasDoNegocioSemCache);

@@ -41,7 +41,14 @@ import {
   salvarEtapaPadrao,
 } from "./etapas";
 import { moverNegocioParaEtapa, quadroDeNegocios } from "./negocios-kanban";
-import { concluirEnvio, dataRoomDoNegocio, excluirVersao, iniciarEnvio, linkDeDownload } from "./documentos";
+import {
+  alterarAcessoDaVersao,
+  concluirEnvio,
+  dataRoomDoNegocio,
+  excluirVersao,
+  iniciarEnvio,
+  linkDeDownload,
+} from "./documentos";
 import { pdfComTexto } from "@/testes/pdf-de-teste";
 import { painelDoUsuario } from "./painel";
 import { criarTarefa, marcarItem, mudarSituacaoDaTarefa, tarefasDoNegocio } from "./tarefas";
@@ -961,5 +968,47 @@ describe("administrador dentro do negócio", () => {
     expect(dr?.etapas.length).toBeGreaterThan(8);
     const tarefas = await tarefasDoNegocio(acesso("admin", true), negocioId);
     expect(tarefas?.etapas.map((e) => e.nome)).toContain("Diligência › Diligência jurídica");
+  });
+});
+
+describe("data room: quem vê", () => {
+  it("todos os participantes (os dois lados) e liberar depois com 'Alterar quem vê'", async () => {
+    const g = acesso("gestor");
+    const pdf = pdfComTexto(["QPA ASSINADO"]);
+    const r = await iniciarEnvio(g, negocioId, {
+      titulo: "QPA assinado",
+      etapaId: null,
+      nomeArquivo: "qpa.pdf",
+      tamanho: pdf.length,
+      perfis: [],
+      usuarios: [],
+      todos: true,
+    });
+    if (!("url" in r)) throw new Error(r.erro);
+    await fetch(r.url, {
+      method: "PUT",
+      body: Buffer.from(pdf),
+      headers: { "content-type": "application/octet-stream" },
+    });
+    expect(await concluirEnvio(g, r.versaoId)).toEqual({ ok: true });
+    const veAdva = async () =>
+      (await dataRoomDoNegocio(acesso("adva"), negocioId))!.documentos.some(
+        (d) => d.titulo === "QPA assinado",
+      );
+    expect(await veAdva()).toBe(true); // lado comprador vê
+    expect(await alterarAcessoDaVersao(g, r.versaoId, { todos: false, perfis: [], usuarios: [] })).toEqual({
+      ok: true,
+    });
+    expect(await veAdva()).toBe(false);
+    expect(
+      await alterarAcessoDaVersao(g, r.versaoId, { todos: false, perfis: [], usuarios: [contas.adva] }),
+    ).toEqual({
+      ok: true,
+    });
+    expect(await veAdva()).toBe(true); // liberado à pessoa do outro lado
+    // Só quem enviou (ou administrador) altera.
+    await expect(
+      alterarAcessoDaVersao(acesso("adva"), r.versaoId, { todos: true, perfis: [], usuarios: [] }),
+    ).rejects.toBeInstanceOf(AcessoNegado);
   });
 });

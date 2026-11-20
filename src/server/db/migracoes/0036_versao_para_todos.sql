@@ -1,0 +1,1 @@
+ALTER TABLE "documento_versao" ADD COLUMN "todos" boolean DEFAULT false NOT NULL;

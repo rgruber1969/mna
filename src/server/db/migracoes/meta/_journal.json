@@ -253,6 +253,13 @@
       "when": 1795124927585,
       "tag": "0035_tarefas",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1795136215010,
+      "tag": "0036_versao_para_todos",
+      "breakpoints": true
     }
   ]
 }

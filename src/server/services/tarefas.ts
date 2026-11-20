@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
@@ -160,7 +161,7 @@ export type QuadroDeTarefas = {
   fechado: boolean;
 };
 
-export async function tarefasDoNegocio(
+async function tarefasDoNegocioSemCache(
   acesso: Acesso | null,
   dealId: string,
 ): Promise<QuadroDeTarefas | null> {
@@ -559,3 +560,6 @@ export async function excluirTarefa(acesso: Acesso | null, tarefaId: string): Pr
   await auditar(a, "negocio.tarefa_excluida", "deal", x.t.dealId, { titulo: x.t.titulo });
   return { ok: true };
 }
+
+/** Reaproveitado dentro do mesmo carregamento de página (React cache; gravações não usam). */
+export const tarefasDoNegocio = cache(tarefasDoNegocioSemCache);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   acessoDaUltimaVersaoAcao,
+  alterarAcessoDaVersaoAcao,
   concluirEnvioAcao,
   excluirVersaoAcao,
   iniciarEnvioAcao,
@@ -30,6 +31,8 @@ type Versao = {
   criadoEm: Date;
   comentario: string | null;
   acesso: string[];
+  acessoIds: { todos: boolean; perfis: string[]; usuarios: string[] };
+  podeAlterarAcesso: boolean;
   podeBaixar: boolean;
   podeExcluir: boolean;
 };
@@ -74,6 +77,148 @@ function enviarArquivo(url: string, arquivo: File, progresso: (p: number) => voi
   });
 }
 
+type Escolha = { todos: boolean; perfis: Set<string>; usuarios: Set<string> };
+
+/**
+ * "Quem pode ver": todos os participantes (os dois lados) ou uma lista de
+ * perfis e pessoas, com atalhos por lado.
+ */
+function EscolhaDeAcesso({
+  dr,
+  escolha,
+  mudar,
+}: {
+  dr: DataRoom;
+  escolha: Escolha;
+  mudar: (e: Escolha) => void;
+}) {
+  const t = useTranslations("documentos");
+  const alternar = (campo: "perfis" | "usuarios", id: string) => {
+    const n = new Set(escolha[campo]);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
+    mudar({ ...escolha, [campo]: n });
+  };
+  const doLado = (lado: string) => dr.opcoesDeAcesso.usuarios.filter((u) => u.lado === lado).map((u) => u.id);
+  const atalho = (rotulo: string, ids: string[] | null) => (
+    <button
+      type="button"
+      disabled={escolha.todos}
+      onClick={() =>
+        mudar({
+          ...escolha,
+          perfis: ids ? escolha.perfis : new Set(),
+          usuarios: ids ? new Set([...escolha.usuarios, ...ids]) : new Set(),
+        })
+      }
+      className="border-border text-muted hover:text-primary rounded-full border px-2 py-0.5 text-xs disabled:opacity-50"
+    >
+      {rotulo}
+    </button>
+  );
+  return (
+    <fieldset className="mt-3">
+      <legend className="text-text text-sm font-medium">{t("quemVe")}</legend>
+      <p className="text-muted mb-1 text-xs">{t("quemVeAjuda")}</p>
+      <label className="text-text mb-2 flex items-center gap-2 text-sm font-medium">
+        <input
+          type="checkbox"
+          checked={escolha.todos}
+          onChange={(e) => mudar({ ...escolha, todos: e.target.checked })}
+        />
+        {t("todosParticipantes")}
+      </label>
+      <div className={escolha.todos ? "pointer-events-none opacity-50" : ""}>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {atalho(t("meuLado"), dr.meuLado)}
+          {atalho(t("ladoVendedor"), doLado("vendedor"))}
+          {atalho(t("ladoComprador"), doLado("comprador"))}
+          {atalho(t("limpar"), null)}
+        </div>
+        <div className="grid gap-x-4 sm:grid-cols-2">
+          <div>
+            <p className="text-muted text-xs font-semibold">{t("porPerfil")}</p>
+            {dr.opcoesDeAcesso.perfis.map((p) => (
+              <label key={p.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={escolha.perfis.has(p.id)}
+                  onChange={() => alternar("perfis", p.id)}
+                />
+                {p.nome}
+              </label>
+            ))}
+          </div>
+          <div>
+            <p className="text-muted text-xs font-semibold">{t("porPessoa")}</p>
+            {dr.opcoesDeAcesso.usuarios.map((u) => (
+              <label key={u.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={escolha.usuarios.has(u.id)}
+                  onChange={() => alternar("usuarios", u.id)}
+                />
+                {u.nome}
+                {u.lado && <span className="text-muted text-xs">({t(`lados.${u.lado}`)})</span>}
+              </label>
+            ))}
+          </div>
+        </div>
+        <p className="text-muted mt-1 text-xs">{t("soQuemTemUsuario")}</p>
+      </div>
+    </fieldset>
+  );
+}
+
+/** "Alterar quem vê" de uma versão já enviada (ex.: liberar ao outro lado). */
+function AlterarAcesso({
+  dr,
+  versao,
+  fechar,
+}: {
+  dr: DataRoom;
+  versao: Versao;
+  fechar: (mudou: boolean) => void;
+}) {
+  const t = useTranslations("documentos");
+  const [escolha, setEscolha] = useState<Escolha>({
+    todos: versao.acessoIds.todos,
+    perfis: new Set(versao.acessoIds.perfis),
+    usuarios: new Set(versao.acessoIds.usuarios),
+  });
+  const [erro, setErro] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
+  return (
+    <div className="border-border bg-background mt-2 rounded-md border p-3">
+      {erro && <Aviso>{erro}</Aviso>}
+      <EscolhaDeAcesso dr={dr} escolha={escolha} mudar={setEscolha} />
+      <div className="mt-3 flex gap-3">
+        <button
+          type="button"
+          disabled={salvando}
+          onClick={async () => {
+            setSalvando(true);
+            const r = await alterarAcessoDaVersaoAcao(versao.id, {
+              todos: escolha.todos,
+              perfis: [...escolha.perfis],
+              usuarios: [...escolha.usuarios],
+            });
+            setSalvando(false);
+            if (r.erro) return setErro(r.erro);
+            fechar(true);
+          }}
+          className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
+        >
+          {t("salvarAcesso")}
+        </button>
+        <button type="button" onClick={() => fechar(false)} className="text-muted text-sm">
+          {t("cancelar")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FormEnvio({
   dealId,
   dr,
@@ -88,21 +233,18 @@ function FormEnvio({
   dr: DataRoom;
   documento?: Documento;
   etapaInicial: string;
-  inicial: { perfis: string[]; usuarios: string[] };
+  inicial: { todos?: boolean; perfis: string[]; usuarios: string[] };
   fechar: () => void;
 }) {
   const t = useTranslations("documentos");
   const router = useRouter();
   const [erro, setErro] = useState<string | null>(null);
   const [progresso, setProgresso] = useState<number | null>(null);
-  const [perfis, setPerfis] = useState(new Set(inicial.perfis));
-  const [usuarios, setUsuarios] = useState(new Set(inicial.usuarios));
-  const alternar = (conj: Set<string>, definir: (s: Set<string>) => void, id: string) => {
-    const n = new Set(conj);
-    if (n.has(id)) n.delete(id);
-    else n.add(id);
-    definir(n);
-  };
+  const [escolha, setEscolha] = useState<Escolha>({
+    todos: inicial.todos ?? false,
+    perfis: new Set(inicial.perfis),
+    usuarios: new Set(inicial.usuarios),
+  });
   async function enviar(f: FormData) {
     const arquivo = f.get("arquivo");
     if (!(arquivo instanceof File) || arquivo.size === 0) return setErro(t("erros.escolhaArquivo"));
@@ -117,8 +259,9 @@ function FormEnvio({
       nomeArquivo: arquivo.name,
       tamanho: arquivo.size,
       comentario: String(f.get("comentario") ?? ""),
-      perfis: [...perfis],
-      usuarios: [...usuarios],
+      perfis: [...escolha.perfis],
+      usuarios: [...escolha.usuarios],
+      todos: escolha.todos,
     });
     if (inicio.erro || !inicio.url || !inicio.versaoId) {
       setProgresso(null);
@@ -182,39 +325,7 @@ function FormEnvio({
           <input name="comentario" maxLength={2000} className={campo} />
         </label>
       </div>
-      <fieldset className="mt-3">
-        <legend className="text-text text-sm font-medium">{t("quemVe")}</legend>
-        <p className="text-muted mb-1 text-xs">{t("quemVeAjuda")}</p>
-        <div className="grid gap-x-4 sm:grid-cols-2">
-          <div>
-            <p className="text-muted text-xs font-semibold">{t("porPerfil")}</p>
-            {dr.opcoesDeAcesso.perfis.map((p) => (
-              <label key={p.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={perfis.has(p.id)}
-                  onChange={() => alternar(perfis, setPerfis, p.id)}
-                />
-                {p.nome}
-              </label>
-            ))}
-          </div>
-          <div>
-            <p className="text-muted text-xs font-semibold">{t("porPessoa")}</p>
-            {dr.opcoesDeAcesso.usuarios.map((u) => (
-              <label key={u.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={usuarios.has(u.id)}
-                  onChange={() => alternar(usuarios, setUsuarios, u.id)}
-                />
-                {u.nome}
-                {u.lado && <span className="text-muted text-xs">({t(`lados.${u.lado}`)})</span>}
-              </label>
-            ))}
-          </div>
-        </div>
-      </fieldset>
+      <EscolhaDeAcesso dr={dr} escolha={escolha} mudar={setEscolha} />
       {progresso !== null && (
         <div
           className="mt-3"
@@ -262,9 +373,11 @@ export function DataRoomDoNegocio({
   const [aberto, setAberto] = useState<string | null>(null);
   const [envio, setEnvio] = useState<{
     documento?: Documento;
-    inicial: { perfis: string[]; usuarios: string[] };
+    inicial: { todos?: boolean; perfis: string[]; usuarios: string[] };
   } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [editandoAcesso, setEditandoAcesso] = useState<string | null>(null);
+  const router = useRouter();
   const etapas = dr.etapas.map((e) => [e.id, e.nome] as const);
   const lista = dr.documentos.filter((d) =>
     filtro === "" ? true : filtro === "geral" ? d.etapaId === null : d.etapaId === filtro,
@@ -397,7 +510,12 @@ export function DataRoomDoNegocio({
                                       .join(" · ")}
                                   </span>
                                   <span className="text-muted block">
-                                    {t("acessoDaVersao", { lista: v.acesso.join(", ") || t("soQuemEnviou") })}
+                                    {t("acessoDaVersao", {
+                                      lista:
+                                        v.acesso
+                                          .map((x) => (x === "__todos__" ? t("todosParticipantes") : x))
+                                          .join(", ") || t("soQuemEnviou"),
+                                    })}
                                   </span>
                                 </span>
                                 <span className="flex items-center gap-3">
@@ -410,6 +528,15 @@ export function DataRoomDoNegocio({
                                       {t("baixar")}
                                     </button>
                                   )}
+                                  {v.podeAlterarAcesso && editandoAcesso !== v.id && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditandoAcesso(v.id)}
+                                      className="text-primary"
+                                    >
+                                      {t("alterarQuemVe")}
+                                    </button>
+                                  )}
                                   {v.podeExcluir && (
                                     <BotaoDeAcao
                                       acao={excluirVersaoAcao}
@@ -420,6 +547,21 @@ export function DataRoomDoNegocio({
                                     />
                                   )}
                                 </span>
+                                {editandoAcesso === v.id && (
+                                  <div className="basis-full">
+                                    <AlterarAcesso
+                                      dr={dr}
+                                      versao={v}
+                                      fechar={(mudou) => {
+                                        setEditandoAcesso(null);
+                                        if (mudou) {
+                                          router.refresh();
+                                          aoMudar?.();
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                )}
                               </li>
                             ))}
                           </ul>
