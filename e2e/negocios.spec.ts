@@ -120,6 +120,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   });
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(page.getByRole("button", { name: /Contrato social/ })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Arquivo gravado com sucesso!")).toBeVisible();
   // Vários arquivos de uma vez: cada um vira um documento com o nome do arquivo.
   await page.getByRole("button", { name: "Enviar documento" }).click();
   await page.getByLabel("Arquivo").setInputFiles([

@@ -235,10 +235,7 @@ function AbasDoPainel({
   mudar: (id: string) => void;
 }) {
   return (
-    <div
-      role="tablist"
-      className="border-border mb-3 flex shrink-0 gap-1 overflow-x-auto overflow-y-hidden border-b"
-    >
+    <div role="tablist" className="border-border mb-3 flex shrink-0 flex-wrap gap-1 border-b">
       {abas.map((a) => (
         <button
           key={a.id}
@@ -283,6 +280,7 @@ export function KanbanDeNegocios({
   const tsit = useTranslations("negocios.situacoes");
   const ts = useTranslations("negocios.situacoes");
   const tf = useTranslations("negocios.funil");
+  const tm = useTranslations("mensagens");
   const router = useRouter();
   const [movendo, iniciar] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
@@ -319,7 +317,8 @@ export function KanbanDeNegocios({
   }
 
   async function abrir(c: Cartao, aba = "resumo") {
-    setAberto({ cartao: c, painel: undefined, aba });
+    // Mesmo cartão: recarrega por baixo, sem apagar o painel (não perde avisos nem a rolagem).
+    setAberto((x) => (x?.cartao.id === c.id ? { ...x, aba } : { cartao: c, painel: undefined, aba }));
     const painel = await painelDoNegocioAcao(c.id);
     setAberto((x) => (x?.cartao.id === c.id ? { ...x, painel } : x));
   }
@@ -344,7 +343,17 @@ export function KanbanDeNegocios({
     ...(p?.dataRoom
       ? [{ id: "documentos", rotulo: `${t("abas.documentos")} (${p.dataRoom.documentos.length})` }]
       : []),
-    ...(p ? [{ id: "mensagens", rotulo: t("abas.mensagens") }] : []),
+    ...(p
+      ? [
+          {
+            id: "mensagens",
+            rotulo:
+              p.mensagens && p.mensagens.novas > 0
+                ? tm("abaComNovas", p.mensagens)
+                : tm("abaComTotal", { total: p.mensagens?.total ?? 0 }),
+          },
+        ]
+      : []),
     { id: "historico", rotulo: t("abas.historico") },
   ];
 
@@ -541,7 +550,7 @@ export function KanbanDeNegocios({
             onClick={() => setAberto(null)}
             className="bg-backdrop/40 absolute inset-0"
           />
-          <aside className="bg-background relative flex h-full w-full max-w-3xl flex-col p-5 shadow-xl">
+          <aside className="bg-background relative flex h-full w-full max-w-5xl flex-col p-5 shadow-xl">
             <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
               <div>
                 <h2 className="text-text text-lg font-bold">{c0.nome}</h2>

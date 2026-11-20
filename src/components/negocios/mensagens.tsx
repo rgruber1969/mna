@@ -188,7 +188,10 @@ export function ConversaDoItem({
     if (!canal || !texto.trim()) return;
     setEnviando(true);
     setErro(null);
-    const r = await enviarMensagemAcao(dealId, alvo, canal, { texto, mencoes: [...mencoes] });
+    const validas = (conversa?.pessoas ?? []).filter(
+      (p) => mencoes.has(p.id) && texto.includes(`@${p.nome}`),
+    );
+    const r = await enviarMensagemAcao(dealId, alvo, canal, { texto, mencoes: validas.map((p) => p.id) });
     setEnviando(false);
     if (r.erro) return setErro(r.erro);
     setTexto("");
@@ -292,51 +295,13 @@ export function ConversaDoItem({
                 void enviar();
               }}
             >
-              <label className="block">
-                <span className="text-text mb-1 block text-sm font-medium">{t("escrever")}</span>
-                <textarea
-                  value={texto}
-                  onChange={(e) => setTexto(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) void enviar();
-                  }}
-                  maxLength={5000}
-                  rows={3}
-                  className="border-border bg-background text-text w-full rounded-md border px-3 py-2 text-sm"
-                />
-              </label>
-              {conversa.pessoas.length > 0 && (
-                <fieldset className="mt-2">
-                  <legend className="text-muted text-xs font-semibold">
-                    {t("mencionar")} <Ajuda texto={t("mencionarAjuda")} />
-                  </legend>
-                  <div className="flex flex-wrap gap-2">
-                    {conversa.pessoas.map((p) => (
-                      <label
-                        key={p.id}
-                        className={`cursor-pointer rounded-full border px-2 py-0.5 text-xs ${
-                          mencoes.has(p.id)
-                            ? "border-primary text-primary bg-primary-soft"
-                            : "border-border text-muted"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={mencoes.has(p.id)}
-                          onChange={() => {
-                            const n = new Set(mencoes);
-                            if (n.has(p.id)) n.delete(p.id);
-                            else n.add(p.id);
-                            setMencoes(n);
-                          }}
-                        />
-                        @{p.nome}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              )}
+              <CaixaComMencoes
+                texto={texto}
+                mudar={setTexto}
+                pessoas={conversa.pessoas}
+                aoMencionar={(id) => setMencoes((m) => new Set(m).add(id))}
+                aoEnviar={() => void enviar()}
+              />
               <div className="mt-2 flex items-center justify-between gap-3">
                 <span className="text-muted text-xs">{t("imutavel")}</span>
                 <button
@@ -362,4 +327,122 @@ export function AbaDeMensagens(props: Parameters<typeof MensagensDoNegocio>[0]) 
   const abas = useAbas();
   if (abas && abas.ativa !== "mensagens") return null;
   return <MensagensDoNegocio {...props} />;
+}
+
+const semAcento = (x: string) =>
+  x
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+/**
+ * Caixa da mensagem com sugestões de menção: ao digitar "@" e o começo do
+ * nome, aparecem as pessoas do canal; Enter, Tab ou clique escolhe.
+ */
+function CaixaComMencoes({
+  texto,
+  mudar,
+  pessoas,
+  aoMencionar,
+  aoEnviar,
+}: {
+  texto: string;
+  mudar: (t: string) => void;
+  pessoas: { id: string; nome: string }[];
+  aoMencionar: (id: string) => void;
+  aoEnviar: () => void;
+}) {
+  const t = useTranslations("mensagens");
+  const campo = useRef<HTMLTextAreaElement>(null);
+  const [busca, setBusca] = useState<{ inicio: number; termo: string } | null>(null);
+  const [indice, setIndice] = useState(0);
+  const opcoes = busca
+    ? pessoas.filter((p) => semAcento(p.nome).includes(semAcento(busca.termo))).slice(0, 6)
+    : [];
+
+  function lerBusca(valor: string, cursor: number) {
+    const antes = valor.slice(0, cursor);
+    const m = /(^|\s)@([^\s@]{0,40})$/u.exec(antes);
+    setBusca(m ? { inicio: cursor - m[2].length - 1, termo: m[2] } : null);
+    setIndice(0);
+  }
+
+  function escolher(p: { id: string; nome: string }) {
+    if (!busca) return;
+    const cursor = busca.inicio + 1 + busca.termo.length;
+    const novo = `${texto.slice(0, busca.inicio)}@${p.nome} ${texto.slice(cursor)}`;
+    mudar(novo);
+    aoMencionar(p.id);
+    setBusca(null);
+    const pos = busca.inicio + p.nome.length + 2;
+    requestAnimationFrame(() => {
+      campo.current?.focus();
+      campo.current?.setSelectionRange(pos, pos);
+    });
+  }
+
+  return (
+    <div className="relative">
+      <label className="block">
+        <span className="text-text mb-1 block text-sm font-medium">{t("escrever")}</span>
+        <textarea
+          ref={campo}
+          value={texto}
+          onChange={(e) => {
+            mudar(e.target.value);
+            lerBusca(e.target.value, e.target.selectionStart);
+          }}
+          onClick={(e) => lerBusca(texto, e.currentTarget.selectionStart)}
+          onKeyDown={(e) => {
+            if (opcoes.length > 0) {
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                return setIndice((i) => (i + 1) % opcoes.length);
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault();
+                return setIndice((i) => (i - 1 + opcoes.length) % opcoes.length);
+              }
+              if (e.key === "Enter" || e.key === "Tab") {
+                e.preventDefault();
+                return escolher(opcoes[indice]);
+              }
+              if (e.key === "Escape") return setBusca(null);
+            }
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) aoEnviar();
+          }}
+          onBlur={() => setTimeout(() => setBusca(null), 150)}
+          maxLength={5000}
+          rows={3}
+          placeholder={pessoas.length > 0 ? t("dicaMencao") : undefined}
+          aria-autocomplete="list"
+          className="border-border bg-background text-text w-full rounded-md border px-3 py-2 text-sm"
+        />
+      </label>
+      {opcoes.length > 0 && (
+        <ul
+          role="listbox"
+          aria-label={t("mencionar")}
+          className="border-border bg-background shadow-cartao absolute z-10 mt-1 w-72 overflow-hidden rounded-md border"
+        >
+          {opcoes.map((p, i) => (
+            <li
+              key={p.id}
+              role="option"
+              aria-selected={i === indice}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                escolher(p);
+              }}
+              onMouseEnter={() => setIndice(i)}
+              className={`cursor-pointer px-3 py-1.5 text-sm ${i === indice ? "bg-primary-soft text-primary" : "text-text"}`}
+            >
+              @{p.nome}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-muted mt-1 text-xs">{t("mencionarAjuda")}</p>
+    </div>
+  );
 }

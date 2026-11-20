@@ -10,6 +10,7 @@ import { obterNegocio } from "@/server/services/negocios";
 import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { andamentoDoNegocio } from "@/server/services/negocios-andamento";
 import { moverNegocioParaEtapa } from "@/server/services/negocios-kanban";
+import { totaisDeMensagens } from "@/server/services/mensagens";
 
 /** Kanban de negócios: só repassam para a camada de serviços (ADR-0004). */
 
@@ -26,12 +27,13 @@ export async function moverNegocioParaEtapaAcao(
 /** Dados do painel lateral do cartão: etapas do negócio e os últimos eventos. */
 export async function painelDoNegocioAcao(dealId: string) {
   const a = await acesso();
-  const [etapas, andamento, dataRoom, negocio, tarefas] = await Promise.all([
+  const [etapas, andamento, dataRoom, negocio, tarefas, mensagens] = await Promise.all([
     etapasDoNegocio(a, dealId),
     andamentoDoNegocio(a, dealId),
     dataRoomDoNegocio(a, dealId),
     obterNegocio(a, dealId).catch(() => null),
     tarefasDoNegocio(a, dealId),
+    totaisDeMensagens(a, dealId),
   ]);
   if (!andamento) return null;
   // Chave montada em tempo de execução (tipo do evento): tradutor sem tipagem estrita.
@@ -55,6 +57,7 @@ export async function painelDoNegocioAcao(dealId: string) {
   });
   return {
     etapas,
+    mensagens,
     historico,
     dataRoom,
     tarefas,

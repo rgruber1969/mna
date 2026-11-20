@@ -32,6 +32,7 @@ import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
 import { TarefasDoNegocio } from "@/components/negocios/tarefas";
 import { AbaDeMensagens } from "@/components/negocios/mensagens";
+import { totaisDeMensagens } from "@/server/services/mensagens";
 import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { dataRoomDoNegocio } from "@/server/services/documentos";
 import { HistoricoPaginado } from "@/components/negocios/historico";
@@ -93,7 +94,10 @@ async function Painel({
     n.podeGerirParticipantes ? opcoesDeParticipantes(acesso, n.id) : null,
     andamentoDoNegocio(acesso, n.id),
   ]);
-  const funil = await funilDoNegocio(acesso, n.id);
+  const [funil, totalMsg] = await Promise.all([
+    funilDoNegocio(acesso, n.id),
+    totaisDeMensagens(acesso, n.id),
+  ]);
   const [etapas, alcances, dataRoom, tarefas] = await Promise.all([
     etapasDoNegocio(acesso, n.id),
     n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
@@ -166,7 +170,13 @@ async function Painel({
                 ? [{ id: "documentos", rotulo: `${t("abaDocumentos")} (${dataRoom.documentos.length})` }]
                 : []),
               ...(funil ? [{ id: "funil", rotulo: `${t("abaFunil")} (${funil.cartoes.length})` }] : []),
-              { id: "mensagens", rotulo: tm("aba") },
+              {
+                id: "mensagens",
+                rotulo:
+                  totalMsg && totalMsg.novas > 0
+                    ? tm("abaComNovas", totalMsg)
+                    : tm("abaComTotal", { total: totalMsg?.total ?? 0 }),
+              },
               { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
               { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
               ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)

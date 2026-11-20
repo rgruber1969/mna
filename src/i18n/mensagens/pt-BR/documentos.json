@@ -74,6 +74,11 @@
     "salvarAcesso": "Salvar quem vê",
     "tituloPeloArquivo": "Com vários arquivos, cada um vira um documento com o nome do arquivo",
     "enviandoVarios": "Enviando {n} de {total} ({nome})… {p}%",
-    "conversa": "Conversa"
+    "conversa": "Conversa",
+    "escolherArquivos": "Escolher arquivos",
+    "escolherArquivo": "Escolher arquivo",
+    "nenhumArquivo": "Nenhum arquivo escolhido",
+    "arquivosEscolhidos": "{n} arquivos escolhidos",
+    "gravados": "{n, plural, one {Arquivo gravado com sucesso!} other {# arquivos gravados com sucesso!}}"
   }
 }

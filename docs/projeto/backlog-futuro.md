@@ -95,3 +95,8 @@ versão 1" é anotado aqui.
   (dominio.md; previsto na V1, ficou para a próxima entrega).
 * Mensagens na exportação do negócio (junto com a exportação).
 * Busca no texto das mensagens.
+* Opção "Enviar também por e-mail" na tela da mensagem (pedido de
+  2026-11-20): além de gravar a mensagem, manda o texto por e-mail às
+  pessoas do canal (ou às escolhidas). Hoje o e-mail só avisa menções e o
+  resumo, sem o texto. A decidir: o texto vai no e-mail (sai do sistema)
+  ou só o link.

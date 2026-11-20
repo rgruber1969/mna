@@ -773,3 +773,16 @@ export async function negocioTemMensagens(a: AcessoTenant, dealId: string): Prom
   );
   return l.length > 0;
 }
+
+/** Totais para o título da aba Mensagens: mensagens que a pessoa vê e quantas não leu. */
+export async function totaisDeMensagens(
+  acesso: Acesso | null,
+  dealId: string,
+): Promise<{ total: number; novas: number } | null> {
+  const lista = await conversasDoNegocio(acesso, dealId);
+  if (!lista) return null;
+  return {
+    total: lista.reduce((s, c) => s + c.total, 0),
+    novas: lista.reduce((s, c) => s + c.naoLidas, 0),
+  };
+}

@@ -67,7 +67,12 @@ const tamanho = (b: number) =>
   b < 1024 * 1024
     ? `${Math.max(1, Math.round(b / 1024))} KB`
     : `${(b / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
-const data = (d: Date) => new Date(d).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+const data = (d: Date) =>
+  new Date(d).toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    dateStyle: "short",
+    timeStyle: "short",
+  });
 
 /** Envia o arquivo direto ao armazenamento, com progresso. */
 function enviarArquivo(url: string, arquivo: File, progresso: (p: number) => void): Promise<boolean> {
@@ -233,7 +238,7 @@ function FormEnvio({
   fechar,
   aoEnviar,
 }: {
-  aoEnviar?: () => void;
+  aoEnviar?: (gravados: number) => void;
   dealId: string;
   dr: DataRoom;
   documento?: Documento;
@@ -247,6 +252,7 @@ function FormEnvio({
   const [progresso, setProgresso] = useState<number | null>(null);
   const [atual, setAtual] = useState<{ n: number; total: number; nome: string } | null>(null);
   const [varios, setVarios] = useState(false);
+  const [nomes, setNomes] = useState<string[]>([]);
   const [escolha, setEscolha] = useState<Escolha>({
     todos: inicial.todos ?? false,
     perfis: new Set(inicial.perfis),
@@ -261,6 +267,7 @@ function FormEnvio({
     const etapa = String(f.get("etapaId") ?? "");
     const tituloDigitado = String(f.get("titulo") ?? "").trim();
     const falhas: string[] = [];
+    let gravados = 0;
     for (let i = 0; i < lista.length; i++) {
       const arquivo = lista[i];
       setAtual({ n: i + 1, total: lista.length, nome: arquivo.name });
@@ -292,11 +299,12 @@ function FormEnvio({
       }
       const concluido = await concluirEnvioAcao(inicio.versaoId);
       if (concluido.erro) falhas.push(`${arquivo.name}: ${concluido.erro}`);
+      else gravados++;
     }
     setProgresso(null);
     setAtual(null);
     router.refresh();
-    aoEnviar?.();
+    aoEnviar?.(gravados);
     if (falhas.length) return setErro(falhas.join(" · "));
     fechar();
   }
@@ -345,14 +353,47 @@ function FormEnvio({
         )}
         <label className="block sm:col-span-2">
           <span className="text-muted mb-0.5 block text-xs">{t("arquivo")}</span>
-          <input
-            name="arquivo"
-            type="file"
-            required
-            multiple={!documento}
-            onChange={(e) => setVarios((e.target.files?.length ?? 0) > 1)}
-            className="text-sm"
-          />
+          <span className="flex flex-wrap items-center gap-3">
+            <span className="bg-primary text-primary-foreground inline-flex cursor-pointer items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold shadow-sm hover:opacity-90">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="h-4 w-4"
+                aria-hidden
+              >
+                <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+              </svg>
+              {documento ? t("escolherArquivo") : t("escolherArquivos")}
+            </span>
+            <span className="text-text text-sm">
+              {nomes.length === 0
+                ? t("nenhumArquivo")
+                : nomes.length === 1
+                  ? nomes[0]
+                  : t("arquivosEscolhidos", { n: nomes.length })}
+            </span>
+            <input
+              name="arquivo"
+              type="file"
+              required
+              multiple={!documento}
+              onChange={(e) => {
+                const lista = [...(e.target.files ?? [])].map((f) => f.name);
+                setNomes(lista);
+                setVarios(lista.length > 1);
+              }}
+              className="sr-only"
+            />
+          </span>
+          {nomes.length > 1 && (
+            <ul className="text-muted mt-1 list-disc pl-5 text-xs">
+              {nomes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          )}
           <span className="text-muted block text-xs">{t("arquivoAjuda")}</span>
         </label>
         <label className="block sm:col-span-2">
@@ -415,6 +456,7 @@ export function DataRoomDoNegocio({
     inicial: { todos?: boolean; perfis: string[]; usuarios: string[] };
   } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
   const [editandoAcesso, setEditandoAcesso] = useState<string | null>(null);
   const router = useRouter();
   const etapas = dr.etapas.map((e) => [e.id, e.nome] as const);
@@ -447,7 +489,10 @@ export function DataRoomDoNegocio({
         {!dr.fechado && dr.destinos.length > 0 && !envio && (
           <button
             type="button"
-            onClick={() => setEnvio({ inicial: { perfis: [], usuarios: dr.meuLado } })}
+            onClick={() => {
+              setOk(null);
+              setEnvio({ inicial: { perfis: [], usuarios: dr.meuLado } });
+            }}
             className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
           >
             {t("enviarDocumento")}
@@ -455,6 +500,7 @@ export function DataRoomDoNegocio({
         )}
       </div>
       {erro && <Aviso>{erro}</Aviso>}
+      {ok && <Aviso tipo="ok">{ok}</Aviso>}
       {envio && (
         <FormEnvio
           dealId={dealId}
@@ -465,7 +511,11 @@ export function DataRoomDoNegocio({
           }
           inicial={envio.inicial}
           fechar={() => setEnvio(null)}
-          aoEnviar={aoMudar}
+          aoEnviar={(gravados) => {
+            setErro(null);
+            setOk(gravados > 0 ? t("gravados", { n: gravados }) : null);
+            aoMudar?.();
+          }}
         />
       )}
       {lista.length === 0 ? (

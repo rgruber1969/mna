@@ -24,7 +24,7 @@
     "enviar": "Enviar",
     "enviando": "Enviando…",
     "mencionar": "Mencionar",
-    "mencionarAjuda": "Quem for mencionado recebe aviso no sino e por e-mail (sem o texto da mensagem).",
+    "mencionarAjuda": "Digite @ para mencionar: aparecem só as pessoas deste canal. Quem for mencionado recebe aviso no sino e por e-mail (sem o texto da mensagem).",
     "mencionou": "Mencionou: {nomes}",
     "virarTarefa": "Marcar como tarefa",
     "verTarefa": "Virou tarefa ›",
@@ -51,6 +51,9 @@
       "naoEncontrada": "Conversa não encontrada ou sem acesso.",
       "jaVirouTarefa": "Esta mensagem já virou tarefa.",
       "horasInvalidas": "Informe de 1 a 72 horas."
-    }
+    },
+    "dicaMencao": "Escreva a mensagem. Para mencionar alguém, digite @ e o começo do nome.",
+    "abaComTotal": "Mensagens ({total})",
+    "abaComNovas": "Mensagens ({total} · {novas, plural, one {# nova} other {# novas}})"
   }
 }
