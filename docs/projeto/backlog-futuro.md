@@ -100,3 +100,13 @@ versão 1" é anotado aqui.
   pessoas do canal (ou às escolhidas). Hoje o e-mail só avisa menções e o
   resumo, sem o texto. A decidir: o texto vai no e-mail (sai do sistema)
   ou só o link.
+
+## Busca geral (depois da busca de documentos, 2026-11-20)
+
+* A caixa de busca do topo vai reunir vários tipos de busca, inclusive com
+  IA (ex.: perguntas em linguagem natural sobre os documentos de um
+  negócio, busca por assunto em vez de palavra exata). A primeira, na V1,
+  é a busca de documentos por nome e conteúdo (escopo-v1.md, item 35).
+* Documentos escaneados (imagem, sem texto) entram na busca por conteúdo só
+  com leitura de imagem (OCR), junto com a evolução do ADR-0021.
+
