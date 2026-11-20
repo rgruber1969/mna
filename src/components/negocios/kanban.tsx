@@ -550,7 +550,7 @@ export function KanbanDeNegocios({
             onClick={() => setAberto(null)}
             className="bg-backdrop/40 absolute inset-0"
           />
-          <aside className="bg-background relative flex h-full w-full max-w-5xl flex-col p-5 shadow-xl">
+          <aside className="bg-background relative flex h-full w-full max-w-6xl flex-col p-5 shadow-xl">
             <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
               <div>
                 <h2 className="text-text text-lg font-bold">{c0.nome}</h2>

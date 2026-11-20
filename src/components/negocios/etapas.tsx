@@ -427,7 +427,7 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
         </span>
       </div>
       <ul className="space-y-1.5">
-        {linhas.map(({ e, sub }) => {
+        {linhas.map(({ e, sub }, linha) => {
           const i = inicio(e);
           const f = fim(e);
           return (
@@ -465,7 +465,7 @@ function LinhaDoTempo({ etapas, hoje }: { etapas: Etapa[]; hoje: string }) {
                     {/* Balão com os detalhes da etapa (passar o mouse ou focar com Tab). */}
                     <span
                       role="tooltip"
-                      className={`bg-surface text-text border-border pointer-events-none absolute bottom-full z-10 mb-1 hidden w-56 rounded-md border p-2 text-xs shadow-lg group-hover:block group-focus-visible:block ${pos(i) > 60 ? "right-0" : "left-0"}`}
+                      className={`bg-surface text-text border-border pointer-events-none absolute z-10 hidden w-56 ${linha < 3 ? "top-full mt-1" : "bottom-full mb-1"} rounded-md border p-2 text-xs shadow-lg group-hover:block group-focus-visible:block ${pos(i) > 60 ? "right-0" : "left-0"}`}
                     >
                       <span className="block font-semibold">{e.nome}</span>
                       <span className="text-muted block">{t(`situacoes.${e.situacao}`)}</span>

@@ -295,7 +295,7 @@ export function TarefasDoNegocio({
       {lista.length === 0 ? (
         <p className="text-muted text-sm">{t("nenhuma")}</p>
       ) : (
-        <div className="-mx-2 overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className={estiloTabela.tabela}>
             <thead className={estiloTabela.cabecalho}>
               <tr>

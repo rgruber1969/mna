@@ -521,7 +521,7 @@ export function DataRoomDoNegocio({
       {lista.length === 0 ? (
         <p className="text-muted text-sm">{t("nenhum")}</p>
       ) : (
-        <div className="-mx-2 overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className={estiloTabela.tabela}>
             <thead className={estiloTabela.cabecalho}>
               <tr>
