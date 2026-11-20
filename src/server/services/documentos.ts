@@ -251,6 +251,8 @@ export type VersaoNaTela = {
   enviadoPor: string | null;
   criadoEm: Date;
   comentario: string | null;
+  /** Tipo real do arquivo (para saber se tem prévia). */
+  tipo: string | null;
   acesso: string[];
   /** Lista atual (para "Alterar quem vê"). */
   acessoIds: { todos: boolean; perfis: string[]; usuarios: string[] };
@@ -383,6 +385,7 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
         numero: v.numero,
         nomeArquivo: v.nomeArquivo,
         tamanho: v.tamanho,
+        tipo: v.tipoDeConteudo,
         situacao: v.situacao,
         enviadoPor: autor,
         criadoEm: v.criadoEm,
@@ -669,6 +672,32 @@ export async function linkDeDownload(
     versao: x.v.numero,
   });
   return { url: await gerarLinkDeDownload(x.v.chave, x.v.nomeArquivo) };
+}
+
+/** Tamanho máximo para visualizar na tela (acima disso, só baixando). */
+export const TAMANHO_MAXIMO_PREVIA = 50 * 1024 * 1024;
+
+/**
+ * Conteúdo de uma versão para a prévia na tela (PDF e imagens): mesma
+ * permissão de baixar, com o seu evento de auditoria.
+ */
+export async function conteudoParaVisualizar(
+  acesso: Acesso | null,
+  versaoId: string,
+): Promise<{ conteudo: Uint8Array; tipo: string; nome: string } | null> {
+  const a = exigirTenant(acesso);
+  const x = await versaoAcessivel(a, versaoId);
+  if (!x || x.v.situacao !== "disponivel" || !x.v.tipoDeConteudo) return null;
+  if (!(x.v.tipoDeConteudo === "application/pdf" || x.v.tipoDeConteudo.startsWith("image/"))) return null;
+  if (x.v.tamanho > TAMANHO_MAXIMO_PREVIA) return null;
+  if (!x.ctx.podeDoc(x.etapaId, "baixar")) await negar(a, "baixar", x.dealId);
+  const conteudo = await lerArquivo(x.v.chave);
+  if (!conteudo) return null;
+  await auditar(a, "documento.visualizado", "deal", x.dealId, {
+    documentoId: x.v.documentoId,
+    versao: x.v.numero,
+  });
+  return { conteudo, tipo: x.v.tipoDeConteudo, nome: x.v.nomeArquivo };
 }
 
 /** Exclui uma versão (D8): quem enviou ou o Coordenador, em até 24 h e se ninguém mais baixou. */

@@ -14,8 +14,8 @@ const MAXIMO_DE_PAGINAS = 30;
 
 export const temPrevia = (tipo: string) => tipo === "application/pdf" || tipo.startsWith("image/");
 
-async function buscar(id: string, modo: "visualizar" | "miniatura"): Promise<ArrayBuffer> {
-  const r = await fetch(`/api/anexos/${id}?modo=${modo}`, { cache: "no-store" });
+async function buscar(id: string, modo: "visualizar" | "miniatura", endereco?: string): Promise<ArrayBuffer> {
+  const r = await fetch(endereco ?? `/api/anexos/${id}?modo=${modo}`, { cache: "no-store" });
   if (!r.ok) throw new Error("indisponível");
   return r.arrayBuffer();
 }
@@ -102,7 +102,18 @@ export function Miniatura({ id, tipo, rotulo }: { id: string; tipo: string; rotu
 }
 
 /** Botão "Visualizar" e a janela sobre a tela com o documento (zoom; Esc fecha). */
-export function Visualizar({ id, tipo, nome }: { id: string; tipo: string; nome: string }) {
+export function Visualizar({
+  id,
+  tipo,
+  nome,
+  endereco,
+}: {
+  id: string;
+  tipo: string;
+  nome: string;
+  /** Endereço do conteúdo (padrão: anexos do cadastro). */
+  endereco?: string;
+}) {
   const t = useTranslations("cadastros.anexos");
   const janela = useRef<HTMLDialogElement>(null);
   const paginas = useRef<HTMLDivElement>(null);
@@ -117,7 +128,7 @@ export function Visualizar({ id, tipo, nome }: { id: string; tipo: string; nome:
     if (dados) return;
     setEstado("carregando");
     try {
-      const d = await buscar(id, "visualizar");
+      const d = await buscar(id, "visualizar", endereco);
       setDados(d);
       if (tipo.startsWith("image/")) {
         setImagem(URL.createObjectURL(new Blob([d], { type: tipo })));

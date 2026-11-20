@@ -23,7 +23,7 @@
     "novaVersaoDe": "Nova versão de \"{titulo}\"",
     "titulo": "Título",
     "arquivo": "Arquivo",
-    "arquivoAjuda": "Até 200 MB: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem.",
+    "arquivoAjuda": "Até 200 MB cada: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem. Pode escolher vários de uma vez.",
     "comentario": "Comentário (opcional)",
     "quemVe": "Quem pode ver esta versão",
     "quemVeAjuda": "Já vem marcado com o seu lado (ou com a lista da versão anterior). Você e os administradores sempre veem. Para liberar ao outro lado depois, use \"Alterar quem vê\" na versão.",
@@ -71,6 +71,8 @@
     "limpar": "Limpar",
     "soQuemTemUsuario": "Aparecem só os participantes com usuário no sistema; contatos sem usuário não acessam documentos.",
     "alterarQuemVe": "Alterar quem vê",
-    "salvarAcesso": "Salvar quem vê"
+    "salvarAcesso": "Salvar quem vê",
+    "tituloPeloArquivo": "Com vários arquivos, cada um vira um documento com o nome do arquivo",
+    "enviandoVarios": "Enviando {n} de {total} ({nome})… {p}%"
   }
 }

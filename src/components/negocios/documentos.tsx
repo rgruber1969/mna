@@ -12,6 +12,7 @@ import {
   linkDeDownloadAcao,
 } from "@/app/acoes/documentos";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
+import { temPrevia, Visualizar } from "@/components/cadastros/previa-do-anexo";
 import { Aviso, estiloTabela } from "@/components/ui/basicos";
 
 /**
@@ -26,6 +27,7 @@ type Versao = {
   numero: number;
   nomeArquivo: string;
   tamanho: number;
+  tipo: string | null;
   situacao: "enviando" | "disponivel" | "bloqueado";
   enviadoPor: string | null;
   criadoEm: Date;
@@ -58,6 +60,9 @@ type DataRoom = {
 
 const campo =
   "border-border bg-background text-text focus:border-primary w-full rounded-md border px-2 py-1.5 text-sm outline-none";
+/** Tem prévia na tela: PDF ou imagem, até 50 MB, para quem pode baixar. */
+const podeVer = (v: { podeBaixar: boolean; tipo: string | null; tamanho: number }) =>
+  v.podeBaixar && Boolean(v.tipo && temPrevia(v.tipo)) && v.tamanho <= 50 * 1024 * 1024;
 const tamanho = (b: number) =>
   b < 1024 * 1024
     ? `${Math.max(1, Math.round(b / 1024))} KB`
@@ -240,44 +245,60 @@ function FormEnvio({
   const router = useRouter();
   const [erro, setErro] = useState<string | null>(null);
   const [progresso, setProgresso] = useState<number | null>(null);
+  const [atual, setAtual] = useState<{ n: number; total: number; nome: string } | null>(null);
+  const [varios, setVarios] = useState(false);
   const [escolha, setEscolha] = useState<Escolha>({
     todos: inicial.todos ?? false,
     perfis: new Set(inicial.perfis),
     usuarios: new Set(inicial.usuarios),
   });
   async function enviar(f: FormData) {
-    const arquivo = f.get("arquivo");
-    if (!(arquivo instanceof File) || arquivo.size === 0) return setErro(t("erros.escolhaArquivo"));
+    const arquivos = f.getAll("arquivo").filter((x): x is File => x instanceof File && x.size > 0);
+    if (arquivos.length === 0) return setErro(t("erros.escolhaArquivo"));
+    // Nova versão: um arquivo só. Documento novo: cada arquivo vira um documento.
+    const lista = documento ? arquivos.slice(0, 1) : arquivos;
     setErro(null);
-    setProgresso(0);
     const etapa = String(f.get("etapaId") ?? "");
-    const inicio = await iniciarEnvioAcao(dealId, {
-      documentoId: documento?.id,
-      titulo: String(f.get("titulo") ?? ""),
-      etapaId: etapa === "geral" ? null : etapa || null,
-      categoriaId: String(f.get("categoriaId") ?? ""),
-      nomeArquivo: arquivo.name,
-      tamanho: arquivo.size,
-      comentario: String(f.get("comentario") ?? ""),
-      perfis: [...escolha.perfis],
-      usuarios: [...escolha.usuarios],
-      todos: escolha.todos,
-    });
-    if (inicio.erro || !inicio.url || !inicio.versaoId) {
-      setProgresso(null);
-      return setErro(inicio.erro ?? t("erros.envio"));
+    const tituloDigitado = String(f.get("titulo") ?? "").trim();
+    const falhas: string[] = [];
+    for (let i = 0; i < lista.length; i++) {
+      const arquivo = lista[i];
+      setAtual({ n: i + 1, total: lista.length, nome: arquivo.name });
+      setProgresso(0);
+      const titulo =
+        lista.length === 1 && tituloDigitado
+          ? tituloDigitado
+          : arquivo.name.replace(/\.[^.]+$/, "").slice(0, 200);
+      const inicio = await iniciarEnvioAcao(dealId, {
+        documentoId: documento?.id,
+        titulo,
+        etapaId: etapa === "geral" ? null : etapa || null,
+        categoriaId: String(f.get("categoriaId") ?? ""),
+        nomeArquivo: arquivo.name,
+        tamanho: arquivo.size,
+        comentario: String(f.get("comentario") ?? ""),
+        perfis: [...escolha.perfis],
+        usuarios: [...escolha.usuarios],
+        todos: escolha.todos,
+      });
+      if (inicio.erro || !inicio.url || !inicio.versaoId) {
+        falhas.push(`${arquivo.name}: ${inicio.erro ?? t("erros.envio")}`);
+        continue;
+      }
+      if (!(await enviarArquivo(inicio.url, arquivo, setProgresso))) {
+        await concluirEnvioAcao(inicio.versaoId);
+        falhas.push(`${arquivo.name}: ${t("erros.envio")}`);
+        continue;
+      }
+      const concluido = await concluirEnvioAcao(inicio.versaoId);
+      if (concluido.erro) falhas.push(`${arquivo.name}: ${concluido.erro}`);
     }
-    if (!(await enviarArquivo(inicio.url, arquivo, setProgresso))) {
-      setProgresso(null);
-      await concluirEnvioAcao(inicio.versaoId);
-      return setErro(t("erros.envio"));
-    }
-    const fim = await concluirEnvioAcao(inicio.versaoId);
     setProgresso(null);
-    if (fim.erro) return setErro(fim.erro);
-    fechar();
+    setAtual(null);
     router.refresh();
     aoEnviar?.();
+    if (falhas.length) return setErro(falhas.join(" · "));
+    fechar();
   }
   return (
     <form action={enviar} className="border-border bg-background mb-4 rounded-md border p-3">
@@ -290,7 +311,14 @@ function FormEnvio({
           <>
             <label className="block sm:col-span-2">
               <span className="text-muted mb-0.5 block text-xs">{t("titulo")}</span>
-              <input name="titulo" required maxLength={200} className={campo} />
+              <input
+                name="titulo"
+                required={!varios}
+                disabled={varios}
+                maxLength={200}
+                placeholder={varios ? t("tituloPeloArquivo") : undefined}
+                className={campo}
+              />
             </label>
             <label className="block">
               <span className="text-muted mb-0.5 block text-xs">{t("etapa")}</span>
@@ -317,7 +345,14 @@ function FormEnvio({
         )}
         <label className="block sm:col-span-2">
           <span className="text-muted mb-0.5 block text-xs">{t("arquivo")}</span>
-          <input name="arquivo" type="file" required className="text-sm" />
+          <input
+            name="arquivo"
+            type="file"
+            required
+            multiple={!documento}
+            onChange={(e) => setVarios((e.target.files?.length ?? 0) > 1)}
+            className="text-sm"
+          />
           <span className="text-muted block text-xs">{t("arquivoAjuda")}</span>
         </label>
         <label className="block sm:col-span-2">
@@ -337,7 +372,11 @@ function FormEnvio({
           <div className="bg-border h-2 rounded">
             <div className="bg-primary h-2 rounded" style={{ width: `${progresso}%` }} />
           </div>
-          <span className="text-muted text-xs">{t("enviando", { p: progresso })}</span>
+          <span className="text-muted text-xs">
+            {atual && atual.total > 1
+              ? t("enviandoVarios", { n: atual.n, total: atual.total, nome: atual.nome, p: progresso })
+              : t("enviando", { p: progresso })}
+          </span>
         </div>
       )}
       <div className="mt-3 flex gap-3">
@@ -474,6 +513,14 @@ export function DataRoomDoNegocio({
                       </td>
                       <td className={`${estiloTabela.td} whitespace-nowrap`}>
                         <span className="flex gap-3 text-xs">
+                          {podeVer(ultima) && (
+                            <Visualizar
+                              id={ultima.id}
+                              tipo={ultima.tipo!}
+                              nome={ultima.nomeArquivo}
+                              endereco={`/api/documentos/versoes/${ultima.id}/previa`}
+                            />
+                          )}
                           {ultima.podeBaixar && (
                             <button
                               type="button"
@@ -519,6 +566,14 @@ export function DataRoomDoNegocio({
                                   </span>
                                 </span>
                                 <span className="flex items-center gap-3">
+                                  {podeVer(v) && (
+                                    <Visualizar
+                                      id={v.id}
+                                      tipo={v.tipo!}
+                                      nome={v.nomeArquivo}
+                                      endereco={`/api/documentos/versoes/${v.id}/previa`}
+                                    />
+                                  )}
                                   {v.podeBaixar && (
                                     <button
                                       type="button"

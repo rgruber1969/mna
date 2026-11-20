@@ -6,6 +6,7 @@ import { obterAcesso } from "@/server/services/acesso";
 import { lerFotoDaConta } from "@/server/services/foto-da-conta";
 import { lerImagemDaMarca } from "@/server/services/marca";
 import { baixarAnexo, MODOS_DE_ACESSO, type ModoDeAcesso } from "@/server/services/anexos";
+import { conteudoParaVisualizar } from "@/server/services/documentos";
 import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
@@ -67,6 +68,21 @@ api.get("/anexos/:id", async (c) => {
   const pedido = c.req.query("modo") as ModoDeAcesso | undefined;
   const modo = pedido && MODOS_DE_ACESSO.includes(pedido) ? pedido : "baixar";
   const arquivo = await baixarAnexo(acesso, c.req.param("id"), modo).catch(() => null);
+  if (!arquivo) return c.body(null, 404);
+  const nome = encodeURIComponent(arquivo.nome);
+  return c.body(arquivo.conteudo as Uint8Array<ArrayBuffer>, 200, {
+    "content-type": arquivo.tipo,
+    "content-disposition": `attachment; filename*=UTF-8''${nome}`,
+    "cache-control": "private, no-store",
+    "x-content-type-options": "nosniff",
+    "content-security-policy": "default-src 'none'",
+  });
+});
+
+/** Prévia de documento do data room (PDF ou imagem), com permissão e auditoria; fora do Swagger. */
+api.get("/documentos/versoes/:id/previa", async (c) => {
+  const acesso = await obterAcesso(c.req.raw.headers);
+  const arquivo = await conteudoParaVisualizar(acesso, c.req.param("id")).catch(() => null);
   if (!arquivo) return c.body(null, 404);
   const nome = encodeURIComponent(arquivo.nome);
   return c.body(arquivo.conteudo as Uint8Array<ArrayBuffer>, 200, {

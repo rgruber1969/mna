@@ -120,6 +120,21 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   });
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(page.getByRole("button", { name: /Contrato social/ })).toBeVisible({ timeout: 30_000 });
+  // Vários arquivos de uma vez: cada um vira um documento com o nome do arquivo.
+  await page.getByRole("button", { name: "Enviar documento" }).click();
+  await page.getByLabel("Arquivo").setInputFiles([
+    { name: "anexo-a.pdf", mimeType: "application/pdf", buffer: Buffer.from(pdfComTexto(["ANEXO A"])) },
+    { name: "anexo-b.pdf", mimeType: "application/pdf", buffer: Buffer.from(pdfComTexto(["ANEXO B"])) },
+  ]);
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(page.getByRole("button", { name: /anexo-a/ })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("button", { name: /anexo-b/ })).toBeVisible();
+  // Visualizar o PDF na tela, sem baixar.
+  await page.getByRole("button", { name: "Visualizar" }).first().click();
+  const janela = page.getByRole("dialog", { name: /^Visualizando / });
+  await expect(janela.locator("canvas").first()).toBeVisible({ timeout: 30_000 });
+  await janela.getByRole("button", { name: "Fechar" }).click();
+
   // Tarefas: criar uma tarefa e vê-la na lista de abertas.
   await page.getByRole("tab", { name: /^Tarefas/ }).click();
   await page.getByRole("button", { name: "Nova tarefa" }).click();
