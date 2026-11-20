@@ -73,6 +73,7 @@
     "alterarQuemVe": "Alterar quem vê",
     "salvarAcesso": "Salvar quem vê",
     "tituloPeloArquivo": "Com vários arquivos, cada um vira um documento com o nome do arquivo",
-    "enviandoVarios": "Enviando {n} de {total} ({nome})… {p}%"
+    "enviandoVarios": "Enviando {n} de {total} ({nome})… {p}%",
+    "conversa": "Conversa"
   }
 }

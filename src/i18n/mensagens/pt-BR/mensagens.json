@@ -1,0 +1,56 @@
+{
+  "mensagens": {
+    "titulo": "Mensagens",
+    "aba": "Mensagens",
+    "geral": "Geral do negócio",
+    "grupoEtapas": "Etapas",
+    "grupoOutros": "Documentos e tarefas",
+    "tipos": {
+      "deal": "Negócio",
+      "etapa": "Etapa",
+      "versao": "Documento",
+      "tarefa": "Tarefa"
+    },
+    "canais": {
+      "vendedor": "Equipe do lado vendedor",
+      "equipe": "Equipe de {compradora}",
+      "entre": "Lado vendedor e {compradora}"
+    },
+    "canaisAjuda": "Cada canal só é visto por quem está nele; compradoras nunca veem os canais umas das outras. O canal entre os lados abre depois do NDA da compradora.",
+    "semCanal": "Você não está em nenhum canal deste negócio: conversam os participantes do lado vendedor e os da equipe de cada compradora.",
+    "nenhuma": "Nenhuma mensagem neste canal ainda.",
+    "escrever": "Mensagem",
+    "imutavel": "Mensagens não podem ser editadas nem apagadas; para corrigir, envie outra.",
+    "enviar": "Enviar",
+    "enviando": "Enviando…",
+    "mencionar": "Mencionar",
+    "mencionarAjuda": "Quem for mencionado recebe aviso no sino e por e-mail (sem o texto da mensagem).",
+    "mencionou": "Mencionou: {nomes}",
+    "virarTarefa": "Marcar como tarefa",
+    "verTarefa": "Virou tarefa ›",
+    "tarefaDaMensagem": "Tarefa a partir de mensagem",
+    "origemDaTarefa": "Criada a partir da mensagem de {autor} em {data}.",
+    "voce": "Você",
+    "removido": "Pessoa removida",
+    "naoLidas": "{n, plural, one {# não lida} other {# não lidas}}",
+    "fechado": "Negócio concluído ou encerrado: as conversas ficam só para leitura.",
+    "carregando": "Carregando…",
+    "abrirConversa": "Conversa",
+    "ultimas": "Últimas mensagens",
+    "nenhumaRecente": "Nenhuma mensagem nos últimos 30 dias.",
+    "verTodas": "Ver todas",
+    "icone": "{n, plural, =0 {Mensagens} one {Mensagens: # não lida} other {Mensagens: # não lidas}}",
+    "resumoEmail": "Receber por e-mail um resumo das mensagens novas",
+    "resumoAjuda": "No máximo um e-mail a cada {horas, plural, one {hora} other {# horas}}, só com a quantidade (o texto fica no sistema).",
+    "paginaAjuda": "Conversas com mensagens nos últimos 30 dias, da mais recente para a mais antiga.",
+    "horasResumo": "Resumo de mensagens por e-mail (a cada quantas horas)",
+    "horasResumoAjuda": "Intervalo mínimo entre dois resumos para a mesma pessoa (1 a 72 horas).",
+    "erros": {
+      "textoObrigatorio": "Escreva a mensagem.",
+      "textoLongo": "Mensagem longa demais (até 5.000 caracteres).",
+      "naoEncontrada": "Conversa não encontrada ou sem acesso.",
+      "jaVirouTarefa": "Esta mensagem já virou tarefa.",
+      "horasInvalidas": "Informe de 1 a 72 horas."
+    }
+  }
+}

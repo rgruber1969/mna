@@ -13,6 +13,7 @@ import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormConfiguracoes } from "@/components/negocios/andamento";
+import { obterHorasDoResumo } from "@/server/services/mensagens";
 import { TabelaDeEtapas, TabelaDePapeis, TabelaDeTipos } from "@/components/cadastros/configuracoes";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
@@ -35,16 +36,18 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     pode(acesso, "cadastros", "editar"),
     pode(acesso, "cadastros", "excluir"),
   ]);
-  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias, diasTarefa] = await Promise.all([
-    acesso.administrador ? obterDiasDeAviso(acesso) : null,
-    verCadastros ? listarPapeis(acesso) : [],
-    verCadastros ? perfisDeDeal(acesso) : [],
-    verCadastros ? listarTiposDeVinculo(acesso) : [],
-    verCadastros ? listarTiposDeOperacao(acesso) : [],
-    verCadastros ? listarEtapasPadrao(acesso) : [],
-    verCadastros ? listarCategorias(acesso) : [],
-    acesso.administrador ? obterDiasDeLembreteDeTarefa(acesso) : [],
-  ]);
+  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias, diasTarefa, horasResumo] =
+    await Promise.all([
+      acesso.administrador ? obterDiasDeAviso(acesso) : null,
+      verCadastros ? listarPapeis(acesso) : [],
+      verCadastros ? perfisDeDeal(acesso) : [],
+      verCadastros ? listarTiposDeVinculo(acesso) : [],
+      verCadastros ? listarTiposDeOperacao(acesso) : [],
+      verCadastros ? listarEtapasPadrao(acesso) : [],
+      verCadastros ? listarCategorias(acesso) : [],
+      acesso.administrador ? obterDiasDeLembreteDeTarefa(acesso) : [],
+      acesso.administrador ? obterHorasDoResumo(acesso) : 1,
+    ]);
   const permissoes = { podeCriar, podeEditar, podeExcluir };
   return (
     <EstruturaDoTenant acesso={acesso}>
@@ -70,7 +73,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
           >
             {dias && (
               <PainelDeAba id="geral">
-                <FormConfiguracoes dias={dias} diasTarefa={diasTarefa} />
+                <FormConfiguracoes dias={dias} diasTarefa={diasTarefa} horasResumo={horasResumo} />
               </PainelDeAba>
             )}
             {verCadastros && (

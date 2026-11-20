@@ -1,6 +1,7 @@
 import { inngest } from "./cliente";
 import { obterStatusDoSistema } from "@/server/services/sistema";
 import { enviarAvisosDePrazoDeTodos } from "@/server/services/negocios-andamento";
+import { enviarResumosDeMensagens } from "@/server/services/mensagens";
 
 /**
  * Tarefa de verificação: confirma que o ciclo evento → Inngest → aplicação
@@ -26,5 +27,17 @@ export const avisosDePrazo = inngest.createFunction(
   },
 );
 
+/**
+ * Resumo de mensagens novas por e-mail (M2): roda a cada 15 minutos; cada
+ * pessoa recebe no máximo um a cada intervalo do tenant (padrão 1 hora).
+ */
+export const resumoDeMensagens = inngest.createFunction(
+  { id: "mensagens-resumo", triggers: [{ cron: "TZ=America/Sao_Paulo */15 * * * *" }] },
+  async ({ step }) => {
+    const enviados = await step.run("enviar", () => enviarResumosDeMensagens());
+    return { enviados };
+  },
+);
+
 /** Todas as tarefas registradas na aplicação. */
-export const funcoes = [verificarSistema, avisosDePrazo];
+export const funcoes = [verificarSistema, avisosDePrazo, resumoDeMensagens];

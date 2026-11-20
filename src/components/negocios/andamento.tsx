@@ -467,7 +467,15 @@ export function PainelExclusividade({
 }
 
 /** Configurações gerais do tenant: antecedência dos avisos da exclusividade. */
-export function FormConfiguracoes({ dias, diasTarefa }: { dias: number[]; diasTarefa: number[] }) {
+export function FormConfiguracoes({
+  dias,
+  diasTarefa,
+  horasResumo,
+}: {
+  dias: number[];
+  diasTarefa: number[];
+  horasResumo: number;
+}) {
   const t = useTranslations("negocios.configuracoes");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarDiasDeAvisoAcao);
   return (
@@ -487,6 +495,19 @@ export function FormConfiguracoes({ dias, diasTarefa }: { dias: number[]; diasTa
           className={`${estiloCampo} w-full`}
         />
         <span className="text-muted mt-1 block text-xs">{t("diasTarefaAjuda")}</span>
+      </label>
+      <label className="mb-3 block">
+        <span className="text-text mb-1 block text-sm font-medium">{t("horasResumo")}</span>
+        <input
+          name="horasResumo"
+          type="number"
+          min={1}
+          max={72}
+          defaultValue={horasResumo}
+          required
+          className={`${estiloCampo} w-32`}
+        />
+        <span className="text-muted mt-1 block text-xs">{t("horasResumoAjuda")}</span>
       </label>
       <button type="submit" disabled={salvando} className={estiloBotao}>
         {t("salvar")}

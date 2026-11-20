@@ -141,6 +141,14 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.getByLabel("Título").fill("Revisar minuta");
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(page.getByRole("button", { name: /Revisar minuta/ })).toBeVisible({ timeout: 30_000 });
+  // Mensagens: conversa geral do negócio, no canal da equipe do lado vendedor.
+  await page.getByRole("tab", { name: "Mensagens" }).click();
+  await expect(page.getByRole("tab", { name: "Equipe do lado vendedor" })).toBeVisible({ timeout: 30_000 });
+  await page.getByLabel("Mensagem", { exact: true }).fill("Primeira mensagem do negócio");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
+  await expect(page.getByText("Primeira mensagem do negócio")).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Marcar como tarefa" }).click();
+  await expect(page.getByRole("link", { name: "Virou tarefa ›" })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByText("Negócio criado")).toBeVisible();
   await page.getByRole("tab", { name: /Participantes/ }).click();

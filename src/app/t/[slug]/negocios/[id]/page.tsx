@@ -31,6 +31,7 @@ import { etapasDoNegocio, opcoesDeAlcance } from "@/server/services/etapas";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
 import { TarefasDoNegocio } from "@/components/negocios/tarefas";
+import { AbaDeMensagens } from "@/components/negocios/mensagens";
 import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { dataRoomDoNegocio } from "@/server/services/documentos";
 import { HistoricoPaginado } from "@/components/negocios/historico";
@@ -58,10 +59,12 @@ async function Painel({
   id,
   aba,
   etapa,
+  conversa,
 }: {
   id: Promise<string>;
   aba: Promise<string | undefined>;
   etapa: Promise<string | undefined>;
+  conversa: Promise<{ alvo?: string; canal?: string }>;
 }) {
   await connection();
   const acesso = await obterAcesso(new Headers(await headers()));
@@ -83,6 +86,7 @@ async function Painel({
   const tp = await getTranslations("negocios.participantes");
   const tt = await getTranslations("negocios.andamento");
   const th = await getTranslations("negocios.historico");
+  const tm = await getTranslations("mensagens");
   const [tipos, opcoesEmp, opcoesPart, andamento] = await Promise.all([
     listarTiposDeOperacao(acesso),
     n.podeEditar ? opcoesDeEmpresas(acesso, n.id) : null,
@@ -162,6 +166,7 @@ async function Painel({
                 ? [{ id: "documentos", rotulo: `${t("abaDocumentos")} (${dataRoom.documentos.length})` }]
                 : []),
               ...(funil ? [{ id: "funil", rotulo: `${t("abaFunil")} (${funil.cartoes.length})` }] : []),
+              { id: "mensagens", rotulo: tm("aba") },
               { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
               { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
               ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)
@@ -311,6 +316,13 @@ async function Painel({
                 <DataRoomDoNegocio dealId={n.id} dr={dataRoom} etapaFiltro={(await etapa) ?? ""} />
               </PainelDeAba>
             )}
+            <PainelDeAba id="mensagens">
+              <AbaDeMensagens
+                dealId={n.id}
+                conversaInicial={(await conversa).alvo}
+                canalInicial={(await conversa).canal}
+              />
+            </PainelDeAba>
             <PainelDeAba id="exclusividade">
               <PainelExclusividade
                 dealId={n.id}
@@ -348,6 +360,10 @@ export default function Page({ params, searchParams }: PageProps<"/t/[slug]/nego
         id={params.then((p) => p.id)}
         aba={searchParams.then((q) => (typeof q.aba === "string" ? q.aba : undefined))}
         etapa={searchParams.then((q) => (typeof q.etapa === "string" ? q.etapa : undefined))}
+        conversa={searchParams.then((q) => ({
+          alvo: typeof q.conversa === "string" ? q.conversa : undefined,
+          canal: typeof q.canal === "string" ? q.canal : undefined,
+        }))}
       />
     </Suspense>
   );

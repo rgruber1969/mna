@@ -59,6 +59,8 @@ export const tenant = pgTable("tenant", {
   diasAvisoExclusividade: jsonb("dias_aviso_exclusividade").$type<number[]>().notNull().default([15, 5]),
   /** Dias antes do prazo para lembrar os responsáveis por uma tarefa (0 = no dia). */
   diasLembreteTarefa: jsonb("dias_lembrete_tarefa").$type<number[]>().notNull().default([2, 0]),
+  /** Intervalo, em horas, do resumo de mensagens novas por e-mail (M2). */
+  horasResumoMensagens: integer("horas_resumo_mensagens").notNull().default(1),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -239,6 +241,10 @@ export const vinculoTenant = pgTable(
     administrador: boolean("administrador").notNull().default(false),
     /** 2FA exigido individualmente (soma-se às demais regras). */
     exigeDoisFatores: boolean("exige_2fa").notNull().default(false),
+    /** Recebe o resumo de mensagens novas por e-mail (cada pessoa pode desligar; M2). */
+    resumoMensagens: boolean("resumo_mensagens").notNull().default(true),
+    /** Quando saiu o último resumo (as mensagens depois disso entram no próximo). */
+    resumoMensagensEm: timestamp("resumo_mensagens_em", { withTimezone: true }),
     criadoEm: criadoEm(),
     atualizadoEm: atualizadoEm(),
   },
@@ -1134,4 +1140,58 @@ export const tarefaDocumento = pgTable(
       .references(() => documento.id, { onDelete: "cascade" }),
   },
   (t) => [uniqueIndex("tarefa_documento_uq").on(t.tenantId, t.tarefaId, t.documentoId), isolamento()],
+).enableRLS();
+
+/**
+ * Mensagem de uma conversa (item 16; dominio.md, "Mensageria e avisos").
+ * Conversa = negócio (geral), etapa, versão de documento ou tarefa, em um
+ * canal: "vendedor" (equipe do lado vendedor), "equipe:<compradora>" (equipe
+ * de uma compradora) ou "entre:<compradora>" (lado vendedor e aquela
+ * compradora, depois do NDA). Imutável: o banco só permite incluir e ligar
+ * a uma tarefa (GRANT por coluna na migração).
+ */
+export const mensagem = pgTable(
+  "mensagem",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    alvoTipo: text("alvo_tipo").$type<"deal" | "etapa" | "versao" | "tarefa">().notNull(),
+    /** Etapa, versão ou tarefa (vazio na conversa geral do negócio). */
+    alvoId: uuid("alvo_id"),
+    canal: text("canal").notNull(),
+    autorId: uuid("autor_id").references(() => usuario.id, { onDelete: "set null" }),
+    texto: text("texto").notNull(),
+    /** Usuários mencionados (@pessoa). */
+    mencoes: jsonb("mencoes").$type<string[]>().notNull().default([]),
+    /** Tarefa criada a partir da mensagem ("marcar como tarefa"). */
+    tarefaId: uuid("tarefa_id").references(() => tarefa.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    index("mensagem_conversa_idx").on(t.tenantId, t.dealId, t.alvoTipo, t.alvoId, t.canal, t.criadoEm),
+    index("mensagem_recentes_idx").on(t.tenantId, t.criadoEm),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Até quando a pessoa leu cada conversa (para as não lidas). */
+export const mensagemLeitura = pgTable(
+  "mensagem_leitura",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    /** "<alvoTipo>:<alvoId ou ->:<canal>". */
+    chave: text("chave").notNull(),
+    lidaEm: timestamp("lida_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("mensagem_leitura_uq").on(t.tenantId, t.usuarioId, t.chave), isolamento()],
 ).enableRLS();

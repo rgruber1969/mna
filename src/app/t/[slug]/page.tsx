@@ -6,6 +6,8 @@ import { Suspense, type ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { obterAcesso } from "@/server/services/acesso";
 import { painelDoUsuario } from "@/server/services/painel";
+import { minhasMensagens } from "@/server/services/mensagens";
+import { MensagensRecentes } from "@/components/mensagens/recentes";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { Carregando, Titulo } from "@/components/ui/basicos";
@@ -50,7 +52,7 @@ async function Inicio() {
   if (acesso?.area !== "tenant") redirect("/entrar");
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
-  const p = await painelDoUsuario(acesso);
+  const [p, mensagens] = await Promise.all([painelDoUsuario(acesso), minhasMensagens(acesso, 5)]);
   const br = (d: string) => d.split("-").reverse().join("/");
   const maior = Math.max(1, ...p.porEtapa.map((e) => e.total));
   const numeros = [
@@ -102,6 +104,14 @@ async function Inicio() {
           </Bloco>
           <Bloco titulo={tp("alertas")} link={{ href: "/notificacoes", texto: tp("verTodos") }}>
             <p className="text-muted mb-2 text-xs">{tp("alertasAjuda")}</p>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-text text-xs font-semibold">{tp("mensagens")}</h3>
+              <Link href="/mensagens" className="text-primary text-xs font-medium">
+                {tp("verMensagens")}
+              </Link>
+            </div>
+            <MensagensRecentes conversas={mensagens.conversas} compacta />
+            <h3 className="text-text mt-4 mb-1 text-xs font-semibold">{tp("avisos")}</h3>
             {p.alertas.length === 0 ? (
               <p className="text-muted text-sm">{tp("semAlertas")}</p>
             ) : (

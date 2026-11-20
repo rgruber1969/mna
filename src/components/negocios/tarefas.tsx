@@ -410,6 +410,12 @@ export function TarefasDoNegocio({
                             </p>
                           )}
                           <span className="flex flex-wrap gap-3">
+                            <a
+                              href={`/negocios/${dealId}?aba=mensagens&conversa=tarefa:${x.id}`}
+                              className="text-primary text-xs"
+                            >
+                              {t("conversa")}
+                            </a>
                             {x.podeEditar && !form && (
                               <button
                                 type="button"

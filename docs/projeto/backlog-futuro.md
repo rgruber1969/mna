@@ -88,3 +88,10 @@ versão 1" é anotado aqui.
 - [ ] Servidor MCP (arquitetura já preparada)
 - [ ] Sistemas externos consumindo a API (a identificar)
 - [ ] Anonimização: importar planilhas fora do modelo (e até PDF ou DOCX), interpretando colunas e formatos diferentes (resposta X3, 2026-11-19)
+
+## Mensageria (depois da primeira entrega, 2026-11-19)
+
+* Anexos nas mensagens e botão "transformar em documento do negócio"
+  (dominio.md; previsto na V1, ficou para a próxima entrega).
+* Mensagens na exportação do negócio (junto com a exportação).
+* Busca no texto das mensagens.

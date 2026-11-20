@@ -60,7 +60,17 @@
       "tarefaPrazo": {
         "assunto": "Negócio {negocio}: tarefa \"{tarefa}\" vence em {prazo}",
         "paragrafo": "A tarefa \"{tarefa}\" do negócio {negocio}, de que você é responsável, vence em {prazo}."
+      },
+      "mencao": {
+        "assunto": "{autor} mencionou você em {negocio}",
+        "paragrafo": "{autor} mencionou você numa conversa do negócio {negocio}. Abra a conversa para ler a mensagem."
       }
+    },
+    "mensagens": {
+      "assunto": "{quantidade, plural, one {# mensagem nova} other {# mensagens novas}} em {negocios, plural, one {# negócio} other {# negócios}}",
+      "paragrafo": "Você tem {quantidade, plural, one {# mensagem nova} other {# mensagens novas}} em {negocios, plural, one {# negócio} other {# negócios}} desde o último resumo.",
+      "comoDesligar": "Para deixar de receber este resumo, desmarque a opção na página Mensagens.",
+      "botao": "Ver mensagens"
     }
   }
 }

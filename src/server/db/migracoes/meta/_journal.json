@@ -260,6 +260,13 @@
       "when": 1795136215010,
       "tag": "0036_versao_para_todos",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1795138292509,
+      "tag": "0037_mensageria",
+      "breakpoints": true
     }
   ]
 }

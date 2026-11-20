@@ -640,6 +640,34 @@ Etapas padrão:
 
 ### Mensageria e avisos
 
+* **Construído (item 16, 2026-11-19):** aba **Mensagens** no negócio (à
+  esquerda as conversas: geral, cada etapa e os documentos e tarefas que já
+  têm mensagens; à direita a conversa); link "Conversa" em cada versão de
+  documento e em cada tarefa; ícone de mensagens no topo com as não lidas;
+  página **Mensagens** (conversas dos últimos 30 dias); bloco de mensagens
+  na tela principal; menções; "Marcar como tarefa"; resumo por e-mail.
+  Ainda não: **anexos nas mensagens** e "transformar anexo em documento".
+* **Canais (sigilo entre compradoras, regra adotada na construção):** cada
+  conversa tem canais, porque as compradoras nunca veem umas às outras:
+  * **Equipe do lado vendedor:** só o lado vendedor;
+  * **Equipe de <compradora>:** só a compradora e quem trabalha para ela;
+  * **Lado vendedor e <compradora>:** os dois, **depois do NDA** daquela
+    compradora (antes disso, a conversa com ela fica fora do sistema).
+  * Administradores do tenant veem todos os canais. Quem participa sem lado
+    não conversa.
+* **Menções (M1):** só se pode mencionar quem está no canal; a pessoa
+  recebe aviso no sino e por e-mail **sem o texto** da mensagem (só quem
+  abre a conversa lê).
+* **Marcar como tarefa (M1):** cria uma tarefa sem responsável, na etapa da
+  conversa, com o texto da mensagem; uma vez por mensagem.
+* **Resumo por e-mail (M2):** "N mensagens novas em M negócios", sem o
+  texto, no máximo uma vez a cada intervalo do tenant (Configurações ›
+  Geral, padrão 1 hora); cada pessoa liga ou desliga o seu na página
+  Mensagens. Verificação a cada 15 minutos (Inngest).
+* **Imutáveis no banco:** a aplicação só tem permissão de incluir mensagens
+  e de ligá-las a uma tarefa (nada de editar ou apagar).
+* **Exclusão do negócio:** só sem documentos, tarefas e mensagens (passou a
+  ser verificado); com eles, só encerrar.
 * **Conversas** em deal, etapa, documento (versão) e tarefa, visíveis a
   todos que têm acesso àquele item. **Sem conversa privada** entre duas
   pessoas.
@@ -648,8 +676,7 @@ Etapas padrão:
 * Mensagens **não podem ser editadas nem apagadas** (correção por nova
   mensagem).
 * **Sem tempo real:** atualização ao recarregar ou em poucos segundos.
-* **Menções** (`@pessoa`) e **marcar mensagem como tarefa**: desejáveis
-  (escopo a decidir).
+* **Menções** (`@pessoa`) e **marcar mensagem como tarefa**: na V1 (M1).
 * Mensagens entram na **exportação do deal** e na **retenção de 10 anos**.
 * **Configuração do tenant** (administradores): avisos por e-mail, sistema
   ou ambos; antecedência dos lembretes de prazo.

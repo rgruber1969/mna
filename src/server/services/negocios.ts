@@ -16,6 +16,9 @@ import {
   pessoa,
   tipoOperacao,
   vinculoPessoaEmpresa,
+  documento,
+  mensagem,
+  tarefa,
 } from "@/server/db/esquema";
 import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
 import { auditar } from "./empresas";
@@ -937,11 +940,19 @@ export async function editarNegocio(
   return { ok: true };
 }
 
-/** Exclusão ("Negócios" × excluir). Com documentos, tarefas e mensagens (itens seguintes), só encerrar. */
+/** Exclusão ("Negócios" × excluir). Com documentos, tarefas ou mensagens, só encerrar (dominio.md). */
 export async function excluirNegocio(acesso: Acesso | null, id: string): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "deals", "excluir");
   if (!uuidValido(id)) return { erro: "negocios.erros.naoEncontrado" };
   await visaoDoNegocio(a, id);
+  const temConteudo = await comTenant(a.tenant.id, async (tx) => {
+    for (const tabela of [documento, tarefa, mensagem]) {
+      const l = await tx.select({ id: tabela.id }).from(tabela).where(eq(tabela.dealId, id)).limit(1);
+      if (l.length) return true;
+    }
+    return false;
+  });
+  if (temConteudo) return { erro: "negocios.erros.temConteudo" };
   const feito = await comTenant(a.tenant.id, async (tx) => {
     await tx.delete(participacaoDeal).where(eq(participacaoDeal.dealId, id));
     await tx.delete(dealEmpresa).where(eq(dealEmpresa.dealId, id));

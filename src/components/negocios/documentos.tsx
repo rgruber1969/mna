@@ -583,6 +583,12 @@ export function DataRoomDoNegocio({
                                       {t("baixar")}
                                     </button>
                                   )}
+                                  <a
+                                    href={`/negocios/${dealId}?aba=mensagens&conversa=versao:${v.id}`}
+                                    className="text-primary"
+                                  >
+                                    {t("conversa")}
+                                  </a>
                                   {v.podeAlterarAcesso && editandoAcesso !== v.id && (
                                     <button
                                       type="button"

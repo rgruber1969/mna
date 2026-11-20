@@ -52,6 +52,17 @@ import {
 import { pdfComTexto } from "@/testes/pdf-de-teste";
 import { painelDoUsuario } from "./painel";
 import { criarTarefa, marcarItem, mudarSituacaoDaTarefa, tarefasDoNegocio } from "./tarefas";
+import {
+  conversasDoNegocio,
+  enviarMensagem,
+  enviarResumosDeMensagens,
+  mensagemParaTarefa,
+  minhasMensagens,
+  obterConversa,
+} from "./mensagens";
+import { eq } from "drizzle-orm";
+import { comTenant } from "@/server/db/cliente";
+import { mensagem } from "@/server/db/esquema";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -1010,5 +1021,100 @@ describe("data room: quem vê", () => {
     await expect(
       alterarAcessoDaVersao(acesso("adva"), r.versaoId, { todos: true, perfis: [], usuarios: [] }),
     ).rejects.toBeInstanceOf(AcessoNegado);
+  });
+});
+
+describe("mensageria", () => {
+  const geral = { tipo: "deal" as const, id: null };
+
+  it("canais por lado: compradoras nunca veem os canais umas das outras", async () => {
+    const a = acesso("admin", true);
+    const g = acesso("gestor");
+    await criarConta("compb2", "usuario-externo");
+    const [{ id: contato }] = (
+      await dono.query(`select id from tipo_vinculo where tenant_id = $1 and padrao = 'contato'`, [tenantId])
+    ).rows as { id: string }[];
+    await adicionarVinculo(a, {
+      pessoaId: await pessoaDe("compb2"),
+      empresaId: compradoraB,
+      tipoId: contato,
+      cargo: "",
+      percentual: "",
+    });
+    expect(
+      await adicionarParticipante(g, negocioId, {
+        pessoaId: await pessoaDe("compb2"),
+        perfilId: await perfilDeDeal("representante"),
+        empresaId: "",
+        lado: "",
+        prazo: "",
+      }),
+    ).toEqual({ ok: true });
+    const canais = async (nome: string) =>
+      (await obterConversa(acesso(nome), negocioId, geral))!.canais.map((c) => c.id).sort();
+    expect(await canais("gestor")).toEqual(
+      ["entre:" + compradoraA, "entre:" + compradoraB, "vendedor"].sort(),
+    );
+    expect(await canais("adva")).toEqual(["entre:" + compradoraA, "equipe:" + compradoraA].sort());
+    expect(await canais("compb2")).toEqual(["entre:" + compradoraB, "equipe:" + compradoraB].sort());
+  });
+
+  it("envia, menciona só quem está no canal, conta não lidas e é imutável", async () => {
+    const g = acesso("gestor");
+    const canalB = "entre:" + compradoraB;
+    const r = await enviarMensagem(g, negocioId, geral, canalB, {
+      texto: "Favor enviar a proposta revisada",
+      mencoes: [contas.compb2, contas.adva],
+    });
+    if (!("id" in r)) throw new Error(r.erro);
+    const [m] = (await dono.query(`select mencoes from mensagem where id = $1`, [r.id])).rows;
+    expect(m.mencoes).toEqual([contas.compb2]); // adva não está no canal da Compradora B
+    const avisos = await dono.query(
+      `select tipo from notificacao where usuario_id = $1 and tipo = 'mensagem_mencao'`,
+      [contas.compb2],
+    );
+    expect(avisos.rowCount).toBe(1);
+    // A equipe da Compradora A não vê nem escreve no canal da B.
+    const vistoA = await obterConversa(acesso("adva"), negocioId, geral, canalB);
+    expect(vistoA?.canal).not.toBe(canalB);
+    expect(vistoA?.mensagens.some((x) => x.id === r.id)).toBe(false);
+    expect(await enviarMensagem(acesso("adva"), negocioId, geral, canalB, { texto: "oi" })).toMatchObject({
+      erro: "mensagens.erros.naoEncontrada",
+    });
+    expect((await minhasMensagens(acesso("adva"))).conversas.some((c) => c.canal.id === canalB)).toBe(false);
+    // Não lidas da Compradora B: some ao abrir a conversa.
+    expect((await minhasMensagens(acesso("compb2"))).naoLidas).toBe(1);
+    const aberta = await obterConversa(acesso("compb2"), negocioId, geral, canalB);
+    expect(aberta?.mensagens.map((x) => x.texto)).toEqual(["Favor enviar a proposta revisada"]);
+    expect((await minhasMensagens(acesso("compb2"))).naoLidas).toBe(0);
+    // Imutável: o banco recusa editar o texto (só a ligação com tarefa muda).
+    await expect(
+      comTenant(tenantId, (tx) => tx.update(mensagem).set({ texto: "editado" }).where(eq(mensagem.id, r.id))),
+    ).rejects.toThrow();
+    const lista = await conversasDoNegocio(g, negocioId);
+    expect(lista?.[0]).toMatchObject({ alvo: geral, total: 1 });
+  });
+
+  it("marca como tarefa uma vez; resumo por e-mail com as não lidas", async () => {
+    const g = acesso("gestor");
+    const canalA = "entre:" + compradoraA;
+    const r = await enviarMensagem(g, negocioId, geral, canalA, {
+      texto: "Revisar a cláusula 7\nDetalhes...",
+    });
+    if (!("id" in r)) throw new Error(r.erro);
+    const t = await mensagemParaTarefa(g, r.id);
+    if (!("tarefaId" in t)) throw new Error(t.erro);
+    const [tarefa] = (await dono.query(`select titulo from tarefa where id = $1`, [t.tarefaId])).rows;
+    expect(tarefa.titulo).toBe("Revisar a cláusula 7");
+    expect(await mensagemParaTarefa(g, r.id)).toMatchObject({ erro: "mensagens.erros.jaVirouTarefa" });
+    await dono.query(`update vinculo_tenant set resumo_mensagens_em = null where tenant_id = $1`, [tenantId]);
+    expect(await enviarResumosDeMensagens()).toBeGreaterThanOrEqual(1); // adva tem não lida
+    const [v] = (
+      await dono.query(`select resumo_mensagens_em from vinculo_tenant where usuario_id = $1`, [contas.adva])
+    ).rows;
+    expect(v.resumo_mensagens_em).not.toBeNull();
+    expect(await excluirNegocio(acesso("admin", true), negocioId)).toMatchObject({
+      erro: "negocios.erros.temConteudo",
+    });
   });
 });

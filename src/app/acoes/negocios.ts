@@ -1,5 +1,6 @@
 "use server";
 
+import { salvarHorasDoResumo } from "@/server/services/mensagens";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { traduzirErro } from "@/i18n/servidor";
@@ -169,7 +170,9 @@ export async function salvarDiasDeAvisoAcao(_: Estado, f: FormData): Promise<Est
   const r = await salvarDiasDeAviso(a, texto(f, "dias"));
   if ("erro" in r) return { erro: await traduzirErro(r), campo: r.campo };
   const r2 = await salvarDiasDeLembreteDeTarefa(a, texto(f, "diasTarefa"));
-  return "erro" in r2 ? { erro: await traduzirErro(r2), campo: r2.campo } : { ok: t("configuracoesSalvas") };
+  if ("erro" in r2) return { erro: await traduzirErro(r2), campo: r2.campo };
+  const r3 = await salvarHorasDoResumo(a, texto(f, "horasResumo"));
+  return "erro" in r3 ? { erro: await traduzirErro(r3), campo: r3.campo } : { ok: t("configuracoesSalvas") };
 }
 
 export async function salvarObservacoesDoFunilAcao(_: Estado, f: FormData): Promise<Estado> {

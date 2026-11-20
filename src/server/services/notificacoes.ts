@@ -25,6 +25,7 @@ export const TIPOS_DE_NOTIFICACAO = [
   "participacao_vencida",
   "negocio_etapa",
   "tarefa_prazo",
+  "mensagem_mencao",
 ] as const;
 export type TipoDeNotificacao = (typeof TIPOS_DE_NOTIFICACAO)[number];
 

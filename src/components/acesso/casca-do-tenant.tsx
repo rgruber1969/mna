@@ -12,6 +12,7 @@ import {
   minhasNotificacoesAcao,
   removerNotificacaoAcao,
 } from "@/app/acoes/notificacoes";
+import { minhasMensagensAcao } from "@/app/acoes/mensagens";
 import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
 import { aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
@@ -84,6 +85,7 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M10 20a2 2 0 0 0 4 0" />
     </>
   ),
+  mensagem: <path d="M4 5h16v11H9l-5 4z" />,
   seta: <path d="M6 9l6 6 6-6" />,
   fechar: <path d="M6 6l12 12M18 6L6 18" />,
   sol: (
@@ -214,6 +216,38 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
         </ul>
       )}
     </div>
+  );
+}
+
+// --- Mensagens ---------------------------------------------------------------------
+
+/** Ícone de mensagens no topo (item 16): não lidas dos últimos 30 dias, sem travar a página. */
+function IconeDeMensagens() {
+  const t = useTranslations("mensagens");
+  const [naoLidas, setNaoLidas] = useState(0);
+  useEffect(() => {
+    let ativo = true;
+    const buscar = () =>
+      minhasMensagensAcao(0)
+        .then((r) => ativo && setNaoLidas(r.naoLidas))
+        .catch(() => undefined);
+    const primeira = setTimeout(buscar, 1500);
+    const id = setInterval(buscar, 60_000);
+    return () => {
+      ativo = false;
+      clearTimeout(primeira);
+      clearInterval(id);
+    };
+  }, []);
+  return (
+    <Link href="/mensagens" aria-label={t("icone", { n: naoLidas })} className={`${botaoRedondo} relative`}>
+      <Icone nome="mensagem" />
+      {naoLidas > 0 && (
+        <span className="bg-danger text-primary-foreground ring-background absolute -top-0.5 -right-0.5 min-w-4 rounded-full px-1 text-center text-[10px] leading-4 font-semibold ring-2">
+          {naoLidas > 99 ? "99+" : naoLidas}
+        </span>
+      )}
+    </Link>
   );
 }
 
@@ -599,6 +633,7 @@ export function CascaDoTenant({
           </button>
           <BuscaNoMenu itens={todos.map((item) => ({ item, rotulo: rotulo(item) }))} />
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
+            <IconeDeMensagens />
             <Sino inicial={notificacoes} />
             <MenuDoUsuario usuario={usuario} temaInicial={tema} />
           </div>

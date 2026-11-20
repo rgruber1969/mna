@@ -218,7 +218,8 @@
       "prorrogacaoAntes": "A nova data precisa ser depois do fim atual.",
       "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula.",
       "escolhaEtapas": "Escolha ao menos uma etapa para o alcance.",
-      "diasDeLembreteInvalidos": "Informe de 1 a 5 números de dias, entre 0 e 60, separados por vírgula."
+      "diasDeLembreteInvalidos": "Informe de 1 a 5 números de dias, entre 0 e 60, separados por vírgula.",
+      "temConteudo": "O negócio já tem documentos, tarefas ou mensagens: não pode ser excluído, só encerrado."
     },
     "andamento": {
       "situacaoTitulo": "Situação do negócio",
@@ -311,7 +312,9 @@
       "diasAvisoAjuda": "Ex.: \"15, 5\": o lado vendedor é avisado 15 e 5 dias antes do fim, além do início e do último dia.",
       "salvar": "Salvar",
       "diasTarefa": "Lembretes de tarefa (dias antes do prazo)",
-      "diasTarefaAjuda": "Ex.: \"2, 0\": os responsáveis são lembrados 2 dias antes e no dia do prazo."
+      "diasTarefaAjuda": "Ex.: \"2, 0\": os responsáveis são lembrados 2 dias antes e no dia do prazo.",
+      "horasResumo": "Resumo de mensagens por e-mail: a cada quantas horas",
+      "horasResumoAjuda": "Intervalo mínimo entre dois resumos de mensagens novas para a mesma pessoa (1 a 72; padrão 1). Cada pessoa pode desligar o próprio resumo."
     },
     "kanban": {
       "aIniciar": "A iniciar",
@@ -378,7 +381,7 @@
     "verKanban": "Ver no kanban",
     "semNegocios": "Nenhum negócio em aberto.",
     "alertas": "Últimas mensagens e alertas",
-    "alertasAjuda": "Por enquanto, os alertas do sino; as mensagens entram quando a mensageria estiver pronta.",
+    "alertasAjuda": "Conversas com mensagens recentes e os avisos do sino.",
     "verTodos": "Ver todos",
     "semAlertas": "Nenhum alerta.",
     "prazos": "Prazos",
@@ -389,6 +392,9 @@
       "exclusividade": "Fim da exclusividade",
       "participacao": "Fim do acesso de {texto}"
     },
-    "porEtapa": "Negócios por etapa"
+    "porEtapa": "Negócios por etapa",
+    "mensagens": "Mensagens",
+    "verMensagens": "Ver todas",
+    "avisos": "Avisos"
   }
 }

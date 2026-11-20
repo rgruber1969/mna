@@ -20,7 +20,8 @@ export type TipoDeAvisoPorEmail =
   | "exclusividadeAviso"
   | "exclusividadeFim"
   | "participacaoVencida"
-  | "tarefaPrazo";
+  | "tarefaPrazo"
+  | "mencao";
 
 export async function avisarPorEmail(
   a: { tenant: { id: string; slug: string } },
@@ -29,6 +30,8 @@ export async function avisarPorEmail(
   negocio: string,
   dealId: string,
   parametros: Record<string, string | number> = {},
+  /** Caminho do link (padrão: a tela do negócio). */
+  caminho?: string,
 ): Promise<void> {
   const ids = [...new Set(usuarioIds)];
   if (ids.length === 0) return;
@@ -41,7 +44,7 @@ export async function avisarPorEmail(
       tradutor(),
       marcaParaEmail(a.tenant.id),
     ]);
-    const url = urlDaArea({ tipo: "tenant", slug: a.tenant.slug }, `/negocios/${dealId}`);
+    const url = urlDaArea({ tipo: "tenant", slug: a.tenant.slug }, caminho ?? `/negocios/${dealId}`);
     const p = { negocio, ...parametros };
     for (const d of destinos)
       await enviarEmail(
