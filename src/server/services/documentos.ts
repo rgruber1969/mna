@@ -25,6 +25,7 @@ import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./ac
 import { tipoRealDoArquivo, verificarArquivo } from "./antivirus";
 import { auditar } from "./empresas";
 import { contextoDeEtapas } from "./etapas";
+import { ordenarEtapas } from "./tarefas";
 import { empresasDoNegocio, ladoDaParticipacao, negocioFechado } from "./negocios";
 import { notificar } from "./notificacoes";
 import { concede, type Acao } from "./permissoes/catalogo";
@@ -268,6 +269,8 @@ export type DataRoom = {
   /** Etapas e subetapas em que a pessoa pode enviar (null = geral). */
   destinos: { id: string | null; nome: string }[];
   categorias: { id: string; nome: string }[];
+  /** Todas as etapas do negócio (para o filtro). */
+  etapas: { id: string; nome: string }[];
   opcoesDeAcesso: {
     perfis: { id: string; nome: string }[];
     usuarios: { id: string; nome: string; lado: string | null }[];
@@ -422,6 +425,7 @@ export async function dataRoomDoNegocio(acesso: Acesso | null, dealId: string): 
     documentos,
     destinos,
     categorias,
+    etapas: ordenarEtapas(ctx.etapas).map((e) => ({ id: e.id, nome: nomeEtapa.get(e.id) ?? e.nome })),
     opcoesDeAcesso: {
       perfis: [
         ...new Map(participantes.map((p) => [p.perfilId!, { id: p.perfilId!, nome: p.perfil }])).values(),

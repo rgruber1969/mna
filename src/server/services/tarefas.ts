@@ -36,6 +36,16 @@ import { concede, type Acao } from "./permissoes/catalogo";
  */
 
 type Resultado = { ok: true } | ErroDeServico;
+
+/** Etapas na ordem do negócio: cada etapa seguida das suas subetapas. */
+export function ordenarEtapas<T extends { id: string; paiId: string | null; ordem: number }>(
+  etapas: T[],
+): T[] {
+  return etapas
+    .filter((e) => !e.paiId)
+    .sort((x, y) => x.ordem - y.ordem)
+    .flatMap((e) => [e, ...etapas.filter((s) => s.paiId === e.id).sort((x, y) => x.ordem - y.ordem)]);
+}
 export type SituacaoDaTarefa = "a_fazer" | "andamento" | "aguardando" | "concluida" | "cancelada";
 export const SITUACOES_DA_TAREFA: SituacaoDaTarefa[] = [
   "a_fazer",
@@ -140,6 +150,8 @@ export type TarefaNaTela = {
 export type QuadroDeTarefas = {
   tarefas: TarefaNaTela[];
   destinos: { id: string | null; nome: string }[];
+  /** Todas as etapas do negócio (para o filtro). */
+  etapas: { id: string; nome: string }[];
   opcoes: {
     usuarios: { id: string; nome: string; lado: string | null }[];
     perfis: { id: string; nome: string }[];
@@ -284,6 +296,7 @@ export async function tarefasDoNegocio(
   return {
     tarefas,
     destinos: destinos.map((d) => ({ id: d.id, nome: d.nome })),
+    etapas: ordenarEtapas(ctx.etapas).map((e) => ({ id: e.id, nome: nomeEtapa.get(e.id) ?? e.nome })),
     opcoes: {
       usuarios: [
         ...new Map(

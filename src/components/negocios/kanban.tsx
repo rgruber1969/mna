@@ -648,7 +648,12 @@ export function KanbanDeNegocios({
                     </ul>
                   )}
                   {aberto.aba === "tarefas" && p.tarefas && (
-                    <TarefasDoNegocio dealId={c0.id} quadro={p.tarefas} etapaFiltro="" />
+                    <TarefasDoNegocio
+                      dealId={c0.id}
+                      quadro={p.tarefas}
+                      etapaFiltro=""
+                      aoMudar={() => abrir(c0, "tarefas")}
+                    />
                   )}
                   {aberto.aba === "documentos" && p.dataRoom && (
                     <DataRoomDoNegocio

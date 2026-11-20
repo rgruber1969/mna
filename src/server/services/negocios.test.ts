@@ -952,3 +952,14 @@ describe("tela principal", () => {
     expect((await painelDoUsuario(acesso("curioso"))).numeros.negocios).toBe(0);
   });
 });
+
+describe("administrador dentro do negócio", () => {
+  it("vê e envia documentos e vê as tarefas, mesmo sem participar", async () => {
+    const dr = await dataRoomDoNegocio(acesso("admin", true), negocioId);
+    expect(dr?.destinos.length).toBeGreaterThan(0);
+    expect(dr?.documentos.some((d) => d.titulo === "Relatório jurídico")).toBe(true);
+    expect(dr?.etapas.length).toBeGreaterThan(8);
+    const tarefas = await tarefasDoNegocio(acesso("admin", true), negocioId);
+    expect(tarefas?.etapas.map((e) => e.nome)).toContain("Diligência › Diligência jurídica");
+  });
+});

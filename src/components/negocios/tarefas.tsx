@@ -38,6 +38,7 @@ type Tarefa = {
 type Quadro = {
   tarefas: Tarefa[];
   destinos: { id: string | null; nome: string }[];
+  etapas: { id: string; nome: string }[];
   opcoes: {
     usuarios: { id: string; nome: string; lado: string | null }[];
     perfis: { id: string; nome: string }[];
@@ -202,10 +203,13 @@ export function TarefasDoNegocio({
   dealId,
   quadro,
   etapaFiltro,
+  aoMudar,
 }: {
   dealId: string;
   quadro: Quadro;
   etapaFiltro: string;
+  /** Chamado depois de salvar ou mudar (ex.: o painel do kanban recarrega). */
+  aoMudar?: () => void;
 }) {
   const t = useTranslations("tarefas");
   const router = useRouter();
@@ -229,7 +233,10 @@ export function TarefasDoNegocio({
     iniciar(async () => {
       const r = await fn();
       setErro(r.erro ?? null);
-      if (!r.erro) router.refresh();
+      if (!r.erro) {
+        router.refresh();
+        aoMudar?.();
+      }
     });
   }
   return (
@@ -279,7 +286,10 @@ export function TarefasDoNegocio({
           quadro={quadro}
           tarefa={form.tarefa}
           etapaInicial={etapa && etapa !== "geral" ? etapa : ""}
-          fechar={() => setForm(null)}
+          fechar={() => {
+            setForm(null);
+            aoMudar?.();
+          }}
         />
       )}
       {lista.length === 0 ? (

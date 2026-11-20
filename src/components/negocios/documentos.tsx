@@ -47,6 +47,7 @@ type DataRoom = {
   documentos: Documento[];
   destinos: { id: string | null; nome: string }[];
   categorias: Opcao[];
+  etapas: Opcao[];
   opcoesDeAcesso: { perfis: Opcao[]; usuarios: (Opcao & { lado: string | null })[] };
   meuLado: string[];
   fechado: boolean;
@@ -264,10 +265,7 @@ export function DataRoomDoNegocio({
     inicial: { perfis: string[]; usuarios: string[] };
   } | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-  const etapas = [
-    ...new Map(dr.documentos.filter((d) => d.etapaId).map((d) => [d.etapaId!, d.etapa!])).entries(),
-  ];
-  for (const d of dr.destinos) if (d.id && !etapas.some(([id]) => id === d.id)) etapas.push([d.id, d.nome]);
+  const etapas = dr.etapas.map((e) => [e.id, e.nome] as const);
   const lista = dr.documentos.filter((d) =>
     filtro === "" ? true : filtro === "geral" ? d.etapaId === null : d.etapaId === filtro,
   );

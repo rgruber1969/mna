@@ -16,7 +16,20 @@ import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./ac
 import { auditar } from "./empresas";
 import { negocioFechado, nomeVisivel, visaoDoNegocio } from "./negocios";
 import { notificar } from "./notificacoes";
-import { concede, normalizarMatriz, somarMatrizes, type Acao, type Matriz } from "./permissoes/catalogo";
+import {
+  concede,
+  normalizarMatriz,
+  RECURSOS,
+  recursosDaCamada,
+  somarMatrizes,
+  type Acao,
+  type Matriz,
+} from "./permissoes/catalogo";
+
+/** Administrador do tenant: tudo dentro de qualquer negócio (perfis-e-permissoes.md). */
+const MATRIZ_COMPLETA_DO_NEGOCIO: Matriz = Object.fromEntries(
+  recursosDaCamada("deal").map((r) => [r, [...RECURSOS[r].acoes]]),
+);
 import { exigirPermissao } from "./permissoes/verificador";
 
 /**
@@ -300,7 +313,7 @@ export async function contextoDeEtapas(a: AcessoTenant, dealId: string) {
   const individualDe = new Map(individuais.map((i) => [i.perfilId, i.matriz]));
   const paiDe = new Map(etapas.map((e) => [e.id, e.paiId]));
   const matrizNa = (etapaId: string | null): Matriz => {
-    if (a.administrador) return { etapas: ["ver", "criar", "editar", "excluir"] };
+    if (a.administrador) return MATRIZ_COMPLETA_DO_NEGOCIO;
     return somarMatrizes(
       minhas
         .filter(
