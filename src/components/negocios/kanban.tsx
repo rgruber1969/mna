@@ -8,6 +8,7 @@ import { moverNegocioParaEtapaAcao, painelDoNegocioAcao } from "@/app/acoes/kanb
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
 import { TarefasDoNegocio } from "@/components/negocios/tarefas";
+import { MensagensDoNegocio } from "@/components/negocios/mensagens";
 import { Avatar, Aviso } from "@/components/ui/basicos";
 
 /**
@@ -330,8 +331,20 @@ export function KanbanDeNegocios({
     ...(p?.etapas ? [{ id: "etapas", rotulo: t("abas.etapas") }] : []),
     { id: "empresas", rotulo: `${t("abas.empresas")} (${p?.empresas.length ?? 0})` },
     { id: "participantes", rotulo: `${t("abas.participantes")} (${p?.participantes.length ?? 0})` },
-    ...(p?.tarefas ? [{ id: "tarefas", rotulo: t("abas.tarefas") }] : []),
-    ...(p?.dataRoom ? [{ id: "documentos", rotulo: t("abas.documentos") }] : []),
+    ...(p?.tarefas
+      ? [
+          {
+            id: "tarefas",
+            rotulo: `${t("abas.tarefas")} (${
+              p.tarefas.tarefas.filter((x) => x.situacao !== "concluida" && x.situacao !== "cancelada").length
+            })`,
+          },
+        ]
+      : []),
+    ...(p?.dataRoom
+      ? [{ id: "documentos", rotulo: `${t("abas.documentos")} (${p.dataRoom.documentos.length})` }]
+      : []),
+    ...(p ? [{ id: "mensagens", rotulo: t("abas.mensagens") }] : []),
     { id: "historico", rotulo: t("abas.historico") },
   ];
 
@@ -663,6 +676,7 @@ export function KanbanDeNegocios({
                       aoMudar={() => abrir(c0, "documentos")}
                     />
                   )}
+                  {aberto.aba === "mensagens" && <MensagensDoNegocio dealId={c0.id} />}
                   {aberto.aba === "historico" &&
                     (p.historico.length === 0 ? (
                       <p className="text-muted text-sm">{t("semEventos")}</p>

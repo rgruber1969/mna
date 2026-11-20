@@ -23,7 +23,7 @@
     "novaVersaoDe": "Nova versão de \"{titulo}\"",
     "titulo": "Título",
     "arquivo": "Arquivo",
-    "arquivoAjuda": "Até 200 MB cada: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem. Pode escolher vários de uma vez.",
+    "arquivoAjuda": "Até 200 MB cada: PDF, Word, Excel, PowerPoint, CSV, TXT ou imagem. Para enviar vários, selecione todos de uma vez na janela (Ctrl+clique ou Shift+clique); cada arquivo vira um documento com o nome dele.",
     "comentario": "Comentário (opcional)",
     "quemVe": "Quem pode ver esta versão",
     "quemVeAjuda": "Já vem marcado com o seu lado (ou com a lista da versão anterior). Você e os administradores sempre veem. Para liberar ao outro lado depois, use \"Alterar quem vê\" na versão.",
