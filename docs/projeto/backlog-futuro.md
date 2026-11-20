@@ -110,3 +110,9 @@ versão 1" é anotado aqui.
 * Documentos escaneados (imagem, sem texto) entram na busca por conteúdo só
   com leitura de imagem (OCR), junto com a evolução do ADR-0021.
 
+## LGPD
+
+* Anonimização a pedido do titular (escopo-v1.md, item 23): saiu da V1 em
+  2026-11-20; enquanto isso, pedidos de titulares são atendidos
+  manualmente.
+

@@ -15,7 +15,7 @@ responsável.
     componentes das telas reais, para ser aproveitada quando a função real
     for construída.
 
-Resumo: **24 reais, 9 simuladas e 1 parcial** (item 33); item 35 (busca) a definir entre real e simulado. A ordem de tornar reais as simuladas
+Resumo: **24 reais, 9 simuladas e 1 parcial** (item 33); item 35 (busca) a definir entre real e simulado; item 23 passou para o backlog. A ordem de tornar reais as simuladas
 será definida depois da demonstração, conforme a reação do cliente.
 
 | # | Funcionalidade | Valor | Esforço | Depende de | Demonstração |
@@ -42,7 +42,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 20 | Auditoria de tudo + tela de consulta | Essencial | M | 2 | Real |
 | 21 | Limpeza de auditoria com exportação PDF/XLSX | Baixo no início | M | 20 | Simulado |
 | 22 | Exportação completa do deal em PDF (fim da retenção) | Baixo no início | M | 8, 11 | Simulado |
-| 23 | Anonimização a pedido do titular (LGPD) | Médio | M | 7 | Real |
+| 23 | Anonimização a pedido do titular (LGPD) | Médio | M | 7 | Fora da V1 (backlog, decisão de 2026-11-20) |
 | 24 | Criptografia de campos sensíveis | Essencial | P | Gestão de chaves | Real |
 | 25 | API REST com Swagger (cresce junto com cada funcionalidade) | Essencial | M | 5 | Real |
 | 26 | Chaves de API geradas por administradores | Médio | P | 25 | Real |
@@ -53,6 +53,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 31 | Resumos automáticos (mensagens e histórico de documento): resumo local sem IA | Médio | M | 11, 16 | Real |
 | 32 | Ofertas recebidas com estrutura de pagamento, rateio entre vendedoras e comparação com o valuation | Alto | M | 8, 18 | Real |
 | 33 | Anonimização de clientes: N anonimizações por tenant, aplicadas aos deals escolhidos; clientes com códigos (C00001), variações de grafia e grupo econômico em 2 níveis (C00087.001); importação de planilha; substituição dos nomes pelos códigos nos documentos enviados, guardando original (restrito) e anonimizado | Alto (venda) | G | 7, 11 | Parcial: real em planilhas (XLSX, CSV); simulado em DOCX e PDF |
+| 36 | Melhorias de design: revisão visual das telas existentes (consistência de botões, tabelas, espaçamentos, estados vazios, contraste, telas estreitas), para as telas novas já nascerem no padrão; pedido de 2026-11-20 | Alto | M | — | Real |
 | 35 | Busca geral, primeira busca: **documentos** no geral ou dentro de um negócio, pelo nome (parte do título ou do arquivo) ou pelo **conteúdo** (ex.: "multa" acha todos os documentos que citam multa), sempre respeitando o que cada pessoa pode ver; pedido de 2026-11-20 | Alto | M | 11 | A definir: real (nome e conteúdo de PDF com texto, DOCX, XLSX, CSV e TXT) ou simulado no conteúdo |
 | 34 | Cadastro de empresas, pessoas e vínculos a partir de documento (PDF com texto: CNPJs, CPFs e quadro de sócios, sempre com conferência) e anexos de empresas e pessoas (criptografados), ADR-0021 | Alto | M | 7, 24, Armazenamento | Real |
 
@@ -76,3 +77,18 @@ Observações:
   corretamente desde o início.
 * Item 31: resumo local sem IA no desenvolvimento e na demonstração; na
   produção, manter ou adotar IA é decisão pendente (`pendencias.md`).
+
+## Ordem das próximas construções (combinada em 2026-11-20)
+
+1. Busca de documentos (35).
+2. Melhorias de design (36), antes das telas novas.
+3. Contratos de serviço (17).
+4. Ofertas recebidas (32).
+5. Anexos nas mensagens e demais complementos (ZIP de documentos, resumos
+   automáticos, lista de documentos obrigatórios, pedidos de documentos
+   depois do recorte aprovado).
+6. Telas simuladas, em lote (3, 10, 13, 18, 19, 21, 22, 28, 29) e
+   anonimização de clientes (33).
+7. Por último: exemplo de demonstração (o responsável testa com o próprio
+   negócio de exemplo até lá).
+
