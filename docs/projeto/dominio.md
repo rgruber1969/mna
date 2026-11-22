@@ -721,6 +721,15 @@ Etapas padrão:
 
 ### Resumos automáticos
 
+* **Construído (item 31, 2026-11-22), local e sem IA:** resumo das
+  mensagens não lidas no topo da página Mensagens (quantas, de quantas
+  pessoas, em quantos negócios, desde quando, quantas mencionam você e até 3
+  trechos, primeiro as menções); resumo do histórico ao abrir um documento
+  (versões e período, quem enviou, o que a última versão mudou em relação à
+  anterior: linhas novas e retiradas e em quais cláusulas, seções ou itens
+  numerados, e quantos comentários). Também na API (`/v1/resumos/…`).
+  Comparação pelo texto extraído (ADR-0022); sem texto, sem a parte das
+  mudanças.
 * Resumo das mensagens não lidas ou recentes.
 * Resumo do histórico de alterações de um documento.
 * **Desenvolvimento e demonstração: resumo local real, sem IA**, gerado por

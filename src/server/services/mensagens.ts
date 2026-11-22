@@ -541,8 +541,8 @@ export async function conversasDoNegocio(
   return lista;
 }
 
-/** Mensagens recentes (30 dias) que a pessoa vê, por conversa, e o total de não lidas. */
-async function recentesDe(a: AcessoTenant, desde?: Date) {
+/** Mensagens recentes que a pessoa vê (também usado pelos resumos automáticos). */
+export async function recentesDe(a: AcessoTenant, desde?: Date) {
   const limite = desde ?? new Date(Date.now() - DIAS_RECENTES * 86_400_000);
   const linhas = await comTenant(a.tenant.id, (tx) =>
     tx
@@ -557,6 +557,7 @@ async function recentesDe(a: AcessoTenant, desde?: Date) {
         autor: usuario.name,
         texto: mensagem.texto,
         criadoEm: mensagem.criadoEm,
+        mencoes: mensagem.mencoes,
       })
       .from(mensagem)
       .innerJoin(deal, eq(deal.id, mensagem.dealId))

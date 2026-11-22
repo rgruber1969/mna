@@ -16,6 +16,7 @@ import {
   linkDeDownload,
   salvarCategoria,
 } from "@/server/services/documentos";
+import { resumoDoDocumento } from "@/server/services/resumos";
 import type { Estado } from "./acesso";
 
 /** Data room: só repassam para a camada de serviços (ADR-0004). */
@@ -99,4 +100,8 @@ export async function editarComentarioDaVersaoAcao(
 ): Promise<{ erro?: string }> {
   const r = await editarComentarioDaVersao(await acesso(), versaoId, comentario);
   return "erro" in r ? { erro: await traduzirErro(r) } : {};
+}
+
+export async function resumoDoDocumentoAcao(documentoId: string) {
+  return resumoDoDocumento(await acesso(), documentoId);
 }

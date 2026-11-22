@@ -67,6 +67,7 @@ import { eq } from "drizzle-orm";
 import { comTenant } from "@/server/db/cliente";
 import { mensagem } from "@/server/db/esquema";
 import { buscarDocumentos } from "./busca-de-documentos";
+import { resumoDasMensagens, resumoDoDocumento } from "./resumos";
 import { criarChave, listarChaves, revogarChave } from "./chaves-api";
 import { api } from "@/server/api/app";
 import { unzipSync } from "fflate";
@@ -1318,5 +1319,18 @@ describe("data room: vários documentos num ZIP", () => {
       erro: "documentos.erros.nadaParaBaixar",
     });
     expect(await zipDeVersoes(g, [])).toMatchObject({ erro: "documentos.erros.escolhaDocumentos" });
+  });
+});
+
+describe("resumos automáticos (local, sem IA)", () => {
+  it("resume as não lidas de quem as tem e o histórico de um documento visível", async () => {
+    const r = await resumoDasMensagens(acesso("adva"));
+    expect(r.naoLidas).toBeGreaterThan(0);
+    expect(r.trechos[0].trecho).toContain("cláusula 7");
+    const dr = await dataRoomDoNegocio(acesso("gestor"), negocioId);
+    const memo = dr!.documentos.find((d) => d.titulo === "Memorando revisado")!;
+    const h = await resumoDoDocumento(acesso("gestor"), memo.id);
+    expect(h).toMatchObject({ versoes: 1, autores: ["gestor"] });
+    expect(await resumoDoDocumento(acesso("adva"), memo.id)).toBeNull(); // não vê o documento
   });
 });

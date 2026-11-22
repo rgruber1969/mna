@@ -7,6 +7,7 @@ import { ORDENS_DE_EMPRESAS, obterEmpresa, paginaDeEmpresas } from "@/server/ser
 import { conversasDoNegocio, enviarMensagem, lerAlvo, obterConversa } from "@/server/services/mensagens";
 import { ORDENS_DE_NEGOCIOS, obterNegocio, paginaDeNegocios } from "@/server/services/negocios";
 import { ORDENS_DE_PESSOAS, obterPessoa, paginaDePessoas } from "@/server/services/pessoas";
+import { resumoDasMensagens, resumoDoDocumento } from "@/server/services/resumos";
 import { criarTarefa, PRIORIDADES, tarefasDoNegocio } from "@/server/services/tarefas";
 
 /**
@@ -271,6 +272,32 @@ export function registrarRotasV1(api: OpenAPIHono) {
           : null,
       ) as never;
     },
+  );
+
+  // --- Resumos (local, sem IA) ----------------------------------------------------------------
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/resumos/mensagens",
+      tags: ["Resumos"],
+      summary: "Resumo das mensagens não lidas (geral ou de um negócio)",
+      security: seguranca,
+      request: { query: z.object({ negocio: z.uuid().optional() }) },
+      responses: respostas("Resumo"),
+    }),
+    (c) => comAcesso(c, (a) => resumoDasMensagens(a, c.req.valid("query").negocio ?? null)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/documentos/{id}/resumo",
+      tags: ["Resumos"],
+      summary: "Resumo do histórico de um documento (versões, mudanças e comentários)",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Resumo"),
+    }),
+    (c) => comAcesso(c, (a) => resumoDoDocumento(a, c.req.valid("param").id)) as never,
   );
 
   // --- Cadastros -----------------------------------------------------------------------------

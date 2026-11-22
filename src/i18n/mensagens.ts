@@ -18,6 +18,7 @@ export const AREAS = [
   "mensagens",
   "busca",
   "chaves",
+  "resumos",
   "administracao",
   "emails",
 ] as const;

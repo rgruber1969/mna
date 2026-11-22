@@ -16,6 +16,7 @@ import {
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { temPrevia, Visualizar } from "@/components/cadastros/previa-do-anexo";
 import { usePaginacao } from "@/components/ui/paginacao-local";
+import { ResumoDeDocumento } from "@/components/mensagens/resumo";
 import { Ajuda, Aviso, estiloTabela } from "@/components/ui/basicos";
 
 /**
@@ -813,6 +814,7 @@ export function DataRoomDoNegocio({
                               fechar={(mudou) => (mudou ? depoisDeEditar() : setEditandoDoc(null))}
                             />
                           )}
+                          <ResumoDeDocumento documentoId={d.id} />
                           <ul className="border-border ml-3 border-l text-xs">
                             {d.versoes.map((v) => (
                               <li
