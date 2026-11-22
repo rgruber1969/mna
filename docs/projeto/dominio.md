@@ -390,6 +390,35 @@ principalmente pelo advisor.
   earnout) é rateado entre as empresas vendedoras pelo percentual definido
   (ex.: 70% e 30%), com o critério registrado.
 
+Regras construídas (item 32, respostas O1–O4, 2026-11-22):
+
+* **Campos:** compradora (do funil do negócio), data, instrumento
+  (informal, Term Sheet, LOI, MOU), enterprise e equity value, parcela à
+  vista, parcelas a prazo (valor e vencimento), earnout (fórmula e valor
+  estimado), retenções/escrow, condições precedentes, validade, garantias
+  da compradora e da vendedora, índice e condições de correção das
+  parcelas, condições de transição, exclusividade proposta, não
+  concorrência, observações e arquivos (conferidos e com download
+  auditado).
+* **Ligação com o funil (pergunta do O1):** registrar uma oferta leva a
+  compradora a "Proposta recebida", se ela ainda estava antes (prospectada,
+  teaser ou NDA), com registro no histórico. Escolher ou descartar continua
+  no funil; uma descartada que volta é movida pelo funil.
+* **Rodadas (O2):** contraproposta é uma nova oferta que aponta a anterior
+  da mesma compradora (rodada 2, 3…).
+* **Quem vê:** matriz "Ofertas" e lista de acesso de quem registra (já com
+  o próprio lado); por perfil, só no grupo de quem registrou. A equipe de
+  uma compradora nunca vê a oferta de outra, mesmo que incluída na lista.
+* **Comparação (O3):** total (à vista + parcelas + earnout estimado) e
+  valor presente pela taxa anual informada na tela (o earnout entra sem
+  desconto); só para quem vê todas as ofertas. A faixa do valuation entra
+  quando o valuation existir (item 18).
+* **Rateio (O4):** percentuais das vendedoras e critério no negócio (lado
+  vendedor com "Ofertas × editar"), somando 100%; uma oferta pode ter
+  rateio próprio. Só aparece para quem vê as vendedoras.
+* **API:** listar e registrar ofertas; listar, ver e criar contratos;
+  links de download dos arquivos (auditados).
+
 ### E-book e OnePager
 
 Material de apresentação da empresa vendedora a potenciais compradores,

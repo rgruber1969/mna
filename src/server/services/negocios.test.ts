@@ -1583,3 +1583,53 @@ describe("ofertas recebidas", () => {
     expect(await excluirOferta(g, r2.id)).toEqual({ ok: true });
   });
 });
+
+describe("API: contratos e ofertas", () => {
+  it("a chave participante lê ofertas e contratos do negócio e registra uma oferta", async () => {
+    const adm = acesso("admin", true);
+    const [{ id: perfilGestor }] = (
+      await dono.query(
+        `select id from perfil where tenant_id = $1 and padrao = 'gestor-contratante' and camada = 'tenant'`,
+        [tenantId],
+      )
+    ).rows as { id: string }[];
+    const r = await criarChave(adm, { nome: "Integração 2", perfilId: perfilGestor, expiraEm: "" });
+    if (!("segredo" in r)) throw new Error(r.erro);
+    const [{ id: pessoaDaChave }] = (
+      await dono.query(`select id from pessoa where tenant_id = $1 and nome = 'Chave de API: Integração 2'`, [
+        tenantId,
+      ])
+    ).rows as { id: string }[];
+    await adicionarParticipante(acesso("gestor"), negocioId, {
+      pessoaId: pessoaDaChave,
+      perfilId: await perfilDeDeal("coordenador-deal"),
+      empresaId: "",
+      lado: "vendedor",
+      prazo: "",
+    });
+    const dominio = process.env.APP_DOMINIO ?? "localhost:3000";
+    const host = `ng-${sufixo}.${dominio}`;
+    const chamar = (caminho: string, corpo?: unknown) =>
+      api.request(`/api${caminho}`, {
+        method: corpo ? "POST" : "GET",
+        headers: { host, authorization: `Bearer ${r.segredo}`, "content-type": "application/json" },
+        body: corpo ? JSON.stringify(corpo) : undefined,
+      });
+    const criada = await chamar(`/v1/negocios/${negocioId}/ofertas`, {
+      compradoraId: compradoraB,
+      data: "2026-11-20",
+      instrumento: "term_sheet",
+      parcelaVista: "1000000",
+    });
+    expect(criada.status).toBe(200);
+    const { id } = (await criada.json()) as { id: string };
+    const lista = await chamar(`/v1/negocios/${negocioId}/ofertas`);
+    expect(lista.status).toBe(200);
+    expect(((await lista.json()) as { ofertas: { id: string }[] }).ofertas.some((o) => o.id === id)).toBe(
+      true,
+    );
+    const contratos = await chamar(`/v1/contratos?negocio=${negocioId}`);
+    expect(contratos.status).toBe(200);
+    expect(Array.isArray(((await contratos.json()) as { contratos: unknown[] }).contratos)).toBe(true);
+  });
+});

@@ -1348,10 +1348,7 @@ export const contratoParte = pgTable(
       .references(() => empresa.id),
     papel: text("papel").$type<"contratante" | "contratada">().notNull(),
   },
-  (t) => [
-    uniqueIndex("contrato_parte_uq").on(t.tenantId, t.contratoId, t.empresaId, t.papel),
-    isolamento(),
-  ],
+  (t) => [uniqueIndex("contrato_parte_uq").on(t.tenantId, t.contratoId, t.empresaId, t.papel), isolamento()],
 ).enableRLS();
 
 /** Quem vê o contrato: perfis (do negócio) e/ou usuários; quem criou e administradores sempre veem. */

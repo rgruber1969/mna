@@ -9,6 +9,20 @@ import { ORDENS_DE_NEGOCIOS, obterNegocio, paginaDeNegocios } from "@/server/ser
 import { ORDENS_DE_PESSOAS, obterPessoa, paginaDePessoas } from "@/server/services/pessoas";
 import { resumoDasMensagens, resumoDoDocumento } from "@/server/services/resumos";
 import { criarTarefa, PRIORIDADES, tarefasDoNegocio } from "@/server/services/tarefas";
+import {
+  criarContrato,
+  linkDoArquivoDoContrato,
+  listarContratos,
+  obterContrato,
+  PERIODICIDADES,
+  TIPOS_DE_CONTRATO,
+} from "@/server/services/contratos";
+import {
+  criarOferta,
+  INSTRUMENTOS,
+  linkDoArquivoDaOferta,
+  ofertasDoNegocio,
+} from "@/server/services/ofertas";
 
 /**
  * API REST v1 (itens 25 e 26; ADR-0004, ADR-0013). Autenticação por chave de
@@ -366,5 +380,163 @@ export function registrarRotasV1(api: OpenAPIHono) {
       responses: respostas("Pessoa"),
     }),
     (c) => comAcesso(c, (a) => obterPessoa(a, c.req.valid("param").id)) as never,
+  );
+
+  // --- Contratos -----------------------------------------------------------------------------
+  const DadosContratoApi = z.object({
+    dealId: z.uuid().nullable().optional(),
+    tipo: z.enum(TIPOS_DE_CONTRATO),
+    titulo: z.string().min(2).max(200),
+    objeto: z.string().max(5000).optional(),
+    dataAssinatura: z.string().optional(),
+    inicio: z.string().optional(),
+    fim: z.string().optional(),
+    exclusivo: z.boolean().optional(),
+    exclusividadeAte: z.string().optional(),
+    honorarioFixo: z.string().optional(),
+    periodicidade: z.enum(PERIODICIDADES).optional(),
+    retainerDescontado: z.boolean().optional(),
+    successFeePercentual: z.string().optional(),
+    successFeeMinimo: z.string().optional(),
+    formaPagamento: z.string().max(1000).optional(),
+    contaBancariaId: z.uuid().optional(),
+    observacoes: z.string().max(5000).optional(),
+    contratantes: z.array(z.uuid()).min(1),
+    contratadas: z.array(z.uuid()).min(1),
+    perfis: z.array(z.uuid()).optional(),
+    usuarios: z.array(z.uuid()).optional(),
+  });
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/contratos",
+      tags: ["Contratos"],
+      summary: "Contratos que a chave vê (todos, de um negócio ou só os avulsos)",
+      security: seguranca,
+      request: {
+        query: z.object({
+          negocio: z.uuid().optional(),
+          avulsos: z.enum(["sim"]).optional(),
+        }),
+      },
+      responses: respostas("Contratos"),
+    }),
+    (c) => {
+      const q = c.req.valid("query");
+      return comAcesso(c, async (a) => ({
+        contratos: await listarContratos(
+          a,
+          q.negocio ? { dealId: q.negocio } : q.avulsos ? { dealId: null } : {},
+        ),
+      })) as never;
+    },
+  );
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/contratos/{id}",
+      tags: ["Contratos"],
+      summary: "Detalhe do contrato (conta da contratada mascarada)",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Contrato"),
+    }),
+    (c) => comAcesso(c, (a) => obterContrato(a, c.req.valid("param").id)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/contratos",
+      tags: ["Contratos"],
+      summary: "Cria um contrato (no negócio ou avulso); valores no formato 1234.56",
+      security: seguranca,
+      request: { body: { content: { "application/json": { schema: DadosContratoApi } } } },
+      responses: respostas("Contrato criado"),
+    }),
+    (c) => comAcesso(c, (a) => criarContrato(a, c.req.valid("json"))) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/contratos/arquivos/{id}/download",
+      tags: ["Contratos"],
+      summary: "Link temporário para baixar uma versão do arquivo do contrato (auditado)",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Link"),
+    }),
+    (c) => comAcesso(c, (a) => linkDoArquivoDoContrato(a, c.req.valid("param").id)) as never,
+  );
+
+  // --- Ofertas -------------------------------------------------------------------------------
+  const DataApi = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/negocios/{id}/ofertas",
+      tags: ["Ofertas"],
+      summary: "Ofertas que a chave vê no negócio, com rateio e se a lista está completa",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Ofertas"),
+    }),
+    (c) => comAcesso(c, (a) => ofertasDoNegocio(a, c.req.valid("param").id)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/negocios/{id}/ofertas",
+      tags: ["Ofertas"],
+      summary: "Registra uma oferta (ou contraproposta, com anteriorId); valores no formato 1234.56",
+      security: seguranca,
+      request: {
+        params: Id,
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                compradoraId: z.uuid(),
+                anteriorId: z.uuid().optional(),
+                data: DataApi,
+                instrumento: z.enum(INSTRUMENTOS),
+                enterpriseValue: z.string().optional(),
+                equityValue: z.string().optional(),
+                parcelaVista: z.string().optional(),
+                parcelas: z.array(z.object({ valor: z.string(), data: DataApi })).optional(),
+                earnout: z.string().max(3000).optional(),
+                earnoutValor: z.string().optional(),
+                retencao: z.string().max(3000).optional(),
+                retencaoValor: z.string().optional(),
+                condicoesPrecedentes: z.string().max(3000).optional(),
+                validade: z.string().optional(),
+                garantiasCompradora: z.string().max(3000).optional(),
+                garantiasVendedora: z.string().max(3000).optional(),
+                correcaoParcelas: z.string().max(3000).optional(),
+                condicoesTransicao: z.string().max(3000).optional(),
+                exclusividade: z.string().max(500).optional(),
+                naoConcorrencia: z.string().max(500).optional(),
+                observacoes: z.string().max(5000).optional(),
+                perfis: z.array(z.uuid()).optional(),
+                usuarios: z.array(z.uuid()).optional(),
+              }),
+            },
+          },
+        },
+      },
+      responses: respostas("Oferta registrada"),
+    }),
+    (c) => comAcesso(c, (a) => criarOferta(a, c.req.valid("param").id, c.req.valid("json"))) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/ofertas/arquivos/{id}/download",
+      tags: ["Ofertas"],
+      summary: "Link temporário para baixar um arquivo da oferta (auditado)",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Link"),
+    }),
+    (c) => comAcesso(c, (a) => linkDoArquivoDaOferta(a, c.req.valid("param").id)) as never,
   );
 }
