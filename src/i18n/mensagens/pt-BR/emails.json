@@ -71,6 +71,19 @@
       "paragrafo": "Você tem {quantidade, plural, one {# mensagem nova} other {# mensagens novas}} em {negocios, plural, one {# negócio} other {# negócios}} desde o último resumo.",
       "comoDesligar": "Para deixar de receber este resumo, desmarque a opção na página Mensagens.",
       "botao": "Ver mensagens"
+    },
+    "contratos": {
+      "assunto": "Dados para nota fiscal e cobrança: {titulo}",
+      "saudacao": "Olá, equipe financeira,",
+      "intro": "{nome} enviou os dados do contrato abaixo para emissão da nota fiscal e cobrança.",
+      "contrato": "Contrato: {titulo} ({tipo})",
+      "negocio": "Negócio: {nome}",
+      "contratantes": "Contratante(s): {lista}",
+      "fixo": "Honorários fixos: {valor} ({periodicidade})",
+      "successFee": "Success fee: {percentual}; mínimo {minimo}",
+      "pagamento": "Forma de pagamento: {texto}",
+      "conta": "Conta para pagamento: {conta}",
+      "botao": "Abrir o contrato"
     }
   }
 }

@@ -23,7 +23,10 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
   { chave: "inicio", itens: [{ id: "painel", href: "/", icone: "casa" }] },
   {
     chave: "negocios",
-    itens: [{ id: "negocios", href: "/negocios", icone: "maleta", recurso: "deals" }],
+    itens: [
+      { id: "negocios", href: "/negocios", icone: "maleta", recurso: "deals" },
+      { id: "contratos", href: "/contratos", icone: "contrato", recurso: "deals" },
+    ],
   },
   {
     chave: "cadastros",

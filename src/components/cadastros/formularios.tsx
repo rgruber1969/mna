@@ -285,6 +285,13 @@ export function FormEmpresa({
           <Secao titulo={t("contato")}>
             <Campo rotulo={t("telefone")} nome="telefone" valores={valores} mudar={mudar} />
             <Campo rotulo={t("emailGeral")} nome="email" valores={valores} mudar={mudar} type="email" />
+            <Campo
+              rotulo={t("emailFinanceiro")}
+              nome="emailFinanceiro"
+              valores={valores}
+              mudar={mudar}
+              type="email"
+            />
             <Campo rotulo={t("site")} nome="site" valores={valores} mudar={mudar} className="sm:col-span-2" />
           </Secao>
           <label className="mb-4 block">

@@ -192,7 +192,7 @@ async function negar(a: AcessoTenant, acao: Acao, dealId: string): Promise<never
 
 // --- Contexto da pessoa no data room de um negócio ---------------------------------------
 
-async function contextoDoDataRoom(a: AcessoTenant, dealId: string) {
+export async function contextoDoDataRoom(a: AcessoTenant, dealId: string) {
   const ctx = await contextoDeEtapas(a, dealId);
   const minhas = a.administrador
     ? []

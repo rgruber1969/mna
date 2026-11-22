@@ -219,3 +219,45 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(painel.getByRole("button", { name: "Lista" })).toHaveCount(0);
   if (process.env.CAPTURAS) await page.screenshot({ path: `${process.env.CAPTURAS}/kanban-painel.png` });
 });
+
+test("contratos: cria no negócio, envia arquivo, simula o success fee e lista", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto(`http://${slug}.${dominio}/entrar`);
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("E-mail (desenvolvimento)").fill(email);
+  await page.getByRole("button", { name: "Entrar sem senha" }).click();
+  await expect(page.getByRole("heading", { name: "Olá, Pessoa Negócio" })).toBeVisible();
+  await page.goto(`http://${slug}.${dominio}/negocios`);
+  await page.getByRole("link", { name: "N-0001 Projeto Teste" }).click();
+  await page.getByRole("tab", { name: /^Contratos/ }).click();
+  await page.getByRole("link", { name: "Novo contrato" }).click();
+  await expect(page.getByRole("heading", { name: "Novo contrato" })).toBeVisible({ timeout: 40_000 });
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("Título").fill("Mandato de venda");
+  await page.getByRole("group", { name: "Contratante(s)" }).getByLabel("Vendedora de Teste Ltda").check();
+  await page.getByRole("group", { name: "Contratada(s)" }).getByLabel("Escritório de Teste").check();
+  await page.getByLabel("Honorários fixos (retainer), R$").fill("20.000,00");
+  await page.getByLabel("Success fee (%)").fill("2");
+  await page.getByLabel("Success fee mínimo, R$").fill("150.000,00");
+  await page.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("Contrato salvo.")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Mandato de venda" })).toBeVisible();
+  await expect(page.getByText("R$ 20.000,00")).toBeVisible();
+  // Simulação: 2% de 10 milhões = 200 mil (acima do mínimo).
+  await page.getByLabel("Simular success fee sobre o valor (R$)").fill("10.000.000");
+  await expect(page.getByText("Success fee estimado: R$ 200.000,00")).toBeVisible();
+  // Arquivo (versão 1), conferido pelo antivírus.
+  await page.getByLabel("Enviar arquivo (nova versão)").setInputFiles({
+    name: "mandato.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from(pdfComTexto(["CONTRATO DE MANDATO"])),
+  });
+  await expect(page.getByText("Arquivo gravado com sucesso!")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/v1 · mandato\.pdf/)).toBeVisible();
+  if (process.env.CAPTURAS)
+    await page.screenshot({ path: `${process.env.CAPTURAS}/contrato.png`, fullPage: true });
+  // Lista do menu Contratos.
+  await page.goto(`http://${slug}.${dominio}/contratos`);
+  await expect(page.getByRole("link", { name: "Mandato de venda" })).toBeVisible();
+  await expect(page.getByText("N-0001 Projeto Teste")).toBeVisible();
+});

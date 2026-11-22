@@ -11,6 +11,7 @@ import {
   pessoa,
   tipoVinculo,
   vinculoPessoaEmpresa,
+  contratoParte,
 } from "@/server/db/esquema";
 import { cnpjValido, soDigitos } from "@/config/documentos";
 import type { ErroDeServico } from "@/i18n/servidor";
@@ -85,6 +86,14 @@ const DadosEmpresa = z.object({
     .string()
     .trim()
     .toLowerCase()
+    .transform((v) => v || null)
+    .refine((v) => v === null || z.email().safeParse(v).success, "cadastros.erros.emailInvalido"),
+  /** Setor financeiro: recebe os dados de contratos para nota fiscal e cobrança (C3). */
+  emailFinanceiro: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .default("")
     .transform((v) => v || null)
     .refine((v) => v === null || z.email().safeParse(v).success, "cadastros.erros.emailInvalido"),
   observacoes: opcional(2000),
@@ -506,6 +515,10 @@ export async function excluirEmpresa(acesso: Acesso | null, id: string): Promise
   );
   if (!e) return { erro: "cadastros.erros.empresaNaoEncontrada" };
   if (e.doContratante) return { erro: "cadastros.erros.empresaContratanteNaoExcluivel" };
+  const [emContrato] = await comTenant(a.tenant.id, (tx) =>
+    tx.select({ id: contratoParte.id }).from(contratoParte).where(eq(contratoParte.empresaId, id)).limit(1),
+  );
+  if (emContrato) return { erro: "cadastros.erros.empresaEmContrato" };
   // Anexos saem junto (cascata no banco); os arquivos, do armazenamento.
   const anexos = await comTenant(a.tenant.id, async (tx) => {
     const chaves = await tx

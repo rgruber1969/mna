@@ -39,6 +39,8 @@ import { dataRoomDoNegocio } from "@/server/services/documentos";
 import { HistoricoPaginado } from "@/components/negocios/historico";
 import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
+import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
+import { TabelaDeContratos } from "@/components/contratos/detalhe";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
@@ -95,10 +97,14 @@ async function Painel({
     n.podeGerirParticipantes ? opcoesDeParticipantes(acesso, n.id) : null,
     andamentoDoNegocio(acesso, n.id),
   ]);
-  const [funil, totalMsg] = await Promise.all([
+  const [funil, totalMsg, contratos, opcoesContrato] = await Promise.all([
     funilDoNegocio(acesso, n.id),
     totaisDeMensagens(acesso, n.id),
+    listarContratos(acesso, { dealId: n.id }),
+    opcoesDoContrato(acesso, n.id),
   ]);
+  const tc = await getTranslations("contratos");
+  const mostraContratos = contratos.length > 0 || opcoesContrato.podeCriar;
   const [etapas, alcances, dataRoom, tarefas] = await Promise.all([
     etapasDoNegocio(acesso, n.id),
     n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
@@ -178,6 +184,9 @@ async function Painel({
                     ? tm("abaComNovas", totalMsg)
                     : tm("abaComTotal", { total: totalMsg?.total ?? 0 }),
               },
+              ...(mostraContratos
+                ? [{ id: "contratos", rotulo: `${tc("titulo")} (${contratos.length})` }]
+                : []),
               { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
               { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
               ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)
@@ -335,6 +344,21 @@ async function Painel({
                 canalInicial={(await conversa).canal}
               />
             </PainelDeAba>
+            {mostraContratos && (
+              <PainelDeAba id="contratos">
+                {opcoesContrato.podeCriar && (
+                  <div className="mb-3 flex justify-end">
+                    <Link
+                      href={"/contratos/novo?negocio=" + n.id}
+                      className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
+                    >
+                      {tc("novo")}
+                    </Link>
+                  </div>
+                )}
+                <TabelaDeContratos contratos={contratos} mostrarNegocio={false} />
+              </PainelDeAba>
+            )}
             <PainelDeAba id="exclusividade">
               <PainelExclusividade
                 dealId={n.id}

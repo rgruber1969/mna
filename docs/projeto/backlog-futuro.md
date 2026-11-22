@@ -114,3 +114,12 @@ versão 1" é anotado aqui.
   2026-11-20; enquanto isso, pedidos de titulares são atendidos
   manualmente.
 
+
+## Primeiro acesso (pedido em 2026-11-22)
+
+* **Tour guiado no primeiro acesso:** balões em passos ("Passo 1 de 7"),
+  com título, explicação curta, "Próximo" e "Pular tour", apontando as
+  áreas principais (painel, menu, negócios, documentos, mensagens).
+  Aparece uma vez por pessoa; uma opção nas preferências da conta
+  ("Ver o tour de novo", guardada como flag por usuário) o reapresenta.
+  Textos nas mensagens (idiomas) e cores pelos tokens do tema.

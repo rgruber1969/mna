@@ -260,7 +260,8 @@
       "tipoNaoEncontrado": "Tipo de vínculo não encontrado.",
       "tipoEmUso": "Tipo em uso em {n, plural, one {# vínculo} other {# vínculos}}: remova os vínculos antes.",
       "empresaParecidaSemCnpj": "Já existe a empresa \"{nome}\", sem CNPJ, com nome parecido. É a mesma empresa?",
-      "papelEmUso": "Este papel está em uso em algum negócio e não pode ser excluído."
+      "papelEmUso": "Este papel está em uso em algum negócio e não pode ser excluído.",
+      "empresaEmContrato": "Esta empresa é parte de um contrato; não pode ser excluída. Inative-a, se não for mais usada."
     },
     "anexos": {
       "titulo": "Documentos anexados",
@@ -426,7 +427,8 @@
         "cadastroNaoEncontrado": "Cadastro não encontrado.",
         "contaNaoEncontrada": "Conta não encontrada."
       }
-    }
+    },
+    "emailFinanceiro": "E-mail do financeiro (nota fiscal e cobrança)"
   },
   "configuracoes": {
     "titulo": "Configurações",

@@ -1,7 +1,7 @@
 {
   "chaves": {
     "titulo": "Chaves de API",
-    "ajuda": "Chaves para sistemas e integrações usarem a API (documentação em /api/docs).\n\n• O segredo aparece uma única vez; o sistema guarda só uma \"impressão digital\" dele, como uma senha. Guarde-o num cofre de senhas.\n• Cada chave age como um usuário de serviço com o perfil escolhido: vê e faz só o que esse perfil permite.\n• Para ver um negócio, inclua a chave como participante; ela aparece como a pessoa \"Chave de API: nome\".\n• Revogar corta o acesso na hora.\n• A chave só funciona no endereço do próprio tenant.\n\nEnvie no cabeçalho: Authorization: Bearer <segredo>.",
+    "ajuda": "Chaves para sistemas e integrações usarem a API (documentação em /api/docs).\n\n• O segredo aparece uma única vez; o sistema guarda só uma \"impressão digital\" dele, como uma senha. Guarde-o num cofre de senhas.\n• Cada chave age como um usuário de serviço com o perfil escolhido: vê e faz só o que esse perfil permite.\n• Para ver um negócio, inclua a chave como participante; ela aparece como a pessoa \"Chave de API: nome\".\n• Revogar corta o acesso na hora.\n• A chave só funciona no endereço do próprio tenant.\n\nEnvie no cabeçalho: Authorization: Bearer seguido do segredo.",
     "nome": "Nome",
     "nomeDica": "Ex.: Integração do ERP",
     "perfil": "Perfil",

@@ -506,6 +506,8 @@ export const empresa = pgTable(
     site: text("site"),
     telefone: text("telefone"),
     email: text("email"),
+    /** E-mail do setor financeiro (dados para nota fiscal e cobrança dos contratos, C3). */
+    emailFinanceiro: text("email_financeiro"),
     observacoes: text("observacoes"),
     grupoId: uuid("grupo_id").references(() => grupoEconomico.id, { onDelete: "set null" }),
     /** Empresa do próprio contratante: criada com o tenant, não pode ser excluída. */
@@ -1284,4 +1286,106 @@ export const mensagemAnexo = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index("mensagem_anexo_mensagem_idx").on(t.tenantId, t.mensagemId), isolamento()],
+).enableRLS();
+
+// --- Contratos de serviço (item 17; dominio.md, "Contrato de serviço"; C1–C4) ---
+
+/**
+ * Contrato de prestação de serviço (mandato do advisor, honorários
+ * advocatícios, outros). Pode nascer avulso (sem negócio) e ser ligado a um
+ * negócio depois (C2).
+ */
+export const contrato = pgTable(
+  "contrato",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id").references(() => deal.id, { onDelete: "set null" }),
+    /** mandato, honorarios ou outro. */
+    tipo: text("tipo").$type<"mandato" | "honorarios" | "outro">().notNull(),
+    titulo: text("titulo").notNull(),
+    objeto: text("objeto"),
+    dataAssinatura: date("data_assinatura"),
+    inicio: date("inicio"),
+    fim: date("fim"),
+    exclusivo: boolean("exclusivo").notNull().default(false),
+    exclusividadeAte: date("exclusividade_ate"),
+    /** Honorários fixos (retainer): valor por período. */
+    honorarioFixo: numeric("honorario_fixo", { precision: 18, scale: 2 }),
+    periodicidade: text("periodicidade").$type<"unico" | "mensal" | "trimestral" | "semestral" | "anual">(),
+    /** Os honorários fixos pagos são descontados do success fee (C1). */
+    retainerDescontado: boolean("retainer_descontado").notNull().default(false),
+    successFeePercentual: numeric("success_fee_percentual", { precision: 7, scale: 4 }),
+    successFeeMinimo: numeric("success_fee_minimo", { precision: 18, scale: 2 }),
+    formaPagamento: text("forma_pagamento"),
+    /** Conta da contratada para o pagamento. */
+    contaBancariaId: uuid("conta_bancaria_id").references(() => contaBancaria.id, { onDelete: "set null" }),
+    observacoes: text("observacoes"),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    financeiroAvisadoEm: timestamp("financeiro_avisado_em", { withTimezone: true }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("contrato_deal_idx").on(t.tenantId, t.dealId), isolamento()],
+).enableRLS();
+
+/** Partes do contrato: uma ou mais contratantes e contratadas (C1). */
+export const contratoParte = pgTable(
+  "contrato_parte",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    contratoId: uuid("contrato_id")
+      .notNull()
+      .references(() => contrato.id, { onDelete: "cascade" }),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresa.id),
+    papel: text("papel").$type<"contratante" | "contratada">().notNull(),
+  },
+  (t) => [
+    uniqueIndex("contrato_parte_uq").on(t.tenantId, t.contratoId, t.empresaId, t.papel),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Quem vê o contrato: perfis (do negócio) e/ou usuários; quem criou e administradores sempre veem. */
+export const contratoAcesso = pgTable(
+  "contrato_acesso",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    contratoId: uuid("contrato_id")
+      .notNull()
+      .references(() => contrato.id, { onDelete: "cascade" }),
+    perfilId: uuid("perfil_id").references(() => perfil.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id").references(() => usuario.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    check("contrato_acesso_alvo_ck", sql`(perfil_id is null) <> (usuario_id is null)`),
+    index("contrato_acesso_contrato_idx").on(t.tenantId, t.contratoId),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Arquivos do contrato, em versões (como os documentos): conferidos e só então disponíveis. */
+export const contratoArquivo = pgTable(
+  "contrato_arquivo",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    contratoId: uuid("contrato_id")
+      .notNull()
+      .references(() => contrato.id, { onDelete: "cascade" }),
+    numero: integer("numero").notNull(),
+    nomeArquivo: text("nome_arquivo").notNull(),
+    tamanho: bigint("tamanho", { mode: "number" }).notNull(),
+    tipoDeConteudo: text("tipo_de_conteudo"),
+    chave: text("chave").notNull(),
+    situacao: text("situacao").$type<"enviando" | "disponivel" | "bloqueado">().notNull().default("enviando"),
+    comentario: text("comentario"),
+    enviadoPor: uuid("enviado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("contrato_arquivo_uq").on(t.tenantId, t.contratoId, t.numero), isolamento()],
 ).enableRLS();

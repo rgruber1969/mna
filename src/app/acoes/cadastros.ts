@@ -68,6 +68,7 @@ const CAMPOS_EMPRESA = [
   "site",
   "telefone",
   "email",
+  "emailFinanceiro",
   "observacoes",
   "grupoId",
 ] as const;

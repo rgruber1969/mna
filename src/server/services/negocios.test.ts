@@ -3,7 +3,19 @@ import pg from "pg";
 import { auth } from "@/server/auth/auth";
 import { AcessoNegado, type AcessoTenant } from "./acesso";
 import { completarCadastrosPadrao } from "./cadastros-padrao";
-import { criarEmpresa, criarGrupo } from "./empresas";
+import { criarEmpresa, criarGrupo, excluirEmpresa } from "./empresas";
+import {
+  avisarFinanceiro,
+  concluirArquivoDoContrato,
+  criarContrato,
+  editarContrato,
+  excluirContrato,
+  iniciarArquivoDoContrato,
+  linkDoArquivoDoContrato,
+  listarContratos,
+  obterContrato,
+  successFeeEstimado,
+} from "./contratos";
 import { adicionarVinculo } from "./pessoas";
 import {
   adicionarEmpresaAoNegocio,
@@ -1364,5 +1376,117 @@ describe("anexos das mensagens", () => {
     if (!("versaoId" in doc)) throw new Error(doc.erro);
     const dr = await dataRoomDoNegocio(g, negocioId);
     expect(dr!.documentos.some((d) => d.titulo === "minuta" && d.versoes[0].id === doc.versaoId)).toBe(true);
+  });
+});
+
+describe("contratos de serviço", () => {
+  it("success fee estimado: percentual, mínimo e retainer descontado", () => {
+    const c = { successFeePercentual: "2", successFeeMinimo: "150000", retainerDescontado: false };
+    expect(successFeeEstimado(c, 10_000_000)).toBe(200_000);
+    expect(successFeeEstimado(c, 1_000_000)).toBe(150_000);
+    expect(successFeeEstimado({ ...c, retainerDescontado: true }, 10_000_000, 50_000)).toBe(150_000);
+    expect(successFeeEstimado({ ...c, successFeePercentual: null, successFeeMinimo: null }, 1)).toBeNull();
+  });
+
+  it("no negócio: lista de acesso por perfil só no lado de quem criou; arquivo com antivírus e download auditado", async () => {
+    const g = acesso("gestor");
+    const adm = acesso("admin", true);
+    const [{ id: contratante }] = (
+      await dono.query(`select id from empresa where tenant_id = $1 and do_contratante`, [tenantId])
+    ).rows as { id: string }[];
+    const base = {
+      dealId: negocioId,
+      tipo: "mandato" as const,
+      titulo: "Mandato de venda",
+      contratantes: [vendedora],
+      contratadas: [contratante],
+      inicio: "2026-01-01",
+      fim: "2026-12-31",
+      honorarioFixo: "20.000,00",
+      periodicidade: "mensal" as const,
+      retainerDescontado: true,
+      successFeePercentual: "3,5",
+      successFeeMinimo: "500000",
+      perfis: [await perfilDeDeal("advogado")],
+    };
+    expect(await criarContrato(g, { ...base, contratadas: [] })).toMatchObject({
+      erro: "contratos.erros.contratadaObrigatoria",
+    });
+    expect(await criarContrato(g, { ...base, fim: "2025-12-31" })).toMatchObject({
+      erro: "contratos.erros.fimAntesDoInicio",
+    });
+    const r = await criarContrato(g, base);
+    if (!("id" in r)) throw new Error(r.erro);
+    const c = await obterContrato(g, r.id);
+    expect(c).toMatchObject({ honorarioFixo: "20000.00", successFeePercentual: "3.5000", podeEditar: true });
+    expect(c!.contratantes).toEqual(["Vendedora Exemplo Ltda"]);
+    const ve = async (nome: string) =>
+      (await listarContratos(acesso(nome), { dealId: negocioId })).some((x) => x.id === r.id);
+    expect(await ve("advv2")).toBe(true); // advogado do lado vendedor
+    expect(await ve("adva")).toBe(false); // advogado da compradora: mesmo perfil, outro lado
+    expect(await obterContrato(acesso("adva"), r.id)).toBeNull();
+    // Arquivo
+    const pdf = pdfComTexto(["CONTRATO DE MANDATO"]);
+    const i = await iniciarArquivoDoContrato(g, r.id, { nomeArquivo: "mandato.pdf", tamanho: pdf.length });
+    if (!("url" in i)) throw new Error(i.erro);
+    await fetch(i.url, {
+      method: "PUT",
+      body: Buffer.from(pdf),
+      headers: { "content-type": "application/octet-stream" },
+    });
+    expect(await concluirArquivoDoContrato(g, i.arquivoId)).toEqual({ ok: true });
+    expect((await obterContrato(g, r.id))!.arquivosLista.map((x) => x.numero)).toEqual([1]);
+    expect("url" in (await linkDoArquivoDoContrato(acesso("advv2"), i.arquivoId))).toBe(true);
+    expect(await linkDoArquivoDoContrato(acesso("adva"), i.arquivoId)).toMatchObject({
+      erro: "contratos.erros.naoEncontrado",
+    });
+    const baixados = await dono.query(
+      `select count(*)::int as n from evento_auditoria where tenant_id = $1 and tipo = 'contrato.arquivo_baixado'`,
+      [tenantId],
+    );
+    expect(baixados.rows[0].n).toBe(1);
+    // Empresa parte de contrato não pode ser excluída.
+    expect(await excluirEmpresa(adm, vendedora)).toMatchObject({ erro: "cadastros.erros.empresaEmContrato" });
+    // Financeiro: sem e-mail no cadastro, avisa; com e-mail, envia.
+    expect(await avisarFinanceiro(g, r.id)).toMatchObject({ erro: "contratos.erros.semEmailFinanceiro" });
+    await dono.query(`update empresa set email_financeiro = $1 where id = $2`, [
+      email("financeiro"),
+      contratante,
+    ]);
+    expect(await avisarFinanceiro(g, r.id)).toEqual({ enviados: 1 });
+    expect((await obterContrato(g, r.id))!.financeiroAvisadoEm).not.toBeNull();
+  });
+
+  it("avulso: só quem pode criar negócios cria; vê quem criou e a lista; depois é ligado a um negócio", async () => {
+    const g = acesso("gestor");
+    const [{ id: contratante }] = (
+      await dono.query(`select id from empresa where tenant_id = $1 and do_contratante`, [tenantId])
+    ).rows as { id: string }[];
+    const dados = {
+      tipo: "honorarios" as const,
+      titulo: "Honorários do escritório",
+      contratantes: [vendedora],
+      contratadas: [contratante],
+    };
+    expect(await criarContrato(acesso("advv2"), dados)).toMatchObject({ erro: "erros.acessoNegado" });
+    const r = await criarContrato(g, dados);
+    if (!("id" in r)) throw new Error(r.erro);
+    expect((await listarContratos(g, { dealId: null })).some((x) => x.id === r.id)).toBe(true);
+    expect(await obterContrato(acesso("advv2"), r.id)).toBeNull();
+    expect(await obterContrato(acesso("admin", true), r.id)).not.toBeNull();
+    // Liga ao negócio, liberando para os advogados do lado vendedor.
+    expect(
+      await editarContrato(g, r.id, {
+        ...dados,
+        dealId: negocioId,
+        perfis: [await perfilDeDeal("advogado")],
+      }),
+    ).toEqual({ ok: true });
+    expect((await obterContrato(acesso("advv2"), r.id))?.dealId).toBe(negocioId);
+    expect(await editarContrato(g, r.id, { ...dados, dealId: null })).toMatchObject({
+      erro: "contratos.erros.negocioNaoMuda",
+    });
+    expect(await excluirContrato(acesso("advv2"), r.id)).toMatchObject({ erro: "erros.acessoNegado" });
+    expect(await excluirContrato(g, r.id)).toEqual({ ok: true });
   });
 });

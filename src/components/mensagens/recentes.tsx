@@ -30,7 +30,7 @@ export function MensagensRecentes({
                 {" · "}
                 {c.alvo.tipo === "deal" ? t("geral") : `${t(`tipos.${c.alvo.tipo}`)}: ${c.rotulo}`}
               </span>
-              <span className="text-muted shrink-0 text-xs">
+              <span className="text-muted shrink-0 text-xs" suppressHydrationWarning>
                 {formato.relativeTime(new Date(c.em), agora)}
               </span>
             </span>
