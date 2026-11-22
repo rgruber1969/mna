@@ -577,13 +577,13 @@ export function DataRoomDoNegocio({
       return n;
     });
   const baixaveisDaPagina = paginaDeDocs.filter((d) => d.versoes[0]?.podeBaixar).map((d) => d.versoes[0].id);
-  async function baixarZip() {
+  async function baixarZip(versoes: string[] = [...selecionados]) {
     setZipando(true);
     setErro(null);
     const r = await fetch("/api/documentos/zip", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ versoes: [...selecionados] }),
+      body: JSON.stringify({ versoes }),
     });
     setZipando(false);
     if (!r.ok) {
@@ -654,7 +654,7 @@ export function DataRoomDoNegocio({
           <button
             type="button"
             disabled={zipando}
-            onClick={baixarZip}
+            onClick={() => baixarZip()}
             className="border-primary text-primary rounded-md border px-3 py-1.5 text-sm font-medium"
           >
             {zipando ? t("preparandoZip") : `${t("baixarSelecionados")} (${selecionados.size})`}
@@ -815,6 +815,18 @@ export function DataRoomDoNegocio({
                             />
                           )}
                           <ResumoDeDocumento documentoId={d.id} />
+                          {d.versoes.filter((v) => v.podeBaixar).length > 1 && (
+                            <button
+                              type="button"
+                              disabled={zipando}
+                              onClick={() =>
+                                baixarZip(d.versoes.filter((v) => v.podeBaixar).map((v) => v.id))
+                              }
+                              className="border-primary text-primary mb-2 rounded-md border px-3 py-1 text-xs font-medium"
+                            >
+                              {zipando ? t("preparandoZip") : t("baixarTodasAsVersoes")}
+                            </button>
+                          )}
                           <ul className="border-border ml-3 border-l text-xs">
                             {d.versoes.map((v) => (
                               <li

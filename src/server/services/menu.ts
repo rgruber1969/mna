@@ -38,7 +38,6 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
       { id: "usuarios", href: "/usuarios", icone: "usuario", soAdministrador: true },
       { id: "perfis", href: "/perfis", icone: "escudo", soAdministrador: true },
       { id: "chaves-de-api", href: "/chaves-de-api", icone: "chave", soAdministrador: true },
-      { id: "chaves-de-api", href: "/chaves-de-api", icone: "chave", soAdministrador: true },
       {
         id: "identidade-visual",
 

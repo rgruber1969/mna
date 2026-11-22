@@ -87,10 +87,11 @@
     "salvar": "Salvar",
     "editarComentario": "Editar comentário",
     "incluirComentario": "Incluir comentário",
-    "ajudaDaTela": "Excluir uma versão: só nas primeiras 24 horas depois do envio e enquanto ninguém além de quem enviou a tiver baixado; pode excluir quem enviou, os administradores e quem edita o negócio. Excluir a única versão apaga o documento. Depois disso, envie uma nova versão corrigida. Editar: título e categoria (quem criou o documento, administradores ou quem edita documentos na etapa) e o comentário da versão (quem a enviou).",
+    "ajudaDaTela": "Baixar: o botão da linha baixa a última versão; abra o documento (▸) para baixar uma versão anterior ou todas as versões num ZIP. Marque vários documentos para baixar as últimas versões num ZIP.\n\nExcluir uma versão: só nas primeiras 24 horas depois do envio e enquanto ninguém além de quem enviou a tiver baixado; pode excluir quem enviou, os administradores e quem edita o negócio. Excluir a única versão apaga o documento. Depois disso, envie uma nova versão corrigida. Editar: título e categoria (quem criou o documento, administradores ou quem edita documentos na etapa) e o comentário da versão (quem a enviou).",
     "baixarSelecionados": "Baixar selecionados (ZIP)",
     "selecionar": "Selecionar {titulo}",
     "selecionarTodos": "Selecionar todos desta página",
-    "preparandoZip": "Preparando o ZIP…"
+    "preparandoZip": "Preparando o ZIP…",
+    "baixarTodasAsVersoes": "Baixar todas as versões (ZIP)"
   }
 }

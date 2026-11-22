@@ -123,7 +123,7 @@ export function Ajuda({ texto }: { texto: string }) {
         id={id}
         popover="auto"
         role="note"
-        className="bg-surface text-text border-border backdrop:bg-backdrop/40 m-auto max-w-sm rounded-lg border p-4 text-sm font-normal shadow-lg"
+        className="bg-surface text-text border-border backdrop:bg-backdrop/40 m-auto max-w-sm rounded-lg border p-4 text-sm font-normal whitespace-pre-line shadow-lg"
       >
         {texto}
       </div>
