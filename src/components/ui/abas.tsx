@@ -68,7 +68,7 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
       <div ref={raiz} onInvalidCapture={(e) => revelarElemento(e.target as Element)}>
         <div
           role="tablist"
-          className="border-border -mx-1 mb-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b"
+          className="border-border -mx-1 mb-4 flex flex-wrap gap-x-1 border-b"
         >
           {abas.map((a) => (
             <button
