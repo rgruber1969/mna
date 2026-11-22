@@ -581,7 +581,7 @@ export function KanbanDeNegocios({
                   ativa={aberto.aba}
                   mudar={(aba) => setAberto((x) => (x ? { ...x, aba } : x))}
                 />
-                <div className="min-h-0 flex-1 overflow-y-auto">
+                <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
                   {aberto.aba === "resumo" && (
                     <div>
                       {p.resumo?.nomeInterno && (

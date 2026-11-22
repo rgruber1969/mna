@@ -401,6 +401,11 @@
     "porEtapa": "Negócios por etapa",
     "mensagens": "Mensagens",
     "verMensagens": "Ver todas",
-    "avisos": "Avisos"
+    "avisos": "Avisos",
+    "minhasTarefas": "Minhas tarefas",
+    "minhasTarefasAjuda": "Tarefas abertas em que você é responsável (você ou um perfil seu), nos negócios em aberto, por prazo.",
+    "todas": "Todas ({n})",
+    "soAtrasadas": "Atrasadas ({n})",
+    "semTarefas": "Nenhuma tarefa aqui."
   }
 }

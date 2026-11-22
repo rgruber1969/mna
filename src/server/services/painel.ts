@@ -146,3 +146,36 @@ export async function painelDoUsuario(acesso: Acesso | null): Promise<Painel> {
     veNegocios,
   };
 }
+
+export type MinhaTarefa = {
+  titulo: string;
+  negocio: string;
+  prazo: string | null;
+  situacao: string;
+  atrasada: boolean;
+  link: string;
+};
+
+/** Tarefas abertas em que a pessoa é responsável, em todos os negócios em aberto que ela vê. */
+export async function minhasTarefasAbertas(acesso: Acesso | null): Promise<MinhaTarefa[]> {
+  const a = exigirTenant(acesso);
+  const hoje = hojeEmSaoPaulo();
+  if (!(await pode(a, "deals", "ver"))) return [];
+  const quadro = await quadroDeNegocios(a, { situacao: "abertos" });
+  const lista: MinhaTarefa[] = [];
+  for (const c of quadro?.cartoes ?? []) {
+    const tarefas = await tarefasDoNegocio(a, c.id);
+    for (const t of tarefas?.tarefas ?? []) {
+      if (!t.souResponsavel || ["concluida", "cancelada"].includes(t.situacao)) continue;
+      lista.push({
+        titulo: t.titulo,
+        negocio: c.nome,
+        prazo: t.prazo,
+        situacao: t.situacao,
+        atrasada: Boolean(t.prazo && t.prazo < hoje),
+        link: `/negocios/${c.id}?aba=tarefas`,
+      });
+    }
+  }
+  return lista.sort((x, y) => (x.prazo ?? "9999").localeCompare(y.prazo ?? "9999"));
+}

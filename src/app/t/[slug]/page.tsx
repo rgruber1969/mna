@@ -20,14 +20,16 @@ import { Carregando, Titulo } from "@/components/ui/basicos";
 function Bloco({
   titulo,
   link,
+  id,
   children,
 }: {
   titulo: string;
   link?: { href: string; texto: string };
+  id?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="bg-background shadow-cartao rounded-xl p-4">
+    <section id={id} className="bg-background shadow-cartao scroll-mt-24 rounded-xl p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-accent text-xs font-semibold tracking-widest uppercase">{titulo}</h2>
         {link && (
@@ -57,9 +59,14 @@ async function Inicio() {
   const maior = Math.max(1, ...p.porEtapa.map((e) => e.total));
   const numeros = [
     { rotulo: tp("numeros.negocios"), valor: p.numeros.negocios, href: "/negocios" },
-    { rotulo: tp("numeros.minhasTarefas"), valor: p.numeros.minhasTarefas },
-    { rotulo: tp("numeros.atrasadas"), valor: p.numeros.atrasadas, destaque: p.numeros.atrasadas > 0 },
-    { rotulo: tp("numeros.prazosDaSemana"), valor: p.numeros.prazosDaSemana },
+    { rotulo: tp("numeros.minhasTarefas"), valor: p.numeros.minhasTarefas, href: "/tarefas" },
+    {
+      rotulo: tp("numeros.atrasadas"),
+      valor: p.numeros.atrasadas,
+      destaque: p.numeros.atrasadas > 0,
+      href: "/tarefas?filtro=atrasadas",
+    },
+    { rotulo: tp("numeros.prazosDaSemana"), valor: p.numeros.prazosDaSemana, href: "#prazos" },
   ];
   return (
     <EstruturaDoTenant acesso={acesso}>
@@ -69,10 +76,14 @@ async function Inicio() {
         </Titulo>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {numeros.map((n) => (
-            <div key={n.rotulo} className="bg-background shadow-cartao rounded-xl p-4">
+            <Link
+              key={n.rotulo}
+              href={n.href}
+              className="bg-background shadow-cartao hover:ring-primary block rounded-xl p-4 transition hover:ring-1"
+            >
               <p className="text-muted text-xs">{n.rotulo}</p>
               <p className={`text-2xl font-bold ${n.destaque ? "text-danger" : "text-text"}`}>{n.valor}</p>
-            </div>
+            </Link>
           ))}
         </div>
         <div className="grid gap-4 lg:grid-cols-3">
@@ -132,7 +143,7 @@ async function Inicio() {
               </ul>
             )}
           </Bloco>
-          <Bloco titulo={tp("prazos")}>
+          <Bloco titulo={tp("prazos")} id="prazos">
             {p.prazos.length === 0 ? (
               <p className="text-muted text-sm">{tp("semPrazos")}</p>
             ) : (
@@ -157,18 +168,23 @@ async function Inicio() {
           </Bloco>
         </div>
         {p.veNegocios && (
-          <Bloco titulo={tp("porEtapa")}>
+          <Bloco titulo={tp("porEtapa")} link={{ href: "/negocios?vista=kanban", texto: tp("verKanban") }}>
             <ul className="space-y-1.5">
               {p.porEtapa.map((e, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs">
-                  <span className="text-text w-40 shrink-0 truncate">{e.nome || tk("aIniciar")}</span>
-                  <span className="bg-background relative h-4 flex-1 rounded">
-                    <span
-                      className="bg-primary absolute inset-y-0 left-0 rounded"
-                      style={{ width: `${(e.total / maior) * 100}%` }}
-                    />
-                  </span>
-                  <span className="text-muted w-6 text-right">{e.total}</span>
+                <li key={i}>
+                  <Link
+                    href="/negocios?vista=kanban"
+                    className="hover:bg-surface flex items-center gap-2 rounded text-xs"
+                  >
+                    <span className="text-text w-40 shrink-0 truncate">{e.nome || tk("aIniciar")}</span>
+                    <span className="bg-background relative h-4 flex-1 rounded">
+                      <span
+                        className="bg-primary absolute inset-y-0 left-0 rounded"
+                        style={{ width: `${(e.total / maior) * 100}%` }}
+                      />
+                    </span>
+                    <span className="text-muted w-6 text-right">{e.total}</span>
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -16,7 +16,7 @@ import {
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { temPrevia, Visualizar } from "@/components/cadastros/previa-do-anexo";
 import { usePaginacao } from "@/components/ui/paginacao-local";
-import { Aviso, estiloTabela } from "@/components/ui/basicos";
+import { Ajuda, Aviso, estiloTabela } from "@/components/ui/basicos";
 
 /**
  * Data room do negócio (item 11): documentos com versões, pastas por etapa e
@@ -586,6 +586,7 @@ export function DataRoomDoNegocio({
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm">
+          <Ajuda texto={t("ajudaDaTela")} />
           <span className="text-muted">{t("filtrarEtapa")}</span>
           <select value={filtro} onChange={(e) => setFiltro(e.target.value)} className={`${campo} w-auto`}>
             <option value="">{t("todas")}</option>
