@@ -4,6 +4,7 @@ import {
   date,
   boolean,
   check,
+  customType,
   index,
   integer,
   jsonb,
@@ -1196,4 +1197,33 @@ export const mensagemLeitura = pgTable(
     lidaEm: timestamp("lida_em", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("mensagem_leitura_uq").on(t.tenantId, t.usuarioId, t.chave), isolamento()],
+).enableRLS();
+
+/** Vetor da busca textual do PostgreSQL (ADR-0022). */
+const tsvector = customType<{ data: string }>({
+  dataType: () => "tsvector",
+});
+
+/**
+ * Texto extraído de uma versão do data room para a busca por conteúdo
+ * (ADR-0022). Mesma proteção dos arquivos; nunca vai para logs.
+ */
+export const documentoTexto = pgTable(
+  "documento_texto",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    versaoId: uuid("versao_id")
+      .notNull()
+      .references(() => documentoVersao.id, { onDelete: "cascade" }),
+    texto: text("texto").notNull(),
+    /** to_tsvector('portuguese', unaccent(texto)), gravado junto com o texto. */
+    busca: tsvector("busca").notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [
+    uniqueIndex("documento_texto_versao_uq").on(t.tenantId, t.versaoId),
+    index("documento_texto_busca_idx").using("gin", t.busca),
+    isolamento(),
+  ],
 ).enableRLS();

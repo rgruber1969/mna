@@ -25,6 +25,7 @@ import {
 import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
 import { tipoRealDoArquivo, verificarArquivo } from "./antivirus";
 import { auditar } from "./empresas";
+import { guardarTextoDaVersao } from "./texto-de-documento";
 import { contextoDeEtapas } from "./etapas";
 import { ordenarEtapas } from "./tarefas";
 import { compradoraDaEmpresa, empresasDoNegocio, ladoDaParticipacao, negocioFechado } from "./negocios";
@@ -663,6 +664,8 @@ export async function concluirEnvio(acesso: Acesso | null, versaoId: string): Pr
       .set({ situacao: "disponivel", tipoDeConteudo: tipo })
       .where(eq(documentoVersao.id, versaoId)),
   );
+  // Texto para a busca por conteúdo (ADR-0022), depois do antivírus.
+  await guardarTextoDaVersao(a.tenant.id, versaoId, conteudo, tipo);
   await auditar(a, "documento.enviado", "deal", linha.dealId, {
     documentoId: linha.v.documentoId,
     versao: linha.v.numero,

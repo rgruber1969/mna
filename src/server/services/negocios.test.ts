@@ -63,6 +63,7 @@ import {
 import { eq } from "drizzle-orm";
 import { comTenant } from "@/server/db/cliente";
 import { mensagem } from "@/server/db/esquema";
+import { buscarDocumentos } from "./busca-de-documentos";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -1197,5 +1198,26 @@ describe("data room: sigilo entre lados e compradoras", () => {
     expect(deA!.meuLado).not.toContain(contas.compb2);
     const deB = await dataRoomDoNegocio(acesso("compb2"), negocioId);
     expect(deB!.opcoesDeAcesso.usuarios.some((u) => u.id === contas.adva)).toBe(false);
+  });
+});
+
+describe("busca de documentos", () => {
+  it("acha pelo nome e pelo conteúdo, sem acentos, só o que a pessoa vê", async () => {
+    const achou = async (nome: string, termo: string) => {
+      const r = await buscarDocumentos(acesso(nome), { termo });
+      if ("erro" in r) throw new Error(r.erro);
+      return r.resultados.find((x) => x.titulo === "Memorando dos advogados");
+    };
+    const conteudo = await achou("advv2", "memorando interno");
+    expect(conteudo?.noConteudo).toBe(true);
+    expect(conteudo?.trecho).toContain("«");
+    expect((await achou("advv2", "ADVOGADOS"))?.noNome).toBe(true);
+    expect(await achou("advv2", "memorándo")).toBeDefined(); // acento não atrapalha
+    expect(await achou("adva", "memorando interno")).toBeUndefined(); // outro lado não vê
+    const noNegocio = await buscarDocumentos(acesso("advv2"), { termo: "memorando", dealId: negocioId });
+    expect("resultados" in noNegocio && noNegocio.resultados.length).toBeGreaterThan(0);
+    expect(await buscarDocumentos(acesso("advv2"), { termo: "m" })).toMatchObject({
+      erro: "busca.erros.termoCurto",
+    });
   });
 });

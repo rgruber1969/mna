@@ -606,6 +606,26 @@ Etapas padrão:
 * "Todos os participantes" continua abrindo para todos os que participam,
   inclusive todas as compradoras ativas (uso típico: QPA assinado).
 
+### Busca de documentos (item 35, construído em 2026-11-22; ADR-0022)
+
+* **Onde:** caixa de busca do topo ("Buscar documentos: …", ou Enter quando
+  nenhum item do menu combina), página **Buscar documentos** (geral, com
+  filtro por negócio) e campo "Buscar nos documentos deste negócio" na aba
+  Documentos.
+* **Como acha:** pelo nome (parte do título ou do nome do arquivo) e pelo
+  conteúdo (PDF com texto, Word, Excel, PowerPoint, CSV e TXT), sem
+  diferença de acentos e entendendo plural; aspas para expressão exata e
+  "ou" para alternativas. Mostra o trecho com o termo destacado.
+* **Quem vê o quê:** só as versões que a pessoa vê na lista de documentos
+  (mesmas regras: lista de acesso, perfil no grupo de quem enviou, todos os
+  participantes, etapas da participação, administradores).
+* **Texto:** extraído no servidor quando a versão fica disponível (depois do
+  antivírus), até 50 MB por arquivo e 1 milhão de caracteres; escaneados só
+  pelo nome até existir OCR. Documentos enviados antes de 2026-11-22 só
+  entram na busca por conteúdo se forem enviados de novo.
+* **Auditoria:** cada busca registra só a quantidade de resultados, sem o
+  termo.
+
 ### Tarefas e pendências
 
 * **Construído (item 27, 2026-11-19):** aba Tarefas no negócio (filtros

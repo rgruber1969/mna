@@ -1,0 +1,24 @@
+{
+  "busca": {
+    "titulo": "Buscar documentos",
+    "sobre": "Procura pelo nome do documento ou do arquivo (parte do texto) e dentro do conteúdo de PDF com texto, Word, Excel, PowerPoint, CSV e TXT. Mostra só o que você pode ver. Documentos escaneados (só imagem) aparecem apenas pelo nome.",
+    "termo": "Procurar por",
+    "dica": "Ex.: multa, contrato social, \"cláusula penal\"",
+    "negocio": "Negócio",
+    "todos": "Todos os negócios",
+    "buscar": "Buscar",
+    "nenhum": "Nenhum documento encontrado.",
+    "quantos": "{n, plural, one {# documento encontrado} other {# documentos encontrados}}",
+    "maximo": "Mostrando os primeiros resultados; refine a busca para ver outros.",
+    "noNome": "no nome",
+    "noConteudo": "no conteúdo",
+    "versao": "v{n}",
+    "geral": "Geral (negócio todo)",
+    "abrir": "Abrir no negócio",
+    "ajudaSintaxe": "Dicas: várias palavras acham documentos com todas elas; use aspas para a expressão exata (\"multa contratual\") e \"ou\" para alternativas (multa ou penalidade).",
+    "buscarNoNegocio": "Buscar nos documentos deste negócio",
+    "erros": {
+      "termoCurto": "Digite pelo menos 2 letras."
+    }
+  }
+}

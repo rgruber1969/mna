@@ -160,6 +160,10 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.goto(`http://${slug}.${dominio}/negocios`);
   await expect(page.getByRole("link", { name: "N-0001 Projeto Teste" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "Vendedora de Teste Ltda" })).toBeVisible();
+  // Busca de documentos pelo conteúdo (texto extraído do PDF no envio).
+  await page.goto(`http://${slug}.${dominio}/busca?q=${encodeURIComponent("contrato social de teste")}`);
+  await expect(page.getByRole("link", { name: /Contrato social/ })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("no conteúdo").first()).toBeVisible();
 
   // Kanban: o negócio está na coluna Prospecção; "Mover para" leva ao Term Sheet.
   await page.goto(`http://${slug}.${dominio}/negocios?vista=kanban`);

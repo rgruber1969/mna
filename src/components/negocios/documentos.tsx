@@ -449,6 +449,7 @@ export function DataRoomDoNegocio({
   aoMudar?: () => void;
 }) {
   const t = useTranslations("documentos");
+  const tb = useTranslations("busca");
   const [filtro, setFiltro] = useState(etapaFiltro);
   const [aberto, setAberto] = useState<string | null>(null);
   const [envio, setEnvio] = useState<{
@@ -486,6 +487,24 @@ export function DataRoomDoNegocio({
             ))}
           </select>
         </label>
+        <form method="get" action="/busca" className="flex items-center gap-2">
+          <input type="hidden" name="negocio" value={dealId} />
+          <input
+            name="q"
+            type="search"
+            minLength={2}
+            required
+            placeholder={tb("buscarNoNegocio")}
+            aria-label={tb("buscarNoNegocio")}
+            className={`${campo} w-64`}
+          />
+          <button
+            type="submit"
+            className="border-primary text-primary rounded-md border px-3 py-1.5 text-sm font-medium"
+          >
+            {tb("buscar")}
+          </button>
+        </form>
         {!dr.fechado && dr.destinos.length > 0 && !envio && (
           <button
             type="button"

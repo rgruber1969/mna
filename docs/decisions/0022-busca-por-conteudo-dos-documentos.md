@@ -52,7 +52,8 @@ Regras:
    pessoa pode ver pelas mesmas regras da lista de documentos; o filtro de
    permissão nunca é deixado para a tela.
 4. O texto extraído nunca vai para logs nem para a auditoria; a busca é
-   auditada só com o termo resumido e a quantidade de resultados.
+   auditada só com a quantidade de resultados, sem o termo (ele pode
+   conter nome ou CPF).
 5. Versão excluída, documento excluído ou tenant excluído levam o texto
    junto (exclusão em cascata).
 6. O texto não é criptografado campo a campo (diferente de CPF e RG); a

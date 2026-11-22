@@ -27,7 +27,7 @@
   },
   "cabecalho": {
     "procurar": "Procurar no menu",
-    "procurarDica": "Procurar no menu...",
+    "procurarDica": "Procurar menu ou documentos",
     "menuDoUsuario": "Menu do usuário",
     "administrador": "Administrador",
     "usuario": "Usuário",
@@ -44,7 +44,8 @@
       "pt-BR": "Português (Brasil)"
     },
     "idiomaEmBreve": "Inglês e espanhol em breve",
-    "equipe": "Equipe"
+    "equipe": "Equipe",
+    "buscarDocumentos": "Buscar documentos: “{termo}”"
   },
   "notificacoes": {
     "titulo": "Notificações",

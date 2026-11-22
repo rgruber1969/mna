@@ -169,6 +169,7 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
   const achados = termo.trim()
     ? itens.filter((i) => normalizar(i.rotulo).includes(normalizar(termo.trim())))
     : [];
+  const buscaDeDocumentos = `/busca?q=${encodeURIComponent(termo.trim())}`;
   return (
     <div ref={caixa} className="relative hidden sm:block">
       <label className="bg-surface flex w-72 items-center gap-2 rounded-full px-4 py-2">
@@ -180,8 +181,10 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
             setAberto(true);
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && achados[0]) {
-              router.push(achados[0].item.href);
+            if (e.key !== "Enter") return;
+            const destino = achados[0]?.item.href ?? (termo.trim().length >= 2 ? buscaDeDocumentos : null);
+            if (destino) {
+              router.push(destino);
               setTermo("");
               setAberto(false);
             }
@@ -194,25 +197,38 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
       </label>
       {aberto && termo.trim() && (
         <ul className={`${painelSuspenso} left-0 w-72 py-2`}>
-          {achados.length === 0 ? (
-            <li className="text-muted px-4 py-2 text-sm">{t("procurar")}: —</li>
-          ) : (
-            achados.map(({ item, rotulo }) => (
-              <li key={item.id}>
-                <Link
-                  href={item.href}
-                  onClick={() => {
-                    setTermo("");
-                    setAberto(false);
-                  }}
-                  className="text-text hover:bg-surface flex items-center gap-3 px-4 py-2 text-sm"
-                >
-                  <Icone nome={item.icone} className="text-muted h-4 w-4" />
-                  {rotulo}
-                </Link>
-              </li>
-            ))
+          {termo.trim().length >= 2 && (
+            <li>
+              <Link
+                href={buscaDeDocumentos}
+                onClick={() => {
+                  setTermo("");
+                  setAberto(false);
+                }}
+                className="text-primary hover:bg-surface flex items-center gap-3 px-4 py-2 text-sm font-medium"
+              >
+                <Icone nome="lupa" className="h-4 w-4" />
+                {t("buscarDocumentos", { termo: termo.trim() })}
+              </Link>
+            </li>
           )}
+          {achados.length === 0
+            ? null
+            : achados.map(({ item, rotulo }) => (
+                <li key={item.id}>
+                  <Link
+                    href={item.href}
+                    onClick={() => {
+                      setTermo("");
+                      setAberto(false);
+                    }}
+                    className="text-text hover:bg-surface flex items-center gap-3 px-4 py-2 text-sm"
+                  >
+                    <Icone nome={item.icone} className="text-muted h-4 w-4" />
+                    {rotulo}
+                  </Link>
+                </li>
+              ))}
         </ul>
       )}
     </div>
