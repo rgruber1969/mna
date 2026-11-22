@@ -62,7 +62,10 @@
       "nomeCategoria": "Informe o nome da categoria.",
       "categoriaJaExiste": "Já existe uma categoria com este nome.",
       "categoriaNaoEncontrada": "Categoria não encontrada.",
-      "categoriaEmUso": "Esta categoria está em uso e não pode ser excluída."
+      "categoriaEmUso": "Esta categoria está em uso e não pode ser excluída.",
+      "escolhaDocumentos": "Escolha pelo menos um documento.",
+      "zipGrandeDemais": "Os documentos escolhidos passam de 300 MB; baixe em partes.",
+      "nadaParaBaixar": "Nenhum dos documentos escolhidos pode ser baixado por você."
     },
     "todosParticipantes": "Todos os participantes do negócio (os dois lados)",
     "meuLado": "Meu lado",
@@ -84,6 +87,10 @@
     "salvar": "Salvar",
     "editarComentario": "Editar comentário",
     "incluirComentario": "Incluir comentário",
-    "ajudaDaTela": "Excluir uma versão: só nas primeiras 24 horas depois do envio e enquanto ninguém além de quem enviou a tiver baixado; pode excluir quem enviou, os administradores e quem edita o negócio. Excluir a única versão apaga o documento. Depois disso, envie uma nova versão corrigida. Editar: título e categoria (quem criou o documento, administradores ou quem edita documentos na etapa) e o comentário da versão (quem a enviou)."
+    "ajudaDaTela": "Excluir uma versão: só nas primeiras 24 horas depois do envio e enquanto ninguém além de quem enviou a tiver baixado; pode excluir quem enviou, os administradores e quem edita o negócio. Excluir a única versão apaga o documento. Depois disso, envie uma nova versão corrigida. Editar: título e categoria (quem criou o documento, administradores ou quem edita documentos na etapa) e o comentário da versão (quem a enviou).",
+    "baixarSelecionados": "Baixar selecionados (ZIP)",
+    "selecionar": "Selecionar {titulo}",
+    "selecionarTodos": "Selecionar todos desta página",
+    "preparandoZip": "Preparando o ZIP…"
   }
 }

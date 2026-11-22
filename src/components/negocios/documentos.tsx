@@ -566,6 +566,39 @@ export function DataRoomDoNegocio({
     filtro === "" ? true : filtro === "geral" ? d.etapaId === null : d.etapaId === filtro,
   );
   const { atual: paginaDeDocs, controles: controlesDeDocs } = usePaginacao(lista);
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [zipando, setZipando] = useState(false);
+  const alternarSelecao = (id: string) =>
+    setSelecionados((x) => {
+      const n = new Set(x);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const baixaveisDaPagina = paginaDeDocs.filter((d) => d.versoes[0]?.podeBaixar).map((d) => d.versoes[0].id);
+  async function baixarZip() {
+    setZipando(true);
+    setErro(null);
+    const r = await fetch("/api/documentos/zip", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ versoes: [...selecionados] }),
+    });
+    setZipando(false);
+    if (!r.ok) {
+      const e = (await r.json().catch(() => null)) as { erro?: string } | null;
+      return setErro(e?.erro ? t(`erros.${e.erro.split(".").pop()}` as never) : t("erros.download"));
+    }
+    const url = URL.createObjectURL(await r.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download =
+      /filename="([^"]+)"/.exec(r.headers.get("content-disposition") ?? "")?.[1] ?? "documentos.zip";
+    link.click();
+    URL.revokeObjectURL(url);
+    setSelecionados(new Set());
+    router.refresh();
+  }
   const [editandoDoc, setEditandoDoc] = useState<string | null>(null);
   const [editandoComentario, setEditandoComentario] = useState<string | null>(null);
   const depoisDeEditar = () => {
@@ -616,6 +649,16 @@ export function DataRoomDoNegocio({
             {tb("buscar")}
           </button>
         </form>
+        {selecionados.size > 0 && (
+          <button
+            type="button"
+            disabled={zipando}
+            onClick={baixarZip}
+            className="border-primary text-primary rounded-md border px-3 py-1.5 text-sm font-medium"
+          >
+            {zipando ? t("preparandoZip") : `${t("baixarSelecionados")} (${selecionados.size})`}
+          </button>
+        )}
         {!dr.fechado && dr.destinos.length > 0 && !envio && (
           <button
             type="button"
@@ -655,6 +698,26 @@ export function DataRoomDoNegocio({
           <table className={estiloTabela.tabela}>
             <thead className={estiloTabela.cabecalho}>
               <tr>
+                <th className={`${estiloTabela.th} w-8`}>
+                  <input
+                    type="checkbox"
+                    aria-label={t("selecionarTodos")}
+                    disabled={baixaveisDaPagina.length === 0}
+                    checked={
+                      baixaveisDaPagina.length > 0 && baixaveisDaPagina.every((id) => selecionados.has(id))
+                    }
+                    onChange={(e) =>
+                      setSelecionados((x) => {
+                        const n = new Set(x);
+                        for (const id of baixaveisDaPagina) {
+                          if (e.target.checked) n.add(id);
+                          else n.delete(id);
+                        }
+                        return n;
+                      })
+                    }
+                  />
+                </th>
                 <th className={estiloTabela.th}>{t("documento")}</th>
                 <th className={estiloTabela.th}>{t("categoria")}</th>
                 <th className={estiloTabela.th}>{t("etapa")}</th>
@@ -668,6 +731,16 @@ export function DataRoomDoNegocio({
                 return (
                   <Fragment key={d.id}>
                     <tr className={estiloTabela.linha}>
+                      <td className={`${estiloTabela.td} w-8`}>
+                        {ultima.podeBaixar && (
+                          <input
+                            type="checkbox"
+                            aria-label={t("selecionar", { titulo: d.titulo })}
+                            checked={selecionados.has(ultima.id)}
+                            onChange={() => alternarSelecao(ultima.id)}
+                          />
+                        )}
+                      </td>
                       <td className={estiloTabela.td}>
                         <button
                           type="button"
@@ -732,7 +805,7 @@ export function DataRoomDoNegocio({
                     </tr>
                     {aberto === d.id && (
                       <tr>
-                        <td colSpan={5} className="bg-background px-4 py-2">
+                        <td colSpan={6} className="bg-background px-4 py-2">
                           {editandoDoc === d.id && (
                             <EditarDocumento
                               documento={d}

@@ -47,6 +47,7 @@ import {
   dataRoomDoNegocio,
   editarComentarioDaVersao,
   editarDocumento,
+  zipDeVersoes,
   excluirVersao,
   iniciarEnvio,
   linkDeDownload,
@@ -68,6 +69,7 @@ import { mensagem } from "@/server/db/esquema";
 import { buscarDocumentos } from "./busca-de-documentos";
 import { criarChave, listarChaves, revogarChave } from "./chaves-api";
 import { api } from "@/server/api/app";
+import { unzipSync } from "fflate";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -1297,5 +1299,24 @@ describe("API com chave de API", () => {
     expect(await revogarChave(adm, chaveId)).toEqual({ ok: true });
     expect((await chamar("/v1/negocios")).status).toBe(401);
     expect((await listarChaves(adm))[0].situacao).toBe("revogada");
+  });
+});
+
+describe("data room: vários documentos num ZIP", () => {
+  it("inclui só o que a pessoa pode baixar, com auditoria por versão", async () => {
+    const g = acesso("gestor");
+    const dr = await dataRoomDoNegocio(g, negocioId);
+    const ids = dr!.documentos.map((d) => d.versoes[0].id);
+    const r = await zipDeVersoes(g, ids);
+    if (!("conteudo" in r)) throw new Error(r.erro);
+    const nomes = Object.keys(unzipSync(r.conteudo));
+    expect(nomes.length).toBe(r.incluidas);
+    expect(nomes.some((n) => n.startsWith("Memorando revisado (v1)"))).toBe(true);
+    // A equipe da compradora não vê o memorando do lado vendedor: fica de fora.
+    const memo = dr!.documentos.find((d) => d.titulo === "Memorando revisado")!.versoes[0].id;
+    expect(await zipDeVersoes(acesso("adva"), [memo])).toMatchObject({
+      erro: "documentos.erros.nadaParaBaixar",
+    });
+    expect(await zipDeVersoes(g, [])).toMatchObject({ erro: "documentos.erros.escolhaDocumentos" });
   });
 });

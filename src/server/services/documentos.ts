@@ -1,3 +1,4 @@
+import { zipSync } from "fflate";
 import { cache } from "react";
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
@@ -744,6 +745,57 @@ export async function linkDeDownload(
     versao: x.v.numero,
   });
   return { url: await gerarLinkDeDownload(x.v.chave, x.v.nomeArquivo) };
+}
+
+/** Limites do ZIP (vários documentos de uma vez). */
+export const MAXIMO_DE_VERSOES_NO_ZIP = 100;
+export const TAMANHO_MAXIMO_DO_ZIP = 300 * 1024 * 1024;
+
+/**
+ * Vários documentos num ZIP (D6): cada versão passa pelas mesmas regras do
+ * download individual (vê a versão, pode baixar na etapa, disponível) e gera
+ * o seu evento de auditoria. As que a pessoa não pode baixar ficam de fora.
+ */
+export async function zipDeVersoes(
+  acesso: Acesso | null,
+  versaoIds: string[],
+): Promise<{ conteudo: Uint8Array; nome: string; incluidas: number } | ErroDeServico> {
+  const a = exigirTenant(acesso);
+  const ids = [...new Set(versaoIds)].filter(uuidValido).slice(0, MAXIMO_DE_VERSOES_NO_ZIP);
+  if (ids.length === 0) return { erro: "documentos.erros.escolhaDocumentos" };
+  const arquivos: Record<string, Uint8Array> = {};
+  let total = 0;
+  let negocio: string | null = null;
+  for (const id of ids) {
+    const x = await versaoAcessivel(a, id);
+    if (!x || x.v.situacao !== "disponivel" || !x.ctx.podeDoc(x.etapaId, "baixar")) continue;
+    if (negocio && negocio !== x.dealId) continue; // um negócio por ZIP
+    negocio = x.dealId;
+    total += x.v.tamanho;
+    if (total > TAMANHO_MAXIMO_DO_ZIP) return { erro: "documentos.erros.zipGrandeDemais" };
+    const conteudo = await lerArquivo(x.v.chave);
+    if (!conteudo) continue;
+    // Nome único dentro do ZIP: "Título (v2) - arquivo.pdf".
+    const base = `${x.titulo} (v${x.v.numero}) - ${x.v.nomeArquivo}`.replace(/[\\/:*?"<>|]/g, "_");
+    let nome = base;
+    for (let n = 2; arquivos[nome]; n++) nome = `${n} - ${base}`;
+    arquivos[nome] = conteudo;
+    if (x.v.enviadoPor !== a.usuario.id && !x.v.baixadaPorOutros)
+      await comTenant(a.tenant.id, (tx) =>
+        tx.update(documentoVersao).set({ baixadaPorOutros: true }).where(eq(documentoVersao.id, id)),
+      );
+    await auditar(a, "documento.baixado", "deal", x.dealId, {
+      documentoId: x.v.documentoId,
+      versao: x.v.numero,
+      zip: true,
+    });
+  }
+  const incluidas = Object.keys(arquivos).length;
+  if (incluidas === 0) return { erro: "documentos.erros.nadaParaBaixar" };
+  // Arquivos já comprimidos (PDF, Office, imagens) não ganham com nova compressão: nível baixo.
+  const conteudo = zipSync(arquivos, { level: 1 });
+  const data = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+  return { conteudo, nome: `documentos-${data}.zip`, incluidas };
 }
 
 /** Tamanho máximo para visualizar na tela (acima disso, só baixando). */

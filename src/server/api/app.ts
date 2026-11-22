@@ -6,7 +6,7 @@ import { obterAcesso } from "@/server/services/acesso";
 import { lerFotoDaConta } from "@/server/services/foto-da-conta";
 import { lerImagemDaMarca } from "@/server/services/marca";
 import { baixarAnexo, MODOS_DE_ACESSO, type ModoDeAcesso } from "@/server/services/anexos";
-import { conteudoParaVisualizar } from "@/server/services/documentos";
+import { conteudoParaVisualizar, zipDeVersoes } from "@/server/services/documentos";
 import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
@@ -77,6 +77,24 @@ api.get("/anexos/:id", async (c) => {
     "cache-control": "private, no-store",
     "x-content-type-options": "nosniff",
     "content-security-policy": "default-src 'none'",
+  });
+});
+
+/** Vários documentos num ZIP (telas): POST com as versões escolhidas; permissão e auditoria por versão. */
+api.post("/documentos/zip", async (c) => {
+  const acesso = await obterAcesso(c.req.raw.headers);
+  const corpo = (await c.req.json().catch(() => null)) as { versoes?: unknown } | null;
+  const versoes = Array.isArray(corpo?.versoes)
+    ? corpo.versoes.filter((v): v is string => typeof v === "string")
+    : [];
+  const r = await zipDeVersoes(acesso, versoes).catch(() => null);
+  if (!r) return c.body(null, 404);
+  if ("erro" in r) return c.json({ erro: r.erro }, 400);
+  return c.body(r.conteudo as Uint8Array<ArrayBuffer>, 200, {
+    "content-type": "application/zip",
+    "content-disposition": `attachment; filename="${r.nome}"`,
+    "cache-control": "private, no-store",
+    "x-content-type-options": "nosniff",
   });
 });
 
