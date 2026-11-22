@@ -15,6 +15,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -762,6 +763,8 @@ export const deal = pgTable(
     grupoId: uuid("grupo_id").references(() => grupoEconomico.id, { onDelete: "set null" }),
     dataInicio: date("data_inicio").notNull(),
     previsaoFechamento: date("previsao_fechamento"),
+    /** Critério do rateio do preço entre as vendedoras (ex.: faturamento), O4. */
+    criterioRateio: text("criterio_rateio"),
     valorEstimado: numeric("valor_estimado", { precision: 18, scale: 2 }),
     descricao: text("descricao"),
     situacao: text("situacao")
@@ -811,6 +814,8 @@ export const dealEmpresa = pgTable(
     atuaParaId: uuid("atua_para_id").references(() => empresa.id, { onDelete: "no action" }),
     /** Observações sobre a compradora no funil (cartão do kanban; lado vendedor). */
     observacoes: text("observacoes"),
+    /** Vendedora: percentual no rateio do preço entre as vendedoras (O4). */
+    percentualRateio: numeric("percentual_rateio", { precision: 7, scale: 4 }),
     criadoEm: criadoEm(),
   },
   (t) => [
@@ -1388,4 +1393,97 @@ export const contratoArquivo = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [uniqueIndex("contrato_arquivo_uq").on(t.tenantId, t.contratoId, t.numero), isolamento()],
+).enableRLS();
+
+// --- Ofertas recebidas (item 32; dominio.md, "Ofertas"; O1–O4) ---
+
+/** Parcela a prazo de uma oferta. */
+export type ParcelaDaOferta = { valor: string; data: string };
+/** Percentual de cada vendedora no rateio de uma oferta (O4). */
+export type RateioDaOferta = { empresaId: string; percentual: string };
+
+/**
+ * Oferta de uma compradora; uma contraproposta é outra oferta ligada à
+ * anterior (O2, rodadas).
+ */
+export const oferta = pgTable(
+  "oferta",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    compradoraId: uuid("compradora_id")
+      .notNull()
+      .references(() => empresa.id),
+    anteriorId: uuid("anterior_id").references((): AnyPgColumn => oferta.id, { onDelete: "set null" }),
+    rodada: integer("rodada").notNull().default(1),
+    data: date("data").notNull(),
+    /** informal, term_sheet, loi ou mou. */
+    instrumento: text("instrumento").$type<"informal" | "term_sheet" | "loi" | "mou">().notNull(),
+    enterpriseValue: numeric("enterprise_value", { precision: 18, scale: 2 }),
+    equityValue: numeric("equity_value", { precision: 18, scale: 2 }),
+    parcelaVista: numeric("parcela_vista", { precision: 18, scale: 2 }),
+    parcelas: jsonb("parcelas").$type<ParcelaDaOferta[]>().notNull().default([]),
+    earnout: text("earnout"),
+    earnoutValor: numeric("earnout_valor", { precision: 18, scale: 2 }),
+    retencao: text("retencao"),
+    retencaoValor: numeric("retencao_valor", { precision: 18, scale: 2 }),
+    condicoesPrecedentes: text("condicoes_precedentes"),
+    validade: date("validade"),
+    garantiasCompradora: text("garantias_compradora"),
+    garantiasVendedora: text("garantias_vendedora"),
+    correcaoParcelas: text("correcao_parcelas"),
+    condicoesTransicao: text("condicoes_transicao"),
+    exclusividade: text("exclusividade"),
+    naoConcorrencia: text("nao_concorrencia"),
+    observacoes: text("observacoes"),
+    /** Rateio próprio desta oferta (vazio: o do negócio), com o critério. */
+    rateio: jsonb("rateio").$type<RateioDaOferta[]>().notNull().default([]),
+    criterioRateio: text("criterio_rateio"),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("oferta_deal_idx").on(t.tenantId, t.dealId, t.compradoraId), isolamento()],
+).enableRLS();
+
+/** Quem vê a oferta: perfis do negócio e/ou usuários; quem registrou e administradores sempre veem. */
+export const ofertaAcesso = pgTable(
+  "oferta_acesso",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    ofertaId: uuid("oferta_id")
+      .notNull()
+      .references(() => oferta.id, { onDelete: "cascade" }),
+    perfilId: uuid("perfil_id").references(() => perfil.id, { onDelete: "cascade" }),
+    usuarioId: uuid("usuario_id").references(() => usuario.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    check("oferta_acesso_alvo_ck", sql`(perfil_id is null) <> (usuario_id is null)`),
+    index("oferta_acesso_oferta_idx").on(t.tenantId, t.ofertaId),
+    isolamento(),
+  ],
+).enableRLS();
+
+/** Arquivos da oferta (Term Sheet, LOI etc.), conferidos antes de liberar. */
+export const ofertaArquivo = pgTable(
+  "oferta_arquivo",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    ofertaId: uuid("oferta_id")
+      .notNull()
+      .references(() => oferta.id, { onDelete: "cascade" }),
+    nomeArquivo: text("nome_arquivo").notNull(),
+    tamanho: bigint("tamanho", { mode: "number" }).notNull(),
+    tipoDeConteudo: text("tipo_de_conteudo"),
+    chave: text("chave").notNull(),
+    situacao: text("situacao").$type<"enviando" | "disponivel" | "bloqueado">().notNull().default("enviando"),
+    enviadoPor: uuid("enviado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("oferta_arquivo_oferta_idx").on(t.tenantId, t.ofertaId), isolamento()],
 ).enableRLS();

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNull, max } from "drizzle-orm";
 import { z } from "zod";
+import { lerNumero } from "@/config/ofertas";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { tradutor } from "@/i18n/servidor";
 import {
@@ -555,7 +556,7 @@ const decimal = (maximo: number, erro: string) =>
   z
     .string()
     .trim()
-    .transform((v) => (v.includes(",") ? v.replace(/\./g, "").replace(",", ".") : v) || null)
+    .transform((v) => lerNumero(v))
     .refine((v) => v === null || (/^\d+(\.\d{1,4})?$/.test(v) && Number(v) <= maximo), erro);
 
 const DadosContrato = z.object({

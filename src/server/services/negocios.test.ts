@@ -16,6 +16,8 @@ import {
   obterContrato,
   successFeeEstimado,
 } from "./contratos";
+import { criarOferta, excluirOferta, ofertasDoNegocio, salvarRateioDoNegocio } from "./ofertas";
+import { ratear, totalNominal, valorPresente } from "@/config/ofertas";
 import { adicionarVinculo } from "./pessoas";
 import {
   adicionarEmpresaAoNegocio,
@@ -1488,5 +1490,96 @@ describe("contratos de serviço", () => {
     });
     expect(await excluirContrato(acesso("advv2"), r.id)).toMatchObject({ erro: "erros.acessoNegado" });
     expect(await excluirContrato(g, r.id)).toEqual({ ok: true });
+  });
+});
+
+describe("ofertas recebidas", () => {
+  it("cálculos: total, valor presente e rateio com arredondamento", () => {
+    const o = {
+      data: "2026-01-01",
+      enterpriseValue: null,
+      equityValue: "5000",
+      parcelaVista: "1000",
+      parcelas: [{ valor: "1100", data: "2027-01-01" }],
+      earnoutValor: null,
+    };
+    expect(totalNominal(o)).toBe(2100);
+    expect(valorPresente(o, 10)).toBe(2000);
+    expect(totalNominal({ ...o, parcelaVista: null, parcelas: [] })).toBe(5000);
+    expect(
+      ratear(100, [
+        { empresaId: "a", percentual: "33.33" },
+        { empresaId: "b", percentual: "66.67" },
+      ]).map((x) => x.valor),
+    ).toEqual([33.33, 66.67]);
+  });
+
+  it("lista de acesso, sigilo entre compradoras, rodadas, funil e rateio", async () => {
+    const g = acesso("gestor");
+    await dono.query(
+      `update deal_empresa set situacao_funil = 'nda' where deal_id = $1 and empresa_id = $2 and situacao_funil is not null`,
+      [negocioId, compradoraB],
+    );
+    const base = {
+      compradoraId: compradoraA,
+      data: "2026-11-01",
+      instrumento: "loi" as const,
+      parcelaVista: "10.000.000,00",
+      parcelas: [{ valor: "5.000.000,00", data: "2027-11-01" }],
+      perfis: [await perfilDeDeal("advogado")],
+      usuarios: [contas.compb2],
+    };
+    expect(await criarOferta(g, negocioId, { ...base, parcelas: [{ valor: "1", data: "" }] })).toMatchObject({
+      erro: "ofertas.erros.parcelaIncompleta",
+    });
+    const r = await criarOferta(g, negocioId, base);
+    if (!("id" in r)) throw new Error(r.erro);
+    const ve = async (nome: string, id: string) =>
+      Boolean((await ofertasDoNegocio(acesso(nome), negocioId))?.ofertas.some((o) => o.id === id));
+    expect(await ve("advv2", r.id)).toBe(true); // advogado do lado vendedor
+    expect(await ve("adva", r.id)).toBe(false); // mesmo perfil, lado da compradora
+    expect(await ve("compb2", r.id)).toBe(false); // outra compradora, mesmo na lista
+    // Contraproposta: rodada 2 da mesma compradora.
+    const r2 = await criarOferta(g, negocioId, { ...base, anteriorId: r.id, parcelaVista: "12.000.000" });
+    if (!("id" in r2)) throw new Error(r2.erro);
+    const lista = await ofertasDoNegocio(g, negocioId);
+    expect(lista!.ofertas.find((o) => o.id === r2.id)?.rodada).toBe(2);
+    expect(lista!.completa).toBe(true);
+    expect(
+      await criarOferta(g, negocioId, { ...base, compradoraId: compradoraB, anteriorId: r.id }),
+    ).toMatchObject({ erro: "ofertas.erros.anteriorInvalida" });
+    // Oferta da Compradora B: ela vê a sua; o funil vai a "Proposta recebida".
+    const rb = await criarOferta(g, negocioId, { ...base, compradoraId: compradoraB, perfis: [] });
+    if (!("id" in rb)) throw new Error(rb.erro);
+    expect(await ve("compb2", rb.id)).toBe(true);
+    const funil = await dono.query(
+      `select situacao_funil from deal_empresa where deal_id = $1 and empresa_id = $2 and situacao_funil is not null`,
+      [negocioId, compradoraB],
+    );
+    expect(funil.rows[0]?.situacao_funil).toBe("proposta");
+    expect((await ofertasDoNegocio(acesso("compb2"), negocioId))!.completa).toBe(false);
+    // Rateio do negócio: soma 100.
+    expect(
+      await salvarRateioDoNegocio(g, negocioId, {
+        percentuais: [{ empresaId: vendedora, percentual: "90" }],
+        criterio: "faturamento",
+      }),
+    ).toMatchObject({ erro: "ofertas.erros.rateioInvalido" });
+    expect(
+      await salvarRateioDoNegocio(g, negocioId, {
+        percentuais: [{ empresaId: vendedora, percentual: "100" }],
+        criterio: "faturamento",
+      }),
+    ).toEqual({ ok: true });
+    const comRateio = await ofertasDoNegocio(g, negocioId);
+    expect(comRateio!.ofertas[0].rateio[0]).toMatchObject({ empresaId: vendedora, percentual: "100.0000" });
+    expect(comRateio!.criterioDoNegocio).toBe("faturamento");
+    expect(
+      await salvarRateioDoNegocio(acesso("adva"), negocioId, { percentuais: [], criterio: "" }),
+    ).toMatchObject({
+      erro: expect.any(String),
+    });
+    expect(await excluirOferta(acesso("adva"), r2.id)).toMatchObject({ erro: "ofertas.erros.naoEncontrada" });
+    expect(await excluirOferta(g, r2.id)).toEqual({ ok: true });
   });
 });
