@@ -164,6 +164,16 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.goto(`http://${slug}.${dominio}/busca?q=${encodeURIComponent("contrato social de teste")}`);
   await expect(page.getByRole("link", { name: /Contrato social/ })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("no conteúdo").first()).toBeVisible();
+  // Menu lateral no tema oposto: com a tela clara, o fundo do menu fica escuro (e volta ao desligar).
+  const fundoDoMenu = () =>
+    page.locator("[data-menu-lateral]").evaluate((el) => getComputedStyle(el).backgroundColor);
+  const claro = await fundoDoMenu();
+  await page.getByRole("button", { name: "Menu do usuário" }).click();
+  await page.getByLabel("Menu lateral no tema oposto").check();
+  await expect.poll(fundoDoMenu).not.toBe(claro);
+  await page.getByLabel("Menu lateral no tema oposto").uncheck();
+  await expect.poll(fundoDoMenu).toBe(claro);
+  await page.keyboard.press("Escape");
 
   // Kanban: o negócio está na coluna Prospecção; "Mover para" leva ao Term Sheet.
   await page.goto(`http://${slug}.${dominio}/negocios?vista=kanban`);
