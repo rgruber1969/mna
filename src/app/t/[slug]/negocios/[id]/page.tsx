@@ -41,6 +41,8 @@ import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/ser
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
 import { TabelaDeContratos } from "@/components/contratos/detalhe";
+import { ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
+import { AbaDeOfertas } from "@/components/ofertas/aba";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
@@ -105,6 +107,11 @@ async function Painel({
   ]);
   const tc = await getTranslations("contratos");
   const mostraContratos = contratos.length > 0 || opcoesContrato.podeCriar;
+  const [ofertas, opcoesOferta, to] = await Promise.all([
+    ofertasDoNegocio(acesso, n.id),
+    opcoesDaOferta(acesso, n.id),
+    getTranslations("ofertas"),
+  ]);
   const [etapas, alcances, dataRoom, tarefas] = await Promise.all([
     etapasDoNegocio(acesso, n.id),
     n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
@@ -184,6 +191,7 @@ async function Painel({
                     ? tm("abaComNovas", totalMsg)
                     : tm("abaComTotal", { total: totalMsg?.total ?? 0 }),
               },
+              ...(ofertas ? [{ id: "ofertas", rotulo: `${to("titulo")} (${ofertas.ofertas.length})` }] : []),
               ...(mostraContratos
                 ? [{ id: "contratos", rotulo: `${tc("titulo")} (${contratos.length})` }]
                 : []),
@@ -344,6 +352,11 @@ async function Painel({
                 canalInicial={(await conversa).canal}
               />
             </PainelDeAba>
+            {ofertas && (
+              <PainelDeAba id="ofertas">
+                <AbaDeOfertas dealId={n.id} dados={ofertas} opcoes={opcoesOferta} />
+              </PainelDeAba>
+            )}
             {mostraContratos && (
               <PainelDeAba id="contratos">
                 {opcoesContrato.podeCriar && (

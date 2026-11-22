@@ -139,7 +139,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   // Tarefas: criar uma tarefa e vê-la na lista de abertas.
   await page.getByRole("tab", { name: /^Tarefas/ }).click();
   await page.getByRole("button", { name: "Nova tarefa" }).click();
-  await page.getByLabel("Título").fill("Revisar minuta");
+  await page.getByLabel("Título").and(page.locator(":enabled")).fill("Revisar minuta");
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(page.getByRole("button", { name: /Revisar minuta/ })).toBeVisible({ timeout: 30_000 });
   // Mensagens: conversa geral do negócio, no canal da equipe do lado vendedor.
@@ -260,4 +260,35 @@ test("contratos: cria no negócio, envia arquivo, simula o success fee e lista",
   await page.goto(`http://${slug}.${dominio}/contratos`);
   await expect(page.getByRole("link", { name: "Mandato de venda" })).toBeVisible();
   await expect(page.getByText("N-0001 Projeto Teste")).toBeVisible();
+});
+
+test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto(`http://${slug}.${dominio}/entrar`);
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("E-mail (desenvolvimento)").fill(email);
+  await page.getByRole("button", { name: "Entrar sem senha" }).click();
+  await expect(page.getByRole("heading", { name: "Olá, Pessoa Negócio" })).toBeVisible();
+  await page.goto(`http://${slug}.${dominio}/negocios`);
+  await page.getByRole("link", { name: "N-0001 Projeto Teste" }).click();
+  await page.getByRole("tab", { name: /^Ofertas/ }).click();
+  await page.getByRole("button", { name: "Registrar oferta" }).click();
+  await page.getByLabel("Instrumento").selectOption("loi");
+  await page.getByLabel("Parcela à vista, R$").fill("10.000.000");
+  await page.getByRole("button", { name: "+ Parcela" }).click();
+  await page.getByLabel("Parcela 1: Valor, R$").fill("5.000.000");
+  await page.getByLabel("Parcela 1: Vencimento").fill("2027-12-31");
+  await page.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("Oferta salva.")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("R$ 15.000.000,00")).toBeVisible();
+  // Contraproposta (rodada 2): a comparação aparece com duas ofertas.
+  await page.getByRole("button", { name: "Registrar oferta" }).click();
+  await page.getByLabel("Contraproposta de (oferta anterior)").selectOption({ index: 1 });
+  await page.getByLabel("Parcela à vista, R$").fill("16.000.000");
+  await page.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("Rodada 2").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Comparação" })).toBeVisible();
+  await expect(page.getByText("R$ 16.000.000,00").first()).toBeVisible();
+  if (process.env.CAPTURAS)
+    await page.screenshot({ path: `${process.env.CAPTURAS}/ofertas.png`, fullPage: true });
 });
