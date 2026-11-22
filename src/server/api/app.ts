@@ -10,6 +10,7 @@ import { conteudoParaVisualizar } from "@/server/services/documentos";
 import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
+import { registrarRotasV1 } from "./rotas-v1";
 
 /**
  * API REST (ADR-0004): Hono com especificação OpenAPI gerada a partir dos
@@ -116,6 +117,9 @@ api.get("/marca/:tenantId/:arquivo", async (c) => {
  */
 const atenderTarefas = servirTarefas({ client: inngest, functions: funcoes });
 api.on(["GET", "POST", "PUT"], "/inngest", (c) => atenderTarefas(c));
+
+// Rotas públicas da API (chave de API ou sessão), com a mesma camada de serviços das telas.
+registrarRotasV1(api);
 
 /**
  * Documentação da API. Fora da produção, sempre disponível; em produção,

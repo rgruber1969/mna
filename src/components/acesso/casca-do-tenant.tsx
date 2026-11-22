@@ -86,6 +86,12 @@ const ICONES: Record<string, ReactNode> = {
     </>
   ),
   mensagem: <path d="M4 5h16v11H9l-5 4z" />,
+  chave: (
+    <>
+      <circle cx="8" cy="15" r="4" />
+      <path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2" />
+    </>
+  ),
   seta: <path d="M6 9l6 6 6-6" />,
   fechar: <path d="M6 6l12 12M18 6L6 18" />,
   sol: (

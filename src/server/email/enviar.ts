@@ -26,6 +26,10 @@ function obterTransporte(): Transporter {
 }
 
 export async function enviarEmail(email: Email): Promise<void> {
+  // Usuários de serviço (chaves de API) têm e-mail técnico no domínio reservado .invalid.
+  if (email.para.endsWith(".invalid")) return;
+  // Usuários de serviço (chaves de API) têm e-mail técnico no domínio reservado .invalid.
+  if (email.para.endsWith(".invalid")) return;
   await obterTransporte().sendMail({
     from: process.env.EMAIL_REMETENTE ?? "nao-responda@localhost",
     to: email.para,

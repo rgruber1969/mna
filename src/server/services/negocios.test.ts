@@ -66,6 +66,8 @@ import { eq } from "drizzle-orm";
 import { comTenant } from "@/server/db/cliente";
 import { mensagem } from "@/server/db/esquema";
 import { buscarDocumentos } from "./busca-de-documentos";
+import { criarChave, listarChaves, revogarChave } from "./chaves-api";
+import { api } from "@/server/api/app";
 
 /** Negócios (item 8): criação, visibilidade por participação, lados e sigilo do lado comprador. */
 const dono = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO_TESTE });
@@ -1243,5 +1245,57 @@ describe("data room: editar título, categoria e comentário", () => {
     const depois = (await dataRoomDoNegocio(g, negocioId))!.documentos.find((d) => d.id === memo.id)!;
     expect(depois.titulo).toBe("Memorando revisado");
     expect(depois.versoes[0].comentario).toBe("Versão para os advogados");
+  });
+});
+
+describe("API com chave de API", () => {
+  it("só administrador cria; a chave vê o que o perfil e a participação permitem; revogar corta na hora", async () => {
+    const adm = acesso("admin", true);
+    await expect(criarChave(acesso("gestor"), { nome: "X", perfilId: "", expiraEm: "" })).rejects.toThrow();
+    const [{ id: perfilGestor }] = (
+      await dono.query(
+        `select id from perfil where tenant_id = $1 and padrao = 'gestor-contratante' and camada = 'tenant'`,
+        [tenantId],
+      )
+    ).rows as { id: string }[];
+    const r = await criarChave(adm, { nome: "Integração de teste", perfilId: perfilGestor, expiraEm: "" });
+    if (!("segredo" in r)) throw new Error(r.erro);
+    expect(r.segredo.startsWith("chv_")).toBe(true);
+    const dominio = process.env.APP_DOMINIO ?? "localhost:3000";
+    const chamar = (caminho: string, segredo = r.segredo, host = `ng-${sufixo}.${dominio}`) =>
+      api.request(`/api${caminho}`, { headers: { host, authorization: `Bearer ${segredo}` } });
+    // Sem participação: a lista de negócios vem vazia e o negócio não abre.
+    const vazia = await chamar("/v1/negocios");
+    expect(vazia.status).toBe(200);
+    expect(((await vazia.json()) as { total: number }).total).toBe(0);
+    expect((await chamar(`/v1/negocios/${negocioId}`)).status).toBe(403);
+    // Incluída como participante (pessoa "Chave de API: …"), passa a ver o negócio.
+    const [{ id: pessoaDaChave }] = (
+      await dono.query(
+        `select id from pessoa where tenant_id = $1 and nome = 'Chave de API: Integração de teste'`,
+        [tenantId],
+      )
+    ).rows as { id: string }[];
+    expect(
+      await adicionarParticipante(acesso("gestor"), negocioId, {
+        pessoaId: pessoaDaChave,
+        perfilId: await perfilDeDeal("coordenador-deal"),
+        empresaId: "",
+        lado: "vendedor",
+        prazo: "",
+      }),
+    ).toEqual({ ok: true });
+    const negocio = await chamar(`/v1/negocios/${negocioId}`);
+    expect(negocio.status).toBe(200);
+    expect(((await negocio.json()) as { nome: string }).nome).toBe("N-0001 Projeto Gadol");
+    expect((await chamar(`/v1/negocios/${negocioId}/documentos`)).status).toBe(200);
+    // Chave inválida, de outro endereço ou revogada: 401.
+    expect((await chamar("/v1/negocios", "chv_invalida")).status).toBe(401);
+    expect((await chamar("/v1/negocios", r.segredo, `outro-${sufixo}.${dominio}`)).status).toBe(401);
+    const [{ id: chaveId }] = (await dono.query(`select id from chave_api where tenant_id = $1`, [tenantId]))
+      .rows as { id: string }[];
+    expect(await revogarChave(adm, chaveId)).toEqual({ ok: true });
+    expect((await chamar("/v1/negocios")).status).toBe(401);
+    expect((await listarChaves(adm))[0].situacao).toBe("revogada");
   });
 });

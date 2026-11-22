@@ -3,6 +3,7 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { auth, SESSAO_DURACAO_MAXIMA_S } from "@/server/auth/auth";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
+  chaveApi,
   chaveDeAcesso,
   eventoAuditoria,
   eventoPlataforma,
@@ -118,9 +119,73 @@ async function revogarSessao(id: string): Promise<void> {
   await banco().delete(sessao).where(eq(sessao.id, id));
 }
 
+/** Prefixo das chaves de API (identifica o tipo do segredo; sem o nome do produto). */
+export const PREFIXO_DA_CHAVE = "chv_";
+
+/**
+ * Acesso por chave de API (ADR-0013, regra 11): só no endereço do tenant da
+ * chave (ADR-0011), chave não revogada nem vencida e usuário de serviço com
+ * vínculo ativo. Age como esse usuário, com o perfil dele.
+ */
+async function acessoPorChave(t: TenantDoAcesso, segredo: string): Promise<AcessoTenant | null> {
+  const hash = hashDoToken(segredo);
+  const [c] = await comTenant(t.id, (tx) =>
+    tx
+      .select({
+        id: chaveApi.id,
+        usuarioId: chaveApi.usuarioId,
+        nome: usuarioTabela.name,
+        email: usuarioTabela.email,
+        expiraEm: chaveApi.expiraEm,
+        revogadaEm: chaveApi.revogadaEm,
+        ultimoUsoEm: chaveApi.ultimoUsoEm,
+        vinculo: vinculoTenant.situacao,
+      })
+      .from(chaveApi)
+      .innerJoin(usuarioTabela, eq(usuarioTabela.id, chaveApi.usuarioId))
+      .innerJoin(
+        vinculoTenant,
+        and(eq(vinculoTenant.usuarioId, chaveApi.usuarioId), eq(vinculoTenant.tenantId, chaveApi.tenantId)),
+      )
+      .where(eq(chaveApi.hash, hash)),
+  );
+  if (!c || c.revogadaEm || c.vinculo !== "ativo") return null;
+  const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+  if (c.expiraEm && c.expiraEm < hoje) return null;
+  // Último uso: no máximo uma gravação a cada 5 minutos.
+  if (!c.ultimoUsoEm || Date.now() - c.ultimoUsoEm.getTime() > 5 * 60_000)
+    await comTenant(t.id, (tx) =>
+      tx.update(chaveApi).set({ ultimoUsoEm: new Date() }).where(eq(chaveApi.id, c.id)),
+    );
+  return {
+    area: "tenant",
+    tenant: t,
+    usuario: {
+      id: c.usuarioId,
+      nome: c.nome,
+      email: c.email,
+      temAutenticador: false,
+      temPasskey: false,
+      doisFatoresAtivo: false,
+    },
+    administrador: false,
+    exigeDoisFatores: false,
+    sessaoId: `chave:${c.id}`,
+    segundoFatorNaSessao: true,
+  };
+}
+
 export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
   const area = resolverArea(headers.get("host"));
   if (area.tipo !== "console" && area.tipo !== "tenant") return null;
+
+  // Chave de API no cabeçalho Authorization (sistemas e integrações).
+  const autorizacao = headers.get("authorization");
+  if (autorizacao?.startsWith(`Bearer ${PREFIXO_DA_CHAVE}`)) {
+    if (area.tipo !== "tenant") return null;
+    const t = await tenantPorSlug(area.slug);
+    return t ? acessoPorChave(t, autorizacao.slice("Bearer ".length)) : null;
+  }
 
   const atual = await auth.api.getSession({ headers });
   if (!atual) return null;

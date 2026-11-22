@@ -1,0 +1,39 @@
+{
+  "chaves": {
+    "titulo": "Chaves de API",
+    "ajuda": "Chaves para sistemas e integrações usarem a API (documentação em /api/docs). Cada chave age como um usuário de serviço, com o perfil escolhido: vê e faz só o que esse perfil permite. Para dar acesso a um negócio, inclua a chave como participante (ela aparece como pessoa \"Chave de API: nome\"). O segredo aparece uma única vez; guarde-o num cofre de senhas. Revogar corta o acesso na hora. Envie no cabeçalho: Authorization: Bearer <segredo>.",
+    "nome": "Nome",
+    "nomeDica": "Ex.: Integração do ERP",
+    "perfil": "Perfil",
+    "escolhaPerfil": "Escolha o perfil",
+    "expiraEm": "Vale até (opcional)",
+    "criar": "Gerar chave",
+    "criada": "Criada",
+    "ultimoUso": "Último uso",
+    "situacao": "Situação",
+    "acoes": "Ações",
+    "semValidade": "Sem validade",
+    "nenhuma": "Nenhuma chave de API.",
+    "revogar": "Revogar",
+    "confirmarRevogar": "Revogar a chave \"{nome}\"? Os sistemas que a usam perdem o acesso na hora.",
+    "revogada": "Chave revogada.",
+    "situacoes": {
+      "ativa": "Ativa",
+      "vencida": "Vencida",
+      "revogada": "Revogada"
+    },
+    "segredoTitulo": "Copie o segredo agora",
+    "segredoAjuda": "Ele não será mostrado de novo. Se perder, revogue e gere outra chave.",
+    "copiar": "Copiar",
+    "copiado": "Copiado!",
+    "concluir": "Concluir",
+    "erros": {
+      "nomeObrigatorio": "Informe o nome da chave.",
+      "nomeLongo": "Nome longo demais (até 100 caracteres).",
+      "perfilObrigatorio": "Escolha um perfil do tenant.",
+      "dataInvalida": "Data inválida.",
+      "dataNoPassado": "A validade precisa ser hoje ou depois.",
+      "naoEncontrada": "Chave não encontrada."
+    }
+  }
+}

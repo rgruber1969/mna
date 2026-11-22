@@ -1229,3 +1229,34 @@ export const documentoTexto = pgTable(
     isolamento(),
   ],
 ).enableRLS();
+
+/**
+ * Chave de API (ADR-0013, regra 11; autenticacao-e-sessao.md): gerada só por
+ * administradores; age como um usuário de serviço do tenant, com perfil
+ * próprio. O segredo é mostrado uma vez; aqui fica só o hash.
+ */
+export const chaveApi = pgTable(
+  "chave_api",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    /** Começo visível do segredo, para reconhecer a chave na lista. */
+    prefixo: text("prefixo").notNull(),
+    hash: text("hash").notNull(),
+    /** Usuário de serviço da chave (com vínculo, perfil e pessoa no tenant). */
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuario.id, { onDelete: "cascade" }),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    expiraEm: date("expira_em"),
+    ultimoUsoEm: timestamp("ultimo_uso_em", { withTimezone: true }),
+    revogadaEm: timestamp("revogada_em", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("chave_api_hash_uq").on(t.hash),
+    index("chave_api_tenant_idx").on(t.tenantId),
+    isolamento(),
+  ],
+).enableRLS();

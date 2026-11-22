@@ -288,6 +288,13 @@
       "when": 1795367979482,
       "tag": "0040_menu_invertido",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1795368952691,
+      "tag": "0041_chaves_api",
+      "breakpoints": true
     }
   ]
 }

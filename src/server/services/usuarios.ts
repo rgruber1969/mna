@@ -1,5 +1,5 @@
 import { notificar } from "./notificacoes";
-import { and, desc, eq, gt, isNull, ne } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, ne, notLike } from "drizzle-orm";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { banco, comTenant } from "@/server/db/cliente";
@@ -106,7 +106,8 @@ export async function listarUsuarios(acesso: Acesso | null): Promise<PainelDeUsu
         })
         .from(vinculoTenant)
         .innerJoin(usuario, eq(usuario.id, vinculoTenant.usuarioId))
-        .where(eq(vinculoTenant.situacao, "ativo"))
+        // Usuários de serviço das chaves de API ficam na tela Chaves de API.
+        .where(and(eq(vinculoTenant.situacao, "ativo"), notLike(usuario.email, "%@chaves.invalid")))
         .orderBy(usuario.name),
       perfis: await tx
         .select({ usuarioId: perfilUsuario.usuarioId, nome: perfil.nome })

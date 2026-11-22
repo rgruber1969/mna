@@ -31,9 +31,8 @@ registrado.
 
 ## Para completar na V1
 
-- [ ] **API REST de empresas, pessoas e cadastros (item 25):** os serviços
-      já existem e seguem as mesmas regras das telas; falta expor as rotas
-      (OpenAPI), junto com as chaves de API (item 26).
+- [x] **API REST de empresas, pessoas e cadastros (item 25):** feita em
+      2026-11-22 com as chaves de API (rotas v1; ver autenticacao-e-sessao.md).
 
 ## Antes da produção
 

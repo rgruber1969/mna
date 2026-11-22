@@ -133,3 +133,18 @@ Só para agilizar testes locais: entrar informando apenas o e-mail.
 * Geradas **somente por administradores**.
 * Cada chave pertence a um tenant e respeita as mesmas permissões das
   telas.
+* **Construído em 2026-11-22 (itens 25 e 26):** tela Administração › Chaves
+  de API. Cada chave é um **usuário de serviço** com o **perfil do tenant**
+  escolhido (e uma pessoa "Chave de API: nome", para ser incluída como
+  participante dos negócios que deve ver). Validade opcional.
+* O segredo (`chv_…`) aparece **uma única vez**; guarda-se só o hash. Uso:
+  cabeçalho `Authorization: Bearer <segredo>`, só no endereço do tenant da
+  chave (outro endereço recusa).
+* **Revogar** corta na hora (e encerra o vínculo do usuário de serviço);
+  último uso registrado. Criação e revogação auditadas.
+* Usuários de serviço não aparecem na lista de Usuários e nunca recebem
+  e-mail.
+* Rotas da v1 (documentação em `/api/docs`): negócios, documentos (lista,
+  link de download auditado, busca), tarefas (lista e criação), mensagens
+  (conversas, leitura e envio) e cadastros (empresas e pessoas, dados
+  sensíveis mascarados).
