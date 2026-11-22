@@ -9,6 +9,7 @@ import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
 import { TarefasDoNegocio } from "@/components/negocios/tarefas";
 import { MensagensDoNegocio } from "@/components/negocios/mensagens";
+import { HistoricoPaginado } from "@/components/negocios/historico";
 import { Avatar, Aviso } from "@/components/ui/basicos";
 
 /**
@@ -687,19 +688,7 @@ export function KanbanDeNegocios({
                     />
                   )}
                   {aberto.aba === "mensagens" && <MensagensDoNegocio dealId={c0.id} />}
-                  {aberto.aba === "historico" &&
-                    (p.historico.length === 0 ? (
-                      <p className="text-muted text-sm">{t("semEventos")}</p>
-                    ) : (
-                      <ul className="divide-border divide-y text-sm">
-                        {p.historico.map((h, k) => (
-                          <li key={k} className="py-1.5">
-                            {h.texto}
-                            <span className="text-muted block text-xs">{h.detalhe}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ))}
+                  {aberto.aba === "historico" && <HistoricoPaginado eventos={p.historico} />}
                 </div>
               </>
             )}

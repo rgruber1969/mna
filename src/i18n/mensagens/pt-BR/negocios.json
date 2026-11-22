@@ -296,7 +296,12 @@
         "negocio_tarefa_criada": "Tarefa \"{titulo}\" criada",
         "negocio_tarefa_editada": "Tarefa \"{titulo}\" alterada",
         "negocio_tarefa_situacao": "Tarefa \"{titulo}\": {para}",
-        "negocio_tarefa_excluida": "Tarefa \"{titulo}\" excluída"
+        "negocio_tarefa_excluida": "Tarefa \"{titulo}\" excluída",
+        "documento_visualizado": "Documento visualizado na tela",
+        "documento_baixado": "Documento baixado",
+        "documento_editado": "Documento \"{titulo}\" editado",
+        "documento_comentario_editado": "Comentário da versão {versao} editado",
+        "mensagem_enviada": "Mensagem enviada"
       },
       "paginas": "Páginas do histórico",
       "intervalo": "{de}–{ate} de {total}",

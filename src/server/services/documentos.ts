@@ -295,6 +295,7 @@ export type VersaoNaTela = {
   /** Lista atual (para "Alterar quem vê"). */
   acessoIds: { todos: boolean; perfis: string[]; usuarios: string[] };
   podeAlterarAcesso: boolean;
+  podeEditarComentario: boolean;
   podeBaixar: boolean;
   podeExcluir: boolean;
 };
@@ -307,6 +308,9 @@ export type DocumentoNaTela = {
   etapa: string | null;
   versoes: VersaoNaTela[];
   podeNovaVersao: boolean;
+  categoriaId: string | null;
+  /** Quem criou, administradores ou quem edita documentos na etapa: título e categoria. */
+  podeEditar: boolean;
 };
 
 export type DataRoom = {
@@ -345,6 +349,8 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
           titulo: documento.titulo,
           etapaId: documento.etapaId,
           categoria: categoriaDocumento.nome,
+          categoriaId: documento.categoriaId,
+          criadoPor: documento.criadoPor,
         })
         .from(documento)
         .leftJoin(categoriaDocumento, eq(categoriaDocumento.id, documento.categoriaId))
@@ -418,6 +424,9 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
       etapaId: d.etapaId,
       etapa: d.etapaId ? (nomeEtapa.get(d.etapaId) ?? null) : null,
       podeNovaVersao: !fechado && ctx.podeDoc(d.etapaId, "criar"),
+      categoriaId: d.categoriaId,
+      podeEditar:
+        !fechado && (d.criadoPor === a.usuario.id || a.administrador || ctx.podeDoc(d.etapaId, "editar")),
       versoes: visiveis.map(({ v, autor }) => ({
         id: v.id,
         numero: v.numero,
@@ -435,6 +444,7 @@ async function dataRoomDoNegocioSemCache(acesso: Acesso | null, dealId: string):
           usuarios: (acessosPor.get(v.id) ?? []).flatMap((x) => (x.usuarioId ? [x.usuarioId] : [])),
         },
         podeAlterarAcesso: !fechado && (v.enviadoPor === a.usuario.id || a.administrador),
+        podeEditarComentario: !fechado && (v.enviadoPor === a.usuario.id || a.administrador),
         podeBaixar: v.situacao === "disponivel" && ctx.podeDoc(d.etapaId, "baixar"),
         podeExcluir:
           !fechado &&
@@ -792,6 +802,64 @@ const TODOS = "__todos__";
  * por exemplo para liberá-la ao outro lado. A lista só restringe a quem
  * participa do negócio; a mudança fica na auditoria.
  */
+const DadosEdicao = z.object({
+  titulo: z.string().trim().min(1, "documentos.erros.tituloObrigatorio").max(200),
+  categoriaId: z.string().optional(),
+});
+
+/** Título e categoria do documento: quem o criou, administradores ou quem edita documentos na etapa. */
+export async function editarDocumento(
+  acesso: Acesso | null,
+  documentoId: string,
+  dados: z.input<typeof DadosEdicao>,
+): Promise<Resultado> {
+  const a = exigirTenant(acesso);
+  const d = DadosEdicao.safeParse(dados);
+  if (!d.success) return { erro: d.error.issues[0].message, campo: "titulo" };
+  if (!uuidValido(documentoId)) return { erro: "documentos.erros.naoEncontrado" };
+  const [doc] = await comTenant(a.tenant.id, (tx) =>
+    tx.select().from(documento).where(eq(documento.id, documentoId)),
+  );
+  if (!doc) return { erro: "documentos.erros.naoEncontrado" };
+  const dr = await dataRoomDoNegocioSemCache(a, doc.dealId);
+  const naTela = dr?.documentos.find((x) => x.id === documentoId);
+  if (!naTela) return { erro: "documentos.erros.naoEncontrado" };
+  if (!naTela.podeEditar) await negar(a, "editar", doc.dealId);
+  const categoriaId =
+    d.data.categoriaId && dr!.categorias.some((c) => c.id === d.data.categoriaId) ? d.data.categoriaId : null;
+  await comTenant(a.tenant.id, (tx) =>
+    tx.update(documento).set({ titulo: d.data.titulo, categoriaId }).where(eq(documento.id, documentoId)),
+  );
+  await auditar(a, "documento.editado", "deal", doc.dealId, { documentoId, titulo: d.data.titulo });
+  return { ok: true };
+}
+
+/** Comentário de uma versão: quem a enviou ou administradores. */
+export async function editarComentarioDaVersao(
+  acesso: Acesso | null,
+  versaoId: string,
+  comentario: string,
+): Promise<Resultado> {
+  const a = exigirTenant(acesso);
+  const texto = comentario.trim().slice(0, 2000);
+  const x = await versaoAcessivel(a, versaoId);
+  if (!x) return { erro: "documentos.erros.naoEncontrado" };
+  if (x.v.enviadoPor !== a.usuario.id && !a.administrador) await negar(a, "editar", x.dealId);
+  const fechado = await negocioFechado(a, x.dealId);
+  if (fechado) return fechado;
+  await comTenant(a.tenant.id, (tx) =>
+    tx
+      .update(documentoVersao)
+      .set({ comentario: texto || null })
+      .where(eq(documentoVersao.id, versaoId)),
+  );
+  await auditar(a, "documento.comentario_editado", "deal", x.dealId, {
+    documentoId: x.v.documentoId,
+    versao: x.v.numero,
+  });
+  return { ok: true };
+}
+
 export async function alterarAcessoDaVersao(
   acesso: Acesso | null,
   versaoId: string,

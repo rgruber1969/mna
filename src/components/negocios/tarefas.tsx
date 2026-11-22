@@ -11,6 +11,7 @@ import {
 } from "@/app/acoes/tarefas";
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso, estiloTabela } from "@/components/ui/basicos";
+import { usePaginacao } from "@/components/ui/paginacao-local";
 
 /** Aba Tarefas do negócio (item 27): lista, filtros, criação e detalhes com checklist. */
 
@@ -226,6 +227,7 @@ export function TarefasDoNegocio({
         (filtro === "minhas" ? x.souResponsavel : !["concluida", "cancelada"].includes(x.situacao))) &&
       (etapa === "" || (etapa === "geral" ? x.etapaId === null : x.etapaId === etapa)),
   );
+  const { atual: paginaDeTarefas, controles: controlesDeTarefas } = usePaginacao(lista);
   const etapas = [
     ...new Map(quadro.tarefas.filter((x) => x.etapaId).map((x) => [x.etapaId!, x.etapa!])).entries(),
   ];
@@ -306,7 +308,7 @@ export function TarefasDoNegocio({
               </tr>
             </thead>
             <tbody>
-              {lista.map((x) => {
+              {paginaDeTarefas.map((x) => {
                 const atrasada =
                   x.prazo && x.prazo < hoje && !["concluida", "cancelada"].includes(x.situacao);
                 return (
@@ -443,6 +445,7 @@ export function TarefasDoNegocio({
               })}
             </tbody>
           </table>
+          {controlesDeTarefas}
         </div>
       )}
     </div>

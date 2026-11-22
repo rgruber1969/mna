@@ -51,7 +51,7 @@ async function Painel({ pedido }: { pedido: Promise<{ q: string; negocio: string
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-4xl">
-          <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
+          <Titulo ajuda={t("sobre")}>{t("titulo")}</Titulo>
           <form method="get" className="mb-2 flex flex-wrap items-end gap-3">
             <label className="min-w-64 flex-1">
               <span className="text-text mb-1 block text-sm font-medium">{t("termo")}</span>

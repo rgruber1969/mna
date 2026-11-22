@@ -45,6 +45,8 @@ import {
   alterarAcessoDaVersao,
   concluirEnvio,
   dataRoomDoNegocio,
+  editarComentarioDaVersao,
+  editarDocumento,
   excluirVersao,
   iniciarEnvio,
   linkDeDownload,
@@ -1219,5 +1221,27 @@ describe("busca de documentos", () => {
     expect(await buscarDocumentos(acesso("advv2"), { termo: "m" })).toMatchObject({
       erro: "busca.erros.termoCurto",
     });
+  });
+});
+
+describe("data room: editar título, categoria e comentário", () => {
+  it("quem enviou edita; quem não vê não acha; comentário só de quem enviou", async () => {
+    const g = acesso("gestor");
+    const dr = await dataRoomDoNegocio(g, negocioId);
+    const memo = dr!.documentos.find((d) => d.titulo === "Memorando dos advogados")!;
+    expect(memo.podeEditar).toBe(true);
+    expect(await editarDocumento(g, memo.id, { titulo: "Memorando revisado", categoriaId: "" })).toEqual({
+      ok: true,
+    });
+    expect(await editarDocumento(acesso("adva"), memo.id, { titulo: "X" })).toMatchObject({
+      erro: "documentos.erros.naoEncontrado",
+    });
+    expect(await editarDocumento(g, memo.id, { titulo: " " })).toMatchObject({ campo: "titulo" });
+    const v = memo.versoes[0].id;
+    expect(await editarComentarioDaVersao(g, v, "Versão para os advogados")).toEqual({ ok: true });
+    await expect(editarComentarioDaVersao(acesso("advv2"), v, "outro")).rejects.toBeInstanceOf(AcessoNegado);
+    const depois = (await dataRoomDoNegocio(g, negocioId))!.documentos.find((d) => d.id === memo.id)!;
+    expect(depois.titulo).toBe("Memorando revisado");
+    expect(depois.versoes[0].comentario).toBe("Versão para os advogados");
   });
 });

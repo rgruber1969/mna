@@ -32,6 +32,7 @@ import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
 import { TarefasDoNegocio } from "@/components/negocios/tarefas";
 import { AbaDeMensagens } from "@/components/negocios/mensagens";
+import { ListaPaginada } from "@/components/ui/paginacao-local";
 import { totaisDeMensagens } from "@/server/services/mensagens";
 import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { dataRoomDoNegocio } from "@/server/services/documentos";
@@ -260,8 +261,9 @@ async function Painel({
               )}
             </PainelDeAba>
             <PainelDeAba id="participantes">
-              <ul className="divide-border divide-y text-sm">
-                {n.participantes.map((p) => (
+              <ListaPaginada
+                className="divide-border divide-y text-sm"
+                itens={n.participantes.map((p) => (
                   <li key={p.id} className="flex items-start justify-between gap-2 py-2">
                     <span>
                       <span className="font-medium">{p.nome}</span>
@@ -288,7 +290,7 @@ async function Painel({
                     )}
                   </li>
                 ))}
-              </ul>
+              />
               {opcoesPart && (
                 <FormIncluirParticipante
                   dealId={n.id}

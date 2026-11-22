@@ -7,6 +7,8 @@ import { obterAcesso } from "@/server/services/acesso";
 import {
   acessoDaUltimaVersao,
   alterarAcessoDaVersao,
+  editarComentarioDaVersao,
+  editarDocumento,
   concluirEnvio,
   excluirCategoria,
   excluirVersao,
@@ -80,5 +82,21 @@ export async function alterarAcessoDaVersaoAcao(
   dados: { todos: boolean; perfis: string[]; usuarios: string[] },
 ): Promise<{ erro?: string }> {
   const r = await alterarAcessoDaVersao(await acesso(), versaoId, dados);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
+}
+
+export async function editarDocumentoAcao(
+  documentoId: string,
+  dados: { titulo: string; categoriaId: string },
+): Promise<{ erro?: string }> {
+  const r = await editarDocumento(await acesso(), documentoId, dados);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
+}
+
+export async function editarComentarioDaVersaoAcao(
+  versaoId: string,
+  comentario: string,
+): Promise<{ erro?: string }> {
+  const r = await editarComentarioDaVersao(await acesso(), versaoId, comentario);
   return "erro" in r ? { erro: await traduzirErro(r) } : {};
 }

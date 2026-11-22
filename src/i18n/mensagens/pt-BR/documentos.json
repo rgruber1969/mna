@@ -79,6 +79,10 @@
     "escolherArquivo": "Escolher arquivo",
     "nenhumArquivo": "Nenhum arquivo escolhido",
     "arquivosEscolhidos": "{n} arquivos escolhidos",
-    "gravados": "{n, plural, one {Arquivo gravado com sucesso!} other {# arquivos gravados com sucesso!}}"
+    "gravados": "{n, plural, one {Arquivo gravado com sucesso!} other {# arquivos gravados com sucesso!}}",
+    "editar": "Editar",
+    "salvar": "Salvar",
+    "editarComentario": "Editar comentário",
+    "incluirComentario": "Incluir comentário"
   }
 }

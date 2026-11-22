@@ -25,7 +25,8 @@
       "anterior": "Página anterior",
       "proxima": "Próxima página",
       "pagina": "Página {n}",
-      "porPagina": "Por página:"
+      "porPagina": "Por página:",
+      "paginaDe": "Página {pagina} de {paginas}"
     },
     "ajuda": "Ajuda sobre esta tela"
   }

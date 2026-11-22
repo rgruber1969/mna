@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import {
   acessoDaUltimaVersaoAcao,
   alterarAcessoDaVersaoAcao,
+  editarComentarioDaVersaoAcao,
+  editarDocumentoAcao,
   concluirEnvioAcao,
   excluirVersaoAcao,
   iniciarEnvioAcao,
@@ -13,6 +15,7 @@ import {
 } from "@/app/acoes/documentos";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { temPrevia, Visualizar } from "@/components/cadastros/previa-do-anexo";
+import { usePaginacao } from "@/components/ui/paginacao-local";
 import { Aviso, estiloTabela } from "@/components/ui/basicos";
 
 /**
@@ -35,6 +38,7 @@ type Versao = {
   acesso: string[];
   acessoIds: { todos: boolean; perfis: string[]; usuarios: string[] };
   podeAlterarAcesso: boolean;
+  podeEditarComentario: boolean;
   podeBaixar: boolean;
   podeExcluir: boolean;
 };
@@ -46,6 +50,8 @@ type Documento = {
   etapa: string | null;
   versoes: Versao[];
   podeNovaVersao: boolean;
+  categoriaId: string | null;
+  podeEditar: boolean;
 };
 type Opcao = { id: string; nome: string };
 type DataRoom = {
@@ -226,6 +232,101 @@ function AlterarAcesso({
         </button>
       </div>
     </div>
+  );
+}
+
+/** Título e categoria do documento (quem criou, administradores ou quem edita na etapa). */
+function EditarDocumento({
+  documento,
+  categorias,
+  fechar,
+}: {
+  documento: Documento;
+  categorias: { id: string; nome: string }[];
+  fechar: (mudou: boolean) => void;
+}) {
+  const t = useTranslations("documentos");
+  const [titulo, setTitulo] = useState(documento.titulo);
+  const [categoriaId, setCategoriaId] = useState(documento.categoriaId ?? "");
+  const [erro, setErro] = useState<string | null>(null);
+  return (
+    <div className="border-border mb-3 flex flex-wrap items-end gap-3 rounded-md border p-3">
+      <label className="min-w-56 flex-1">
+        <span className="text-muted mb-0.5 block text-xs">{t("titulo")}</span>
+        <input value={titulo} maxLength={200} onChange={(e) => setTitulo(e.target.value)} className={campo} />
+      </label>
+      <label>
+        <span className="text-muted mb-0.5 block text-xs">{t("categoria")}</span>
+        <select
+          value={categoriaId}
+          onChange={(e) => setCategoriaId(e.target.value)}
+          className={`${campo} w-auto`}
+        >
+          <option value="">{t("semCategoria")}</option>
+          {categorias.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nome}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button
+        type="button"
+        onClick={async () => {
+          const r = await editarDocumentoAcao(documento.id, { titulo, categoriaId });
+          if (r.erro) return setErro(r.erro);
+          fechar(true);
+        }}
+        className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
+      >
+        {t("salvar")}
+      </button>
+      <button type="button" onClick={() => fechar(false)} className="text-muted text-sm">
+        {t("cancelar")}
+      </button>
+      {erro && <p className="text-danger basis-full text-xs">{erro}</p>}
+    </div>
+  );
+}
+
+/** Comentário da versão (quem enviou ou administradores). */
+function EditarComentario({
+  versaoId,
+  inicial,
+  fechar,
+}: {
+  versaoId: string;
+  inicial: string;
+  fechar: (mudou: boolean) => void;
+}) {
+  const t = useTranslations("documentos");
+  const [texto, setTexto] = useState(inicial);
+  const [erro, setErro] = useState<string | null>(null);
+  return (
+    <span className="mt-1 flex flex-wrap items-center gap-2">
+      <input
+        value={texto}
+        maxLength={2000}
+        onChange={(e) => setTexto(e.target.value)}
+        aria-label={t("comentario")}
+        className={`${campo} w-72 py-1 text-xs`}
+      />
+      <button
+        type="button"
+        onClick={async () => {
+          const r = await editarComentarioDaVersaoAcao(versaoId, texto);
+          if (r.erro) return setErro(r.erro);
+          fechar(true);
+        }}
+        className="text-primary font-medium"
+      >
+        {t("salvar")}
+      </button>
+      <button type="button" onClick={() => fechar(false)} className="text-muted">
+        {t("cancelar")}
+      </button>
+      {erro && <span className="text-danger">{erro}</span>}
+    </span>
   );
 }
 
@@ -464,6 +565,15 @@ export function DataRoomDoNegocio({
   const lista = dr.documentos.filter((d) =>
     filtro === "" ? true : filtro === "geral" ? d.etapaId === null : d.etapaId === filtro,
   );
+  const { atual: paginaDeDocs, controles: controlesDeDocs } = usePaginacao(lista);
+  const [editandoDoc, setEditandoDoc] = useState<string | null>(null);
+  const [editandoComentario, setEditandoComentario] = useState<string | null>(null);
+  const depoisDeEditar = () => {
+    setEditandoDoc(null);
+    setEditandoComentario(null);
+    router.refresh();
+    aoMudar?.();
+  };
   async function baixar(versaoId: string) {
     const r = await linkDeDownloadAcao(versaoId);
     if (r.erro || !r.url) return setErro(r.erro ?? t("erros.download"));
@@ -552,7 +662,7 @@ export function DataRoomDoNegocio({
               </tr>
             </thead>
             <tbody>
-              {lista.map((d) => {
+              {paginaDeDocs.map((d) => {
                 const ultima = d.versoes[0];
                 return (
                   <Fragment key={d.id}>
@@ -599,6 +709,18 @@ export function DataRoomDoNegocio({
                               {t("baixar")}
                             </button>
                           )}
+                          {d.podeEditar && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAberto(d.id);
+                                setEditandoDoc(d.id);
+                              }}
+                              className="text-primary"
+                            >
+                              {t("editar")}
+                            </button>
+                          )}
                           {d.podeNovaVersao && !envio && (
                             <button type="button" onClick={() => novaVersao(d)} className="text-primary">
                               {t("novaVersao")}
@@ -610,21 +732,39 @@ export function DataRoomDoNegocio({
                     {aberto === d.id && (
                       <tr>
                         <td colSpan={5} className="bg-background px-4 py-2">
-                          <ul className="divide-border divide-y text-xs">
+                          {editandoDoc === d.id && (
+                            <EditarDocumento
+                              documento={d}
+                              categorias={dr.categorias}
+                              fechar={(mudou) => (mudou ? depoisDeEditar() : setEditandoDoc(null))}
+                            />
+                          )}
+                          <ul className="border-border ml-3 border-l text-xs">
                             {d.versoes.map((v) => (
                               <li
                                 key={v.id}
-                                className="flex flex-wrap items-start justify-between gap-2 py-1.5"
+                                className="before:border-border relative flex flex-wrap items-start justify-between gap-2 py-2 pl-6 before:absolute before:top-4 before:left-0 before:w-4 before:border-t"
                               >
                                 <span>
                                   <span className="text-text font-medium">
                                     {t("versaoN", { n: v.numero })} · {v.nomeArquivo} · {tamanho(v.tamanho)}
                                   </span>
                                   <span className="text-muted block">
-                                    {[v.enviadoPor, data(v.criadoEm), v.comentario]
-                                      .filter(Boolean)
-                                      .join(" · ")}
+                                    {[v.enviadoPor, data(v.criadoEm)].filter(Boolean).join(" · ")}
                                   </span>
+                                  {editandoComentario === v.id ? (
+                                    <EditarComentario
+                                      versaoId={v.id}
+                                      inicial={v.comentario ?? ""}
+                                      fechar={(mudou) =>
+                                        mudou ? depoisDeEditar() : setEditandoComentario(null)
+                                      }
+                                    />
+                                  ) : (
+                                    v.comentario && (
+                                      <span className="text-text block italic">“{v.comentario}”</span>
+                                    )
+                                  )}
                                   <span className="text-muted block">
                                     {t("acessoDaVersao", {
                                       lista:
@@ -658,6 +798,15 @@ export function DataRoomDoNegocio({
                                   >
                                     {t("conversa")}
                                   </a>
+                                  {v.podeEditarComentario && editandoComentario !== v.id && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditandoComentario(v.id)}
+                                      className="text-primary"
+                                    >
+                                      {v.comentario ? t("editarComentario") : t("incluirComentario")}
+                                    </button>
+                                  )}
                                   {v.podeAlterarAcesso && editandoAcesso !== v.id && (
                                     <button
                                       type="button"
@@ -703,6 +852,7 @@ export function DataRoomDoNegocio({
               })}
             </tbody>
           </table>
+          {controlesDeDocs}
         </div>
       )}
     </div>

@@ -43,7 +43,7 @@ export async function painelDoNegocioAcao(dealId: string) {
   };
   const ts = await getTranslations("negocios.situacoes");
   const tf = await getTranslations("negocios.funil");
-  const historico = andamento.historico.slice(0, 30).map((h) => {
+  const historico = andamento.historico.slice(0, 500).map((h) => {
     const chave = `tipos.${h.tipo.replaceAll(".", "_")}`;
     const p: Record<string, string> = { ...h.parametros };
     if (h.tipo === "negocio.situacao" && p.para) p.para = ts(p.para as never);
