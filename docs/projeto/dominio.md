@@ -452,6 +452,34 @@ success fee e documentos.
   pré-preenchida com o próprio lado); cada lado vê os seus contratos e os
   que lhe forem liberados.
 
+Regras construídas (item 17, respostas C1–C3, 2026-11-22):
+
+* **Partes:** uma ou mais contratantes e contratadas (empresas do cadastro;
+  no negócio, as que a pessoa vê nele e a empresa do contratante).
+* **Condições:** objeto, assinatura, vigência, exclusividade (com data),
+  honorários fixos (retainer) com periodicidade e a marca "descontados do
+  success fee", success fee (percentual e mínimo), forma de pagamento e
+  conta da contratada (mostrada mascarada). Simulação do success fee sobre
+  um valor: o maior entre percentual e mínimo, menos o retainer pago quando
+  descontado.
+* **Avulso (C2):** cria quem pode criar negócios; veem quem criou, os
+  administradores e as pessoas da lista; edita quem vê e pode editar
+  negócios; exclui quem criou ou administrador. Ligado a um negócio, passa
+  às regras do negócio e não muda mais de negócio.
+* **No negócio:** matriz "Contratos" (ver, criar, editar, excluir, baixar);
+  acesso por perfil só no grupo de quem criou (lado vendedor ou a mesma
+  compradora), como no data room. Negócio concluído ou encerrado: só
+  consulta.
+* **Arquivos:** versões numeradas, com tipo real e antivírus conferidos;
+  download auditado.
+* **Financeiro (C3):** "Enviar ao financeiro" manda ao e-mail do financeiro
+  de cada contratada (novo campo no cadastro da empresa) os dados para nota
+  fiscal e cobrança: contratantes (razão social, CNPJ, endereço), condições
+  e a conta mascarada. Fica registrado quando foi enviado.
+* Empresa que é parte de contrato não pode ser excluída (só inativada).
+* Pendente: quadro de contas dos assessores para anexos do QPA (C4), com a
+  geração de documentos do processo.
+
 ### Etapas
 
 * **Cadastro padrão** de etapas no tenant, copiado para cada deal e
