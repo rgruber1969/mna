@@ -15,7 +15,7 @@ responsável.
     componentes das telas reais, para ser aproveitada quando a função real
     for construída.
 
-Resumo: **24 reais, 9 simuladas e 1 parcial** (item 33); item 35 (busca) a definir entre real e simulado; item 23 passou para o backlog. A ordem de tornar reais as simuladas
+Resumo: **24 reais, 9 simuladas e 1 parcial** (item 33); item 35 (busca) real (ADR-0022); item 23 passou para o backlog. A ordem de tornar reais as simuladas
 será definida depois da demonstração, conforme a reação do cliente.
 
 | # | Funcionalidade | Valor | Esforço | Depende de | Demonstração |
@@ -54,7 +54,7 @@ será definida depois da demonstração, conforme a reação do cliente.
 | 32 | Ofertas recebidas com estrutura de pagamento, rateio entre vendedoras e comparação com o valuation | Alto | M | 8, 18 | Real |
 | 33 | Anonimização de clientes: N anonimizações por tenant, aplicadas aos deals escolhidos; clientes com códigos (C00001), variações de grafia e grupo econômico em 2 níveis (C00087.001); importação de planilha; substituição dos nomes pelos códigos nos documentos enviados, guardando original (restrito) e anonimizado | Alto (venda) | G | 7, 11 | Parcial: real em planilhas (XLSX, CSV); simulado em DOCX e PDF |
 | 36 | Melhorias de design: revisão visual das telas existentes (consistência de botões, tabelas, espaçamentos, estados vazios, contraste, telas estreitas), para as telas novas já nascerem no padrão; pedido de 2026-11-20 | Alto | M | — | Real |
-| 35 | Busca geral, primeira busca: **documentos** no geral ou dentro de um negócio, pelo nome (parte do título ou do arquivo) ou pelo **conteúdo** (ex.: "multa" acha todos os documentos que citam multa), sempre respeitando o que cada pessoa pode ver; pedido de 2026-11-20 | Alto | M | 11 | A definir: real (nome e conteúdo de PDF com texto, DOCX, XLSX, CSV e TXT) ou simulado no conteúdo |
+| 35 | Busca geral, primeira busca: **documentos** no geral ou dentro de um negócio, pelo nome (parte do título ou do arquivo) ou pelo **conteúdo** (ex.: "multa" acha todos os documentos que citam multa), sempre respeitando o que cada pessoa pode ver; pedido de 2026-11-20 | Alto | M | 11 | Real: nome e conteúdo de PDF com texto, DOCX, XLSX, CSV e TXT (ADR-0022); escaneados depois |
 | 34 | Cadastro de empresas, pessoas e vínculos a partir de documento (PDF com texto: CNPJs, CPFs e quadro de sócios, sempre com conferência) e anexos de empresas e pessoas (criptografados), ADR-0021 | Alto | M | 7, 24, Armazenamento | Real |
 
 Como cada item simulado aparece na demonstração:

@@ -541,3 +541,20 @@ Claude Code. Decisões em vigor: [README](README.md).
   com a chave do tenant antes de ir para o armazenamento, como os campos de
   CPF e RG. Para baixar, o servidor confere a permissão, destranca e
   registra quem baixou.
+
+## Busca por conteúdo dos documentos (ADR-0022)
+
+* **Extrair o texto:** quando um arquivo é enviado, o servidor "lê" o que
+  está escrito nele (PDF com texto, Word, Excel, CSV, TXT) e guarda esse
+  texto no banco. O arquivo original continua no armazenamento.
+* **Índice de busca (busca textual completa do PostgreSQL):** é como o
+  índice remissivo no fim de um livro: em vez de ler todos os documentos a
+  cada busca, o banco já sabe em quais aparece cada palavra. Em português,
+  ele entende que "multas" e "multa" são a mesma palavra e ignora acentos.
+* **Visibilidade:** o índice acha os candidatos; depois a aplicação mostra
+  só as versões que a pessoa pode ver, pelas mesmas regras da lista de
+  documentos.
+* **Escaneados:** um PDF que é só a foto de um papel não tem texto por
+  baixo; para buscá-lo seria preciso "ler a imagem" (OCR), que fica para
+  depois.
+

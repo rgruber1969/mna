@@ -30,6 +30,7 @@ projeto e em `docs/projeto/`.
 | [0019](0019-identidade-unica-e-vinculo-por-tenant.md) | Identidade | Conta única + vínculo por tenant (tabelas próprias, RLS); sessão única por endereço |
 | [0020](0020-internacionalizacao-preparada-desde-a-v1.md) | Idiomas | Base de idiomas (next-intl) desde a V1, só português; textos em arquivos de mensagens; idioma por usuário |
 | [0021](0021-leitura-de-documentos-para-cadastro.md) | Leitura de documentos | Local sem IA (texto do PDF, CNPJ/CPF, base pública), sempre com conferência; IA depois no mesmo módulo |
+| [0022](0022-busca-por-conteudo-dos-documentos.md) | Busca em documentos | Texto extraído no servidor, no banco com índice em português; só versões visíveis à pessoa; escaneados depois (OCR) |
 
 ## Premissas de arquitetura
 
