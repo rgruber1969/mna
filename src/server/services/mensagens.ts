@@ -13,6 +13,7 @@ import {
   tenant,
   usuario,
   vinculoTenant,
+  mensagemAnexo,
 } from "@/server/db/esquema";
 import { enviarEmail } from "@/server/email/enviar";
 import { montarEmail } from "@/server/email/modelo";
@@ -71,6 +72,7 @@ export type MensagemNaTela = {
   mencoes: string[];
   em: string;
   tarefaId: string | null;
+  anexos: { id: string; nome: string; tamanho: number; tipo: string | null }[];
 };
 
 export type Conversa = {
@@ -189,7 +191,7 @@ async function pessoasDoCanal(a: AcessoTenant, dealId: string, empresas: Empresa
 
 // --- Contexto de um negócio ----------------------------------------------------------------
 
-async function contextoSemErro(a: AcessoTenant, dealId: string) {
+export async function contextoSemErro(a: AcessoTenant, dealId: string) {
   try {
     return await contexto(a, dealId);
   } catch {
@@ -349,6 +351,25 @@ export async function obterConversa(
     canais.find((c) => c.naoLidas > 0)?.id ||
     canais[0].id;
   const doCanal = linhas.filter((m) => m.canal === canal);
+  const anexos = doCanal.length
+    ? await comTenant(a.tenant.id, (tx) =>
+        tx
+          .select({
+            id: mensagemAnexo.id,
+            mensagemId: mensagemAnexo.mensagemId,
+            nome: mensagemAnexo.nomeArquivo,
+            tamanho: mensagemAnexo.tamanho,
+            tipo: mensagemAnexo.tipoDeConteudo,
+          })
+          .from(mensagemAnexo)
+          .where(
+            inArray(
+              mensagemAnexo.mensagemId,
+              doCanal.map((m) => m.id),
+            ),
+          ),
+      )
+    : [];
   const ids = [...new Set(doCanal.flatMap((m) => m.mencoes))];
   const nomes = new Map(
     ids.length
@@ -377,6 +398,9 @@ export async function obterConversa(
       mencoes: m.mencoes.map((id) => nomes.get(id) ?? "").filter(Boolean),
       em: m.criadoEm.toISOString(),
       tarefaId: m.tarefaId,
+      anexos: anexos
+        .filter((x) => x.mensagemId === m.id)
+        .map(({ id, nome, tamanho, tipo }) => ({ id, nome, tamanho, tipo })),
     })),
     pessoas: pessoas.filter((p) => p.id !== a.usuario.id),
     podeEscrever: !fechado,
@@ -391,6 +415,8 @@ const DadosMensagem = z.object({
     .min(1, "mensagens.erros.textoObrigatorio")
     .max(TAMANHO_MAXIMO, "mensagens.erros.textoLongo"),
   mencoes: z.array(z.string()).max(50).default([]),
+  /** Anexos já enviados (e liberados pelo antivírus) pela própria pessoa. */
+  anexos: z.array(z.string()).max(10).default([]),
 });
 
 /** Envia uma mensagem (imutável) e avisa as pessoas mencionadas. */
@@ -433,6 +459,20 @@ export async function enviarMensagem(
         mencoes,
       })
       .returning({ id: mensagem.id });
+    const anexosValidos = d.data.anexos.filter((x) => z.uuid().safeParse(x).success);
+    if (anexosValidos.length)
+      await tx
+        .update(mensagemAnexo)
+        .set({ mensagemId: m.id })
+        .where(
+          and(
+            inArray(mensagemAnexo.id, anexosValidos),
+            eq(mensagemAnexo.dealId, dealId),
+            eq(mensagemAnexo.enviadoPor, a.usuario.id),
+            eq(mensagemAnexo.situacao, "disponivel"),
+            isNull(mensagemAnexo.mensagemId),
+          ),
+        );
     // O aviso não leva o texto: só quem vê a conversa lê a mensagem.
     for (const u of mencoes)
       await notificar(tx, a.tenant.id, u, "mensagem_mencao", { autor: a.usuario.nome, negocio }, link);

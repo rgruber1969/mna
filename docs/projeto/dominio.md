@@ -683,7 +683,12 @@ Etapas padrão:
   documento e em cada tarefa; ícone de mensagens no topo com as não lidas;
   página **Mensagens** (conversas dos últimos 30 dias); bloco de mensagens
   na tela principal; menções; "Marcar como tarefa"; resumo por e-mail.
-  Ainda não: **anexos nas mensagens** e "transformar anexo em documento".
+  **Anexos** (2026-11-22): até 10 por mensagem, 200 MB cada, mesmos formatos
+  e conferências do data room (tipo real e antivírus) antes de ir na
+  mensagem; quem vê a mensagem baixa (auditado). **Transformar em
+  documento** cria um documento do negócio na etapa da conversa pelo mesmo
+  caminho de um envio ao data room (exige permissão de criar documento
+  ali), visível de início só a quem transformou e aos administradores.
 * **Canais (sigilo entre compradoras, regra adotada na construção):** cada
   conversa tem canais, porque as compradoras nunca veem umas às outras:
   * **Equipe do lado vendedor:** só o lado vendedor;

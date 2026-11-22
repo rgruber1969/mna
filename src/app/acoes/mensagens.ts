@@ -15,6 +15,12 @@ import {
   type MensagemRecente,
   type ResumoDeConversa,
 } from "@/server/services/mensagens";
+import {
+  anexoParaDocumento,
+  concluirAnexo,
+  iniciarAnexo,
+  linkDoAnexo,
+} from "@/server/services/mensagens-anexos";
 
 /** Mensageria: só repassam para a camada de serviços (ADR-0004). */
 
@@ -37,7 +43,7 @@ export async function enviarMensagemAcao(
   dealId: string,
   alvo: string,
   canal: string,
-  dados: { texto: string; mencoes: string[] },
+  dados: { texto: string; mencoes: string[]; anexos?: string[] },
 ): Promise<{ erro?: string }> {
   const a = lerAlvo(alvo);
   if (!a) return { erro: await traduzirErro({ erro: "mensagens.erros.naoEncontrada" }) };
@@ -58,4 +64,27 @@ export async function minhasMensagensAcao(
 
 export async function definirMeuResumoAcao(ligado: boolean): Promise<void> {
   await definirMeuResumo(await acesso(), ligado);
+}
+
+export async function iniciarAnexoAcao(
+  dealId: string,
+  dados: { nomeArquivo: string; tamanho: number },
+): Promise<{ anexoId?: string; url?: string; erro?: string }> {
+  const r = await iniciarAnexo(await acesso(), dealId, dados);
+  return "erro" in r ? { erro: await traduzirErro(r) } : r;
+}
+
+export async function concluirAnexoAcao(anexoId: string): Promise<{ erro?: string }> {
+  const r = await concluirAnexo(await acesso(), anexoId);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
+}
+
+export async function linkDoAnexoAcao(anexoId: string): Promise<{ url?: string; erro?: string }> {
+  const r = await linkDoAnexo(await acesso(), anexoId);
+  return "erro" in r ? { erro: await traduzirErro(r) } : r;
+}
+
+export async function anexoParaDocumentoAcao(anexoId: string): Promise<{ erro?: string }> {
+  const r = await anexoParaDocumento(await acesso(), anexoId);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
 }

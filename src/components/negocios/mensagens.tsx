@@ -6,6 +6,10 @@ import { useFormatter, useTranslations } from "next-intl";
 import {
   conversasDoNegocioAcao,
   enviarMensagemAcao,
+  anexoParaDocumentoAcao,
+  concluirAnexoAcao,
+  iniciarAnexoAcao,
+  linkDoAnexoAcao,
   mensagemParaTarefaAcao,
   obterConversaAcao,
 } from "@/app/acoes/mensagens";
@@ -153,7 +157,32 @@ export function ConversaDoItem({
   const [texto, setTexto] = useState("");
   const [mencoes, setMencoes] = useState<Set<string>>(new Set());
   const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [pendentes, setPendentes] = useState<{ chave: string; nome: string; id?: string; erro?: string }[]>(
+    [],
+  );
+  const enviandoAnexo = pendentes.some((x) => !x.id && !x.erro);
+  async function anexar(arquivos: FileList | null) {
+    for (const arquivo of [...(arquivos ?? [])].slice(0, 10)) {
+      const chave = `${arquivo.name}-${arquivo.size}-${Date.now()}`;
+      setPendentes((p) => [...p, { chave, nome: arquivo.name }]);
+      const marcar = (x: { id?: string; erro?: string }) =>
+        setPendentes((p) => p.map((y) => (y.chave === chave ? { ...y, ...x } : y)));
+      const inicio = await iniciarAnexoAcao(dealId, { nomeArquivo: arquivo.name, tamanho: arquivo.size });
+      if (inicio.erro || !inicio.url || !inicio.anexoId) {
+        marcar({ erro: inicio.erro ?? t("erroAnexo") });
+        continue;
+      }
+      const envio = await fetch(inicio.url, {
+        method: "PUT",
+        body: arquivo,
+        headers: { "content-type": "application/octet-stream" },
+      }).catch(() => null);
+      const fim = envio?.ok ? await concluirAnexoAcao(inicio.anexoId) : { erro: t("erroAnexo") };
+      marcar(fim.erro ? { erro: fim.erro } : { id: inicio.anexoId });
+    }
+  }
   const fim = useRef<HTMLDivElement>(null);
 
   const carregar = useCallback(
@@ -191,11 +220,16 @@ export function ConversaDoItem({
     const validas = (conversa?.pessoas ?? []).filter(
       (p) => mencoes.has(p.id) && texto.includes(`@${p.nome}`),
     );
-    const r = await enviarMensagemAcao(dealId, alvo, canal, { texto, mencoes: validas.map((p) => p.id) });
+    const r = await enviarMensagemAcao(dealId, alvo, canal, {
+      texto,
+      mencoes: validas.map((p) => p.id),
+      anexos: pendentes.filter((x) => x.id && !x.erro).map((x) => x.id!),
+    });
     setEnviando(false);
     if (r.erro) return setErro(r.erro);
     setTexto("");
     setMencoes(new Set());
+    setPendentes([]);
     await carregar(canal);
   }
 
@@ -252,6 +286,43 @@ export function ConversaDoItem({
                         · {formato.dateTime(new Date(m.em), { dateStyle: "short", timeStyle: "short" })}
                       </p>
                       <p className="break-words whitespace-pre-wrap">{m.texto}</p>
+                      {m.anexos.length > 0 && (
+                        <ul className="mt-1 space-y-0.5 text-xs">
+                          {m.anexos.map((x) => (
+                            <li key={x.id} className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                className="text-primary underline"
+                                onClick={async () => {
+                                  const r = await linkDoAnexoAcao(x.id);
+                                  if (r.erro || !r.url) return setErro(r.erro ?? t("erroAnexo"));
+                                  window.location.assign(r.url);
+                                }}
+                              >
+                                📎 {x.nome}
+                              </button>
+                              <span className="text-muted">
+                                {Math.max(1, Math.round(x.tamanho / 1024))} KB
+                              </span>
+                              {conversa.podeEscrever && (
+                                <button
+                                  type="button"
+                                  className="text-muted hover:text-primary"
+                                  onClick={async () => {
+                                    const r = await anexoParaDocumentoAcao(x.id);
+                                    if (r.erro) return setErro(r.erro);
+                                    setErro(null);
+                                    setAviso(t("virouDocumento", { nome: x.nome }));
+                                    router.refresh();
+                                  }}
+                                >
+                                  {t("virarDocumento")}
+                                </button>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       {m.mencoes.length > 0 && (
                         <p className="text-primary mt-1 text-xs">
                           {t("mencionou", { nomes: m.mencoes.join(", ") })}
@@ -287,6 +358,7 @@ export function ConversaDoItem({
             <div ref={fim} />
           </div>
           {erro && <Aviso>{erro}</Aviso>}
+          {aviso && <Aviso tipo="ok">{aviso}</Aviso>}
           {conversa.podeEscrever ? (
             <form
               className="mt-3"
@@ -295,6 +367,36 @@ export function ConversaDoItem({
                 void enviar();
               }}
             >
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <label className="border-primary text-primary cursor-pointer rounded-md border px-3 py-1 text-xs font-medium">
+                  📎 {t("anexar")}
+                  <input
+                    type="file"
+                    multiple
+                    className="sr-only"
+                    onChange={(e) => {
+                      void anexar(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {pendentes.map((x) => (
+                  <span
+                    key={x.chave}
+                    className={`rounded-full border px-2 py-0.5 text-xs ${x.erro ? "border-danger text-danger" : "border-border text-muted"}`}
+                  >
+                    {x.nome} · {x.erro ?? (x.id ? t("anexoPronto") : t("anexoEnviando"))}
+                    <button
+                      type="button"
+                      aria-label={t("tirarAnexo", { nome: x.nome })}
+                      onClick={() => setPendentes((p) => p.filter((y) => y.chave !== x.chave))}
+                      className="ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
               <CaixaComMencoes
                 texto={texto}
                 mudar={setTexto}
@@ -306,7 +408,7 @@ export function ConversaDoItem({
                 <span className="text-muted text-xs">{t("imutavel")}</span>
                 <button
                   type="submit"
-                  disabled={enviando || !texto.trim()}
+                  disabled={enviando || enviandoAnexo || !texto.trim()}
                   className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {enviando ? t("enviando") : t("enviar")}

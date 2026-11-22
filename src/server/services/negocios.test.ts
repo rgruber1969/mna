@@ -68,6 +68,7 @@ import { comTenant } from "@/server/db/cliente";
 import { mensagem } from "@/server/db/esquema";
 import { buscarDocumentos } from "./busca-de-documentos";
 import { resumoDasMensagens, resumoDoDocumento } from "./resumos";
+import { anexoParaDocumento, concluirAnexo, iniciarAnexo, linkDoAnexo } from "./mensagens-anexos";
 import { criarChave, listarChaves, revogarChave } from "./chaves-api";
 import { api } from "@/server/api/app";
 import { unzipSync } from "fflate";
@@ -1332,5 +1333,36 @@ describe("resumos automáticos (local, sem IA)", () => {
     const h = await resumoDoDocumento(acesso("gestor"), memo.id);
     expect(h).toMatchObject({ versoes: 1, autores: ["gestor"] });
     expect(await resumoDoDocumento(acesso("adva"), memo.id)).toBeNull(); // não vê o documento
+  });
+});
+
+describe("anexos das mensagens", () => {
+  it("envia com antivírus, liga à mensagem, só quem vê o canal baixa e vira documento", async () => {
+    const g = acesso("gestor");
+    const pdf = pdfComTexto(["MINUTA ANEXADA NA CONVERSA"]);
+    const i = await iniciarAnexo(g, negocioId, { nomeArquivo: "minuta.pdf", tamanho: pdf.length });
+    if (!("url" in i)) throw new Error(i.erro);
+    await fetch(i.url, {
+      method: "PUT",
+      body: Buffer.from(pdf),
+      headers: { "content-type": "application/octet-stream" },
+    });
+    expect(await concluirAnexo(g, i.anexoId)).toEqual({ ok: true });
+    const geral = { tipo: "deal" as const, id: null };
+    const m = await enviarMensagem(g, negocioId, geral, "vendedor", {
+      texto: "Segue a minuta",
+      anexos: [i.anexoId],
+    });
+    if (!("id" in m)) throw new Error(m.erro);
+    const conversa = await obterConversa(g, negocioId, geral, "vendedor");
+    expect(conversa?.mensagens.at(-1)?.anexos.map((x) => x.nome)).toEqual(["minuta.pdf"]);
+    expect("url" in (await linkDoAnexo(acesso("advv2"), i.anexoId))).toBe(true); // lado vendedor
+    expect(await linkDoAnexo(acesso("adva"), i.anexoId)).toMatchObject({
+      erro: "mensagens.erros.naoEncontrada",
+    });
+    const doc = await anexoParaDocumento(g, i.anexoId);
+    if (!("versaoId" in doc)) throw new Error(doc.erro);
+    const dr = await dataRoomDoNegocio(g, negocioId);
+    expect(dr!.documentos.some((d) => d.titulo === "minuta" && d.versoes[0].id === doc.versaoId)).toBe(true);
   });
 });

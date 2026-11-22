@@ -54,6 +54,13 @@
     },
     "dicaMencao": "Escreva a mensagem. Para mencionar alguém, digite @ e o começo do nome.",
     "abaComTotal": "Mensagens ({total})",
-    "abaComNovas": "Mensagens ({total} · {novas, plural, one {# nova} other {# novas}})"
+    "abaComNovas": "Mensagens ({total} · {novas, plural, one {# nova} other {# novas}})",
+    "anexar": "Anexar arquivos",
+    "anexoEnviando": "enviando…",
+    "anexoPronto": "pronto",
+    "erroAnexo": "Não foi possível enviar o anexo.",
+    "tirarAnexo": "Tirar o anexo {nome}",
+    "virarDocumento": "Transformar em documento",
+    "virouDocumento": "\"{nome}\" virou documento do negócio (aba Documentos). De início, só você e os administradores o veem; use \"Alterar quem vê\" para liberar."
   }
 }

@@ -1260,3 +1260,28 @@ export const chaveApi = pgTable(
     isolamento(),
   ],
 ).enableRLS();
+
+/**
+ * Anexo de mensagem (item 16): enviado antes da mensagem (direto ao
+ * armazenamento, com antivírus) e ligado a ela no envio; depois disso não
+ * muda (a mensagem é imutável). Pode virar documento do negócio.
+ */
+export const mensagemAnexo = pgTable(
+  "mensagem_anexo",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    mensagemId: uuid("mensagem_id").references(() => mensagem.id, { onDelete: "cascade" }),
+    nomeArquivo: text("nome_arquivo").notNull(),
+    tamanho: bigint("tamanho", { mode: "number" }).notNull(),
+    tipoDeConteudo: text("tipo_de_conteudo"),
+    chave: text("chave").notNull(),
+    situacao: text("situacao").$type<"enviando" | "disponivel" | "bloqueado">().notNull().default("enviando"),
+    enviadoPor: uuid("enviado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("mensagem_anexo_mensagem_idx").on(t.tenantId, t.mensagemId), isolamento()],
+).enableRLS();

@@ -91,8 +91,6 @@ versão 1" é anotado aqui.
 
 ## Mensageria (depois da primeira entrega, 2026-11-19)
 
-* Anexos nas mensagens e botão "transformar em documento do negócio"
-  (dominio.md; previsto na V1, ficou para a próxima entrega).
 * Mensagens na exportação do negócio (junto com a exportação).
 * Busca no texto das mensagens.
 * Opção "Enviar também por e-mail" na tela da mensagem (pedido de
