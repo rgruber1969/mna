@@ -45,7 +45,8 @@
     },
     "idiomaEmBreve": "Inglês e espanhol em breve",
     "equipe": "Equipe",
-    "buscarDocumentos": "Buscar documentos: “{termo}”"
+    "buscarDocumentos": "Buscar documentos: “{termo}”",
+    "menuInvertido": "Menu lateral no tema oposto"
   },
   "notificacoes": {
     "titulo": "Notificações",

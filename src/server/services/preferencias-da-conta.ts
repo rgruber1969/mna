@@ -11,6 +11,19 @@ import type { Acesso } from "./acesso";
 export const TEMAS = ["claro", "escuro", "sistema"] as const;
 export type Tema = (typeof TEMAS)[number];
 
+/** Menu lateral no tema oposto ao da tela (preferência da conta). */
+export async function definirMenuInvertido(
+  acesso: Acesso | null,
+  ligado: boolean,
+): Promise<{ ok: true } | { erro: string }> {
+  if (!acesso) return { erro: "acesso.erros.temaEntreDeNovo" };
+  await banco()
+    .update(usuario)
+    .set({ menuInvertido: ligado, updatedAt: new Date() })
+    .where(eq(usuario.id, acesso.usuario.id));
+  return { ok: true };
+}
+
 export async function definirTema(
   acesso: Acesso | null,
   tema: string,

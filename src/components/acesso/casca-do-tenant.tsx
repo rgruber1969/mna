@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { useFormatter, useLocale, useNow, useTranslations } from "next-intl";
 import { IDIOMAS } from "@/i18n/idiomas";
-import { definirTemaAcao } from "@/app/acoes/conta";
+import { definirMenuInvertidoAcao, definirTemaAcao } from "@/app/acoes/conta";
 import { alternarFavoritoAcao, definirMenuRecolhidoAcao } from "@/app/acoes/menu";
 import {
   marcarTodasComoLidasAcao,
@@ -15,7 +15,7 @@ import {
 import { minhasMensagensAcao } from "@/app/acoes/mensagens";
 import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
-import { aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
+import { aplicarMenuInvertido, aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
 
 type Item = { id: string; href: string; icone: string };
 type Grupo = { chave: string; itens: Item[] };
@@ -375,9 +375,11 @@ function Sino({ inicial }: { inicial: { itens: Notificacao[]; naoLidas: number }
 function MenuDoUsuario({
   usuario,
   temaInicial,
+  menuInvertidoInicial,
 }: {
   usuario: { nome: string; foto?: string | null; papel: "administrador" | "usuario" };
   temaInicial: PreferenciaDeTema;
+  menuInvertidoInicial: boolean;
 }) {
   const t = useTranslations("cabecalho");
   const localeAtual = useLocale();
@@ -389,6 +391,8 @@ function MenuDoUsuario({
 
   // A preferência da conta vale em qualquer computador: sincroniza o navegador com ela.
   useEffect(() => aplicarTema(temaInicial), [temaInicial]);
+  const [invertido, setInvertido] = useState(menuInvertidoInicial);
+  useEffect(() => aplicarMenuInvertido(menuInvertidoInicial), [menuInvertidoInicial]);
 
   function escolher(p: PreferenciaDeTema) {
     setTema(p);
@@ -447,6 +451,18 @@ function MenuDoUsuario({
               </button>
             ))}
           </div>
+          <label className="text-text hover:bg-surface flex w-full items-center gap-3 px-4 py-2 text-sm">
+            <input
+              type="checkbox"
+              checked={invertido}
+              onChange={(e) => {
+                setInvertido(e.target.checked);
+                aplicarMenuInvertido(e.target.checked);
+                iniciar(() => definirMenuInvertidoAcao(e.target.checked));
+              }}
+            />
+            {t("menuInvertido")}
+          </label>
           <div className="border-border my-2 border-t" />
           <p className="text-muted px-4 pb-1 text-xs font-semibold tracking-widest uppercase">
             {t("idioma")}
@@ -491,6 +507,7 @@ export function CascaDoTenant({
   marca,
   usuario,
   tema,
+  menuInvertido,
   notificacoes,
   rodape,
   children,
@@ -501,6 +518,7 @@ export function CascaDoTenant({
   marca: { nome: string; logoClaro: string | null; logoEscuro: string | null; icone: string | null };
   usuario: { nome: string; foto?: string | null; papel: "administrador" | "usuario" };
   tema: PreferenciaDeTema;
+  menuInvertido: boolean;
   notificacoes: { itens: Notificacao[]; naoLidas: number };
   rodape: ReactNode;
   children: ReactNode;
@@ -515,10 +533,17 @@ export function CascaDoTenant({
 
   // Logo certo para o tema da tela (o atributo é ajustado por aplicarTema).
   useEffect(() => {
-    const ver = () => setEscuro(document.documentElement.dataset.tema === "escuro");
+    // O logo segue o fundo do menu lateral (que pode estar invertido).
+    const ver = () => {
+      const html = document.documentElement.dataset;
+      setEscuro((html.tema === "escuro") !== (html.menuInvertido === "sim"));
+    };
     ver();
     const obs = new MutationObserver(ver);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-tema"] });
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-tema", "data-menu-invertido"],
+    });
     return () => obs.disconnect();
   }, []);
   void resolverTema;
@@ -605,7 +630,8 @@ export function CascaDoTenant({
         />
       )}
       <aside
-        className={`${aberto ? "translate-x-0" : "-translate-x-full"} ${compacto ? "md:w-[72px]" : "md:w-60"} bg-background shadow-cartao fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-[transform,width] duration-200 md:translate-x-0`}
+        data-menu-lateral
+        className={`${aberto ? "translate-x-0" : "-translate-x-full"} ${compacto ? "md:w-[72px]" : "md:w-60"} bg-background text-text shadow-cartao fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-[transform,width] duration-200 md:translate-x-0`}
       >
         <div className={`flex h-[72px] items-center px-5 ${compacto ? "justify-center px-2" : ""}`}>
           <Link href="/" className="text-primary min-w-0 truncate text-lg font-bold" title={marca.nome}>
@@ -651,7 +677,7 @@ export function CascaDoTenant({
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
             <IconeDeMensagens />
             <Sino inicial={notificacoes} />
-            <MenuDoUsuario usuario={usuario} temaInicial={tema} />
+            <MenuDoUsuario usuario={usuario} temaInicial={tema} menuInvertidoInicial={menuInvertido} />
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>

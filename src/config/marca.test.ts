@@ -70,7 +70,7 @@ describe("tema gerado", () => {
 
   it("no tema escuro, clareia as cores do tenant até ficarem legíveis", () => {
     const css = cssDoTema({ primaria: "#7a1238", destaque: "#c2410c" });
-    expect(css).toContain(':root[data-tema="escuro"]{--primary:');
+    expect(css).toContain(':root[data-tema="escuro"],');
     const escura = variaveisDoTemaEscuro({ primaria: "#7a1238" })["--primary"];
     expect(contraste(escura, FUNDO_ESCURO)).toBeGreaterThanOrEqual(4.5);
   });

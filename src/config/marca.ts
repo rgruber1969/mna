@@ -161,8 +161,14 @@ const bloco = (seletor: string, v: Record<string, string>) => {
 /** CSS com as variáveis do tenant nos dois temas (vazio = tema padrão). */
 export function cssDoTema(cores: Partial<Cores>, fonte?: string | null): string {
   return (
-    bloco(":root", variaveisDoTema(cores, fonte)) +
-    bloco(':root[data-tema="escuro"]', variaveisDoTemaEscuro(cores))
+    bloco(
+      ':root,:root[data-tema="escuro"][data-menu-invertido="sim"] [data-menu-lateral]',
+      variaveisDoTema(cores, fonte),
+    ) +
+    bloco(
+      ':root[data-tema="escuro"],:root[data-tema="claro"][data-menu-invertido="sim"] [data-menu-lateral]',
+      variaveisDoTemaEscuro(cores),
+    )
   );
 }
 

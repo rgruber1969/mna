@@ -36,6 +36,8 @@ export type UsuarioDoAcesso = {
   foto?: string | null;
   /** Tema da interface (claro, escuro ou igual ao sistema). */
   tema?: "claro" | "escuro" | "sistema";
+  /** Menu lateral no tema oposto ao da tela. */
+  menuInvertido?: boolean;
 };
 export type TenantDoAcesso = {
   id: string;
@@ -154,7 +156,7 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     .limit(1);
   const temAutenticador = Boolean(u.twoFactorEnabled);
   const [preferencias] = await banco()
-    .select({ tema: usuarioTabela.tema })
+    .select({ tema: usuarioTabela.tema, menuInvertido: usuarioTabela.menuInvertido })
     .from(usuarioTabela)
     .where(eq(usuarioTabela.id, u.id));
   const usuario: UsuarioDoAcesso = {
@@ -166,6 +168,7 @@ export async function obterAcesso(headers: Headers): Promise<Acesso | null> {
     doisFatoresAtivo: temAutenticador || Boolean(chave),
     foto: enderecoDaFoto(u.id, u.image),
     tema: preferencias?.tema ?? "claro",
+    menuInvertido: preferencias?.menuInvertido ?? false,
   };
   const segundoFatorNaSessao = Boolean(s.segundoFator);
 

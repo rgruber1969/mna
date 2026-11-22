@@ -85,6 +85,8 @@ export const usuario = pgTable("usuario", {
   papelPlataforma: text("papel_plataforma"),
   /** Tema da interface escolhido pela pessoa: claro, escuro ou igual ao sistema. */
   tema: text("tema").$type<"claro" | "escuro" | "sistema">().notNull().default("claro"),
+  /** Menu lateral no tema oposto ao da tela. */
+  menuInvertido: boolean("menu_invertido").notNull().default(false),
   createdAt: criadoEm(),
   updatedAt: atualizadoEm(),
 });

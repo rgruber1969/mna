@@ -27,5 +27,13 @@ export function aplicarTema(p: PreferenciaDeTema) {
   }
 }
 
+/** Menu lateral no tema oposto ao da tela (ex.: tela clara com menu escuro). */
+export function aplicarMenuInvertido(ligado: boolean) {
+  try {
+    localStorage.setItem("menuInvertido", ligado ? "sim" : "nao");
+  } catch {}
+  document.documentElement.dataset.menuInvertido = ligado ? "sim" : "nao";
+}
+
 /** Script curto, executado antes de pintar a página, que aplica o tema guardado no navegador. */
-export const SCRIPT_DO_TEMA = `try{var t=localStorage.getItem("tema")||"claro";if(t==="sistema")t=matchMedia("(prefers-color-scheme: dark)").matches?"escuro":"claro";document.documentElement.dataset.tema=t}catch(e){}`;
+export const SCRIPT_DO_TEMA = `try{var t=localStorage.getItem("tema")||"claro";if(t==="sistema")t=matchMedia("(prefers-color-scheme: dark)").matches?"escuro":"claro";document.documentElement.dataset.tema=t;document.documentElement.dataset.menuInvertido=localStorage.getItem("menuInvertido")||"nao"}catch(e){}`;

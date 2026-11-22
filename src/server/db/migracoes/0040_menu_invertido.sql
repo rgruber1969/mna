@@ -1,0 +1,1 @@
+ALTER TABLE "usuario" ADD COLUMN "menu_invertido" boolean DEFAULT false NOT NULL;

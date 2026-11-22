@@ -281,6 +281,13 @@
       "when": 1795360723211,
       "tag": "0039_busca_documentos",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1795367979482,
+      "tag": "0040_menu_invertido",
+      "breakpoints": true
     }
   ]
 }

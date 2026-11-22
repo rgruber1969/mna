@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import { enviarFotoDaConta, removerFotoDaConta } from "@/server/services/foto-da-conta";
-import { definirTema } from "@/server/services/preferencias-da-conta";
+import { definirMenuInvertido, definirTema } from "@/server/services/preferencias-da-conta";
 import type { Estado } from "./acesso";
 
 /** Ações da própria conta: só repassam para a camada de serviços (ADR-0004). */
@@ -29,4 +29,8 @@ export async function removerFotoAcao(): Promise<Estado> {
 
 export async function definirTemaAcao(tema: string): Promise<void> {
   await definirTema(await acesso(), tema);
+}
+
+export async function definirMenuInvertidoAcao(ligado: boolean): Promise<void> {
+  await definirMenuInvertido(await acesso(), ligado);
 }

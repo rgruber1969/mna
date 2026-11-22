@@ -9,7 +9,8 @@
  * Valores padrão: identidade RGRUBER (docs/marca/rgruber). O white label de
  * cada tenant sobrescreve estas variáveis em tempo real, nos dois temas.
  */
-:root {
+:root,
+:root[data-tema="escuro"][data-menu-invertido="sim"] [data-menu-lateral] {
   color-scheme: light;
   --primary: #123e7a;
   --primary-foreground: #ffffff;
@@ -41,7 +42,8 @@
  * tokens, com valores para fundo escuro. A primária fica mais clara para
  * manter o contraste; o white label do tenant traz a sua versão clareada.
  */
-:root[data-tema="escuro"] {
+:root[data-tema="escuro"],
+:root[data-tema="claro"][data-menu-invertido="sim"] [data-menu-lateral] {
   color-scheme: dark;
   --primary: #8fb3ea;
   --primary-foreground: #0b1220;

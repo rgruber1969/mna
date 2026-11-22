@@ -85,6 +85,7 @@ export async function EstruturaDoTenant({ acesso, children }: { acesso: AcessoTe
         papel: acesso.administrador ? "administrador" : "usuario",
       }}
       tema={acesso.usuario.tema ?? "claro"}
+      menuInvertido={acesso.usuario.menuInvertido ?? false}
       notificacoes={notificacoes}
       rodape={
         <>
