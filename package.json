@@ -27,7 +27,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "verificar": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "documentos:indexar": "tsx --env-file=.env scripts/documentos-indexar.mts"
+    "documentos:indexar": "tsx --env-file=.env scripts/documentos-indexar.mts",
+    "demo:criar": "tsx --env-file=.env scripts/demo-criar.mts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1169.0",

@@ -13,7 +13,8 @@ import {
   usuario,
 } from "@/server/db/esquema";
 import { enderecoDaFoto } from "./foto-da-conta";
-import { hojeEmSaoPaulo } from "./negocios-andamento";
+import { hojeEmSaoPaulo, obterDiasDeAvisoDoPrazo } from "./negocios-andamento";
+import { nivelDoPrazo, type NivelDoPrazo } from "@/config/prazos";
 import type { Acesso } from "./acesso";
 import { mudarSituacaoDaEtapa } from "./etapas";
 import { paginaDeNegocios, visaoDoNegocio, type FiltroDeNegocios, type NegocioResumo } from "./negocios";
@@ -36,13 +37,23 @@ export type CartaoDoQuadro = NegocioResumo & {
   pessoas: { nome: string; foto: string | null }[];
   /** Prazo estimado: fim previsto da etapa atual (ou a previsão de fechamento). */
   prazo: string | null;
-  /** Cor pelo prazo: atrasado, próximo (até 7 dias), atenção (até 15), em dia; null = sem prazo. */
-  nivelDoPrazo: "atrasado" | "proximo" | "atencao" | "emDia" | null;
+  /** Semáforo do prazo (config/prazos): vencido, vence em até N dias, em dia; null = sem prazo. */
+  nivelDoPrazo: NivelDoPrazo | null;
+  /** Fim previsto da etapa principal em andamento (null = sem etapa ou sem data). */
+  fimDaEtapa: string | null;
+  previsaoFechamento: string | null;
+  /** Valor estimado do negócio (quem vê o cartão vê o valor, como no detalhe). */
+  valorEstimado: number | null;
   /** Etapas concluídas ou puladas / total (sem as subetapas). */
   progresso: { feitas: number; total: number };
 };
 
-export type Quadro = { colunas: { id: string; nome: string }[]; cartoes: CartaoDoQuadro[] };
+export type Quadro = {
+  colunas: { id: string; nome: string }[];
+  cartoes: CartaoDoQuadro[];
+  /** Dias antes do vencimento em que o prazo fica amarelo (Configurações → Painel principal). */
+  diasDeAviso: number;
+};
 
 /** Coluna dos negócios ainda sem etapa em andamento. */
 export const COLUNA_A_INICIAR = "a-iniciar";
@@ -56,6 +67,7 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
     direcao: "asc",
   });
   const ids = lista.itens.map((n) => n.id);
+  const diasDeAviso = await obterDiasDeAvisoDoPrazo(a);
   const [padroes, etapas, compradoras] = await comTenant(a.tenant.id, async (tx) => [
     await tx
       .select({ id: etapaPadrao.id, nome: etapaPadrao.nome })
@@ -101,21 +113,16 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
           .leftJoin(usuario, eq(usuario.id, pessoa.usuarioId))
           .where(and(inArray(participacaoDeal.dealId, ids), isNull(participacaoDeal.cortadaEm))),
         await tx
-          .select({ id: deal.id, previsao: deal.previsaoFechamento })
+          .select({ id: deal.id, previsao: deal.previsaoFechamento, valor: deal.valorEstimado })
           .from(deal)
           .where(inArray(deal.id, ids)),
       ])
     : [[], []];
   const pessoasPor = Map.groupBy(pessoasDosNegocios, (p) => p.dealId);
   const previsaoDe = new Map(previsoes.map((p) => [p.id, p.previsao]));
+  const valorDe = new Map(previsoes.map((p) => [p.id, p.valor === null ? null : Number(p.valor)]));
   const hoje = hojeEmSaoPaulo();
-  const nivel = (prazo: string | null): CartaoDoQuadro["nivelDoPrazo"] => {
-    if (!prazo) return null;
-    const dias = Math.round(
-      (Date.parse(`${prazo}T12:00:00Z`) - Date.parse(`${hoje}T12:00:00Z`)) / 86_400_000,
-    );
-    return dias < 0 ? "atrasado" : dias <= 7 ? "proximo" : dias <= 15 ? "atencao" : "emDia";
-  };
+  const nivel = (prazo: string | null) => nivelDoPrazo(prazo, hoje, diasDeAviso);
   const ativas = new Set(padroes.map((p) => p.id));
   const etapasPor = Map.groupBy(etapas, (e) => e.dealId);
   const funilPor = Map.groupBy(compradoras, (c) => c.dealId);
@@ -158,6 +165,9 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
       pessoas,
       prazo,
       nivelDoPrazo: n.situacao === "andamento" ? nivel(prazo) : null,
+      fimDaEtapa: emAndamento?.fimPrevisto ?? null,
+      previsaoFechamento: previsaoDe.get(n.id) ?? null,
+      valorEstimado: valorDe.get(n.id) ?? null,
       progresso: {
         feitas: doNegocio.filter((e) => e.situacao === "concluida" || e.situacao === "pulada").length,
         total: doNegocio.length,
@@ -170,7 +180,7 @@ export async function quadroDeNegocios(acesso: Acesso | null, filtro: FiltroDeNe
       funil,
     });
   }
-  return { colunas: padroes, cartoes };
+  return { colunas: padroes, cartoes, diasDeAviso };
 }
 
 /**

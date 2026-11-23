@@ -185,7 +185,7 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
   const buscaDeDocumentos = `/busca?q=${encodeURIComponent(termo.trim())}`;
   return (
     <div ref={caixa} className="relative hidden sm:block">
-      <label className="bg-surface flex w-72 items-center gap-2 rounded-full px-4 py-2">
+      <label className="bg-background border-border focus-within:border-primary flex w-80 items-center gap-2 rounded-full border px-4 py-2">
         <input
           type="search"
           value={termo}
@@ -542,7 +542,16 @@ export function CascaDoTenant({
   const [favoritos, setFavoritos] = useState(favoritosIniciais);
   const [aberto, setAberto] = useState(false);
   const [escuro, setEscuro] = useState(false);
+  const [rolou, setRolou] = useState(false);
   const [, iniciar] = useTransition();
+
+  // Barra superior sem fundo no topo da página; ao rolar, ganha fundo translúcido e uma linha fina.
+  useEffect(() => {
+    const ver = () => setRolou(window.scrollY > 4);
+    ver();
+    window.addEventListener("scroll", ver, { passive: true });
+    return () => window.removeEventListener("scroll", ver);
+  }, []);
 
   // Logo certo para o tema da tela (o atributo é ajustado por aplicarTema).
   useEffect(() => {
@@ -644,9 +653,9 @@ export function CascaDoTenant({
       )}
       <aside
         data-menu-lateral
-        className={`${aberto ? "translate-x-0" : "-translate-x-full"} ${compacto ? "md:w-[72px]" : "md:w-60"} bg-background text-text shadow-cartao fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-[transform,width] duration-200 md:translate-x-0`}
+        className={`${aberto ? "translate-x-0" : "-translate-x-full"} ${compacto ? "md:w-[72px]" : "md:w-60"} ${aberto ? "shadow-cartao" : ""} bg-background text-text border-border fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-[transform,width] duration-200 md:translate-x-0 md:border-r md:shadow-none`}
       >
-        <div className={`flex h-[72px] items-center px-5 ${compacto ? "justify-center px-2" : ""}`}>
+        <div className={`flex h-16 items-center px-5 ${compacto ? "justify-center px-2" : ""}`}>
           <Link href="/" className="text-primary min-w-0 truncate text-lg font-bold" title={marca.nome}>
             {compacto && marca.icone ? (
               <LogoDoTenant src={marca.icone} nome={marca.nome} className="h-9" />
@@ -677,7 +686,9 @@ export function CascaDoTenant({
       <div
         className={`${compacto ? "md:pl-[72px]" : "md:pl-60"} flex min-w-0 flex-1 flex-col transition-[padding] duration-200`}
       >
-        <header className="bg-background shadow-cartao sticky top-0 z-20 mx-3 flex h-[72px] items-center gap-3 rounded-b-[10px] px-4 sm:mx-6 sm:px-5">
+        <header
+          className={`${rolou ? "bg-surface/85 border-border backdrop-blur-md" : "border-transparent"} sticky top-0 z-20 flex h-16 items-center gap-3 border-b px-3 transition-colors duration-200 sm:px-6`}
+        >
           <button
             type="button"
             onClick={alternarRecolhido}

@@ -407,6 +407,68 @@
     "minhasTarefasAjuda": "Tarefas abertas em que você é responsável (você ou um perfil seu), nos negócios em aberto, por prazo.",
     "todas": "Todas ({n})",
     "soAtrasadas": "Atrasadas ({n})",
-    "semTarefas": "Nenhuma tarefa aqui."
+    "semTarefas": "Nenhuma tarefa aqui.",
+    "tituloDaTela": "Painel",
+    "resumo": "<v>{vencidos, plural, =0 {Nenhum prazo vencido} one {# prazo vencido} other {# prazos vencidos}}</v> e {proximos, plural, =0 {nenhum} other {#}} nos próximos {dias} dias.",
+    "comece": "Comece por <b>{negocio}</b>: {item} {venceu, select, sim {venceu em {data}} other {vence em {data}}}.",
+    "tudoEmDia": "Tudo em dia: nenhum prazo vence nos próximos {dias} dias.",
+    "kpi": {
+      "vencidos": "Vencidos",
+      "proximos": "Vencem em até {dias} dias",
+      "emDia": "Em dia",
+      "negocios": "Negócios em aberto",
+      "carteira": "{valor} em carteira",
+      "semValor": "sem valor estimado",
+      "deAbertos": "de {n} prazos abertos",
+      "nenhumVencido": "nenhum vencido",
+      "verLista": "ver na lista ao lado"
+    },
+    "progresso": {
+      "titulo": "Progresso dos meus negócios",
+      "colNegocio": "Negócio",
+      "colEtapa": "Etapa",
+      "colProgresso": "Progresso",
+      "colFim": "Fim da etapa",
+      "colValor": "Valor estimado",
+      "etapasFeitas": "{feitas} de {total} etapas",
+      "atraso": "{data} · {n, plural, one {# dia} other {# dias}} de atraso",
+      "emDias": "{data} · em {n, plural, one {# dia} other {# dias}}",
+      "hoje": "{data} · hoje",
+      "emDia": "{data} · em dia",
+      "semPrazo": "sem prazo"
+    },
+    "precisa": {
+      "titulo": "Precisa de você",
+      "agenda": "Minhas tarefas",
+      "semana": "Esta semana",
+      "hoje": "hoje",
+      "vencidosAntes": "{n, plural, one {# vencido} other {# vencidos}} antes desta semana",
+      "filtrando": "Prazos de {dia}",
+      "limparDia": "Ver todos",
+      "vazio": "Nada pendente por aqui.",
+      "mais": "+ {n} {n, plural, one {prazo} other {prazos}} depois",
+      "venceu": "venceu {data}",
+      "vence": "{data}",
+      "tipos": {
+        "tarefa": "Tarefa",
+        "etapa": "Etapa",
+        "exclusividade": "Prazo",
+        "participacao": "Acesso",
+        "mensagem": "Mensagem"
+      },
+      "titulos": {
+        "tarefa": "{texto}",
+        "etapa": "Fim da etapa {texto}",
+        "exclusividade": "Fim da exclusividade",
+        "participacao": "Fim do acesso de {texto}"
+      },
+      "acoes": {
+        "tarefa": "Abrir",
+        "etapa": "Ver etapa",
+        "exclusividade": "Ver",
+        "participacao": "Ver",
+        "mensagem": "Responder"
+      }
+    }
   }
 }
