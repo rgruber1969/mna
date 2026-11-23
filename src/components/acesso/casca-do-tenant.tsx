@@ -943,7 +943,10 @@ export function CascaDoTenant({
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
             <IconeDeMensagens />
             <Sino inicial={notificacoes} />
-            <MenuDoUsuario usuario={usuario} temaInicial={tema} menuInvertidoInicial={menuInvertido} />
+            {/* No computador, o menu do usuário fica só no rodapé do menu lateral; a foto no topo é para o celular. */}
+            <div className="md:hidden">
+              <MenuDoUsuario usuario={usuario} temaInicial={tema} menuInvertidoInicial={menuInvertido} />
+            </div>
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>

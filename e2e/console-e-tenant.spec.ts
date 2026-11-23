@@ -159,7 +159,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   expect(await segundoFatorDaUltimaSessao(emailTenant)).toBe(true);
 
   // Foto da conta: enviada em "Minha conta" e mostrada em miniatura no topo.
-  await admin.getByRole("button", { name: "Menu do usuário" }).click();
+  await admin.getByRole("button", { name: "Conta e preferências" }).click();
   await admin.getByRole("link", { name: "Minha conta" }).click();
   const png = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
@@ -326,7 +326,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(usuaria.getByRole("heading", { name: "Usuários" })).toHaveCount(0);
   await usuaria.goto(base);
 
-  await usuaria.getByRole("button", { name: "Menu do usuário" }).click();
+  await usuaria.getByRole("button", { name: "Conta e preferências" }).click();
   await usuaria.getByRole("button", { name: "Sair" }).click();
   await expect(usuaria).toHaveURL(/\/entrar$/);
   await usuaria.getByText("Receber link de acesso por e-mail").click();

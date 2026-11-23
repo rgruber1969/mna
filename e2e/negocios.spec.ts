@@ -170,7 +170,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   const fundoDoMenu = () =>
     page.locator("[data-menu-lateral]").evaluate((el) => getComputedStyle(el).backgroundColor);
   const claro = await fundoDoMenu();
-  await page.getByRole("button", { name: "Menu do usuário" }).click();
+  await page.getByRole("button", { name: "Conta e preferências" }).click();
   await page.getByLabel("Menu lateral no tema oposto").check();
   await expect.poll(fundoDoMenu).not.toBe(claro);
   await page.getByLabel("Menu lateral no tema oposto").uncheck();

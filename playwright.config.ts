@@ -7,6 +7,10 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
+  // Um processo por vez: com o servidor de desenvolvimento (que compila cada tela na primeira
+  // visita) e vários navegadores ao mesmo tempo, as ações do servidor enfileiram e os testes
+  // estouram o tempo por lentidão, não por erro.
+  workers: 1,
   reporter: "list",
   // Em desenvolvimento, a primeira visita a uma página espera a compilação.
   expect: { timeout: 30_000 },
