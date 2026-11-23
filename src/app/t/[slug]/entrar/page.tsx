@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { entradaDeDesenvolvimentoDisponivel, tenantPorSlug, tenantSuspenso } from "@/server/services/acesso";
 import { TelaEntrar } from "@/components/acesso/telas";
+import { estaLigada } from "@/config/funcionalidades";
 import { Cartao, Carregando, LogoDoTenant, Moldura, Titulo } from "@/components/ui/basicos";
 import { marcaPorSlug } from "@/server/services/marca";
 
@@ -38,6 +39,7 @@ async function Conteudo({ slug }: { slug: Promise<string> }) {
       logoDoTenant={logo}
       linhas
       soComEmail={entradaDeDesenvolvimentoDisponivel(new Headers(await headers()))}
+      loginSocial={estaLigada("loginSocial")}
     />
   );
 }

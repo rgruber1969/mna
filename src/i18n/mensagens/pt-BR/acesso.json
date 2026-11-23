@@ -150,6 +150,15 @@
       "dadosInvalidos": "Dados inválidos.",
       "temaEntreDeNovo": "Entre de novo para mudar o tema.",
       "temaInvalido": "Tema inválido."
+    },
+    "loginSocial": {
+      "google": "Entrar com Google",
+      "microsoft": "Entrar com Microsoft",
+      "nomes": {
+        "google": "Google",
+        "microsoft": "Microsoft"
+      },
+      "emBreve": "a entrada com {provedor} chega numa próxima versão. Por enquanto, use e-mail e senha, passkey ou o link por e-mail."
     }
   }
 }

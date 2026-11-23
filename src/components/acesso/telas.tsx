@@ -14,6 +14,7 @@ import { Cabecalho, EstruturaDoTenant } from "./cabecalho";
 import { FormFoto } from "@/components/conta/formulario-foto";
 import { AvisoDaEntrada } from "./aviso-da-entrada";
 import { FormAutenticador, FormSair } from "./formularios";
+import { BotoesDeLoginSocial } from "./login-social";
 import { BotaoEntrarComPasskey, FormCriarPasskey, FormPedirLink, FormUsarLink } from "./passkey-e-link";
 import { FormConvite, FormEntrar, FormEntrarSoComEmail, FormSegundoFator } from "./formularios";
 
@@ -44,6 +45,7 @@ export function TelaEntrar({
   linhas = false,
   soComEmail = false,
   logoDoTenant,
+  loginSocial = false,
 }: {
   titulo: string;
   marca?: ReactNode;
@@ -53,6 +55,8 @@ export function TelaEntrar({
   linhas?: boolean;
   /** Entrada de desenvolvimento (só e-mail) disponível neste endereço. */
   soComEmail?: boolean;
+  /** Botões de Google e Microsoft (item 3; simulados enquanto não forem reais). */
+  loginSocial?: boolean;
 }) {
   const t = useTranslations("acesso.entrada");
   return (
@@ -73,6 +77,7 @@ export function TelaEntrar({
         <FormEntrar />
         <div className="border-border my-6 border-t" />
         <BotaoEntrarComPasskey />
+        {loginSocial && <BotoesDeLoginSocial />}
         <details className="mt-4">
           <summary className="text-primary cursor-pointer text-sm font-medium">{t("receberLink")}</summary>
           <div className="mt-4">

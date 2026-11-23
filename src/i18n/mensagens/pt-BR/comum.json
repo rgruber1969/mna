@@ -28,6 +28,10 @@
       "porPagina": "Por página:",
       "paginaDe": "Página {pagina} de {paginas}"
     },
-    "ajuda": "Ajuda sobre esta tela"
+    "ajuda": "Ajuda sobre esta tela",
+    "simulacao": {
+      "titulo": "Demonstração:",
+      "padrao": "esta funcionalidade ainda é simulada; os dados e arquivos são de exemplo e nada é gravado de verdade."
+    }
   }
 }
