@@ -115,6 +115,15 @@ versão 1" é anotado aqui.
   manualmente.
 
 
+## Autenticação (pedido em 2026-11-22)
+
+* **Reconhecimento facial:** entrar ou confirmar operações sensíveis pelo
+  rosto. Antes de construir: decidir entre o reconhecimento do próprio
+  aparelho (passkey com Face ID / Windows Hello, que já é suportado pelas
+  chaves de acesso, sem guardar o rosto) e um serviço de biometria facial
+  (dado pessoal sensível pela LGPD: base legal, consentimento, guarda e
+  descarte, e inventário em dados-pessoais.md). Exige ADR.
+
 ## Primeiro acesso (pedido em 2026-11-22)
 
 * **Tour guiado no primeiro acesso:** balões em passos ("Passo 1 de 7"),

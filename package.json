@@ -16,6 +16,7 @@
     "db:preparar": "node scripts/db-preparar-local.mjs",
     "dev": "next dev",
     "dev:reiniciar": "node scripts/dev-reiniciar.mjs",
+    "dev:aquecer": "node scripts/dev-aquecer.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint",

@@ -177,7 +177,8 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(admin.getByRole("img", { name: "Foto de Admin do Tenant" }).first()).toBeVisible();
 
   // Identidade visual (white label, ADR-0010): nome, cores com contraste, fonte, logo e ícone.
-  await admin.getByRole("link", { name: "Identidade visual" }).click();
+  await admin.getByRole("link", { name: "Configurações" }).click();
+  await admin.getByRole("tab", { name: "Identidade visual" }).click();
   await admin.getByLabel("Nome de exibição").fill("Bastos E2E");
   await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#ffd60a");
   await expect(admin.getByText("A cor primária é usada em textos", { exact: false })).toBeVisible();
@@ -185,6 +186,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#7a1238");
   await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#c2410c");
   await admin.getByLabel("Fonte").selectOption("lato");
+  await admin.getByText("Grande (17)").click();
   await admin.getByRole("button", { name: "Salvar identidade visual" }).click();
   await expect(admin.getByText("Identidade visual salva.")).toBeVisible();
   await admin.reload();
@@ -192,6 +194,8 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
     admin.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), nome);
   await expect.poll(() => variavel("--primary")).toBe("#7a1238");
   expect(await admin.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain("Lato");
+  expect(await admin.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe("17px");
+  await admin.getByRole("tab", { name: "Identidade visual" }).click();
   const enviarImagem = async (rotulo: string) => {
     const campo = admin.getByLabel(`Arquivo: ${rotulo}`);
     await campo.setInputFiles({ name: "logo.png", mimeType: "image/png", buffer: png });

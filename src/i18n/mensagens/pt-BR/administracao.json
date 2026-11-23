@@ -34,7 +34,8 @@
       "entreDeNovoFoto": "Entre de novo para alterar a foto.",
       "contrastePrimaria": "A cor primária é usada em textos e links sobre fundo branco e ficou com contraste {razao}:1 (mínimo {minimo}:1). Escolha um tom mais escuro.",
       "contrasteSemTexto": "Nenhuma cor de texto fica legível sobre a cor primária. Escolha outro tom.",
-      "contrasteDestaque": "A cor de destaque ficou com contraste {razao}:1 sobre fundo branco (mínimo {minimo}:1). Escolha um tom mais escuro."
+      "contrasteDestaque": "A cor de destaque ficou com contraste {razao}:1 sobre fundo branco (mínimo {minimo}:1). Escolha um tom mais escuro.",
+      "tamanhoInvalido": "Escolha um dos tamanhos de texto."
     },
     "acoes": {
       "conviteEnviado": "Convite enviado. Ele vale por 3 dias.",
@@ -297,7 +298,16 @@
         "arquivo": "Arquivo: {titulo}",
         "enviar": "Enviar",
         "enviando": "Enviando...",
-        "remover": "Remover"
+        "remover": "Remover",
+        "tamanho": "Tamanho do texto",
+        "tamanhoAjuda": "Vale para todas as telas do tenant: textos, botões e espaçamentos crescem ou diminuem juntos.",
+        "tamanhos": {
+          "t14": "Compacto (14)",
+          "t15": "Pequeno (15)",
+          "t16": "Padrão (16)",
+          "t17": "Grande (17)",
+          "t18": "Muito grande (18)"
+        }
       }
     },
     "foto": {

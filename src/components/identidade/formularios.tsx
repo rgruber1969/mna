@@ -10,7 +10,15 @@ import {
 } from "@/app/acoes/identidade-visual";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso, Botao, Campo, LogoDoTenant } from "@/components/ui/basicos";
-import { FONTES, TOKENS_PADRAO, corValida, problemasDeContraste, variaveisDoTema } from "@/config/marca";
+import {
+  FONTES,
+  TOKENS_PADRAO,
+  corValida,
+  problemasDeContraste,
+  variaveisDoTema,
+  TAMANHO_PADRAO,
+  TAMANHOS_DE_FONTE,
+} from "@/config/marca";
 
 type Inicial = {
   nome: string;
@@ -18,6 +26,7 @@ type Inicial = {
   corPrimaria: string | null;
   corDestaque: string | null;
   fonte: string | null;
+  tamanhoFonte: number | null;
 };
 
 function CampoDeCor({
@@ -69,6 +78,7 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
   const [primaria, setPrimaria] = useState(inicial.corPrimaria ?? TOKENS_PADRAO.primaria);
   const [destaque, setDestaque] = useState(inicial.corDestaque ?? TOKENS_PADRAO.destaque);
   const [fonte, setFonte] = useState(inicial.fonte ?? "manrope");
+  const [tamanho, setTamanho] = useState(inicial.tamanhoFonte ?? TAMANHO_PADRAO);
   const problemas = problemasDeContraste({ primaria, destaque }).map((p) => tErro(p.erro, p.parametros));
   const tema = variaveisDoTema({ primaria, destaque }, fonte) as CSSProperties;
   const mensagem = estado ?? estadoPadrao;
@@ -107,10 +117,35 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
           </select>
         </label>
 
+        <fieldset className="mb-4">
+          <legend className="text-text mb-1 block text-sm font-medium">{t("tamanho")}</legend>
+          <div className="flex flex-wrap gap-2">
+            {TAMANHOS_DE_FONTE.map((n) => (
+              <label
+                key={n}
+                className={`cursor-pointer rounded-md border px-3 py-1.5 text-sm ${
+                  tamanho === n ? "border-primary text-primary font-semibold" : "border-border text-text"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="tamanhoFonte"
+                  value={n}
+                  checked={tamanho === n}
+                  onChange={() => setTamanho(n)}
+                  className="sr-only"
+                />
+                {t(`tamanhos.t${n}`)}
+              </label>
+            ))}
+          </div>
+          <p className="text-muted mt-1 text-xs">{t("tamanhoAjuda")}</p>
+        </fieldset>
+
         <p className="text-text mb-2 text-sm font-medium">{t("previa")}</p>
         <div
           aria-label={t("previaAria")}
-          style={tema}
+          style={{ ...tema, zoom: tamanho / TAMANHO_PADRAO }}
           className="border-border mb-4 overflow-hidden rounded-lg border font-sans"
         >
           <div className="bg-backdrop text-backdrop-foreground px-4 py-3 text-sm font-semibold">

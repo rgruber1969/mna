@@ -316,6 +316,13 @@
       "when": 1795384660119,
       "tag": "0044_ofertas",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1795390842873,
+      "tag": "0045_tamanho_fonte",
+      "breakpoints": true
     }
   ]
 }

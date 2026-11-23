@@ -467,6 +467,8 @@
     "confirmarExcluirEtapa": "Excluir a etapa padrão {nome} (com as subetapas)? Os negócios existentes não mudam.",
     "abaCategorias": "Categorias de documento",
     "novaCategoria": "Nova categoria",
-    "categoriasExplicacao": "Categorias para classificar e filtrar os documentos do data room."
+    "categoriasExplicacao": "Categorias para classificar e filtrar os documentos do data room.",
+    "abaIdentidade": "Identidade visual",
+    "abaChaves": "Chaves de API"
   }
 }

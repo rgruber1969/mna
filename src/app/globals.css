@@ -19,10 +19,10 @@
   --accent: #5e8fd3;
   --accent-foreground: #ffffff;
   --background: #ffffff;
-  --surface: #e6eaf0;
+  --surface: #dde3eb;
   --text: #0f172a;
   --text-muted: #5e6470;
-  --border: #dce1e8;
+  --border: #d2d8e1;
   --danger: #b42318;
   --success: #067647;
   /* Avisos (ex.: modo desenvolvimento). */
@@ -49,18 +49,18 @@
   --primary-foreground: #0b1220;
   --accent: #8fb3ea;
   --accent-foreground: #0b1220;
-  --background: #151c2c;
-  --surface: #0d1320;
+  --background: #1b2438;
+  --surface: #070b13;
   --text: #e6e9f0;
   --text-muted: #9aa3b5;
-  --border: #263044;
+  --border: #33405a;
   --danger: #f97066;
   --success: #47cd89;
   --warning: #fdb022;
   --warning-surface: #2a2111;
   --backdrop: #070b14;
   --backdrop-foreground: #ffffff;
-  --sombra: 0 4px 20px rgb(0 0 0 / 0.35);
+  --sombra: 0 6px 24px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {

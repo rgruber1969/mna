@@ -54,6 +54,8 @@ export const tenant = pgTable("tenant", {
   corPrimaria: text("cor_primaria"),
   corDestaque: text("cor_destaque"),
   fonte: text("fonte"),
+  /** Tamanho base do texto em px (14 a 18); vazio = 16, o padrão. Escala toda a interface. */
+  tamanhoFonte: integer("tamanho_fonte"),
   logoClaro: text("logo_claro"),
   logoEscuro: text("logo_escuro"),
   icone: text("icone"),

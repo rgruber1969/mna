@@ -3,6 +3,7 @@
 // Uso: pnpm dev:reiniciar
 import { execSync, spawn } from "node:child_process";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 
 const porta = Number(process.env.PORT ?? 3000);
 
@@ -46,3 +47,9 @@ for (let i = 0; i < 20 && processosNaPorta().length; i++) await new Promise((r) 
 const next = createRequire(import.meta.url).resolve("next/dist/bin/next");
 const filho = spawn(process.execPath, [next, "dev", "--port", String(porta)], { stdio: "inherit" });
 filho.on("exit", (codigo) => process.exit(codigo ?? 0));
+
+// Compila as telas principais em segundo plano (primeira visita sem espera).
+if (process.env.AQUECER !== "nao")
+  spawn(process.execPath, [fileURLToPath(new URL("./dev-aquecer.mjs", import.meta.url))], {
+    stdio: "inherit",
+  });

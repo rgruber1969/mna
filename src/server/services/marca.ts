@@ -30,6 +30,7 @@ export type IdentidadeGravada = {
   corPrimaria: string | null;
   corDestaque: string | null;
   fonte: string | null;
+  tamanhoFonte: number | null;
   logoClaro: string | null;
   logoEscuro: string | null;
   icone: string | null;
@@ -42,6 +43,7 @@ export const colunas = {
   corPrimaria: tenant.corPrimaria,
   corDestaque: tenant.corDestaque,
   fonte: tenant.fonte,
+  tamanhoFonte: tenant.tamanhoFonte,
   logoClaro: tenant.logoClaro,
   logoEscuro: tenant.logoEscuro,
   icone: tenant.icone,
@@ -52,7 +54,11 @@ type Linha = { id: string; nome: string } & IdentidadeGravada;
 function montarMarca(t: Linha): Marca {
   return {
     nome: t.nomeExibicao || t.nome,
-    css: cssDoTema({ primaria: t.corPrimaria ?? undefined, destaque: t.corDestaque ?? undefined }, t.fonte),
+    css: cssDoTema(
+      { primaria: t.corPrimaria ?? undefined, destaque: t.corDestaque ?? undefined },
+      t.fonte,
+      t.tamanhoFonte,
+    ),
     corPrimaria: corValida(t.corPrimaria) ? t.corPrimaria : TOKENS_PADRAO.primaria,
     logoClaro: enderecoDaImagem(t.id, t.logoClaro),
     logoEscuro: enderecoDaImagem(t.id, t.logoEscuro),

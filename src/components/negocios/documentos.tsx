@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -538,6 +538,17 @@ function FormEnvio({
   );
 }
 
+/** Versões de um documento, paginadas (podem ser muitas). */
+function VersoesPaginadas<T>({ versoes, children }: { versoes: T[]; children: (v: T) => ReactNode }) {
+  const { atual, controles } = usePaginacao(versoes, 10);
+  return (
+    <>
+      <ul className="border-border ml-3 border-l text-xs">{atual.map(children)}</ul>
+      {versoes.length > 10 && controles}
+    </>
+  );
+}
+
 export function DataRoomDoNegocio({
   dealId,
   dr,
@@ -827,8 +838,8 @@ export function DataRoomDoNegocio({
                               {zipando ? t("preparandoZip") : t("baixarTodasAsVersoes")}
                             </button>
                           )}
-                          <ul className="border-border ml-3 border-l text-xs">
-                            {d.versoes.map((v) => (
+                          <VersoesPaginadas versoes={d.versoes}>
+                            {(v) => (
                               <li
                                 key={v.id}
                                 className="before:border-border relative flex flex-wrap items-start justify-between gap-2 py-2 pl-6 before:absolute before:top-4 before:left-0 before:w-4 before:border-t"
@@ -930,8 +941,8 @@ export function DataRoomDoNegocio({
                                   </div>
                                 )}
                               </li>
-                            ))}
-                          </ul>
+                            )}
+                          </VersoesPaginadas>
                         </td>
                       </tr>
                     )}

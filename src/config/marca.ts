@@ -30,6 +30,12 @@ export const FONTES = [
 
 export type FonteId = (typeof FONTES)[number]["id"];
 
+/** Tamanhos base do texto (px); 16 é o padrão. Toda a interface escala junto (unidades rem). */
+export const TAMANHOS_DE_FONTE = [14, 15, 16, 17, 18] as const;
+export const TAMANHO_PADRAO = 16;
+export const tamanhoValido = (n: number | null | undefined): n is number =>
+  typeof n === "number" && (TAMANHOS_DE_FONTE as readonly number[]).includes(n);
+
 export const fonteValida = (id: string | null | undefined): id is FonteId => FONTES.some((f) => f.id === id);
 
 /** Contraste mínimo de texto normal (WCAG AA). */
@@ -125,7 +131,7 @@ export function variaveisDoTema(cores: Partial<Cores>, fonte?: string | null): R
 }
 
 /** Fundo dos cartões no tema escuro (espelha `--background` escuro de globals.css). */
-export const FUNDO_ESCURO = "#151c2c";
+export const FUNDO_ESCURO = "#1b2438";
 
 /** Clareia a cor até ter contraste de texto sobre o fundo escuro (tema escuro). */
 export function clarearParaFundoEscuro(cor: string, minimo = CONTRASTE_TEXTO): string {
@@ -159,8 +165,9 @@ const bloco = (seletor: string, v: Record<string, string>) => {
 };
 
 /** CSS com as variáveis do tenant nos dois temas (vazio = tema padrão). */
-export function cssDoTema(cores: Partial<Cores>, fonte?: string | null): string {
+export function cssDoTema(cores: Partial<Cores>, fonte?: string | null, tamanho?: number | null): string {
   return (
+    (tamanhoValido(tamanho) && tamanho !== TAMANHO_PADRAO ? `html{font-size:${tamanho}px}` : "") +
     bloco(
       ':root,:root[data-tema="escuro"][data-menu-invertido="sim"] [data-menu-lateral]',
       variaveisDoTema(cores, fonte),

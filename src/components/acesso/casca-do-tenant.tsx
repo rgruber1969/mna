@@ -694,7 +694,7 @@ export function CascaDoTenant({
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>
-        <footer className="bg-background shadow-cartao text-muted mx-3 mt-6 flex flex-col items-center gap-2 rounded-t-[10px] px-4 py-5 text-sm sm:mx-6">
+        <footer className="text-muted mx-3 mt-4 mb-3 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs sm:mx-6">
           {rodape}
         </footer>
       </div>

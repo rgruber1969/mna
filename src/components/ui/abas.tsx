@@ -66,10 +66,7 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
   return (
     <ContextoDasAbas.Provider value={{ ativa, ativar, revelarCampo }}>
       <div ref={raiz} onInvalidCapture={(e) => revelarElemento(e.target as Element)}>
-        <div
-          role="tablist"
-          className="border-border -mx-1 mb-4 flex flex-wrap gap-x-1 border-b"
-        >
+        <div role="tablist" className="border-border -mx-1 mb-4 flex flex-wrap gap-x-1 border-b">
           {abas.map((a) => (
             <button
               key={a.id}

@@ -16,6 +16,8 @@ import { FormConfiguracoes } from "@/components/negocios/andamento";
 import { obterHorasDoResumo } from "@/server/services/mensagens";
 import { TabelaDeEtapas, TabelaDePapeis, TabelaDeTipos } from "@/components/cadastros/configuracoes";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
+import { PainelDeIdentidade } from "@/components/identidade/painel";
+import { PainelDeChaves } from "@/components/chaves/painel";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
 /**
@@ -52,7 +54,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
-        <Cartao largura="max-w-5xl">
+        <Cartao largura="max-w-6xl">
           <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
             {t("titulo")}
           </Titulo>
@@ -67,6 +69,12 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                     { id: "operacoes", rotulo: t("abaOperacoes") },
                     { id: "etapas", rotulo: t("abaEtapas") },
                     { id: "categorias", rotulo: t("abaCategorias") },
+                  ]
+                : []),
+              ...(acesso.administrador
+                ? [
+                    { id: "identidade", rotulo: t("abaIdentidade") },
+                    { id: "chaves", rotulo: t("abaChaves") },
                   ]
                 : []),
             ]}
@@ -96,6 +104,16 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                     qual="categoria"
                     {...permissoes}
                   />
+                </PainelDeAba>
+              </>
+            )}
+            {acesso.administrador && (
+              <>
+                <PainelDeAba id="identidade">
+                  <PainelDeIdentidade acesso={acesso} />
+                </PainelDeAba>
+                <PainelDeAba id="chaves">
+                  <PainelDeChaves acesso={acesso} />
                 </PainelDeAba>
               </>
             )}

@@ -93,31 +93,35 @@ async function Painel({
   const tt = await getTranslations("negocios.andamento");
   const th = await getTranslations("negocios.historico");
   const tm = await getTranslations("mensagens");
-  const [tipos, opcoesEmp, opcoesPart, andamento] = await Promise.all([
-    listarTiposDeOperacao(acesso),
-    n.podeEditar ? opcoesDeEmpresas(acesso, n.id) : null,
-    n.podeGerirParticipantes ? opcoesDeParticipantes(acesso, n.id) : null,
-    andamentoDoNegocio(acesso, n.id),
+  // Tudo em uma rodada só: as consultas são independentes (antes eram 4 rodadas em sequência).
+  const [
+    [tipos, opcoesEmp, opcoesPart, andamento],
+    [funil, totalMsg, contratos, opcoesContrato, tc],
+    [ofertas, opcoesOferta, to],
+    [etapas, alcances, dataRoom, tarefas],
+  ] = await Promise.all([
+    Promise.all([
+      listarTiposDeOperacao(acesso),
+      n.podeEditar ? opcoesDeEmpresas(acesso, n.id) : null,
+      n.podeGerirParticipantes ? opcoesDeParticipantes(acesso, n.id) : null,
+      andamentoDoNegocio(acesso, n.id),
+    ]),
+    Promise.all([
+      funilDoNegocio(acesso, n.id),
+      totaisDeMensagens(acesso, n.id),
+      listarContratos(acesso, { dealId: n.id }),
+      opcoesDoContrato(acesso, n.id),
+      getTranslations("contratos"),
+    ]),
+    Promise.all([ofertasDoNegocio(acesso, n.id), opcoesDaOferta(acesso, n.id), getTranslations("ofertas")]),
+    Promise.all([
+      etapasDoNegocio(acesso, n.id),
+      n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
+      dataRoomDoNegocio(acesso, n.id),
+      tarefasDoNegocio(acesso, n.id),
+    ]),
   ]);
-  const [funil, totalMsg, contratos, opcoesContrato] = await Promise.all([
-    funilDoNegocio(acesso, n.id),
-    totaisDeMensagens(acesso, n.id),
-    listarContratos(acesso, { dealId: n.id }),
-    opcoesDoContrato(acesso, n.id),
-  ]);
-  const tc = await getTranslations("contratos");
   const mostraContratos = contratos.length > 0 || opcoesContrato.podeCriar;
-  const [ofertas, opcoesOferta, to] = await Promise.all([
-    ofertasDoNegocio(acesso, n.id),
-    opcoesDaOferta(acesso, n.id),
-    getTranslations("ofertas"),
-  ]);
-  const [etapas, alcances, dataRoom, tarefas] = await Promise.all([
-    etapasDoNegocio(acesso, n.id),
-    n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
-    dataRoomDoNegocio(acesso, n.id),
-    tarefasDoNegocio(acesso, n.id),
-  ]);
   const tarefasAbertas = (tarefas?.tarefas ?? []).filter(
     (x) => !["concluida", "cancelada"].includes(x.situacao),
   );
