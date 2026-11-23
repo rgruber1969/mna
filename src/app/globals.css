@@ -16,17 +16,30 @@
   --primary-foreground: #ffffff;
   /* Fundo suave da cor primária (item ativo do menu, etiquetas). */
   --primary-soft: color-mix(in srgb, var(--primary) 10%, var(--background));
+  /* Cor secundária (mesma família da primária): ícones, gráficos, foco. */
   --accent: #5e8fd3;
   --accent-foreground: #ffffff;
+  /* Acento do "2 + 1" (docs/marca): SÓ o botão principal de cada tela (até 10% da área). */
+  --cta: #c05600;
+  --cta-foreground: #ffffff;
   --background: #ffffff;
   --surface: #dde3eb;
   --text: #0f172a;
   --text-muted: #5e6470;
   --border: #d2d8e1;
-  --danger: #b42318;
+  /*
+   * Situação de prazo (semáforo), fixa pela plataforma em todos os tenants:
+   * vermelho = vencido, amarelo = vence em até N dias, verde = em dia.
+   * "-fill" pinta pontos e barras; "-soft" é o fundo fosco; o texto usa a cor cheia.
+   */
+  --danger: #b91c3c;
   --success: #067647;
+  --warning: #8a5a00;
+  --warning-fill: #d4a106;
+  --danger-soft: color-mix(in srgb, var(--danger) 8%, var(--background));
+  --warning-soft: color-mix(in srgb, var(--warning-fill) 14%, var(--background));
+  --success-soft: color-mix(in srgb, var(--success) 7%, var(--background));
   /* Avisos (ex.: modo desenvolvimento). */
-  --warning: #93370d;
   --warning-surface: #fffaeb;
   /* Fundo de telas de destaque (login), azul noite da marca; texto por cima. */
   --backdrop: #021b3a;
@@ -49,14 +62,20 @@
   --primary-foreground: #0b1220;
   --accent: #8fb3ea;
   --accent-foreground: #0b1220;
+  --cta: #fb8a4c;
+  --cta-foreground: #1a0d05;
   --background: #1f2a42;
   --surface: #04070d;
   --text: #e6e9f0;
   --text-muted: #aeb7c8;
   --border: #3b4966;
-  --danger: #f97066;
-  --success: #47cd89;
-  --warning: #fdb022;
+  --danger: #fb7185;
+  --success: #4ade80;
+  --warning: #facc15;
+  --warning-fill: #facc15;
+  --danger-soft: color-mix(in srgb, var(--danger) 12%, var(--background));
+  --warning-soft: color-mix(in srgb, var(--warning-fill) 11%, var(--background));
+  --success-soft: color-mix(in srgb, var(--success) 9%, var(--background));
   --warning-surface: #2a2111;
   --backdrop: #070b14;
   --backdrop-foreground: #ffffff;
@@ -69,6 +88,8 @@
   --color-primary-soft: var(--primary-soft);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-cta: var(--cta);
+  --color-cta-foreground: var(--cta-foreground);
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-text: var(--text);
@@ -77,6 +98,10 @@
   --color-danger: var(--danger);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-fill: var(--warning-fill);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-success-soft: var(--success-soft);
   --color-warning-surface: var(--warning-surface);
   --color-backdrop: var(--backdrop);
   --color-backdrop-foreground: var(--backdrop-foreground);

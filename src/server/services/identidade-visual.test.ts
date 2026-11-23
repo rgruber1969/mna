@@ -50,6 +50,7 @@ const dados = {
   nomeExibicao: "Bastos Tigre",
   corPrimaria: "#7a1238",
   corDestaque: "#c2410c",
+  corAcento: "#4338ca",
   fonte: "inter",
 };
 
@@ -95,6 +96,8 @@ describe("nome, cores e fonte", () => {
     expect(m?.nome).toBe("Bastos Tigre");
     expect(m?.css).toContain("--primary:#7a1238");
     expect(m?.css).toContain("--fonte-marca:var(--font-inter)");
+    expect(m?.css).toContain("--cta:#4338ca");
+    expect(await salvarIdentidade(acesso(true), { ...dados, corAcento: "#7a7a7a" })).toHaveProperty("erro");
 
     expect(await restaurarPadrao(acesso(true))).toEqual({ ok: true });
     const padrao = await marcaPorSlug(slug);

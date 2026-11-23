@@ -22,6 +22,7 @@ export async function salvarIdentidadeAcao(_: Estado, f: FormData): Promise<Esta
     nomeExibicao: texto(f, "nomeExibicao"),
     corPrimaria: texto(f, "corPrimaria"),
     corDestaque: texto(f, "corDestaque"),
+    corAcento: texto(f, "corAcento"),
     fonte: texto(f, "fonte"),
     tamanhoFonte: texto(f, "tamanhoFonte"),
   });

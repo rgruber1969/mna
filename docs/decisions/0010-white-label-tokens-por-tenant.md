@@ -149,3 +149,21 @@ Regras:
     logo discreta da RGRUBER, a mesma em todos os tenants.
   * Fica para depois: título da aba com o nome do tenant (hoje só o ícone
     muda) e logo em SVG.
+* Adendo (2026-11-23): **paleta "2 bases + 1 acento" e cores de situação**,
+  escolhidas pelo responsável nas propostas de layout v2/v3
+  (`docs/design/propostas-de-layout-v3-2026-11-23.pdf`):
+  1. **Três cores por tenant:** cor da marca (a primária), cor secundária
+     (tom da mesma família; no banco continua `cor_destaque` e no CSS
+     `--accent`, nomes antigos) e a nova **cor de destaque** (acento,
+     `cor_acento` / token `--cta`), de matiz oposto, usada **só no botão
+     principal de cada tela** (até 10% da área).
+  2. **Padrão RGRUBER:** laranja `#C05600` com texto branco (4,6:1); no tema
+     escuro, `#FB8A4C` com texto escuro. Tenant piloto: índigo `#4338CA`
+     (oposto do oliva da marca dele).
+  3. **Validação:** o texto sobre a cor de destaque precisa de 4,5:1; a tela
+     sugere três destaques de matiz oposto e avisa quando o escolhido está a
+     menos de 60° da cor da marca ("não vai se destacar").
+  4. **Cores de situação fixas pela plataforma** (não editáveis pelo tenant):
+     vermelho carmim `#B91C3C` (vencido), amarelo `#D4A106` com texto
+     `#8A5A00` (vence em até N dias), verde `#067647` (em dia), sempre com
+     fundo fosco e texto; N vem de Configurações → Painel principal.

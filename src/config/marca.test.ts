@@ -3,6 +3,9 @@ import {
   TOKENS_PADRAO,
   contraste,
   cssDoTema,
+  distanciaDeMatiz,
+  MATIZ_MINIMA_DO_ACENTO,
+  sugestoesDeAcento,
   enderecoDaImagem,
   problemasDeContraste,
   textoSobre,
@@ -45,6 +48,24 @@ describe("validação das cores", () => {
     );
   });
 
+  it("aceita o laranja padrão como destaque e recusa um destaque em que o texto do botão some", () => {
+    const base = { primaria: TOKENS_PADRAO.primaria, destaque: TOKENS_PADRAO.destaque };
+    expect(problemasDeContraste({ ...base, acento: TOKENS_PADRAO.acento })).toEqual([]);
+    expect(problemasDeContraste({ ...base, acento: "#7a7a7a" })[0].erro).toBe(
+      "administracao.erros.contrasteAcento",
+    );
+  });
+
+  it("sugere destaques de matiz oposto, legíveis com texto branco", () => {
+    const s = sugestoesDeAcento("#525b35");
+    expect(s).toHaveLength(3);
+    for (const c of s) {
+      expect(contraste(c, "#ffffff")).toBeGreaterThanOrEqual(4.5);
+      expect(distanciaDeMatiz(c, "#525b35")).toBeGreaterThanOrEqual(MATIZ_MINIMA_DO_ACENTO);
+    }
+    expect(distanciaDeMatiz("#123e7a", "#c05600")).toBeGreaterThan(150);
+  });
+
   it("recusa formato inválido", () => {
     expect(problemasDeContraste({ primaria: "red", destaque: "#123" })).toEqual([
       { erro: "administracao.erros.formatoDeCor" },
@@ -78,6 +99,14 @@ describe("tema gerado", () => {
   it("ignora valores inválidos: o CSS só leva cores #RRGGBB e fontes da lista", () => {
     expect(cssDoTema({ primaria: "red;}body{display:none" }, "comic-sans")).toBe("");
     expect(cssDoTema({}, null)).toBe("");
+  });
+
+  it("leva a cor de destaque (acento do 2 + 1) ao botão principal, nos dois temas", () => {
+    const v = variaveisDoTema({ acento: "#4338ca" });
+    expect(v).toEqual({ "--cta": "#4338ca", "--cta-foreground": TOKENS_PADRAO.textoClaro });
+    const e = variaveisDoTemaEscuro({ acento: "#4338ca" });
+    expect(contraste(e["--cta"], FUNDO_ESCURO)).toBeGreaterThanOrEqual(3);
+    expect(contraste(e["--cta"], e["--cta-foreground"])).toBeGreaterThanOrEqual(4.5);
   });
 
   it("monta o endereço público da imagem só com o nome do arquivo", () => {

@@ -68,6 +68,7 @@ const Dados = z.object({
   nomeExibicao: z.string().trim().max(80, "administracao.erros.nomeExibicaoLongo"),
   corPrimaria: z.string().trim().toLowerCase(),
   corDestaque: z.string().trim().toLowerCase(),
+  corAcento: z.string().trim().toLowerCase().prefault(TOKENS_PADRAO.acento),
   fonte: z.string().trim(),
   tamanhoFonte: z.coerce.number().int().default(TAMANHO_PADRAO),
 });
@@ -79,11 +80,15 @@ export async function salvarIdentidade(acesso: Acesso | null, dados: DadosIdenti
   const a = exigirAdministrador(acesso);
   const r = Dados.safeParse(dados);
   if (!r.success) return { erro: r.error.issues[0]?.message ?? "administracao.erros.dadosInvalidos" };
-  const { nomeExibicao, corPrimaria, corDestaque, fonte, tamanhoFonte } = r.data;
+  const { nomeExibicao, corPrimaria, corDestaque, corAcento, fonte, tamanhoFonte } = r.data;
   if (!tamanhoValido(tamanhoFonte)) return { erro: "administracao.erros.tamanhoInvalido" };
-  if (!corValida(corPrimaria) || !corValida(corDestaque)) return { erro: "administracao.erros.formatoDeCor" };
+  if (!corValida(corPrimaria) || !corValida(corDestaque) || !corValida(corAcento)) return { erro: "administracao.erros.formatoDeCor" };
   if (!fonteValida(fonte)) return { erro: "administracao.erros.fonteInvalida" };
-  const problemas = problemasDeContraste({ primaria: corPrimaria, destaque: corDestaque });
+  const problemas = problemasDeContraste({
+    primaria: corPrimaria,
+    destaque: corDestaque,
+    acento: corAcento,
+  });
   if (problemas.length) return problemas[0];
 
   const padrao = (cor: string, p: string) => (cor === p ? null : cor);
@@ -93,6 +98,7 @@ export async function salvarIdentidade(acesso: Acesso | null, dados: DadosIdenti
       nomeExibicao: nomeExibicao || null,
       corPrimaria: padrao(corPrimaria, TOKENS_PADRAO.primaria),
       corDestaque: padrao(corDestaque, TOKENS_PADRAO.destaque),
+      corAcento: padrao(corAcento, TOKENS_PADRAO.acento),
       fonte: fonte === "manrope" ? null : fonte,
       tamanhoFonte: tamanhoFonte === TAMANHO_PADRAO ? null : tamanhoFonte,
     })
@@ -106,7 +112,7 @@ export async function restaurarPadrao(acesso: Acesso | null): Promise<Resultado>
   const a = exigirAdministrador(acesso);
   await banco()
     .update(tenant)
-    .set({ corPrimaria: null, corDestaque: null, fonte: null, tamanhoFonte: null })
+    .set({ corPrimaria: null, corDestaque: null, corAcento: null, fonte: null, tamanhoFonte: null })
     .where(eq(tenant.id, a.tenant.id));
   await auditar(a, "tenant.identidade.padrao_restaurado");
   return { ok: true };

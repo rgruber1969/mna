@@ -2,8 +2,12 @@
  * Identidade visual por tenant (white label, ADR-0010): cálculos puros, usados
  * no servidor (validação, CSS, e-mails) e no navegador (prévia ao vivo).
  *
- * O tenant escolhe só a cor primária, a cor de destaque e a fonte; os demais
- * tons são derivados aqui, e a legibilidade é verificada (WCAG AA) ao salvar.
+ * O tenant escolhe a cor primária, a secundária, a de destaque (acento do
+ * "2 + 1", só no botão principal) e a fonte; os demais tons são derivados
+ * aqui, e a legibilidade é verificada (WCAG AA) ao salvar.
+ *
+ * Nomes internos: "destaque" é a cor SECUNDÁRIA (nome antigo, mantido no banco
+ * e no token --accent); "acento" é a nova cor de destaque (token --cta).
  */
 
 import type { ErroDeServico } from "@/i18n/servidor";
@@ -12,6 +16,8 @@ import type { ErroDeServico } from "@/i18n/servidor";
 export const TOKENS_PADRAO = {
   primaria: "#123e7a",
   destaque: "#5e8fd3",
+  /** Acento do 2 + 1: laranja da RGRUBER, só no botão principal de cada tela. */
+  acento: "#c05600",
   fundo: "#ffffff",
   texto: "#0f172a",
   textoClaro: "#ffffff",
@@ -85,13 +91,73 @@ export function textoSobre(cor: string): string {
     : TOKENS_PADRAO.texto;
 }
 
-export type Cores = { primaria: string; destaque: string };
+export type Cores = { primaria: string; destaque: string; acento?: string };
+
+type Hsl = [number, number, number];
+
+function paraHsl(cor: string): Hsl {
+  const [r, g, b] = paraRgb(cor).map((c) => c / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  const h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
+}
+
+function deHsl([h, s, l]: Hsl): string {
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return paraHex([f(0), f(8), f(4)].map((x) => x * 255) as Rgb);
+}
+
+/** Diferença de matiz entre duas cores, em graus (0 a 180). */
+export function distanciaDeMatiz(a: string, b: string): number {
+  const d = Math.abs(paraHsl(a)[0] - paraHsl(b)[0]) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
+/** Rampa de 6 tons da cor (do mais escuro ao mais claro), para a prévia da identidade. */
+export function tonsDaCor(cor: string): string[] {
+  return [
+    misturar(cor, "#000000", 0.45),
+    cor,
+    misturar(cor, "#ffffff", 0.25),
+    misturar(cor, "#ffffff", 0.5),
+    misturar(cor, "#ffffff", 0.75),
+    misturar(cor, "#ffffff", 0.92),
+  ];
+}
+
+/** Abaixo disso, o acento é "da mesma família" da primária e não se destaca. */
+export const MATIZ_MINIMA_DO_ACENTO = 60;
+
+/**
+ * Sugestões de cor de destaque para uma primária: matiz oposto (180°) e os
+ * vizinhos (150° e 210°), escurecidos até o texto branco ficar legível.
+ */
+export function sugestoesDeAcento(primaria: string): string[] {
+  if (!corValida(primaria)) return [];
+  const [h] = paraHsl(primaria);
+  return [180, 150, 210].map((giro) => {
+    let l = 0.5;
+    let cor = deHsl([(h + giro) % 360, 0.7, l]);
+    while (contraste(cor, TOKENS_PADRAO.textoClaro) < CONTRASTE_TEXTO && l > 0.15) {
+      l -= 0.02;
+      cor = deHsl([(h + giro) % 360, 0.7, l]);
+    }
+    return cor;
+  });
+}
 
 /**
  * Problemas de legibilidade das cores escolhidas (vazio = aceitas). Cada um é
  * uma chave das mensagens (traduzida onde é exibida) com seus parâmetros.
  */
-export function problemasDeContraste({ primaria, destaque }: Cores): ErroDeServico[] {
+export function problemasDeContraste({ primaria, destaque, acento }: Cores): ErroDeServico[] {
   const problemas: ErroDeServico[] = [];
   if (!corValida(primaria) || !corValida(destaque)) return [{ erro: "administracao.erros.formatoDeCor" }];
   const primariaNoFundo = contraste(primaria, TOKENS_PADRAO.fundo);
@@ -108,6 +174,15 @@ export function problemasDeContraste({ primaria, destaque }: Cores): ErroDeServi
       erro: "administracao.erros.contrasteDestaque",
       parametros: { razao: destaqueNoFundo.toFixed(1), minimo: String(CONTRASTE_GRAFICO) },
     });
+  if (acento !== undefined) {
+    if (!corValida(acento)) return [{ erro: "administracao.erros.formatoDeCor" }];
+    const texto = contraste(acento, textoSobre(acento));
+    if (texto < CONTRASTE_TEXTO)
+      problemas.push({
+        erro: "administracao.erros.contrasteAcento",
+        parametros: { razao: texto.toFixed(1), minimo: String(CONTRASTE_TEXTO) },
+      });
+  }
   return problemas;
 }
 
@@ -124,6 +199,10 @@ export function variaveisDoTema(cores: Partial<Cores>, fonte?: string | null): R
   if (corValida(cores.destaque)) {
     v["--accent"] = cores.destaque;
     v["--accent-foreground"] = textoSobre(cores.destaque);
+  }
+  if (corValida(cores.acento)) {
+    v["--cta"] = cores.acento;
+    v["--cta-foreground"] = textoSobre(cores.acento);
   }
   const f = FONTES.find((x) => x.id === fonte);
   if (f && f.id !== "manrope") v["--fonte-marca"] = `var(${f.variavel})`;
@@ -155,6 +234,11 @@ export function variaveisDoTemaEscuro(cores: Partial<Cores>): Record<string, str
     const d = clarearParaFundoEscuro(cores.destaque, CONTRASTE_GRAFICO);
     v["--accent"] = d;
     v["--accent-foreground"] = textoSobre(d);
+  }
+  if (corValida(cores.acento)) {
+    const c = clarearParaFundoEscuro(cores.acento, CONTRASTE_GRAFICO + 1.5);
+    v["--cta"] = c;
+    v["--cta-foreground"] = textoSobre(c);
   }
   return v;
 }

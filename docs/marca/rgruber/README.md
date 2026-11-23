@@ -18,9 +18,18 @@ referência.
 | `brand-gray` | Cinza | `#5E6470` | Texto secundário, legendas | 6,0:1 (AA) |
 | `brand-white` | Branco | `#FFFFFF` | Fundos | n/a |
 | `brand-navy-dark` | Azul noite (site) | `#021B3A` | Fundos escuros pontuais (login, telas de destaque) | n/a |
+| `brand-accent` | Laranja de destaque | `#C05600` | **Só o botão principal de cada tela** (acento do "2 + 1", até 10% da área); no tema escuro `#FB8A4C` | 4,6:1 com texto branco |
 
 Escalas de tons (hover, bordas, fundos suaves) são derivadas dessas cores
 no design system; não acrescentar cores fora da paleta sem decisão.
+
+**Regra "2 bases + 1 acento"** (ADR-0010, adendo de 2026-11-23): o neutro
+(fundos, ~60%) e o azul da marca (~30%) dão o clima; o laranja, de matiz
+oposto, aparece só no que deve ser clicado (no máximo 10% da tela).
+
+**Cores de situação** (não são de marca, valem para todos os tenants):
+vermelho carmim `#B91C3C` (vencido), amarelo `#D4A106` com texto `#8A5A00`
+(vence em breve) e verde `#067647` (em dia), sempre com fundo fosco e texto.
 
 ## Tipografia
 

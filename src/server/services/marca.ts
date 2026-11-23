@@ -29,6 +29,7 @@ export type IdentidadeGravada = {
   nomeExibicao: string | null;
   corPrimaria: string | null;
   corDestaque: string | null;
+  corAcento: string | null;
   fonte: string | null;
   tamanhoFonte: number | null;
   logoClaro: string | null;
@@ -42,6 +43,7 @@ export const colunas = {
   nomeExibicao: tenant.nomeExibicao,
   corPrimaria: tenant.corPrimaria,
   corDestaque: tenant.corDestaque,
+  corAcento: tenant.corAcento,
   fonte: tenant.fonte,
   tamanhoFonte: tenant.tamanhoFonte,
   logoClaro: tenant.logoClaro,
@@ -55,7 +57,11 @@ function montarMarca(t: Linha): Marca {
   return {
     nome: t.nomeExibicao || t.nome,
     css: cssDoTema(
-      { primaria: t.corPrimaria ?? undefined, destaque: t.corDestaque ?? undefined },
+      {
+        primaria: t.corPrimaria ?? undefined,
+        destaque: t.corDestaque ?? undefined,
+        acento: t.corAcento ?? undefined,
+      },
       t.fonte,
       t.tamanhoFonte,
     ),

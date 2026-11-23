@@ -14,7 +14,11 @@ import {
   FONTES,
   TOKENS_PADRAO,
   corValida,
+  distanciaDeMatiz,
+  MATIZ_MINIMA_DO_ACENTO,
   problemasDeContraste,
+  sugestoesDeAcento,
+  tonsDaCor,
   variaveisDoTema,
   TAMANHO_PADRAO,
   TAMANHOS_DE_FONTE,
@@ -25,25 +29,42 @@ type Inicial = {
   nomeExibicao: string | null;
   corPrimaria: string | null;
   corDestaque: string | null;
+  corAcento: string | null;
   fonte: string | null;
   tamanhoFonte: number | null;
 };
 
+/** Faixa com os tons derivados da cor (do mais escuro ao mais claro). */
+function Rampa({ cor }: { cor: string }) {
+  if (!corValida(cor)) return null;
+  const tons = tonsDaCor(cor);
+  return (
+    <span className="mt-1.5 flex h-2 w-48 overflow-hidden rounded" aria-hidden="true">
+      {tons.map((t, i) => (
+        <span key={i} className="flex-1" style={{ background: t }} />
+      ))}
+    </span>
+  );
+}
+
 function CampoDeCor({
   rotulo,
+  ajuda,
   nome,
   valor,
   mudar,
 }: {
   rotulo: string;
+  ajuda: string;
   nome: string;
   valor: string;
   mudar: (v: string) => void;
 }) {
   const t = useTranslations("administracao.identidade.formulario");
   return (
-    <div className="mb-4">
-      <span className="text-text mb-1 block text-sm font-medium">{rotulo}</span>
+    <div className="mb-4 max-w-64">
+      <span className="text-text block text-sm font-medium">{rotulo}</span>
+      <span className="text-muted mb-1 block text-xs">{ajuda}</span>
       <div className="flex items-center gap-2">
         <input
           type="color"
@@ -61,6 +82,7 @@ function CampoDeCor({
           className="border-border bg-background text-text focus:border-primary w-28 rounded-md border px-3 py-2 font-mono text-sm outline-none"
         />
       </div>
+      <Rampa cor={valor} />
     </div>
   );
 }
@@ -77,10 +99,16 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
   const [nome, setNome] = useState(inicial.nomeExibicao ?? "");
   const [primaria, setPrimaria] = useState(inicial.corPrimaria ?? TOKENS_PADRAO.primaria);
   const [destaque, setDestaque] = useState(inicial.corDestaque ?? TOKENS_PADRAO.destaque);
+  const [acento, setAcento] = useState(inicial.corAcento ?? TOKENS_PADRAO.acento);
   const [fonte, setFonte] = useState(inicial.fonte ?? "manrope");
   const [tamanho, setTamanho] = useState(inicial.tamanhoFonte ?? TAMANHO_PADRAO);
-  const problemas = problemasDeContraste({ primaria, destaque }).map((p) => tErro(p.erro, p.parametros));
-  const tema = variaveisDoTema({ primaria, destaque }, fonte) as CSSProperties;
+  const problemas = problemasDeContraste({ primaria, destaque, acento }).map((p) =>
+    tErro(p.erro, p.parametros),
+  );
+  const tema = variaveisDoTema({ primaria, destaque, acento }, fonte) as CSSProperties;
+  const sugestoes = sugestoesDeAcento(primaria);
+  const parecido =
+    corValida(primaria) && corValida(acento) && distanciaDeMatiz(primaria, acento) < MATIZ_MINIMA_DO_ACENTO;
   const mensagem = estado ?? estadoPadrao;
 
   return (
@@ -98,8 +126,59 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
         />
         <p className="text-muted -mt-3 mb-4 text-xs">{t("nomeAjuda", { nome: inicial.nome })}</p>
         <div className="flex flex-wrap gap-x-8">
-          <CampoDeCor rotulo={t("corPrimaria")} nome="corPrimaria" valor={primaria} mudar={setPrimaria} />
-          <CampoDeCor rotulo={t("corDestaque")} nome="corDestaque" valor={destaque} mudar={setDestaque} />
+          <CampoDeCor
+            rotulo={t("corPrimaria")}
+            ajuda={t("corPrimariaAjuda")}
+            nome="corPrimaria"
+            valor={primaria}
+            mudar={setPrimaria}
+          />
+          <CampoDeCor
+            rotulo={t("corDestaque")}
+            ajuda={t("corDestaqueAjuda")}
+            nome="corDestaque"
+            valor={destaque}
+            mudar={setDestaque}
+          />
+          <CampoDeCor
+            rotulo={t("corAcento")}
+            ajuda={t("corAcentoAjuda")}
+            nome="corAcento"
+            valor={acento}
+            mudar={setAcento}
+          />
+        </div>
+        {sugestoes.length > 0 && (
+          <div className="-mt-1 mb-4 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted">{t("sugestoes")}</span>
+            {sugestoes.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setAcento(c)}
+                aria-label={t("usarSugestao", { cor: c })}
+                className="border-border text-text hover:border-primary flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono"
+              >
+                <span className="h-3 w-3 rounded-sm" style={{ background: c }} />
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+        {parecido && (
+          <p className="text-warning bg-warning-soft mb-4 rounded-md px-3 py-2 text-xs">{t("avisoMatiz")}</p>
+        )}
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-muted">{t("coresDeSituacao")}</span>
+          <span className="bg-danger-soft text-danger rounded-full px-2 py-0.5 font-semibold">
+            {t("vencido")}
+          </span>
+          <span className="bg-warning-soft text-warning rounded-full px-2 py-0.5 font-semibold">
+            {t("venceLogo")}
+          </span>
+          <span className="bg-success-soft text-success rounded-full px-2 py-0.5 font-semibold">
+            {t("emDia")}
+          </span>
         </div>
         <label className="mb-4 block">
           <span className="text-text mb-1 block text-sm font-medium">{t("fonte")}</span>
@@ -158,9 +237,23 @@ export function FormIdentidade({ inicial }: { inicial: Inicial }) {
                 link: (c) => <span className="text-primary font-medium">{c}</span>,
               })}
             </p>
-            <span className="bg-primary text-primary-foreground inline-block rounded-md px-4 py-2 text-sm font-medium">
-              {t("botaoPrincipal")}
+            <span className="flex flex-wrap gap-2">
+              <span className="bg-cta text-cta-foreground inline-block rounded-md px-4 py-2 text-sm font-semibold">
+                + {t("botaoPrincipal")}
+              </span>
+              <span className="bg-primary text-primary-foreground inline-block rounded-md px-4 py-2 text-sm font-medium">
+                {t("botaoComum")}
+              </span>
             </span>
+            <span
+              className="mt-2 flex h-5 overflow-hidden rounded text-[10px] font-semibold"
+              aria-hidden="true"
+            >
+              <span className="bg-surface text-text flex w-[60%] items-center px-2">60%</span>
+              <span className="bg-primary text-primary-foreground flex w-[30%] items-center px-2">30%</span>
+              <span className="bg-cta text-cta-foreground flex w-[10%] items-center justify-center">10</span>
+            </span>
+            <span className="text-muted block text-xs">{t("proporcao")}</span>
           </div>
         </div>
         {problemas.length > 0 && (

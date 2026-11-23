@@ -81,7 +81,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
               {podeCriar && (
                 <Link
                   href="/negocios/novo"
-                  className="bg-primary text-primary-foreground shrink-0 rounded-md px-3 py-2 text-sm font-medium"
+                  className="bg-cta text-cta-foreground shrink-0 rounded-md px-3 py-2 text-sm font-semibold"
                 >
                   {t("novo")}
                 </Link>

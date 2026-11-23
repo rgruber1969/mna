@@ -43,7 +43,7 @@ async function Painel({ filtro }: { filtro: Promise<string | undefined> }) {
             {opcoes.podeCriar && (
               <Link
                 href="/contratos/novo"
-                className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
+                className="bg-cta text-cta-foreground rounded-md px-3 py-1.5 text-sm font-semibold"
               >
                 {t("novo")}
               </Link>

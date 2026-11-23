@@ -52,7 +52,10 @@ export const tenant = pgTable("tenant", {
   // tenant. Vazio = padrão RGRUBER. Imagens: chaves no armazenamento (PNG).
   nomeExibicao: text("nome_exibicao"),
   corPrimaria: text("cor_primaria"),
+  /** Cor secundária (tom da mesma família da primária; nome antigo da coluna: "destaque"). */
   corDestaque: text("cor_destaque"),
+  /** Cor de destaque (acento do 2 + 1): só o botão principal de cada tela; matiz oposto à primária. */
+  corAcento: text("cor_acento"),
   fonte: text("fonte"),
   /** Tamanho base do texto em px (14 a 18); vazio = 16, o padrão. Escala toda a interface. */
   tamanhoFonte: integer("tamanho_fonte"),
@@ -63,6 +66,8 @@ export const tenant = pgTable("tenant", {
   diasAvisoExclusividade: jsonb("dias_aviso_exclusividade").$type<number[]>().notNull().default([15, 5]),
   /** Dias antes do prazo para lembrar os responsáveis por uma tarefa (0 = no dia). */
   diasLembreteTarefa: jsonb("dias_lembrete_tarefa").$type<number[]>().notNull().default([2, 0]),
+  /** Painel principal: dias antes do vencimento em que um prazo fica amarelo (semáforo). */
+  diasAvisoPrazo: integer("dias_aviso_prazo").notNull().default(7),
   /** Intervalo, em horas, do resumo de mensagens novas por e-mail (M2). */
   horasResumoMensagens: integer("horas_resumo_mensagens").notNull().default(1),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),

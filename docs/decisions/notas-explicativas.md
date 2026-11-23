@@ -558,3 +558,19 @@ Claude Code. Decisões em vigor: [README](README.md).
   baixo; para buscá-lo seria preciso "ler a imagem" (OCR), que fica para
   depois.
 
+
+## Paleta "2 bases + 1 acento" (ADR-0010, adendo de 2026-11-23)
+
+Regra de design para escolher as cores de uma marca. **Duas cores de base**
+que combinam entre si dão o clima e ocupam quase toda a tela: o neutro claro
+(fundos e cartões, ~60%) e a cor da marca (menu, links e botões comuns,
+~30%). **Uma cor de acento**, do lado oposto da roda de cores, aparece em no
+máximo 10% da tela e só no que deve ser clicado, como o botão "Novo
+negócio". Analogia: terno azul-marinho com camisa branca (as bases) e uma
+gravata laranja (o acento). Sem a gravata o conjunto fica correto, porém
+esquecível; com tudo laranja, cansa.
+
+As **cores de situação** (vermelho, amarelo e verde dos prazos) não fazem
+parte da marca: são iguais em todos os tenants para que "vermelho = vencido"
+signifique sempre a mesma coisa, e sempre vêm acompanhadas de texto, para
+quem não distingue cores.
