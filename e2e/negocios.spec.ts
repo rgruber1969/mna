@@ -66,7 +66,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.waitForLoadState("networkidle");
   await page.getByLabel("E-mail (desenvolvimento)").fill(email);
   await page.getByRole("button", { name: "Entrar sem senha" }).click();
-  await expect(page.getByRole("heading", { name: "Olá, Pessoa Negócio" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
 
   await page.goto(`http://${slug}.${dominio}/negocios`);
   await expect(page.getByText("Nenhum negócio encontrado.")).toBeVisible();
@@ -226,7 +226,7 @@ test("contratos: cria no negócio, envia arquivo, simula o success fee e lista",
   await page.waitForLoadState("networkidle");
   await page.getByLabel("E-mail (desenvolvimento)").fill(email);
   await page.getByRole("button", { name: "Entrar sem senha" }).click();
-  await expect(page.getByRole("heading", { name: "Olá, Pessoa Negócio" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
   await page.goto(`http://${slug}.${dominio}/negocios`);
   await page.getByRole("link", { name: "N-0001 Projeto Teste" }).click();
   await page.getByRole("tab", { name: /^Contratos/ }).click();
@@ -268,7 +268,7 @@ test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
   await page.waitForLoadState("networkidle");
   await page.getByLabel("E-mail (desenvolvimento)").fill(email);
   await page.getByRole("button", { name: "Entrar sem senha" }).click();
-  await expect(page.getByRole("heading", { name: "Olá, Pessoa Negócio" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
   await page.goto(`http://${slug}.${dominio}/negocios`);
   await page.getByRole("link", { name: "N-0001 Projeto Teste" }).click();
   await page.getByRole("tab", { name: /^Ofertas/ }).click();

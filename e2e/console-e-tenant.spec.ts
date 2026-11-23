@@ -155,7 +155,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Cadastrar passkey" }).click();
   await expect(admin).toHaveURL(/\/entrar\?passkey=cadastrada$/);
   await admin.getByRole("button", { name: "Entrar com passkey" }).click();
-  await expect(admin.getByRole("heading", { name: "Olá, Admin do Tenant" })).toBeVisible();
+  await expect(admin.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
   expect(await segundoFatorDaUltimaSessao(emailTenant)).toBe(true);
 
   // Foto da conta: enviada em "Minha conta" e mostrada em miniatura no topo.
@@ -186,7 +186,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#7a1238");
   await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#c2410c");
   await admin.getByLabel("Fonte").selectOption("lato");
-  await admin.getByText("Grande (17)").click();
+  await admin.getByText("Grande (18)").click();
   await admin.getByRole("button", { name: "Salvar identidade visual" }).click();
   await expect(admin.getByText("Identidade visual salva.")).toBeVisible();
   await admin.reload();
@@ -194,7 +194,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
     admin.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), nome);
   await expect.poll(() => variavel("--primary")).toBe("#7a1238");
   expect(await admin.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain("Lato");
-  expect(await admin.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe("17px");
+  expect(await admin.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe("18px");
   await admin.getByRole("tab", { name: "Identidade visual" }).click();
   const enviarImagem = async (rotulo: string) => {
     const campo = admin.getByLabel(`Arquivo: ${rotulo}`);
@@ -257,13 +257,14 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await menu.getByRole("link", { name: "Empresas" }).hover();
   await admin.getByRole("button", { name: "Favoritar Empresas" }).click();
   await expect(admin.getByRole("button", { name: "Tirar Empresas dos favoritos" })).toBeVisible();
-  // Espera a gravação da preferência (ação do servidor) antes de recarregar.
-  const gravou = admin.waitForResponse((r) => r.request().method() === "POST" && r.ok());
   await admin.getByRole("button", { name: "Recolher menu" }).click();
   await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
-  await gravou;
-  await admin.reload();
-  await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
+  // A gravação da preferência é assíncrona (e há outras chamadas ao servidor, como as
+  // mensagens): recarrega até a preferência aparecer gravada.
+  await expect(async () => {
+    await admin.reload();
+    await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 20_000 });
   await admin.getByRole("button", { name: "Expandir menu" }).click();
   await expect(menu.getByText("Favoritos")).toBeVisible();
   await expect(menu.getByRole("link", { name: "Empresas" })).toHaveCount(2);
@@ -327,7 +328,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   expect(linkMagico).toContain(`${base}/link/`);
   await usuaria.goto(linkMagico!);
   await usuaria.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(usuaria.getByRole("heading", { name: "Olá, Usuária E2E" })).toBeVisible();
+  await expect(usuaria.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
 
   // 3b. Perfis: o convite atribuiu "Usuário externo"; ajustar a matriz muda o resultado na hora.
   await admin.getByRole("link", { name: "Perfis" }).click();
@@ -359,7 +360,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await usuaria.getByRole("button", { name: "Cadastrar passkey" }).click();
   await expect(usuaria).toHaveURL(/\/entrar\?passkey=cadastrada$/);
   await usuaria.getByRole("button", { name: "Entrar com passkey" }).click();
-  await expect(usuaria.getByRole("heading", { name: "Olá, Usuária E2E" })).toBeVisible();
+  await expect(usuaria.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
 
   // 5. Recuperação: não remove o único fator; a redefinição completa apaga tudo e encerra a sessão.
   await admin.reload();

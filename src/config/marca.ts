@@ -31,7 +31,7 @@ export const FONTES = [
 export type FonteId = (typeof FONTES)[number]["id"];
 
 /** Tamanhos base do texto (px); 16 é o padrão. Toda a interface escala junto (unidades rem). */
-export const TAMANHOS_DE_FONTE = [14, 15, 16, 17, 18] as const;
+export const TAMANHOS_DE_FONTE = [14, 16, 18, 20, 22] as const;
 export const TAMANHO_PADRAO = 16;
 export const tamanhoValido = (n: number | null | undefined): n is number =>
   typeof n === "number" && (TAMANHOS_DE_FONTE as readonly number[]).includes(n);
@@ -131,7 +131,7 @@ export function variaveisDoTema(cores: Partial<Cores>, fonte?: string | null): R
 }
 
 /** Fundo dos cartões no tema escuro (espelha `--background` escuro de globals.css). */
-export const FUNDO_ESCURO = "#1b2438";
+export const FUNDO_ESCURO = "#1f2a42";
 
 /** Clareia a cor até ter contraste de texto sobre o fundo escuro (tema escuro). */
 export function clarearParaFundoEscuro(cor: string, minimo = CONTRASTE_TEXTO): string {

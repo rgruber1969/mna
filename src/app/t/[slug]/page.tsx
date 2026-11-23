@@ -10,7 +10,7 @@ import { minhasMensagens } from "@/server/services/mensagens";
 import { MensagensRecentes } from "@/components/mensagens/recentes";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { Carregando, Titulo } from "@/components/ui/basicos";
+import { Carregando } from "@/components/ui/basicos";
 
 /**
  * Tela principal do tenant (item 14; resposta P1): números no topo; meus
@@ -45,7 +45,6 @@ function Bloco({
 
 async function Inicio() {
   await connection();
-  const t = await getTranslations("acesso.inicio");
   const tp = await getTranslations("painel");
   const tn = await getTranslations("notificacoes");
   const ts = await getTranslations("negocios.situacoes");
@@ -71,9 +70,6 @@ async function Inicio() {
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-col gap-4 px-3 py-6 sm:px-6">
-        <Titulo sobre={acesso.administrador ? t("administrador") : t("usuario")}>
-          {t("ola", { nome: acesso.usuario.nome })}
-        </Titulo>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {numeros.map((n) => (
             <Link

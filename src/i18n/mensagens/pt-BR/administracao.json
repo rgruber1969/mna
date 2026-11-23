@@ -302,11 +302,11 @@
         "tamanho": "Tamanho do texto",
         "tamanhoAjuda": "Vale para todas as telas do tenant: textos, botões e espaçamentos crescem ou diminuem juntos.",
         "tamanhos": {
-          "t14": "Compacto (14)",
-          "t15": "Pequeno (15)",
+          "t14": "Pequeno (14)",
           "t16": "Padrão (16)",
-          "t17": "Grande (17)",
-          "t18": "Muito grande (18)"
+          "t18": "Grande (18)",
+          "t20": "Muito grande (20)",
+          "t22": "Extra grande (22)"
         }
       }
     },

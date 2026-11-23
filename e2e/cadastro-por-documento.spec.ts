@@ -69,7 +69,7 @@ test("lê o PDF, confere, cadastra empresa e pessoa e guarda o documento como an
   await page.waitForLoadState("networkidle");
   await page.getByLabel("E-mail (desenvolvimento)").fill(email);
   await page.getByRole("button", { name: "Entrar sem senha" }).click();
-  await expect(page.getByRole("heading", { name: "Olá, Pessoa Documento" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
 
   await page.goto(`http://${slug}.${dominio}/empresas`);
   await page.getByRole("link", { name: "A partir de documento" }).click();

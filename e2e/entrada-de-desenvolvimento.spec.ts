@@ -53,5 +53,5 @@ test("entra só com o e-mail no endereço local; e-mail sem acesso é recusado",
 
   await page.getByLabel("E-mail (desenvolvimento)").fill(email);
   await page.getByRole("button", { name: "Entrar sem senha" }).click();
-  await expect(page.getByRole("heading", { name: "Olá, Pessoa Dev" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
 });

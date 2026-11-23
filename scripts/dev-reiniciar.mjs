@@ -2,6 +2,7 @@
 // porta (padrão 3000) e sobe `next dev` de novo, neste mesmo terminal.
 // Uso: pnpm dev:reiniciar
 import { execSync, spawn } from "node:child_process";
+import { rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
@@ -43,6 +44,10 @@ for (const pid of processosNaPorta()) {
 
 // Espera a porta liberar (até 10 s).
 for (let i = 0; i < 20 && processosNaPorta().length; i++) await new Promise((r) => setTimeout(r, 500));
+
+// Cache do servidor de desenvolvimento: limpo a cada reinício, porque o Turbopack às vezes
+// continua servindo CSS antigo depois de mudanças (aconteceu com os tokens do tema).
+rmSync(fileURLToPath(new URL("../.next/dev", import.meta.url)), { recursive: true, force: true });
 
 const next = createRequire(import.meta.url).resolve("next/dist/bin/next");
 const filho = spawn(process.execPath, [next, "dev", "--port", String(porta)], { stdio: "inherit" });
