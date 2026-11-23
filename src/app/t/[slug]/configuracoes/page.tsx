@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -24,7 +25,7 @@ import { TabelaDeEtapas, TabelaDePapeis, TabelaDeTipos } from "@/components/cada
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { PainelDeIdentidade } from "@/components/identidade/painel";
 import { PainelDeChaves } from "@/components/chaves/painel";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /**
  * Configurações do tenant: regras gerais (administradores) e cadastros
@@ -143,7 +144,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/configuracoes">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel aba={searchParams.then((q) => (typeof q.aba === "string" ? q.aba : undefined))} />
     </Suspense>
   );

@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -10,7 +11,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormContrato } from "@/components/contratos/formulario";
 import { valoresVazios } from "@/components/contratos/valores";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Novo contrato: no negócio (?negocio=) ou avulso. */
 async function Painel({ negocio }: { negocio: Promise<string | undefined> }) {
@@ -49,7 +50,7 @@ async function Painel({ negocio }: { negocio: Promise<string | undefined> }) {
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/contratos/novo">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel negocio={searchParams.then((q) => (typeof q.negocio === "string" ? q.negocio : undefined))} />
     </Suspense>
   );

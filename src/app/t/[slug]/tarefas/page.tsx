@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -8,7 +9,7 @@ import { obterAcesso } from "@/server/services/acesso";
 import { minhasTarefasAbertas } from "@/server/services/painel";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 import { ListaPaginada } from "@/components/ui/paginacao-local";
 
 /** Minhas tarefas abertas em todos os negócios (atalho da tela inicial). */
@@ -76,7 +77,7 @@ async function Painel({ filtro }: { filtro: Promise<string> }) {
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/tarefas">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel filtro={searchParams.then((p) => (typeof p.filtro === "string" ? p.filtro : ""))} />
     </Suspense>
   );

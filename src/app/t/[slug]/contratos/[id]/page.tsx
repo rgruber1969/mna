@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -10,7 +11,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { AcoesDoContrato, ArquivosDoContrato, SimulacaoDeSuccessFee } from "@/components/contratos/detalhe";
 import { FormContrato } from "@/components/contratos/formulario";
-import { Aviso, Cartao, Carregando, Etiqueta, Titulo } from "@/components/ui/basicos";
+import { Aviso, Cartao, Etiqueta, Titulo } from "@/components/ui/basicos";
 
 const br = (d: string | null) => (d ? d.split("-").reverse().join("/") : null);
 const moeda = (v: string | null) =>
@@ -178,7 +179,7 @@ async function Painel({
 
 export default function Page({ params, searchParams }: PageProps<"/t/[slug]/contratos/[id]">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel
         id={params.then((p) => p.id)}
         editar={searchParams.then((q) => q.editar === "1")}

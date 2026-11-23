@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { Suspense, useEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { useFormatter, useLocale, useNow, useTranslations } from "next-intl";
 import { IDIOMAS } from "@/i18n/idiomas";
 import { definirMenuInvertidoAcao, definirTemaAcao } from "@/app/acoes/conta";
@@ -13,6 +13,7 @@ import {
   removerNotificacaoAcao,
 } from "@/app/acoes/notificacoes";
 import { minhasMensagensAcao } from "@/app/acoes/mensagens";
+import { BarraDeNavegacao } from "@/components/ui/barra-de-navegacao";
 import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
 import { aplicarMenuInvertido, aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
@@ -643,6 +644,9 @@ export function CascaDoTenant({
 
   return (
     <div className="flex min-h-screen flex-1">
+      <Suspense fallback={null}>
+        <BarraDeNavegacao />
+      </Suspense>
       {aberto && (
         <button
           type="button"

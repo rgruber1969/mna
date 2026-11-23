@@ -1,3 +1,4 @@
+import { EsqueletoDoNegocio } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -43,7 +44,7 @@ import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
 import { TabelaDeContratos } from "@/components/contratos/detalhe";
 import { ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
 function traduzirParametros(
@@ -408,7 +409,7 @@ async function Painel({
 
 export default function Page({ params, searchParams }: PageProps<"/t/[slug]/negocios/[id]">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDoNegocio />}>
       <Painel
         id={params.then((p) => p.id)}
         aba={searchParams.then((q) => (typeof q.aba === "string" ? q.aba : undefined))}

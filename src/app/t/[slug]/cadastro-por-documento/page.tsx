@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -9,7 +10,7 @@ import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { CadastroPorDocumento } from "@/components/cadastros/cadastro-por-documento";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Cadastro de empresas, pessoas e vínculos a partir de documento (ADR-0021). */
 async function Painel({ de }: { de: Promise<string | undefined> }) {
@@ -38,7 +39,7 @@ async function Painel({ de }: { de: Promise<string | undefined> }) {
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/cadastro-por-documento">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel de={searchParams.then((s) => (typeof s.de === "string" ? s.de : undefined))} />
     </Suspense>
   );

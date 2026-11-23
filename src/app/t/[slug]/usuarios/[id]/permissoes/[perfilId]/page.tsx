@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
@@ -10,7 +11,7 @@ import { recursosDaCamada } from "@/server/services/permissoes/catalogo";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormCopiarMatriz, FormMatrizIndividual } from "@/components/perfis/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Permissões próprias de um usuário num perfil (modo por usuário). */
 async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }> }) {
@@ -58,7 +59,7 @@ async function Detalhe({ ids }: { ids: Promise<{ id: string; perfilId: string }>
 
 export default function Page({ params }: PageProps<"/t/[slug]/usuarios/[id]/permissoes/[perfilId]">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Detalhe ids={params} />
     </Suspense>
   );

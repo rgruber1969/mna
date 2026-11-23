@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import { BANCOS, listarContasBancarias } from "@/server/services/contas-bancarias";
 import { ContasBancarias } from "@/components/cadastros/contas-bancarias";
@@ -27,7 +28,7 @@ import {
   SociosDaReceita,
 } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 
 async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | undefined> }) {
@@ -269,7 +270,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
 
 export default function Page({ params, searchParams }: PageProps<"/t/[slug]/empresas/[id]">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel
         id={params.then((p) => p.id)}
         aba={searchParams.then((q) => (typeof q.aba === "string" ? q.aba : undefined))}

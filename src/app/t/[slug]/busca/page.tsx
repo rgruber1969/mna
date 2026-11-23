@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -10,7 +11,7 @@ import { paginaDeNegocios } from "@/server/services/negocios";
 import { traduzirErro } from "@/i18n/servidor";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { Aviso, Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Aviso, Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Trecho com o termo destacado (o banco marca com « e »). */
 function Trecho({ texto }: { texto: string }) {
@@ -128,7 +129,7 @@ async function Painel({ pedido }: { pedido: Promise<{ q: string; negocio: string
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/busca">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel
         pedido={searchParams.then((p) => ({
           q: typeof p.q === "string" ? p.q : "",

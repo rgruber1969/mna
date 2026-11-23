@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import { BANCOS, listarContasBancarias } from "@/server/services/contas-bancarias";
 import { ContasBancarias } from "@/components/cadastros/contas-bancarias";
@@ -20,7 +21,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoVinculo, FormPessoa, MostrarDadosSensiveis } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 
 async function Painel({
@@ -212,7 +213,7 @@ async function Painel({
 
 export default function Page({ params, searchParams }: PageProps<"/t/[slug]/pessoas/[id]">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel
         id={params.then((p) => p.id)}
         consulta={searchParams as Promise<{ parecidas?: string; aba?: string }>}

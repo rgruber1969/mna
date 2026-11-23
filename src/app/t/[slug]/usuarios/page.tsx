@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
@@ -13,7 +14,7 @@ import { listarPerfis } from "@/server/services/perfis";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { BotaoDeAcao, FormConvidarUsuario } from "@/components/usuarios/formularios";
-import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
+import { Avatar, Cartao, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
 
 const DATA_E_HORA = { dateStyle: "short", timeStyle: "medium" } as const;
 
@@ -173,7 +174,7 @@ async function Painel({ consulta }: { consulta: Promise<Record<string, string | 
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/usuarios">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel consulta={searchParams as Promise<Record<string, string | string[] | undefined>>} />
     </Suspense>
   );

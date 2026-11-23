@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
@@ -11,7 +12,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoPerfil } from "@/components/perfis/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Perfis do tenant e de deal, e o modo de permissões (só administradores). */
 async function Painel() {
@@ -93,7 +94,7 @@ async function Painel() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel />
     </Suspense>
   );

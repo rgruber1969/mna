@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -9,7 +10,7 @@ import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { TabelaDeContratos } from "@/components/contratos/detalhe";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Contratos de serviço que a pessoa vê (item 17): todos ou só os avulsos. */
 async function Painel({ filtro }: { filtro: Promise<string | undefined> }) {
@@ -58,7 +59,7 @@ async function Painel({ filtro }: { filtro: Promise<string | undefined> }) {
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/contratos">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel filtro={searchParams.then((q) => (typeof q.filtro === "string" ? q.filtro : undefined))} />
     </Suspense>
   );

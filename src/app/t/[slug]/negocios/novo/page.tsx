@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -10,7 +11,7 @@ import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoNegocio } from "@/components/negocios/formularios";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Novo negócio: formulário curto; o restante nas abas do negócio. */
 async function Painel() {
@@ -49,7 +50,7 @@ async function Painel() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel />
     </Suspense>
   );

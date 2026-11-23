@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -10,7 +11,7 @@ import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { MensagensRecentes, OpcaoDoResumo } from "@/components/mensagens/recentes";
 import { ResumoDeMensagens } from "@/components/mensagens/resumo";
 import { resumoDasMensagens } from "@/server/services/resumos";
-import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
+import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Conversas com mensagens recentes de todos os negócios que a pessoa vê (item 16). */
 async function Painel() {
@@ -42,7 +43,7 @@ async function Painel() {
 
 export default function Page() {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel />
     </Suspense>
   );

@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -12,7 +13,7 @@ import { pode } from "@/server/services/permissoes/verificador";
 import { AcessoDaPessoa } from "@/components/cadastros/acesso-da-pessoa";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { Avatar, Cartao, Carregando, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
+import { Avatar, Cartao, Etiqueta, Titulo, estiloTabela } from "@/components/ui/basicos";
 
 /** Pessoas do tenant, com ou sem acesso ao sistema (dominio.md, "Pessoa e usuário"). */
 async function Painel({ busca }: { busca: Promise<Record<string, string | string[] | undefined>> }) {
@@ -141,7 +142,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/pessoas">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel busca={searchParams as Promise<Record<string, string | string[] | undefined>>} />
     </Suspense>
   );

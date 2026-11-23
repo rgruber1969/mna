@@ -1,3 +1,4 @@
+import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -15,7 +16,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoGrupo } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, Carregando, estiloTabela, Titulo } from "@/components/ui/basicos";
+import { Cartao, estiloTabela, Titulo } from "@/components/ui/basicos";
 
 /** Empresas e grupos econômicos do tenant (dominio.md, "Empresa"). */
 async function Painel({ busca }: { busca: Promise<Record<string, string | string[] | undefined>> }) {
@@ -180,7 +181,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
 
 export default function Page({ searchParams }: PageProps<"/t/[slug]/empresas">) {
   return (
-    <Suspense fallback={<Carregando />}>
+    <Suspense fallback={<EsqueletoDeTela />}>
       <Painel busca={searchParams as Promise<Record<string, string | string[] | undefined>>} />
     </Suspense>
   );
