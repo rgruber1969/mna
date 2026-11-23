@@ -437,7 +437,10 @@
         "emDia": "em dia",
         "semPrevisao": "sem previsão",
         "linhaDoTempo": "Linha do tempo das etapas",
-        "valorBase": "Previsão de fechamento: {data}"
+        "valorBase": "Previsão de fechamento: {data}",
+        "abrirFunil": "Abrir o funil",
+        "funil": "Funil",
+        "funilDica": "Funil de compradoras: prospectadas, teaser, NDA, proposta e escolhida (lado vendedor)"
       },
       "abaComNovas": "{rotulo} · {n} novas",
       "atividade": {

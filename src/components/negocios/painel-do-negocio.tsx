@@ -339,6 +339,15 @@ export function PainelDoNegocio({
           >
             {t("painel.mensagem")}
           </button>
+          {c0.funil && (
+            <Link
+              href={`/negocios/${c0.id}?aba=funil`}
+              title={t("painel.funilDica")}
+              className="border-border text-text hover:border-primary rounded-full border px-3 py-1.5 text-sm font-medium"
+            >
+              {t("painel.funil")}
+            </Link>
+          )}
           <Link
             href={`/negocios/${c0.id}`}
             className="bg-primary text-primary-foreground rounded-full px-4 py-1.5 text-sm font-semibold"
@@ -422,7 +431,15 @@ export function PainelDoNegocio({
                         )}
                         {c0.funil && totalFunil > 0 && (
                           <>
-                            <p className="text-text pt-2 text-xs font-semibold">{t("resumo.funil")}</p>
+                            <p className="flex items-center justify-between gap-2 pt-2 text-xs">
+                              <span className="text-text font-semibold">{t("resumo.funil")}</span>
+                              <Link
+                                href={`/negocios/${c0.id}?aba=funil`}
+                                className="text-primary font-semibold"
+                              >
+                                {t("painel.abrirFunil")} →
+                              </Link>
+                            </p>
                             <div className="grid grid-cols-[6rem_1fr_1.5rem] items-center gap-x-2 gap-y-1 text-xs">
                               {FUNIL.map((s, i) => (
                                 <span key={s} className="contents">
