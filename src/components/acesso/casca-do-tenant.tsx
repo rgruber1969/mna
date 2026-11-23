@@ -79,6 +79,8 @@ const ICONES: Record<string, ReactNode> = {
     </>
   ),
   mais: <path d="M12 5v14M5 12h14" />,
+  // Relógio com seta de volta (auditoria: o que aconteceu).
+  historico: <path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4M12 7v5l3 2" />,
   // Seta para a esquerda (recolher o menu); girada 180° para expandir.
   chevron: <path d="M15 6l-6 6 6 6" />,
   estrela: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />,

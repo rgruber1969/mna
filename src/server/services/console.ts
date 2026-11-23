@@ -85,6 +85,7 @@ export async function criarTenant(
 
 export type TenantDetalhe = TenantResumo & {
   administradores: number;
+  retencaoAuditoriaMeses: number;
   convitesPendentes: { email: string; nome: string; expiraEm: Date }[];
 };
 
@@ -99,6 +100,7 @@ export async function obterTenant(acesso: Acesso | null, id: string): Promise<Te
       nome: tenant.nome,
       criadoEm: tenant.criadoEm,
       suspensoEm: tenant.suspensoEm,
+      retencaoAuditoriaMeses: tenant.retencaoAuditoriaMeses,
     })
     .from(tenant)
     .where(eq(tenant.id, id));
@@ -201,6 +203,27 @@ export async function renomearTenant(
     .returning({ id: tenant.id });
   if (feito.length === 0) return { erro: "console.erros.tenantNaoEncontrado" };
   await auditar(a.usuario.id, "tenant.renomeado", tenantId);
+  return { ok: true };
+}
+
+/** Retenção da auditoria do tenant, em meses (12 a 240), definida pela RGRUBER. */
+export async function definirRetencaoDaAuditoria(
+  acesso: Acesso | null,
+  tenantId: string,
+  texto: string,
+): Promise<{ ok: true } | ErroDeServico> {
+  const a = exigirConsole(acesso);
+  const meses = Number(texto.trim());
+  if (!Number.isInteger(meses) || meses < 12 || meses > 240)
+    return { erro: "console.erros.retencaoInvalida" };
+  if (!z.uuid().safeParse(tenantId).success) return { erro: "console.erros.tenantNaoEncontrado" };
+  const feito = await banco()
+    .update(tenant)
+    .set({ retencaoAuditoriaMeses: meses })
+    .where(eq(tenant.id, tenantId))
+    .returning({ id: tenant.id });
+  if (feito.length === 0) return { erro: "console.erros.tenantNaoEncontrado" };
+  await auditar(a.usuario.id, "tenant.retencao_alterada", tenantId);
   return { ok: true };
 }
 

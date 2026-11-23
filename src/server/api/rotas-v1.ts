@@ -1,4 +1,5 @@
 import { createRoute, z, type OpenAPIHono } from "@hono/zod-openapi";
+import { paginaDaAuditoria } from "@/server/services/auditoria";
 import type { Context } from "hono";
 import { AcessoNegado, obterAcesso, type Acesso } from "@/server/services/acesso";
 import { buscarDocumentos } from "@/server/services/busca-de-documentos";
@@ -313,6 +314,37 @@ export function registrarRotasV1(api: OpenAPIHono) {
       responses: respostas("Resumo"),
     }),
     (c) => comAcesso(c, (a) => resumoDoDocumento(a, c.req.valid("param").id)) as never,
+  );
+
+  // --- Auditoria (item 20) ------------------------------------------------------------------
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/auditoria",
+      tags: ["Auditoria"],
+      summary: "Eventos de auditoria do tenant (permissão Auditoria × ver), do mais recente ao mais antigo",
+      security: seguranca,
+      request: {
+        query: Pagina.extend({
+          de: z.string().optional(),
+          ate: z.string().optional(),
+          assunto: z.string().max(40).optional(),
+          ator: z.uuid().optional(),
+          negocio: z.uuid().optional(),
+        }),
+      },
+      responses: respostas("Página de eventos"),
+    }),
+    (c) => {
+      const q = c.req.valid("query");
+      return comAcesso(c, (a) =>
+        paginaDaAuditoria(
+          a,
+          { de: q.de, ate: q.ate, assunto: q.assunto, ator: q.ator, negocio: q.negocio },
+          { pagina: q.pagina, porPagina: q.porPagina, ordem: "ocorridoEm", direcao: "desc" },
+        ),
+      ) as never;
+    },
   );
 
   // --- Cadastros -----------------------------------------------------------------------------

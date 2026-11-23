@@ -46,6 +46,8 @@ export const tenant = pgTable("tenant", {
   exigeDoisFatoresDeTodos: boolean("exige_2fa_de_todos").notNull().default(false),
   /** Suspenso pela RGRUBER: ninguém entra; dados preservados (perfis-e-permissoes.md). */
   suspensoEm: timestamp("suspenso_em", { withTimezone: true }),
+  /** Retenção da auditoria, em meses, definida pela RGRUBER no console (padrão 60 = 5 anos). */
+  retencaoAuditoriaMeses: integer("retencao_auditoria_meses").notNull().default(60),
   /** Modo de permissões do tenant (ADR-0013, elemento 5). */
   modoPermissoes: text("modo_permissoes").$type<"perfil" | "usuario">().notNull().default("perfil"),
   // Identidade visual (white label, ADR-0010), editada pelo administrador do

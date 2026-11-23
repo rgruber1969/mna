@@ -11,7 +11,7 @@ import { Cabecalho } from "@/components/acesso/cabecalho";
 import { ExigeSegundoFator } from "@/components/acesso/telas";
 import { FormConvidarAdministrador } from "@/components/acesso/formularios";
 import { suspenderTenantAcao } from "@/app/acoes/usuarios";
-import { BotaoDeAcao, FormRenomearTenant } from "@/components/usuarios/formularios";
+import { BotaoDeAcao, FormRenomearTenant, FormRetencaoDaAuditoria } from "@/components/usuarios/formularios";
 import { Cartao, Carregando, Titulo } from "@/components/ui/basicos";
 
 const DATA_E_HORA = { dateStyle: "short", timeStyle: "medium" } as const;
@@ -88,6 +88,10 @@ async function Detalhe({ id }: { id: Promise<string> }) {
             <Titulo sobre={t("edicaoSobre")}>{t("nomeTitulo")}</Titulo>
             <p className="text-muted mb-4 text-sm">{t("enderecoFixo")}</p>
             <FormRenomearTenant id={ten.id} nome={ten.nome} />
+          </Cartao>
+          <Cartao largura="max-w-sm">
+            <Titulo sobre={t("edicaoSobre")}>{t("retencaoTitulo")}</Titulo>
+            <FormRetencaoDaAuditoria id={ten.id} meses={ten.retencaoAuditoriaMeses} />
           </Cartao>
         </div>
       </main>

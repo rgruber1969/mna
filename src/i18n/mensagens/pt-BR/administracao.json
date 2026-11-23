@@ -359,7 +359,8 @@
       "naoRemoverProprio": "Você não pode remover o seu próprio acesso.",
       "pelomenosUmUsuario": "O console precisa de pelo menos um usuário.",
       "enderecoInvalido": "Use de 1 a 40 letras minúsculas, números ou hífens (sem hífen nas pontas).",
-      "enderecoReservado": "Este endereço é reservado pela plataforma."
+      "enderecoReservado": "Este endereço é reservado pela plataforma.",
+      "retencaoInvalida": "A retenção vai de 12 a 240 meses."
     },
     "acoes": {
       "conviteEnviado": "Convite enviado. Ele vale por 3 dias.",
@@ -368,7 +369,8 @@
       "tenantSuspenso": "Tenant suspenso.",
       "tenantReativado": "Tenant reativado.",
       "acessoRemovido": "Acesso removido.",
-      "doisFatoresRedefinido": "2FA redefinido e pessoa avisada por e-mail."
+      "doisFatoresRedefinido": "2FA redefinido e pessoa avisada por e-mail.",
+      "retencaoAlterada": "Retenção da auditoria alterada."
     },
     "motivos": {
       "perdeu-aparelho": "Perdeu ou trocou o aparelho e os códigos de recuperação",
@@ -404,7 +406,8 @@
       "convidarTitulo": "Convidar administrador",
       "edicaoSobre": "Edição",
       "nomeTitulo": "Nome do tenant",
-      "enderecoFixo": "O endereço é fixo depois de criado."
+      "enderecoFixo": "O endereço é fixo depois de criado.",
+      "retencaoTitulo": "Retenção da auditoria"
     },
     "equipe": {
       "sobre": "Console",
@@ -435,7 +438,10 @@
       "nome": "Nome",
       "emailConvidado": "E-mail do convidado",
       "enviarConvite": "Enviar convite",
-      "enviando": "Enviando..."
+      "enviando": "Enviando...",
+      "retencaoMeses": "Meses de retenção",
+      "retencaoAjuda": "Eventos mais antigos que isso entram na rotina de limpeza do tenant (com exportação antes). Padrão: 60 meses (5 anos).",
+      "salvarRetencao": "Salvar retenção"
     }
   }
 }

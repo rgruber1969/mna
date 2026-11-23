@@ -1,0 +1,1 @@
+ALTER TABLE "tenant" ADD COLUMN "retencao_auditoria_meses" integer DEFAULT 60 NOT NULL;

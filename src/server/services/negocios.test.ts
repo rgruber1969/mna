@@ -655,6 +655,31 @@ describe("andamento: funil, exclusividade, situação e histórico", () => {
     expect(await obterDiasDeAviso(acesso("gestor"))).toEqual([10, 3]);
   });
 
+  it("auditoria: consulta com filtros, só com a permissão; limpeza simulada exporta PDF e XLSX sem apagar", async () => {
+    const { paginaDaAuditoria, opcoesDaAuditoria, exportarLimpezaDaAuditoria, retencaoDaAuditoria } =
+      await import("./auditoria");
+    const pedido = { pagina: 1, porPagina: 25, ordem: "ocorridoEm" as const, direcao: "desc" as const };
+    const tudo = await paginaDaAuditoria(acesso("admin", true), {}, pedido);
+    expect(tudo.total).toBeGreaterThan(0);
+    const doNegocio = await paginaDaAuditoria(acesso("admin", true), { negocio: negocioId }, pedido);
+    expect(doNegocio.itens.length).toBeGreaterThan(0);
+    expect(doNegocio.itens.every((e) => e.alvoId === negocioId && e.negocio)).toBe(true);
+    const deNegocios = await paginaDaAuditoria(acesso("admin", true), { assunto: "negocio" }, pedido);
+    expect(deNegocios.itens.every((e) => e.tipo.startsWith("negocio."))).toBe(true);
+    expect((await opcoesDaAuditoria(acesso("admin", true))).assuntos).toContain("negocio");
+    expect((await retencaoDaAuditoria(acesso("admin", true))).meses).toBe(60);
+    const pdf = await exportarLimpezaDaAuditoria(acesso("admin", true), "pdf");
+    if ("erro" in pdf) throw new Error(pdf.erro);
+    expect(Buffer.from(pdf.conteudo, "base64").subarray(0, 5).toString()).toBe("%PDF-");
+    const xlsx = await exportarLimpezaDaAuditoria(acesso("admin", true), "xlsx");
+    if ("erro" in xlsx) throw new Error(xlsx.erro);
+    expect(Buffer.from(xlsx.conteudo, "base64").subarray(0, 2).toString()).toBe("PK");
+    expect((await paginaDaAuditoria(acesso("admin", true), {}, pedido)).total).toBeGreaterThanOrEqual(
+      tudo.total,
+    );
+    await expect(exportarLimpezaDaAuditoria(acesso("gestor"), "pdf")).rejects.toThrow();
+  });
+
   it("exportação do negócio em PDF (simulada): só administradores, auditada", async () => {
     const { exportarNegocio } = await import("./exportacao-do-negocio");
     const r = await exportarNegocio(acesso("admin", true), negocioId);

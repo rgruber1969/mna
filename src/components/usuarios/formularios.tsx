@@ -8,6 +8,7 @@ import {
   convidarParaEquipeAcao,
   convidarUsuarioAcao,
   redefinirPelaPlataformaAcao,
+  definirRetencaoAcao,
   renomearTenantAcao,
 } from "@/app/acoes/usuarios";
 import { Aviso, Botao, Campo, OpcoesDePerfil } from "@/components/ui/basicos";
@@ -156,6 +157,30 @@ export function FormRenomearTenant({ id, nome }: { id: string; nome: string }) {
       <input type="hidden" name="id" value={id} />
       <Campo rotulo={t("nomeDoTenant")} name="nome" defaultValue={nome} required />
       <Botao disabled={enviando}>{enviando ? t("salvando") : t("salvarNome")}</Botao>
+    </form>
+  );
+}
+
+/** Retenção da auditoria do tenant (meses), no console. */
+export function FormRetencaoDaAuditoria({ id, meses }: { id: string; meses: number }) {
+  const [estado, acao, enviando] = useAcaoComAtualizacao(definirRetencaoAcao);
+  const t = useTranslations("console.formularios");
+  return (
+    <form action={acao}>
+      {estado?.erro && <Aviso>{estado.erro}</Aviso>}
+      {estado?.ok && <Aviso tipo="ok">{estado.ok}</Aviso>}
+      <input type="hidden" name="id" value={id} />
+      <Campo
+        rotulo={t("retencaoMeses")}
+        name="meses"
+        type="number"
+        min={12}
+        max={240}
+        defaultValue={meses}
+        required
+      />
+      <p className="text-muted -mt-3 mb-4 text-xs">{t("retencaoAjuda")}</p>
+      <Botao disabled={enviando}>{enviando ? t("salvando") : t("salvarRetencao")}</Botao>
     </form>
   );
 }

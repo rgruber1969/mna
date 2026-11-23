@@ -63,3 +63,11 @@ auditado. Sem marca d'água ou bloqueio de download.
   período a ser limpo.
 * Consulta da auditoria: quem tiver a permissão concedida pelos
   administradores do tenant.
+* **Construído (itens 20 e 21, 2026-11-23):** tela **Auditoria** no menu
+  Administração (administradores e quem tem "Auditoria × ver"), com filtros
+  por período, assunto, pessoa e negócio no endereço, paginação no servidor e
+  o evento em linguagem simples (nome de quem fez e do negócio a partir dos
+  IDs); rota `GET /v1/auditoria`. Retenção por tenant no console (12 a 240
+  meses, padrão 60). Limpeza com exportação em PDF ou XLSX **simulada**:
+  exporta os eventos além da retenção, com marca de demonstração, e nada é
+  apagado (auditado como `auditoria.exportada`).

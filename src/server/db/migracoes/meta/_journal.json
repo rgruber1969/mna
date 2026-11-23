@@ -337,6 +337,13 @@
       "when": 1795460020810,
       "tag": "0047_contrato_variaveis_e_pix",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1795470603053,
+      "tag": "0048_retencao_auditoria",
+      "breakpoints": true
     }
   ]
 }

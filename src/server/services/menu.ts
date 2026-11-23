@@ -41,6 +41,13 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
       { id: "usuarios", href: "/usuarios", icone: "usuario", soAdministrador: true },
       { id: "perfis", href: "/perfis", icone: "escudo", soAdministrador: true },
       {
+        id: "auditoria",
+        href: "/auditoria",
+        icone: "historico",
+        recurso: "auditoria",
+        ouAdministrador: true,
+      },
+      {
         id: "configuracoes",
         href: "/configuracoes",
         icone: "engrenagem",

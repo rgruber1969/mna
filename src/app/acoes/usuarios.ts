@@ -10,6 +10,7 @@ import {
   definirSuspensao,
   redefinirDoisFatoresPelaPlataforma,
   removerDaEquipe,
+  definirRetencaoDaAuditoria,
   renomearTenant,
 } from "@/server/services/console";
 import {
@@ -127,6 +128,13 @@ export async function renomearTenantAcao(_: Estado, f: FormData): Promise<Estado
   return estadoConsole(
     await renomearTenant(await acesso(), texto(f, "id"), texto(f, "nome")),
     "acoes.nomeAlterado",
+  );
+}
+
+export async function definirRetencaoAcao(_: Estado, f: FormData): Promise<Estado> {
+  return estadoConsole(
+    await definirRetencaoDaAuditoria(await acesso(), texto(f, "id"), texto(f, "meses")),
+    "acoes.retencaoAlterada",
   );
 }
 
