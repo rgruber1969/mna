@@ -21,6 +21,7 @@ export const AREAS = [
   "resumos",
   "contratos",
   "ofertas",
+  "pedidos",
   "auditoria",
   "administracao",
   "emails",

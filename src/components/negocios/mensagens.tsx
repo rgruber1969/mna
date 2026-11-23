@@ -70,7 +70,10 @@ export function MensagensDoNegocio({
   }
 
   const etapas = lista?.filter((c) => c.alvo.tipo === "etapa") ?? [];
-  const outros = lista?.filter((c) => c.alvo.tipo === "versao" || c.alvo.tipo === "tarefa") ?? [];
+  const outros =
+    lista?.filter(
+      (c) => c.alvo.tipo === "versao" || c.alvo.tipo === "tarefa" || c.alvo.tipo === "pedidoItem",
+    ) ?? [];
   const geral = lista?.find((c) => c.alvo.tipo === "deal");
   const item = (c: ResumoDeConversa, rotulo: string) => {
     const chave = chaveDoAlvo(c.alvo);

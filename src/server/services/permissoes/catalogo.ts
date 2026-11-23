@@ -61,6 +61,8 @@ export const RECURSOS = {
     nota: true,
   },
   tarefas: { camada: "deal", acoes: VCEX },
+  /** Pedidos de documentos (listas de diligência); "baixar" = exportar a planilha. */
+  pedidos: { camada: "deal", acoes: VCEXB, nota: true },
   mensagens: { camada: "deal", acoes: ["ver", "criar"], nota: true },
   contratos: { camada: "deal", acoes: VCEXB },
   ebook: {

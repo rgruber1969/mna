@@ -34,13 +34,15 @@ import {
 } from "./negocios";
 import { notificar } from "./notificacoes";
 import { concede } from "./permissoes/catalogo";
+import { rotuloDoItemDoPedido } from "./pedidos";
 import { criarTarefa, ordenarEtapas, tarefasDoNegocio } from "./tarefas";
 
 /**
  * Mensageria (item 16; dominio.md, "Mensageria e avisos"; M1–M3).
  *
  * - Conversas no negócio (geral), em cada etapa, em cada versão de
- *   documento e em cada tarefa; quem vê o item vê a conversa.
+ *   documento, em cada tarefa e em cada item de pedido de documentos; quem
+ *   vê o item vê a conversa.
  * - Sigilo entre compradoras (dominio.md, "Compradoras potenciais"): cada
  *   conversa tem canais. "vendedor" é da equipe do lado vendedor;
  *   "equipe:<compradora>" é da equipe de uma compradora; "entre:<compradora>"
@@ -52,9 +54,9 @@ import { criarTarefa, ordenarEtapas, tarefasDoNegocio } from "./tarefas";
  *   que cada pessoa pode desligar.
  */
 
-export type AlvoTipo = "deal" | "etapa" | "versao" | "tarefa";
+export type AlvoTipo = "deal" | "etapa" | "versao" | "tarefa" | "pedidoItem";
 export type Alvo = { tipo: AlvoTipo; id: string | null };
-export const TIPOS_DE_ALVO: AlvoTipo[] = ["deal", "etapa", "versao", "tarefa"];
+export const TIPOS_DE_ALVO: AlvoTipo[] = ["deal", "etapa", "versao", "tarefa", "pedidoItem"];
 
 export type CanalNaTela = {
   id: string;
@@ -246,6 +248,10 @@ async function contexto(a: AcessoTenant, dealId: string) {
       return e && etapas.podeNa(e.id, "ver") ? { rotulo: e.nome, etapaId: e.id } : null;
     }
     if (alvo.tipo === "versao") return (await carregarVersoes()).get(alvo.id) ?? null;
+    if (alvo.tipo === "pedidoItem") {
+      const rotulo = await rotuloDoItemDoPedido(a, dealId, alvo.id);
+      return rotulo ? { rotulo, etapaId: null } : null;
+    }
     return (await carregarTarefas()).get(alvo.id) ?? null;
   };
   const canalVisivel = (canal: string) => canais.some((c) => c.id === canal);
@@ -572,7 +578,7 @@ export async function conversasDoNegocio(
     if (ctx.etapas.podeNa(e.id, "ver")) lista.push(resumo({ tipo: "etapa", id: e.id }, e.nome));
   const outros = new Map<string, Alvo>();
   for (const m of linhas)
-    if ((m.alvoTipo === "versao" || m.alvoTipo === "tarefa") && m.alvoId)
+    if ((m.alvoTipo === "versao" || m.alvoTipo === "tarefa" || m.alvoTipo === "pedidoItem") && m.alvoId)
       outros.set(`${m.alvoTipo}:${m.alvoId}`, { tipo: m.alvoTipo, id: m.alvoId });
   for (const alvo of outros.values()) {
     const it = await ctx.item(alvo);

@@ -242,6 +242,7 @@
         "etapas": "Etapas",
         "documentos": "Documentos",
         "tarefas": "Tarefas",
+        "pedidos": "Pedidos de documentos",
         "mensagens": "Mensagens",
         "contratos": "Contratos",
         "ebook": "E-book / OnePager",
@@ -252,6 +253,7 @@
         "cadastros": "Etapas padrão, catálogo de documentos, templates e papéis de empresa.",
         "documentos": "Só nas versões a que a pessoa recebeu acesso de quem as enviou.",
         "mensagens": "Mensagens são imutáveis.",
+        "pedidos": "Do lado comprador, só os pedidos da própria compradora. \"Baixar\" exporta a planilha respondida.",
         "funil": "Só para quem está do lado vendedor do negócio.",
         "etapas": "Do lado comprador, criar, editar, mover ou excluir etapas exige também \"Alterar (lado comprador)\"."
       },

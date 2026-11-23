@@ -21,6 +21,7 @@ const V: Acao[] = ["ver"];
 const VC: Acao[] = ["ver", "criar"];
 const VE: Acao[] = ["ver", "editar"];
 const VB: Acao[] = ["ver", "baixar"];
+const VEB: Acao[] = ["ver", "editar", "baixar"];
 const VCB: Acao[] = ["ver", "criar", "baixar"];
 const VCE: Acao[] = ["ver", "criar", "editar"];
 const VCEB: Acao[] = ["ver", "criar", "editar", "baixar"];
@@ -66,6 +67,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       funil: VE,
       etapas: VCEX,
       documentos: VCEXB,
+      pedidos: VCEXB,
       tarefas: VCEX,
       mensagens: VC,
       contratos: VCEXB,
@@ -84,6 +86,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       funil: VE,
       etapas: VE,
       documentos: VCEB,
+      pedidos: VCEB,
       tarefas: VCE,
       mensagens: VC,
       contratos: VCEB,
@@ -102,6 +105,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       funil: VE,
       etapas: VE,
       documentos: VCEB,
+      pedidos: VCEB,
       tarefas: VCE,
       mensagens: VC,
       contratos: VCEB,
@@ -114,7 +118,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
     descricao: "Contador de qualquer lado: envia e edita documentos e cuida das tarefas.",
     nome: "Contador",
     camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
+    matriz: { deal: V, etapas: V, documentos: VCEB, pedidos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
     codigo: "representante",
@@ -127,6 +131,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       funil: V,
       etapas: V,
       documentos: VCB,
+      pedidos: VEB,
       tarefas: VE,
       mensagens: VC,
       contratos: VB,
@@ -140,7 +145,7 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       "Diligências (contábil, jurídica, trabalhista etc.), normalmente só na subetapa da sua diligência: documentos e tarefas.",
     nome: "Auditor (diligência)",
     camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: VCEB, tarefas: VCE, mensagens: VC },
+    matriz: { deal: V, etapas: V, documentos: VCEB, pedidos: VCEB, tarefas: VCE, mensagens: VC },
   },
   {
     codigo: "somente-leitura",
@@ -148,6 +153,6 @@ export const PERFIS_PADRAO: PerfilPadrao[] = [
       "Só consulta: vê negócio, etapas, documentos liberados, tarefas e mensagens, sem baixar nem alterar.",
     nome: "Somente leitura",
     camada: "deal",
-    matriz: { deal: V, etapas: V, documentos: V, tarefas: V, mensagens: V },
+    matriz: { deal: V, etapas: V, documentos: V, pedidos: V, tarefas: V, mensagens: V },
   },
 ];

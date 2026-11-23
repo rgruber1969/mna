@@ -72,6 +72,11 @@ export const tenant = pgTable("tenant", {
   diasAvisoPrazo: integer("dias_aviso_prazo").notNull().default(7),
   /** Intervalo, em horas, do resumo de mensagens novas por e-mail (M2). */
   horasResumoMensagens: integer("horas_resumo_mensagens").notNull().default(1),
+  /** Escala de prioridade dos itens de pedido de documentos (da mais urgente à menos). */
+  prioridadesPedido: jsonb("prioridades_pedido")
+    .$type<string[]>()
+    .notNull()
+    .default(["Imediata", "Alta", "Média", "Baixa"]),
   criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -1179,7 +1184,7 @@ export const mensagem = pgTable(
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deal.id, { onDelete: "cascade" }),
-    alvoTipo: text("alvo_tipo").$type<"deal" | "etapa" | "versao" | "tarefa">().notNull(),
+    alvoTipo: text("alvo_tipo").$type<"deal" | "etapa" | "versao" | "tarefa" | "pedidoItem">().notNull(),
     /** Etapa, versão ou tarefa (vazio na conversa geral do negócio). */
     alvoId: uuid("alvo_id"),
     canal: text("canal").notNull(),
@@ -1508,4 +1513,143 @@ export const ofertaArquivo = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index("oferta_arquivo_oferta_idx").on(t.tenantId, t.ofertaId), isolamento()],
+).enableRLS();
+
+// --- Pedidos de documentos (D4; dominio.md, "Pedido de documentos") ----------------
+
+/** Situação de um item (por período, quando o pedido cobre vários exercícios). */
+export type SituacaoDoItem =
+  "pendente" | "parcial" | "entregue" | "em_analise" | "aprovado" | "nao_aplicavel";
+
+/** Colunas originais de cada aba da planilha importada, para devolver no mesmo formato. */
+export type ColunasDoPedido = Record<string, string[]>;
+
+/** Catálogo "onde obter": documentos comuns em M&A e a fonte de cada um. */
+export const fonteDeDocumento = pgTable(
+  "fonte_de_documento",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    nome: text("nome").notNull(),
+    orgao: text("orgao").notNull(),
+    link: text("link"),
+    abrangencia: text("abrangencia").$type<"federal" | "estadual" | "municipal">().notNull(),
+    gratuito: boolean("gratuito").notNull().default(true),
+    observacao: text("observacao"),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("fonte_de_documento_nome_idx").on(t.tenantId, t.nome), isolamento()],
+).enableRLS();
+
+/**
+ * Pedido de documentos (a lista de um solicitante, ex.: auditoria contábil ou
+ * advogados da compradora). Do lado comprador, só quem é daquela compradora vê.
+ */
+export const pedidoDocumentos = pgTable(
+  "pedido_documentos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    numero: integer("numero").notNull(),
+    titulo: text("titulo").notNull(),
+    descricao: text("descricao"),
+    /** Compradora a que o pedido pertence (vazio: pedido interno do lado vendedor). */
+    compradoraId: uuid("compradora_id").references(() => empresa.id, { onDelete: "set null" }),
+    /** Empresa solicitante (ex.: a auditoria ou o escritório da compradora). */
+    solicitanteId: uuid("solicitante_id").references(() => empresa.id, { onDelete: "set null" }),
+    /** Pessoas do solicitante (texto livre, como vêm na lista). */
+    solicitantePessoas: text("solicitante_pessoas"),
+    data: date("data").notNull(),
+    dataBase: date("data_base"),
+    /** Períodos de revisão (ex.: 2020, 2021… e "Data-base"); vazio = sem períodos. */
+    periodos: jsonb("periodos").$type<string[]>().notNull().default([]),
+    amostragem: text("amostragem"),
+    colunas: jsonb("colunas").$type<ColunasDoPedido>().notNull().default({}),
+    /** Rediligência: o pedido de origem (de outro negócio da mesma vendedora). */
+    origemId: uuid("origem_id").references((): AnyPgColumn => pedidoDocumentos.id, { onDelete: "set null" }),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [uniqueIndex("pedido_documentos_numero_uq").on(t.tenantId, t.dealId, t.numero), isolamento()],
+).enableRLS();
+
+/** Rodadas do pedido: lista inicial, complementar 1, 2… */
+export const pedidoRodada = pgTable(
+  "pedido_rodada",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    pedidoId: uuid("pedido_id")
+      .notNull()
+      .references(() => pedidoDocumentos.id, { onDelete: "cascade" }),
+    numero: integer("numero").notNull(),
+    nome: text("nome").notNull(),
+    data: date("data").notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("pedido_rodada_numero_uq").on(t.tenantId, t.pedidoId, t.numero), isolamento()],
+).enableRLS();
+
+/** Item do pedido: um documento ou uma pergunta, com situação por período. */
+export const pedidoItem = pgTable(
+  "pedido_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    pedidoId: uuid("pedido_id")
+      .notNull()
+      .references(() => pedidoDocumentos.id, { onDelete: "cascade" }),
+    rodadaId: uuid("rodada_id")
+      .notNull()
+      .references(() => pedidoRodada.id, { onDelete: "cascade" }),
+    /** Assunto (a aba da planilha: Societário, Contábil, Fiscal…). */
+    assunto: text("assunto").notNull(),
+    codigo: text("codigo"),
+    grupo: text("grupo"),
+    subgrupo: text("subgrupo"),
+    prioridade: text("prioridade"),
+    descricao: text("descricao").notNull(),
+    formato: text("formato"),
+    tipo: text("tipo").$type<"documento" | "pergunta">().notNull().default("documento"),
+    dataPedido: date("data_pedido").notNull(),
+    dataEntrega: date("data_entrega"),
+    departamento: text("departamento"),
+    /** Responsável do lado vendedor. */
+    responsavelId: uuid("responsavel_id").references(() => usuario.id, { onDelete: "set null" }),
+    observacaoSolicitante: text("observacao_solicitante"),
+    resposta: text("resposta"),
+    ondeObter: text("onde_obter"),
+    fonteId: uuid("fonte_id").references(() => fonteDeDocumento.id, { onDelete: "set null" }),
+    /** Situação por período ("" quando o pedido não tem períodos). */
+    situacoes: jsonb("situacoes").$type<Record<string, SituacaoDoItem>>().notNull().default({}),
+    /** Situação geral, derivada das situações por período (para filtros e o painel). */
+    situacao: text("situacao").$type<SituacaoDoItem>().notNull().default("pendente"),
+    /** Valores originais da linha da planilha (coluna → valor), para exportar no mesmo formato. */
+    original: jsonb("original").$type<Record<string, string>>().notNull().default({}),
+    ordem: integer("ordem").notNull().default(0),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("pedido_item_pedido_idx").on(t.tenantId, t.pedidoId, t.assunto, t.ordem), isolamento()],
+).enableRLS();
+
+/** Documentos do data room que atendem o item (um documento pode atender vários itens). */
+export const pedidoItemDocumento = pgTable(
+  "pedido_item_documento",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => pedidoItem.id, { onDelete: "cascade" }),
+    documentoId: uuid("documento_id")
+      .notNull()
+      .references(() => documento.id, { onDelete: "cascade" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex("pedido_item_documento_uq").on(t.tenantId, t.itemId, t.documentoId), isolamento()],
 ).enableRLS();

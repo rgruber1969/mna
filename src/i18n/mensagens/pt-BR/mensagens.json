@@ -4,12 +4,13 @@
     "aba": "Mensagens",
     "geral": "Geral do negócio",
     "grupoEtapas": "Conversas por etapa",
-    "grupoOutros": "Conversas em documentos e tarefas",
+    "grupoOutros": "Conversas em documentos, tarefas e pedidos",
     "tipos": {
       "deal": "Negócio",
       "etapa": "Etapa",
       "versao": "Documento",
-      "tarefa": "Tarefa"
+      "tarefa": "Tarefa",
+      "pedidoItem": "Item de pedido"
     },
     "canais": {
       "vendedor": "Equipe do lado vendedor",

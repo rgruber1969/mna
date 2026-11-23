@@ -1,5 +1,5 @@
 import { notificar } from "./notificacoes";
-import { and, asc, count, eq, inArray } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { banco, comTenant } from "@/server/db/cliente";
@@ -68,6 +68,36 @@ export async function copiarPerfisPadrao(tenantId: string): Promise<number> {
       })),
     );
     return PERFIS_PADRAO.length;
+  });
+}
+
+/**
+ * Recursos criados depois dos perfis do tenant: acrescenta aos perfis padrão
+ * as ações do padrão para cada recurso que ainda não aparece na matriz deles
+ * (um recurso que o tenant já ajustou, mesmo para "nenhuma ação", fica como está).
+ */
+export async function acrescentarRecursosNovos(tenantId: string): Promise<number> {
+  return comTenant(tenantId, async (tx) => {
+    const perfis = await tx
+      .select({ id: perfil.id, padrao: perfil.padrao, matriz: perfil.matriz })
+      .from(perfil)
+      .where(isNotNull(perfil.padrao));
+    let alterados = 0;
+    for (const p of perfis) {
+      const modelo = PERFIS_PADRAO.find((x) => x.codigo === p.padrao);
+      if (!modelo) continue;
+      const atual = (p.matriz ?? {}) as Record<string, string[]>;
+      const novos = Object.entries(modelo.matriz as Record<string, readonly string[]>).filter(
+        ([r]) => !(r in atual),
+      );
+      if (novos.length === 0) continue;
+      await tx
+        .update(perfil)
+        .set({ matriz: { ...atual, ...Object.fromEntries(novos.map(([r, acoes]) => [r, [...acoes]])) } })
+        .where(eq(perfil.id, p.id));
+      alterados++;
+    }
+    return alterados;
   });
 }
 

@@ -344,6 +344,20 @@
       "when": 1795470603053,
       "tag": "0048_retencao_auditoria",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1795473822935,
+      "tag": "0049_pedidos_de_documentos",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1795474506127,
+      "tag": "0050_permissoes_pedidos",
+      "breakpoints": true
     }
   ]
 }

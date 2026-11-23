@@ -12,8 +12,9 @@ import {
   vinculoTenant,
 } from "@/server/db/esquema";
 import { completarEtapasPadrao } from "./etapas";
+import { completarFontesPadrao } from "./pedidos";
 import { CATEGORIAS_PADRAO } from "./documentos";
-import { copiarPerfisPadrao } from "./perfis";
+import { acrescentarRecursosNovos, copiarPerfisPadrao } from "./perfis";
 import { ligarContaAPessoa } from "./pessoas";
 
 /**
@@ -78,6 +79,7 @@ export const VINCULOS_PADRAO: { codigo: string; nome: string; comPercentual: boo
  */
 export async function completarCadastrosPadrao(tenantId: string): Promise<void> {
   await copiarPerfisPadrao(tenantId);
+  await acrescentarRecursosNovos(tenantId);
   const [t] = await banco()
     .select({ nome: tenant.nome, nomeExibicao: tenant.nomeExibicao })
     .from(tenant)
@@ -130,6 +132,7 @@ export async function completarCadastrosPadrao(tenantId: string): Promise<void> 
         })),
       );
     await completarEtapasPadrao(tx, tenantId);
+    await completarFontesPadrao(tx, tenantId);
     const [{ categorias }] = await tx.select({ categorias: count() }).from(categoriaDocumento);
     if (categorias === 0)
       await tx

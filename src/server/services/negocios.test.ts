@@ -1767,3 +1767,179 @@ describe("API: contratos e ofertas", () => {
     expect(Array.isArray(((await contratos.json()) as { contratos: unknown[] }).contratos)).toBe(true);
   });
 });
+
+describe("pedidos de documentos", () => {
+  it("sigilo entre compradoras, rodadas, situação por período, data room, conversa, planilha e rediligência", async () => {
+    const {
+      criarPedido,
+      criarPedidoPorRediligencia,
+      criarRodada,
+      definirSituacaoDoItem,
+      excluirPedido,
+      exportarPedido,
+      importarPlanilhaDoPedido,
+      ligarDocumentoAoItem,
+      obterPedido,
+      pedidosDoNegocio,
+      salvarItem,
+    } = await import("./pedidos");
+    const { planilhaComAbas } = await import("@/server/arquivos/planilha-simples");
+    const { lerPlanilha } = await import("@/server/arquivos/planilha-leitura");
+    const g = acesso("gestor");
+    // Pedido da Compradora A, criado pelo advogado dela (do lado comprador, só a própria compradora).
+    expect(
+      await criarPedido(acesso("adva"), negocioId, {
+        titulo: "Diligência jurídica",
+        data: "2026-11-01",
+        compradoraId: compradoraB,
+      }),
+    ).toMatchObject({ erro: "pedidos.erros.compradoraInvalida" });
+    const pa = await criarPedido(acesso("adva"), negocioId, {
+      titulo: "Diligência jurídica",
+      data: "2026-11-01",
+      compradoraId: compradoraA,
+      periodos: "2024, 2025",
+    });
+    if (!("id" in pa)) throw new Error(pa.erro);
+    const ve = async (nome: string) =>
+      Boolean((await pedidosDoNegocio(acesso(nome), negocioId))?.pedidos.some((p) => p.id === pa.id));
+    expect(await ve("gestor")).toBe(true);
+    expect(await ve("adva")).toBe(true);
+    expect(await ve("compb2")).toBe(false);
+    expect(await obterPedido(acesso("compb2"), pa.id)).toBeNull();
+    // Item com situação por período: a geral é derivada.
+    const d0 = await obterPedido(g, pa.id);
+    const rodada1 = d0!.rodadas[0].id;
+    expect(d0!.rodadas[0].nome).toBe("Lista inicial");
+    const item = await salvarItem(acesso("adva"), pa.id, null, {
+      rodadaId: rodada1,
+      assunto: "Contencioso",
+      codigo: "3.1",
+      descricao: "Relação de processos judiciais",
+      dataPedido: "2026-11-01",
+      situacoes: { "2024": "entregue", "2030": "aprovado" },
+    });
+    if (!("id" in item)) throw new Error(item.erro);
+    let d = await obterPedido(g, pa.id);
+    expect(d!.itens[0]).toMatchObject({ situacao: "parcial", situacoes: { "2024": "entregue" } });
+    expect(await definirSituacaoDoItem(g, item.id, "2025", "nao_aplicavel")).toEqual({ ok: true });
+    d = await obterPedido(g, pa.id);
+    expect(d!.itens[0].situacao).toBe("entregue");
+    expect(d!.itens[0].dataEntrega).not.toBeNull();
+    expect(d!.painel.porAssunto.Contencioso.entregue).toBe(1);
+    // Data room: só documentos que a pessoa vê.
+    const docs = (await dataRoomDoNegocio(g, negocioId))!.documentos;
+    expect(docs.length).toBeGreaterThan(0);
+    expect(await ligarDocumentoAoItem(g, item.id, docs[0].id, true)).toEqual({ ok: true });
+    expect((await obterPedido(g, pa.id))!.itens[0].documentos.map((x) => x.id)).toEqual([docs[0].id]);
+    // Conversa do item na mensageria: a Compradora B não abre.
+    const alvo = { tipo: "pedidoItem" as const, id: item.id };
+    expect((await obterConversa(acesso("adva"), negocioId, alvo))?.rotulo).toContain("3.1");
+    expect(await obterConversa(acesso("compb2"), negocioId, alvo)).toBeNull();
+    expect(
+      await enviarMensagem(acesso("adva"), negocioId, alvo, "entre:" + compradoraA, { texto: "Falta 2025?" }),
+    ).toMatchObject({ id: expect.any(String) });
+    // Rodada complementar e importação da planilha do solicitante.
+    const r2 = await criarRodada(g, pa.id, "Complementar 1", "2026-11-10");
+    if (!("id" in r2)) throw new Error(r2.erro);
+    const xlsx = planilhaComAbas([
+      { nome: "Capa", linhas: [["Lista de diligência"], ["Projeto"]] },
+      {
+        nome: "Fiscal",
+        linhas: [
+          ["Pedido de documentos"],
+          [],
+          ["Item", "Documento solicitado", "Prioridade", "2024", "2025", "Comentários"],
+          ["A - Tributos federais", "", "", "", "", ""],
+          ["A.1", "DCTF dos últimos 5 anos", "Alta", "Entregue", "Pendente", "Enviar recibos"],
+          ["A.2", "Há autuações fiscais?", "Média", "N/A", "N/A", ""],
+        ],
+      },
+      {
+        nome: "Contencioso",
+        linhas: [
+          ["Item", "Documento solicitado"],
+          ["3.1", "Repetido"],
+          ["3.2", "Acordos"],
+        ],
+      },
+    ]);
+    const base64 = Buffer.from(xlsx).toString("base64");
+    const simulada = await importarPlanilhaDoPedido(g, pa.id, base64, { simular: true, rodada: "nova" });
+    if (!("abas" in simulada)) throw new Error(simulada.erro);
+    expect(simulada.total).toBe(3);
+    expect(simulada.abas.find((x) => x.aba === "Capa")?.ignorada).toBe(true);
+    expect(simulada.abas.find((x) => x.aba === "Contencioso")?.existentes).toBe(1);
+    expect((await obterPedido(g, pa.id))!.itens).toHaveLength(1);
+    const imp = await importarPlanilhaDoPedido(g, pa.id, base64, { simular: false, rodada: r2.id });
+    if (!("abas" in imp)) throw new Error(imp.erro);
+    d = await obterPedido(g, pa.id);
+    const a1 = d!.itens.find((i) => i.codigo === "A.1")!;
+    expect(a1).toMatchObject({
+      assunto: "Fiscal",
+      grupo: "A - Tributos federais",
+      prioridade: "Alta",
+      situacao: "parcial",
+    });
+    expect(a1.rodadaId).toBe(r2.id);
+    expect(d!.itens.find((i) => i.codigo === "A.2")).toMatchObject({
+      tipo: "pergunta",
+      situacao: "nao_aplicavel",
+    });
+    // Exportação: a planilha volta no formato do solicitante, respondida.
+    const exp = await exportarPedido(g, pa.id);
+    if (!("conteudo" in exp)) throw new Error(exp.erro);
+    const abas = lerPlanilha(new Uint8Array(Buffer.from(exp.conteudo, "base64")));
+    expect(abas.map((x) => x.nome)).toEqual(["Painel", "Contencioso", "Fiscal"]);
+    const fiscal = abas.find((x) => x.nome === "Fiscal")!;
+    expect(fiscal.linhas[0].slice(0, 6)).toEqual([
+      "Item",
+      "Documento solicitado",
+      "Prioridade",
+      "2024",
+      "2025",
+      "Comentários",
+    ]);
+    expect(fiscal.linhas[1].slice(0, 5)).toEqual([
+      "A.1",
+      "DCTF dos últimos 5 anos",
+      "Alta",
+      "Entregue",
+      "Pendente",
+    ]);
+    expect(await exportarPedido(acesso("compb2"), pa.id)).toMatchObject({
+      erro: "pedidos.erros.naoEncontrado",
+    });
+    // Rediligência: outro negócio da mesma vendedora começa do pedido anterior.
+    const { tipos } = await opcoesParaNovoNegocio(g);
+    const outro = await criarNegocio(g, {
+      codinome: "Projeto Rediligência",
+      nomeInterno: "Rediligência da vendedora",
+      tipoOperacaoId: tipos.find((t) => t.nome === "Aquisição total")!.id,
+      percentual: "",
+      papelContratanteId: await papel("escritorio-vendedora"),
+      objeto: "empresas",
+      vendedoras: [vendedora],
+      grupoId: "",
+      dataInicio: "2026-11-20",
+    });
+    if (!("id" in outro)) throw new Error(outro.erro);
+    const lista = await pedidosDoNegocio(g, outro.id);
+    expect(lista!.anteriores.some((p) => p.id === pa.id)).toBe(true);
+    const novo = await criarPedidoPorRediligencia(g, outro.id, pa.id, {
+      titulo: "Rediligência",
+      data: "2026-11-21",
+    });
+    if (!("id" in novo)) throw new Error(novo.erro);
+    const copia = await obterPedido(g, novo.id);
+    expect(copia!.itens).toHaveLength(4);
+    expect(copia!.periodos).toEqual(["2024", "2025"]);
+    expect(copia!.itens.every((i) => i.situacao === "pendente" && i.documentos.length === 0)).toBe(true);
+    expect(copia!.itens.find((i) => i.codigo === "3.1")!.resposta).toContain(docs[0].titulo);
+    expect(copia!.origem).toContain("Diligência jurídica");
+    expect(await excluirNegocio(g, outro.id)).toEqual({ ok: true });
+    expect(await excluirPedido(acesso("compb2"), pa.id)).toMatchObject({
+      erro: "pedidos.erros.naoEncontrado",
+    });
+  });
+});
