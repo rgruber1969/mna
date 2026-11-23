@@ -84,6 +84,8 @@
     },
     "erros": {
       "desligada": "Esta funcionalidade não está disponível neste ambiente."
-    }
+    },
+    "busca": "Buscar",
+    "buscaExemplo": "Termo (evento, pessoa, negócio…)"
   }
 }

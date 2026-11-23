@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, like, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, inArray, like, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { limites, type Pagina, type PedidoDePagina } from "@/config/paginacao";
 import { comTenant } from "@/server/db/cliente";
@@ -22,7 +22,7 @@ import { exigirPermissao } from "./permissoes/verificador";
  * negócio a partir dos IDs, para quem já pode consultar.
  */
 
-export const ORDENS_DA_AUDITORIA = ["ocorridoEm"] as const;
+export const ORDENS_DA_AUDITORIA = ["ocorridoEm", "tipo", "ator", "sobre"] as const;
 export type OrdemDaAuditoria = (typeof ORDENS_DA_AUDITORIA)[number];
 
 export type EventoNaTela = {
@@ -49,13 +49,44 @@ export type FiltroDaAuditoria = {
   assunto?: string;
   ator?: string;
   negocio?: string;
+  /** Termo livre: procura no tipo do evento, nos detalhes, no nome de quem fez e no negócio. */
+  busca?: string;
 };
+
+/** Nome de quem fez, para busca e ordenação (subconsulta; o evento só guarda o ID). */
+const nomeDoAtor = sql<string>`(select u.nome from usuario u where u.id = ${eventoAuditoria.atorId})`;
+/** Nome do negócio (número e codinome), quando o evento é de um negócio. */
+const nomeDoNegocio = sql<string>`(select d.numero::text || ' ' || d.codinome from deal d where ${eventoAuditoria.alvoTipo} = 'deal' and d.id = ${eventoAuditoria.alvoId})`;
+
+function ordenacao(pedido: PedidoDePagina<OrdemDaAuditoria>) {
+  const dir = pedido.direcao === "asc" ? asc : desc;
+  const coluna = {
+    ocorridoEm: eventoAuditoria.ocorridoEm,
+    tipo: eventoAuditoria.tipo,
+    ator: nomeDoAtor,
+    sobre: sql`coalesce(${nomeDoNegocio}, ${eventoAuditoria.alvoTipo})`,
+  }[pedido.ordem];
+  // Desempate sempre pelo mais recente, para a paginação não embaralhar.
+  return pedido.ordem === "ocorridoEm"
+    ? [dir(coluna)]
+    : [sql`${dir(coluna)} nulls last`, desc(eventoAuditoria.ocorridoEm)];
+}
 
 function condicoes(f: FiltroDaAuditoria) {
   const de = dataValida(f.de);
   const ate = dataValida(f.ate);
   const assunto = f.assunto && /^[a-z_]+$/.test(f.assunto) ? f.assunto : null;
+  const termo = f.busca?.trim().slice(0, 100);
+  const padrao = termo ? `%${termo.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null;
   return and(
+    padrao
+      ? or(
+          ilike(eventoAuditoria.tipo, padrao),
+          ilike(sql`${eventoAuditoria.detalhes}::text`, padrao),
+          ilike(nomeDoAtor, padrao),
+          ilike(nomeDoNegocio, padrao),
+        )
+      : undefined,
     de ? gte(eventoAuditoria.ocorridoEm, new Date(`${de}T00:00:00-03:00`)) : undefined,
     ate
       ? lt(eventoAuditoria.ocorridoEm, new Date(new Date(`${ate}T00:00:00-03:00`).getTime() + 86_400_000))
@@ -82,7 +113,7 @@ export async function paginaDaAuditoria(
       .select()
       .from(eventoAuditoria)
       .where(onde)
-      .orderBy(pedido.direcao === "asc" ? eventoAuditoria.ocorridoEm : desc(eventoAuditoria.ocorridoEm))
+      .orderBy(...ordenacao(pedido))
       .limit(limite)
       .offset(deslocamento);
     const atores = [...new Set(linhas.flatMap((l) => (l.atorId ? [l.atorId] : [])))];

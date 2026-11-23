@@ -1,5 +1,5 @@
 import { createRoute, z, type OpenAPIHono } from "@hono/zod-openapi";
-import { paginaDaAuditoria } from "@/server/services/auditoria";
+import { ORDENS_DA_AUDITORIA, paginaDaAuditoria } from "@/server/services/auditoria";
 import type { Context } from "hono";
 import { AcessoNegado, obterAcesso, type Acesso } from "@/server/services/acesso";
 import { buscarDocumentos } from "@/server/services/busca-de-documentos";
@@ -322,7 +322,8 @@ export function registrarRotasV1(api: OpenAPIHono) {
       method: "get",
       path: "/v1/auditoria",
       tags: ["Auditoria"],
-      summary: "Eventos de auditoria do tenant (permissão Auditoria × ver), do mais recente ao mais antigo",
+      summary:
+        "Eventos de auditoria do tenant (permissão Auditoria × ver); padrão: do mais recente ao mais antigo",
       security: seguranca,
       request: {
         query: Pagina.extend({
@@ -331,6 +332,9 @@ export function registrarRotasV1(api: OpenAPIHono) {
           assunto: z.string().max(40).optional(),
           ator: z.uuid().optional(),
           negocio: z.uuid().optional(),
+          busca: z.string().max(100).optional(),
+          ordem: z.enum(ORDENS_DA_AUDITORIA).optional(),
+          direcao: z.enum(["asc", "desc"]).optional(),
         }),
       },
       responses: respostas("Página de eventos"),
@@ -340,8 +344,13 @@ export function registrarRotasV1(api: OpenAPIHono) {
       return comAcesso(c, (a) =>
         paginaDaAuditoria(
           a,
-          { de: q.de, ate: q.ate, assunto: q.assunto, ator: q.ator, negocio: q.negocio },
-          { pagina: q.pagina, porPagina: q.porPagina, ordem: "ocorridoEm", direcao: "desc" },
+          { de: q.de, ate: q.ate, assunto: q.assunto, ator: q.ator, negocio: q.negocio, busca: q.busca },
+          {
+            pagina: q.pagina,
+            porPagina: q.porPagina,
+            ordem: q.ordem ?? "ocorridoEm",
+            direcao: q.direcao ?? (q.ordem ? "asc" : "desc"),
+          },
         ),
       ) as never;
     },

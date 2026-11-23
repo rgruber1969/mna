@@ -666,6 +666,23 @@ describe("andamento: funil, exclusividade, situação e histórico", () => {
     expect(doNegocio.itens.every((e) => e.alvoId === negocioId && e.negocio)).toBe(true);
     const deNegocios = await paginaDaAuditoria(acesso("admin", true), { assunto: "negocio" }, pedido);
     expect(deNegocios.itens.every((e) => e.tipo.startsWith("negocio."))).toBe(true);
+    // Busca por termo (tipo, detalhes, pessoa ou negócio) e ordenação por coluna.
+    const porTermo = await paginaDaAuditoria(acesso("admin", true), { busca: "NEGOCIO.CRIADO" }, pedido);
+    expect(porTermo.total).toBeGreaterThan(0);
+    expect(porTermo.itens.every((e) => e.tipo === "negocio.criado")).toBe(true);
+    const nada = await paginaDaAuditoria(acesso("admin", true), { busca: "%_inexistente_%" }, pedido);
+    expect(nada.total).toBe(0);
+    const porTipo = await paginaDaAuditoria(
+      acesso("admin", true),
+      {},
+      { ...pedido, ordem: "tipo", direcao: "asc" },
+    );
+    const tipos = porTipo.itens.map((e) => e.tipo);
+    expect(tipos).toEqual([...tipos].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0)));
+    for (const ordem of ["ator", "sobre"] as const) {
+      const p = await paginaDaAuditoria(acesso("admin", true), {}, { ...pedido, ordem });
+      expect(p.total).toBe(tudo.total);
+    }
     expect((await opcoesDaAuditoria(acesso("admin", true))).assuntos).toContain("negocio");
     expect((await retencaoDaAuditoria(acesso("admin", true))).meses).toBe(60);
     const pdf = await exportarLimpezaDaAuditoria(acesso("admin", true), "pdf");

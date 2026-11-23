@@ -15,7 +15,7 @@ import { lerPedido } from "@/config/paginacao";
 import { estaLigada } from "@/config/funcionalidades";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
-import { Paginacao } from "@/components/ui/lista";
+import { Paginacao, TituloOrdenavel } from "@/components/ui/lista";
 import { Cartao, estiloTabela, Titulo } from "@/components/ui/basicos";
 import { EstadoVazio } from "@/components/ui/estado-vazio";
 import { EsqueletoDeListaConteudo, EsqueletoDeTela } from "@/components/ui/esqueletos";
@@ -61,6 +61,7 @@ async function Conteudo({ parametros, administrador }: { parametros: Parametros;
     assunto: um(parametros, "assunto"),
     ator: um(parametros, "ator"),
     negocio: um(parametros, "negocio"),
+    busca: um(parametros, "busca"),
   };
   const pedido = lerPedido(parametros, ORDENS_DA_AUDITORIA, "ocorridoEm", "desc");
   const [pagina, opcoes, retencao] = await Promise.all([
@@ -81,7 +82,7 @@ async function Conteudo({ parametros, administrador }: { parametros: Parametros;
       if (!th.has(k)) continue;
       // Só usa a frase se todos os parâmetros dela estiverem nos detalhes do evento.
       const bruta = String(th.raw(k));
-      const faltam = [...bruta.matchAll(/\{(\w+)/g)].some(([, p]) => !(p in detalhes));
+      const faltam = [...bruta.matchAll(/\{(\w+)/g)].some(([, p]) => detalhes[p] == null);
       if (!faltam) return th(k, detalhes);
     }
     return tipo;
@@ -97,6 +98,17 @@ async function Conteudo({ parametros, administrador }: { parametros: Parametros;
           {t("titulo")}
         </Titulo>
         <form className="mb-4 flex flex-wrap items-end gap-3">
+          <label className="text-xs">
+            <span className="text-muted mb-1 block">{t("busca")}</span>
+            <input
+              type="search"
+              name="busca"
+              defaultValue={filtro.busca}
+              placeholder={t("buscaExemplo")}
+              maxLength={100}
+              className={`${campo} w-56`}
+            />
+          </label>
           <label className="text-xs">
             <span className="text-muted mb-1 block">{t("de")}</span>
             <input type="date" name="de" defaultValue={filtro.de} className={campo} />
@@ -160,10 +172,38 @@ async function Conteudo({ parametros, administrador }: { parametros: Parametros;
               <table className={estiloTabela.tabela}>
                 <thead className={estiloTabela.cabecalho}>
                   <tr>
-                    <th className={estiloTabela.th}>{t("colQuando")}</th>
-                    <th className={estiloTabela.th}>{t("colEvento")}</th>
-                    <th className={estiloTabela.th}>{t("colQuem")}</th>
-                    <th className={estiloTabela.th}>{t("colSobre")}</th>
+                    <TituloOrdenavel
+                      rotulo={t("colQuando")}
+                      campo="ocorridoEm"
+                      pedido={pedido}
+                      caminho="/auditoria"
+                      parametros={parametros}
+                      className={estiloTabela.th}
+                    />
+                    <TituloOrdenavel
+                      rotulo={t("colEvento")}
+                      campo="tipo"
+                      pedido={pedido}
+                      caminho="/auditoria"
+                      parametros={parametros}
+                      className={estiloTabela.th}
+                    />
+                    <TituloOrdenavel
+                      rotulo={t("colQuem")}
+                      campo="ator"
+                      pedido={pedido}
+                      caminho="/auditoria"
+                      parametros={parametros}
+                      className={estiloTabela.th}
+                    />
+                    <TituloOrdenavel
+                      rotulo={t("colSobre")}
+                      campo="sobre"
+                      pedido={pedido}
+                      caminho="/auditoria"
+                      parametros={parametros}
+                      className={estiloTabela.th}
+                    />
                     <th className={estiloTabela.th}>{t("colDetalhes")}</th>
                   </tr>
                 </thead>
