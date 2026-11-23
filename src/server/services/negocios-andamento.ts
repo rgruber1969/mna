@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { tradutor, type ErroDeServico } from "@/i18n/servidor";
+import { DIAS_DE_AVISO_MAXIMO, DIAS_DE_AVISO_MINIMO, DIAS_DE_AVISO_PADRAO } from "@/config/prazos";
 import { banco, comTenant } from "@/server/db/cliente";
 import {
   deal,
@@ -804,6 +805,26 @@ export async function salvarDiasDeLembreteDeTarefa(acesso: Acesso | null, texto:
   await auditar(a, "tenant.configuracoes_alteradas", "tenant", a.tenant.id, {
     diasLembreteTarefa: dias.join(","),
   });
+  return { ok: true };
+}
+
+/** Painel principal: dias antes do vencimento em que um prazo fica amarelo (qualquer pessoa do tenant lê). */
+export async function obterDiasDeAvisoDoPrazo(acesso: Acesso | null): Promise<number> {
+  const a = exigirTenant(acesso);
+  const [c] = await banco()
+    .select({ dias: tenant.diasAvisoPrazo })
+    .from(tenant)
+    .where(eq(tenant.id, a.tenant.id));
+  return c?.dias ?? DIAS_DE_AVISO_PADRAO;
+}
+
+export async function salvarDiasDeAvisoDoPrazo(acesso: Acesso | null, texto: string): Promise<Resultado> {
+  const a = exigirAdministrador(acesso);
+  const dias = Number(texto.trim());
+  if (!Number.isInteger(dias) || dias < DIAS_DE_AVISO_MINIMO || dias > DIAS_DE_AVISO_MAXIMO)
+    return { erro: "negocios.erros.diasDeAvisoDoPrazoInvalidos", campo: "diasAvisoPrazo" };
+  await banco().update(tenant).set({ diasAvisoPrazo: dias }).where(eq(tenant.id, a.tenant.id));
+  await auditar(a, "tenant.configuracoes_alteradas", "tenant", a.tenant.id, { diasAvisoPrazo: String(dias) });
   return { ok: true };
 }
 

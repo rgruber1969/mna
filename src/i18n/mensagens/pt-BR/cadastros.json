@@ -469,6 +469,22 @@
     "novaCategoria": "Nova categoria",
     "categoriasExplicacao": "Categorias para classificar e filtrar os documentos do data room.",
     "abaIdentidade": "Identidade visual",
-    "abaChaves": "Chaves de API"
+    "abaChaves": "Chaves de API",
+    "abaPainel": "Painel principal",
+    "painel": {
+      "titulo": "Avisar com antecedência",
+      "explicacao": "Quantos dias antes do vencimento um prazo fica amarelo. Vale para o painel, o kanban, a linha do tempo e a lista de negócios.",
+      "dias": "Dias de antecedência",
+      "unidade": "dias (de 1 a 30)",
+      "vencido": "vencido",
+      "depoisDoPrazo": "depois do prazo",
+      "venceEm": "vence em até {n, plural, one {# dia} other {# dias}}",
+      "ate": "de hoje até {data}",
+      "emDia": "em dia",
+      "aPartirDe": "a partir de {data}",
+      "salvar": "Salvar",
+      "salvando": "Salvando...",
+      "salvo": "Configuração salva."
+    }
   }
 }

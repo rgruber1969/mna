@@ -219,6 +219,7 @@
       "diasDeAvisoInvalidos": "Informe de 1 a 5 números de dias, entre 1 e 180, separados por vírgula.",
       "escolhaEtapas": "Escolha ao menos uma etapa para o alcance.",
       "diasDeLembreteInvalidos": "Informe de 1 a 5 números de dias, entre 0 e 60, separados por vírgula.",
+      "diasDeAvisoDoPrazoInvalidos": "Informe um número inteiro de dias, de 1 a 30.",
       "temConteudo": "O negócio já tem documentos, tarefas ou mensagens: não pode ser excluído, só encerrado."
     },
     "andamento": {

@@ -41,6 +41,8 @@ import {
   enviarAvisosDePrazo,
   funilDoNegocio,
   obterDiasDeAviso,
+  obterDiasDeAvisoDoPrazo,
+  salvarDiasDeAvisoDoPrazo,
   prorrogarExclusividade,
   salvarDiasDeAviso,
 } from "./negocios-andamento";
@@ -649,6 +651,18 @@ describe("andamento: funil, exclusividade, situação e histórico", () => {
     });
     expect(await salvarDiasDeAviso(acesso("admin", true), "3, 10")).toEqual({ ok: true });
     expect(await obterDiasDeAviso(acesso("gestor"))).toEqual([10, 3]);
+  });
+
+  it("configurações: dias do amarelo no semáforo dos prazos (administradores salvam, todos leem)", async () => {
+    expect(await obterDiasDeAvisoDoPrazo(acesso("gestor"))).toBe(7);
+    expect(await salvarDiasDeAvisoDoPrazo(acesso("admin", true), "0")).toMatchObject({
+      erro: "negocios.erros.diasDeAvisoDoPrazoInvalidos",
+    });
+    expect(await salvarDiasDeAvisoDoPrazo(acesso("admin", true), "31")).toHaveProperty("erro");
+    await expect(salvarDiasDeAvisoDoPrazo(acesso("gestor"), "5")).rejects.toThrow();
+    expect(await salvarDiasDeAvisoDoPrazo(acesso("admin", true), "10")).toEqual({ ok: true });
+    expect(await obterDiasDeAvisoDoPrazo(acesso("gestor"))).toBe(10);
+    await salvarDiasDeAvisoDoPrazo(acesso("admin", true), "7");
   });
 });
 

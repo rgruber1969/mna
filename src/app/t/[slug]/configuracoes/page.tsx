@@ -8,7 +8,13 @@ import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/servi
 import { listarEtapasPadrao } from "@/server/services/etapas";
 import { listarCategorias } from "@/server/services/documentos";
 import { listarTiposDeOperacao } from "@/server/services/negocios";
-import { obterDiasDeAviso, obterDiasDeLembreteDeTarefa } from "@/server/services/negocios-andamento";
+import {
+  hojeEmSaoPaulo,
+  obterDiasDeAviso,
+  obterDiasDeAvisoDoPrazo,
+  obterDiasDeLembreteDeTarefa,
+} from "@/server/services/negocios-andamento";
+import { FormPainelPrincipal } from "@/components/cadastros/painel-principal";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
@@ -38,7 +44,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     pode(acesso, "cadastros", "editar"),
     pode(acesso, "cadastros", "excluir"),
   ]);
-  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias, diasTarefa, horasResumo] =
+  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias, diasTarefa, horasResumo, diasPrazo] =
     await Promise.all([
       acesso.administrador ? obterDiasDeAviso(acesso) : null,
       verCadastros ? listarPapeis(acesso) : [],
@@ -49,6 +55,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
       verCadastros ? listarCategorias(acesso) : [],
       acesso.administrador ? obterDiasDeLembreteDeTarefa(acesso) : [],
       acesso.administrador ? obterHorasDoResumo(acesso) : 1,
+      acesso.administrador ? obterDiasDeAvisoDoPrazo(acesso) : 7,
     ]);
   const permissoes = { podeCriar, podeEditar, podeExcluir };
   return (
@@ -61,7 +68,12 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
           <Abas
             inicial={await aba}
             abas={[
-              ...(dias ? [{ id: "geral", rotulo: t("abaGeral") }] : []),
+              ...(dias
+                ? [
+                    { id: "geral", rotulo: t("abaGeral") },
+                    { id: "painel", rotulo: t("abaPainel") },
+                  ]
+                : []),
               ...(verCadastros
                 ? [
                     { id: "papeis", rotulo: t("abaPapeis") },
@@ -82,6 +94,11 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
             {dias && (
               <PainelDeAba id="geral">
                 <FormConfiguracoes dias={dias} diasTarefa={diasTarefa} horasResumo={horasResumo} />
+              </PainelDeAba>
+            )}
+            {dias && (
+              <PainelDeAba id="painel">
+                <FormPainelPrincipal dias={diasPrazo} hoje={hojeEmSaoPaulo()} />
               </PainelDeAba>
             )}
             {verCadastros && (
