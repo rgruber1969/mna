@@ -11,6 +11,8 @@ import {
   incluirEtapa,
   moverEtapa,
   moverEtapaPadrao,
+  reordenarEtapas,
+  reordenarEtapasPadrao,
   mudarSituacaoDaEtapa,
   removerEtapa,
   salvarEtapaPadrao,
@@ -107,4 +109,23 @@ export async function excluirEtapaPadraoAcao(_: Estado, f: FormData): Promise<Es
   const t = await getTranslations("etapas.mensagens");
   const r = await excluirEtapaPadrao(await acesso(), texto(f, "id"));
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("removida") };
+}
+
+/** Nova ordem das etapas padrão irmãs (arrastar em Configurações). */
+export async function reordenarEtapasPadraoAcao(
+  paiId: string | null,
+  ids: string[],
+): Promise<{ erro?: string }> {
+  const r = await reordenarEtapasPadrao(await acesso(), paiId, ids);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
+}
+
+/** Nova ordem das etapas irmãs de um negócio (arrastar na lista de etapas). */
+export async function reordenarEtapasAcao(
+  dealId: string,
+  paiId: string | null,
+  ids: string[],
+): Promise<{ erro?: string }> {
+  const r = await reordenarEtapas(await acesso(), dealId, paiId, ids);
+  return "erro" in r ? { erro: await traduzirErro(r) } : {};
 }

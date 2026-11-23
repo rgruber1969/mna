@@ -46,7 +46,9 @@
       "reativar": "Reativar",
       "nomeDe": "Nome da etapa {nome}",
       "novaEtapa": "Nova etapa",
-      "novaSubetapa": "Nova subetapa"
+      "novaSubetapa": "Nova subetapa",
+      "arrastar": "Arrastar {nome} para mudar a ordem",
+      "arrasteExplicacao": "Para mudar a ordem, arraste a etapa pela alça ⋮⋮ (ou use ↑ ↓)."
     },
     "mensagens": {
       "situacaoAlterada": "Situação da etapa alterada.",
@@ -67,7 +69,8 @@
       "situacaoInvalida": "Situação inválida.",
       "soNaoIniciada": "Só dá para remover etapas não iniciadas.",
       "escalaInvalida": "Escala inválida: de 5% a 100%.",
-      "etapaForaDoNegocio": "Este negócio não tem essa etapa (ela foi removida ou criada só no negócio)."
+      "etapaForaDoNegocio": "Este negócio não tem essa etapa (ela foi removida ou criada só no negócio).",
+      "ordemInvalida": "A lista de etapas mudou enquanto você arrastava. Recarregue a página e tente de novo."
     },
     "escala": "Escala na linha do tempo (%)",
     "escalaCurta": "escala {n}%",
@@ -75,6 +78,7 @@
     "emAndamento": "em andamento",
     "duracao": "{dias, plural, one {# dia} other {# dias}}",
     "documentosDaEtapa": "{n, plural, =0 {Documentos (nenhum)} one {Documentos (#)} other {Documentos (#)}}",
-    "tarefasDaEtapa": "{n, plural, =0 {Tarefas (nenhuma aberta)} one {Tarefas (# aberta)} other {Tarefas (# abertas)}}"
+    "tarefasDaEtapa": "{n, plural, =0 {Tarefas (nenhuma aberta)} one {Tarefas (# aberta)} other {Tarefas (# abertas)}}",
+    "arrastar": "Arrastar {nome} para mudar a ordem"
   }
 }

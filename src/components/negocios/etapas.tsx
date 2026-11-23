@@ -10,9 +10,11 @@ import {
   mudarSituacaoDaEtapaAcao,
   removerEtapaAcao,
   type EstadoEtapa,
+  reordenarEtapasAcao,
 } from "@/app/acoes/etapas";
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso } from "@/components/ui/basicos";
+import { AlcaDeArrastar, useOrdenacao } from "@/components/ui/ordenacao";
 
 /** Aba Etapas do negócio: lista editável e linha do tempo (itens 9 e 10). */
 
@@ -155,6 +157,7 @@ function LinhaDaEtapa({
   sub = false,
   documentos,
   tarefas,
+  arrastar,
 }: {
   dealId: string;
   etapa: Etapa;
@@ -164,6 +167,7 @@ function LinhaDaEtapa({
   sub?: boolean;
   documentos?: Record<string, number>;
   tarefas?: Record<string, number>;
+  arrastar?: { linha: object; alca: { onPointerDown: () => void; onPointerUp: () => void } };
 }) {
   const t = useTranslations("etapas");
   const router = useRouter();
@@ -202,10 +206,16 @@ function LinhaDaEtapa({
     </button>
   );
   return (
-    <li className={sub ? "border-border ml-4 border-l pl-3" : ""}>
+    <li
+      {...arrastar?.linha}
+      className={`${sub ? "border-border ml-4 border-l pl-3" : ""} transition-opacity data-[arrastando=sim]:opacity-50`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2 py-2">
         <div className="min-w-0">
           <span className="flex flex-wrap items-center gap-2">
+            {arrastar && etapa.podeEditar && (
+              <AlcaDeArrastar rotulo={t("arrastar", { nome: etapa.nome })} {...arrastar.alca} />
+            )}
             <span
               className={`rounded-full border px-2 py-0.5 text-xs font-medium ${corDaSituacao[etapa.situacao]}`}
             >
@@ -288,23 +298,67 @@ function LinhaDaEtapa({
       )}
       {(etapa.subetapas.length > 0 || (!sub && podeIncluir)) && (
         <ul className="mb-2">
-          {etapa.subetapas.map((s) => (
-            <LinhaDaEtapa
-              key={s.id}
-              documentos={documentos}
-              tarefas={tarefas}
-              dealId={dealId}
-              etapa={s}
-              irmas={etapa.subetapas}
-              podeExcluir={podeExcluir}
-              podeIncluir={false}
-              sub
-            />
-          ))}
+          <EtapasArrastaveis
+            dealId={dealId}
+            paiId={etapa.id}
+            etapas={etapa.subetapas}
+            documentos={documentos}
+            tarefas={tarefas}
+            podeExcluir={podeExcluir}
+            podeIncluir={false}
+            sub
+          />
           {!sub && podeIncluir && <NovaEtapa dealId={dealId} paiId={etapa.id} />}
         </ul>
       )}
     </li>
+  );
+}
+
+/** Etapas irmãs que se reordenam arrastando pela alça "⋮⋮" (os botões ↑ ↓ continuam valendo). */
+function EtapasArrastaveis({
+  dealId,
+  paiId,
+  etapas,
+  ...resto
+}: {
+  dealId: string;
+  paiId: string | null;
+  etapas: Etapa[];
+  documentos?: Record<string, number>;
+  tarefas?: Record<string, number>;
+  podeExcluir: boolean;
+  podeIncluir: boolean;
+  sub?: boolean;
+}) {
+  const router = useRouter();
+  const [erro, setErro] = useState<string | null>(null);
+  const [, iniciar] = useTransition();
+  const { lista, linha, alca } = useOrdenacao(etapas, (ids) =>
+    iniciar(async () => {
+      const r = await reordenarEtapasAcao(dealId, paiId, ids);
+      setErro(r.erro ?? null);
+      router.refresh();
+    }),
+  );
+  return (
+    <>
+      {erro && (
+        <li>
+          <Aviso>{erro}</Aviso>
+        </li>
+      )}
+      {lista.map((e) => (
+        <LinhaDaEtapa
+          key={e.id}
+          dealId={dealId}
+          etapa={e}
+          irmas={etapas}
+          arrastar={{ linha: linha(e.id), alca: alca(e.id) }}
+          {...resto}
+        />
+      ))}
+    </>
   );
 }
 
@@ -547,18 +601,15 @@ export function EtapasDoNegocio({
         <LinhaDoTempo etapas={etapas} hoje={hoje} />
       ) : (
         <ul className="divide-border divide-y">
-          {etapas.map((e) => (
-            <LinhaDaEtapa
-              key={e.id}
-              documentos={documentosPorEtapa}
-              tarefas={tarefasPorEtapa}
-              dealId={dealId}
-              etapa={e}
-              irmas={etapas}
-              podeExcluir={podeExcluir}
-              podeIncluir={podeIncluir}
-            />
-          ))}
+          <EtapasArrastaveis
+            dealId={dealId}
+            paiId={null}
+            etapas={etapas}
+            documentos={documentosPorEtapa}
+            tarefas={tarefasPorEtapa}
+            podeExcluir={podeExcluir}
+            podeIncluir={podeIncluir}
+          />
           {podeIncluir && <NovaEtapa dealId={dealId} />}
         </ul>
       )}

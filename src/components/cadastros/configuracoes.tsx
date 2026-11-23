@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useId, useState, type ReactNode } from "react";
+import { Fragment, useId, useState, useTransition, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   excluirPapelAcao,
@@ -14,10 +15,12 @@ import {
   definirEtapaPadraoAtivaAcao,
   excluirEtapaPadraoAcao,
   moverEtapaPadraoAcao,
+  reordenarEtapasPadraoAcao,
   salvarEtapaPadraoAcao,
 } from "@/app/acoes/etapas";
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso, estiloTabela } from "@/components/ui/basicos";
+import { AlcaDeArrastar, useOrdenacao } from "@/components/ui/ordenacao";
 
 /**
  * Tabelas das Configurações (cadastros auxiliares): uma linha por registro,
@@ -385,6 +388,7 @@ function LinhaEtapa({
   podeEditar,
   podeExcluir,
   novo,
+  arrastar,
 }: {
   etapa?: EtapaPadrao;
   paiId?: string;
@@ -392,6 +396,7 @@ function LinhaEtapa({
   podeEditar: boolean;
   podeExcluir: boolean;
   novo?: string;
+  arrastar?: { linha: object; alca: { onPointerDown: () => void; onPointerUp: () => void } };
 }) {
   const t = useTranslations("configuracoes");
   const te = useTranslations("etapas.padrao");
@@ -400,20 +405,30 @@ function LinhaEtapa({
   const editavel = etapa ? podeEditar : true;
   return (
     <>
-      <tr className={`${estiloTabela.linha} ${etapa && !etapa.ativa ? "opacity-60" : ""}`}>
+      <tr
+        {...arrastar?.linha}
+        className={`${estiloTabela.linha} ${etapa && !etapa.ativa ? "opacity-60" : ""} data-[arrastando=sim]:opacity-40`}
+      >
         <td className={`${estiloTabela.td} ${sub ? "pl-8" : ""}`}>
           {l.form({ ...(etapa ? { id: etapa.id } : {}), ...(paiId ? { paiId } : {}) })}
-          <input
-            form={l.id}
-            name="nome"
-            required
-            maxLength={120}
-            defaultValue={etapa?.nome}
-            placeholder={etapa ? undefined : novo}
-            disabled={!editavel}
-            aria-label={etapa ? te("nomeDe", { nome: etapa.nome }) : novo}
-            className={campo}
-          />
+          <span className="flex items-center gap-1.5">
+            {arrastar && etapa && podeEditar ? (
+              <AlcaDeArrastar rotulo={te("arrastar", { nome: etapa.nome })} {...arrastar.alca} />
+            ) : (
+              <span className="w-4 shrink-0" />
+            )}
+            <input
+              form={l.id}
+              name="nome"
+              required
+              maxLength={120}
+              defaultValue={etapa?.nome}
+              placeholder={etapa ? undefined : novo}
+              disabled={!editavel}
+              aria-label={etapa ? te("nomeDe", { nome: etapa.nome }) : novo}
+              className={campo}
+            />
+          </span>
         </td>
         <td className={estiloTabela.td}>
           {!sub && (
@@ -476,6 +491,40 @@ function LinhaEtapa({
   );
 }
 
+/** Subetapas de uma etapa padrão, que se reordenam arrastando (só entre elas). */
+function SubetapasArrastaveis({
+  pai,
+  podeEditar,
+  podeExcluir,
+}: {
+  pai: EtapaPadrao;
+  podeEditar: boolean;
+  podeExcluir: boolean;
+}) {
+  const router = useRouter();
+  const [, iniciar] = useTransition();
+  const { lista, linha, alca } = useOrdenacao(pai.subetapas, (ids) =>
+    iniciar(async () => {
+      await reordenarEtapasPadraoAcao(pai.id, ids);
+      router.refresh();
+    }),
+  );
+  return (
+    <>
+      {lista.map((s) => (
+        <LinhaEtapa
+          key={s.id}
+          etapa={s}
+          sub
+          podeEditar={podeEditar}
+          podeExcluir={podeExcluir}
+          arrastar={{ linha: linha(s.id), alca: alca(s.id) }}
+        />
+      ))}
+    </>
+  );
+}
+
 export function TabelaDeEtapas({
   etapas,
   podeCriar,
@@ -489,18 +538,32 @@ export function TabelaDeEtapas({
 }) {
   const t = useTranslations("configuracoes");
   const te = useTranslations("etapas.padrao");
+  const router = useRouter();
+  const [erro, setErro] = useState<string | null>(null);
+  const [, iniciar] = useTransition();
+  const { lista, linha, alca } = useOrdenacao(etapas, (ids) =>
+    iniciar(async () => {
+      const r = await reordenarEtapasPadraoAcao(null, ids);
+      setErro(r.erro ?? null);
+      router.refresh();
+    }),
+  );
   return (
     <div>
       <p className="text-muted mb-3 text-sm">
-        {te("explicacao")} {t("escalaExplicacao")}
+        {te("explicacao")} {t("escalaExplicacao")} {te("arrasteExplicacao")}
       </p>
+      {erro && <Aviso>{erro}</Aviso>}
       <Tabela colunas={[t("nome"), t("escala"), t("situacao"), t("acoes")]}>
-        {etapas.map((e) => (
+        {lista.map((e) => (
           <Fragment key={e.id}>
-            <LinhaEtapa etapa={e} podeEditar={podeEditar} podeExcluir={podeExcluir} />
-            {e.subetapas.map((s) => (
-              <LinhaEtapa key={s.id} etapa={s} sub podeEditar={podeEditar} podeExcluir={podeExcluir} />
-            ))}
+            <LinhaEtapa
+              etapa={e}
+              podeEditar={podeEditar}
+              podeExcluir={podeExcluir}
+              arrastar={{ linha: linha(e.id), alca: alca(e.id) }}
+            />
+            <SubetapasArrastaveis pai={e} podeEditar={podeEditar} podeExcluir={podeExcluir} />
             {podeCriar && (
               <LinhaEtapa
                 key={`${e.id}-nova`}

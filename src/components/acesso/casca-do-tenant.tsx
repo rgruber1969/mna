@@ -246,7 +246,7 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
   return (
     <div ref={caixa} className="relative hidden sm:block">
       <label
-        className={`${aberto ? "w-[28rem]" : "w-80"} bg-background border-border focus-within:border-primary flex items-center gap-2 rounded-full border px-4 py-2 transition-[width] duration-150`}
+        className={`${aberto ? "w-[28rem]" : "w-80"} group bg-background border-border focus-within:border-primary flex items-center gap-2 rounded-full border px-4 py-2 transition-[width] duration-150`}
       >
         <Icone nome="lupa" className="text-primary h-4 w-4" />
         <input
@@ -275,7 +275,7 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
           placeholder={t("procurarDica")}
           className="text-text placeholder:text-muted w-full bg-transparent text-sm outline-none"
         />
-        <kbd className="border-border text-muted hidden shrink-0 rounded border px-1.5 text-[10px] font-medium whitespace-nowrap md:inline">
+        <kbd className="border-border text-muted hidden shrink-0 rounded border px-1.5 text-[10px] font-medium whitespace-nowrap opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 md:inline">
           {t("atalho")}
         </kbd>
       </label>

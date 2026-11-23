@@ -692,3 +692,55 @@ export async function opcoesDeAlcance(acesso: Acesso | null, dealId: string) {
 
 /** Reaproveitado dentro do mesmo carregamento de página (React cache; gravações não usam). */
 export const contextoDeEtapas = cache(contextoDeEtapasSemCache);
+
+/**
+ * Nova ordem das irmãs (arrastar na tela). As etapas trocam de lugar entre os
+ * números de ordem que já ocupavam (nada fora do grupo muda). Recusa se a
+ * lista não for exatamente o conjunto das irmãs.
+ */
+function novaOrdem<T extends { id: string; ordem: number }>(irmas: T[], ids: string[]) {
+  const unicos = [...new Set(ids)];
+  if (unicos.length !== irmas.length || !irmas.every((x) => unicos.includes(x.id))) return null;
+  const vagas = irmas.map((x) => x.ordem).sort((x, y) => x - y);
+  return unicos.map((id, i) => ({ id, ordem: vagas[i] }));
+}
+
+/** Reordena etapas padrão irmãs (mesmo pai; null = principais). */
+export async function reordenarEtapasPadrao(
+  acesso: Acesso | null,
+  paiId: string | null,
+  ids: string[],
+): Promise<Resultado> {
+  const a = await exigirPermissao(acesso, "cadastros", "editar");
+  if (paiId !== null && !uuidValido(paiId)) return { erro: "etapas.erros.naoEncontrada" };
+  return comTenant(a.tenant.id, async (tx) => {
+    const irmas = await tx
+      .select({ id: etapaPadrao.id, ordem: etapaPadrao.ordem })
+      .from(etapaPadrao)
+      .where(paiId ? eq(etapaPadrao.paiId, paiId) : isNull(etapaPadrao.paiId));
+    const nova = novaOrdem(irmas, ids);
+    if (!nova) return { erro: "etapas.erros.ordemInvalida" };
+    for (const x of nova)
+      await tx.update(etapaPadrao).set({ ordem: x.ordem }).where(eq(etapaPadrao.id, x.id));
+    return { ok: true } as const;
+  });
+}
+
+/** Reordena etapas irmãs de um negócio ("Etapas × editar"). */
+export async function reordenarEtapas(
+  acesso: Acesso | null,
+  dealId: string,
+  paiId: string | null,
+  ids: string[],
+): Promise<Resultado> {
+  const { a, ctx } = await exigirNaEtapa(acesso, dealId, null, "editar");
+  const fechado = await negocioFechado(a, dealId);
+  if (fechado) return fechado;
+  const irmas = ctx.etapas.filter((e) => e.paiId === paiId);
+  const nova = novaOrdem(irmas, ids);
+  if (!nova) return { erro: "etapas.erros.ordemInvalida" };
+  await comTenant(a.tenant.id, async (tx) => {
+    for (const x of nova) await tx.update(dealEtapa).set({ ordem: x.ordem }).where(eq(dealEtapa.id, x.id));
+  });
+  return { ok: true };
+}

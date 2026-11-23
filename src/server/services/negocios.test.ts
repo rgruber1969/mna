@@ -54,6 +54,8 @@ import {
   listarEtapasPadrao,
   mudarSituacaoDaEtapa,
   removerEtapa,
+  reordenarEtapas,
+  reordenarEtapasPadrao,
   salvarEtapaPadrao,
 } from "./etapas";
 import { moverNegocioParaEtapa, quadroDeNegocios } from "./negocios-kanban";
@@ -784,6 +786,15 @@ describe("etapas do negócio", () => {
     expect(await removerEtapa(g, negocioId, prospeccao.id)).toMatchObject({
       erro: "etapas.erros.soNaoIniciada",
     });
+    // Arrastar: nova ordem das etapas principais (só com o conjunto completo das irmãs).
+    const principais = (await etapasDoNegocio(g, negocioId))!.etapas.map((e) => e.id);
+    const invertida = [...principais].reverse();
+    expect(await reordenarEtapas(g, negocioId, null, invertida.slice(1))).toMatchObject({
+      erro: "etapas.erros.ordemInvalida",
+    });
+    expect(await reordenarEtapas(g, negocioId, null, invertida)).toEqual({ ok: true });
+    expect((await etapasDoNegocio(g, negocioId))!.etapas.map((e) => e.id)).toEqual(invertida);
+    expect(await reordenarEtapas(g, negocioId, null, principais)).toEqual({ ok: true });
   });
 });
 
@@ -798,6 +809,15 @@ describe("etapas padrão", () => {
     });
     expect(await excluirEtapaPadrao(a, criada.id)).toEqual({ ok: true });
     expect((await listarEtapasPadrao(a)).some((e) => e.nome === "Diligência → QPA")).toBe(false);
+    // Arrastar em Configurações: troca a ordem das principais e volta.
+    const ids = (await listarEtapasPadrao(a)).map((e) => e.id);
+    const trocada = [ids[1], ids[0], ...ids.slice(2)];
+    expect(await reordenarEtapasPadrao(a, null, trocada)).toEqual({ ok: true });
+    expect((await listarEtapasPadrao(a)).map((e) => e.id)).toEqual(trocada);
+    expect(await reordenarEtapasPadrao(a, null, [ids[0]])).toMatchObject({
+      erro: "etapas.erros.ordemInvalida",
+    });
+    expect(await reordenarEtapasPadrao(a, null, ids)).toEqual({ ok: true });
     // Nova escala no padrão vale nos negócios em que a etapa não foi ajustada à mão.
     const pos = (await listarEtapasPadrao(a)).find((e) => e.nome === "Pós-closing")!;
     expect(await salvarEtapaPadrao(a, { id: pos.id, nome: pos.nome, escala: "10" })).toEqual({ ok: true });

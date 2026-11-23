@@ -268,12 +268,24 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await expect(admin.getByRole("button", { name: "Tirar Empresas dos favoritos" })).toBeVisible();
   await admin.getByRole("button", { name: "Recolher menu" }).click();
   await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
-  // A gravação da preferência é assíncrona (e há outras chamadas ao servidor, como as
-  // mensagens): recarrega até a preferência aparecer gravada.
-  await expect(async () => {
-    await admin.reload();
-    await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible({ timeout: 10_000 });
-  }).toPass({ timeout: 60_000 });
+  // As ações do servidor rodam uma de cada vez (a busca de mensagens também usa a fila):
+  // espera a preferência chegar ao banco antes de recarregar, senão a recarga a cancela.
+  const banco = new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO });
+  await expect
+    .poll(
+      async () =>
+        (
+          await banco.query<{ recolhido: boolean }>(
+            `select p.recolhido from preferencia_menu p join usuario u on u.id = p.usuario_id where u.email = $1`,
+            [emailTenant],
+          )
+        ).rows[0]?.recolhido ?? false,
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  await banco.end();
+  await admin.reload();
+  await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible();
   await admin.getByRole("button", { name: "Expandir menu" }).click();
   await expect(menu.getByText("Favoritos")).toBeVisible();
   await expect(menu.getByRole("link", { name: "Empresas" })).toHaveCount(2);

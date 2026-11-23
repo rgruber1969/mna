@@ -88,46 +88,56 @@ export function Abas({
           onInvalidCapture={(e) => revelarElemento(e.target as Element)}
           className="grid gap-6 md:grid-cols-[14rem_1fr]"
         >
-          <div
-            role="tablist"
-            aria-orientation="vertical"
-            className="md:border-border flex flex-col gap-0.5 md:border-r md:pr-3"
-          >
-            {abas.map((a, i) => (
-              <span key={a.id} className="contents">
-                {a.grupo && a.grupo !== abas[i - 1]?.grupo && (
-                  <span className="text-muted px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider uppercase first:pt-0">
-                    {a.grupo}
-                  </span>
-                )}
-                <button
-                  type="button"
-                  role="tab"
-                  id={`aba-${a.id}`}
-                  aria-selected={ativa === a.id}
-                  onClick={() => ativar(a.id)}
-                  className={`relative rounded-md px-3 py-2 text-left text-sm transition-colors duration-150 ${
-                    ativa === a.id
-                      ? "bg-primary-soft text-primary font-semibold"
-                      : "text-text hover:bg-surface font-medium"
-                  }`}
+          <div role="tablist" aria-orientation="vertical" className="flex flex-col gap-3">
+            {/* Cada grupo num bloco próprio (fundo, título com traço e contagem), para separar bem os assuntos. */}
+            {[...new Set(abas.map((a) => a.grupo ?? ""))].map((grupo) => {
+              const doGrupo = abas.filter((a) => (a.grupo ?? "") === grupo);
+              return (
+                <div
+                  key={grupo || "sem-grupo"}
+                  role="group"
+                  aria-label={grupo || undefined}
+                  className="bg-surface/70 border-border flex flex-col gap-0.5 rounded-xl border p-1.5"
                 >
-                  {ativa === a.id && (
-                    <span
-                      aria-hidden="true"
-                      className="bg-primary absolute inset-y-1.5 left-0 w-0.5 rounded-full"
-                    />
+                  {grupo && (
+                    <span className="text-text flex items-center gap-2 px-2 pt-1 pb-1.5 text-xs font-bold tracking-wider uppercase">
+                      <span aria-hidden="true" className="bg-primary h-3 w-1 rounded-full" />
+                      {grupo}
+                      <span className="text-muted ml-auto font-medium tabular-nums">{doGrupo.length}</span>
+                    </span>
                   )}
-                  {a.rotulo}
-                  {comErro.has(a.id) && (
-                    <span
-                      aria-label="!"
-                      className="bg-danger ml-1.5 inline-block h-2 w-2 rounded-full align-middle"
-                    />
-                  )}
-                </button>
-              </span>
-            ))}
+                  {doGrupo.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      role="tab"
+                      id={`aba-${a.id}`}
+                      aria-selected={ativa === a.id}
+                      onClick={() => ativar(a.id)}
+                      className={`relative rounded-md px-3 py-2 text-left text-sm transition-colors duration-150 ${
+                        ativa === a.id
+                          ? "bg-primary-soft text-primary font-semibold"
+                          : "text-text hover:bg-background font-medium"
+                      }`}
+                    >
+                      {ativa === a.id && (
+                        <span
+                          aria-hidden="true"
+                          className="bg-primary absolute inset-y-1.5 left-0 w-0.5 rounded-full"
+                        />
+                      )}
+                      {a.rotulo}
+                      {comErro.has(a.id) && (
+                        <span
+                          aria-label="!"
+                          className="bg-danger ml-1.5 inline-block h-2 w-2 rounded-full align-middle"
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
           </div>
           <div className="min-w-0">{children}</div>
         </div>

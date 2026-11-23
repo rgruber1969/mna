@@ -317,7 +317,7 @@
       "titulo": "Configurações gerais",
       "sobre": "Administração",
       "ajuda": "Regras gerais do tenant, definidas pelos administradores.",
-      "diasAviso": "Exclusividade (dias antes do prazo)",
+      "diasAviso": "Notificação sobre final da Exclusividade (dias antes do prazo)",
       "diasAvisoAjuda": "Ex.: \"15, 5\": o lado vendedor é avisado 15 e 5 dias antes do fim, além do início e do último dia.",
       "salvar": "Salvar",
       "diasTarefa": "Lembretes de tarefa (dias antes do prazo)",
