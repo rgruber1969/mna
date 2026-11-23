@@ -273,7 +273,7 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
           placeholder={t("procurarDica")}
           className="text-text placeholder:text-muted w-full bg-transparent text-sm outline-none"
         />
-        <kbd className="border-border text-muted hidden rounded border px-1.5 text-[10px] font-medium md:inline">
+        <kbd className="border-border text-muted hidden shrink-0 rounded border px-1.5 text-[10px] font-medium whitespace-nowrap md:inline">
           {t("atalho")}
         </kbd>
       </label>

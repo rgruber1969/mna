@@ -47,7 +47,12 @@ for (let i = 0; i < 20 && processosNaPorta().length; i++) await new Promise((r) 
 
 // Cache do servidor de desenvolvimento: limpo a cada reinício, porque o Turbopack às vezes
 // continua servindo CSS antigo depois de mudanças (aconteceu com os tokens do tema).
-rmSync(fileURLToPath(new URL("../.next/dev", import.meta.url)), { recursive: true, force: true });
+rmSync(fileURLToPath(new URL("../.next/dev", import.meta.url)), {
+  recursive: true,
+  force: true,
+  maxRetries: 10,
+  retryDelay: 300,
+});
 
 const next = createRequire(import.meta.url).resolve("next/dist/bin/next");
 const filho = spawn(process.execPath, [next, "dev", "--port", String(porta)], { stdio: "inherit" });

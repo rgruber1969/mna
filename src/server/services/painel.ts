@@ -203,7 +203,8 @@ export async function painelDoUsuario(acesso: Acesso | null): Promise<Painel> {
     negocios: [...cartoes]
       .sort(
         (x, y) =>
-          (x.nivelDoPrazo ? ordemDoNivel[x.nivelDoPrazo] : 3) - (y.nivelDoPrazo ? ordemDoNivel[y.nivelDoPrazo] : 3) ||
+          (x.nivelDoPrazo ? ordemDoNivel[x.nivelDoPrazo] : 3) -
+            (y.nivelDoPrazo ? ordemDoNivel[y.nivelDoPrazo] : 3) ||
           (x.prazo ?? "9999").localeCompare(y.prazo ?? "9999"),
       )
       .slice(0, 8)

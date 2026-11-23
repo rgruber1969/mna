@@ -180,11 +180,17 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("link", { name: "Configurações" }).click();
   await admin.getByRole("tab", { name: "Identidade visual" }).click();
   await admin.getByLabel("Nome de exibição").fill("Bastos E2E");
-  await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#ffd60a");
+  await admin.getByRole("textbox", { name: "Cor da marca", exact: true }).fill("#ffd60a");
   await expect(admin.getByText("A cor primária é usada em textos", { exact: false })).toBeVisible();
   await expect(admin.getByRole("button", { name: "Salvar identidade visual" })).toBeDisabled();
-  await admin.getByRole("textbox", { name: "Cor primária", exact: true }).fill("#7a1238");
-  await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#c2410c");
+  await admin.getByRole("textbox", { name: "Cor da marca", exact: true }).fill("#7a1238");
+  await admin.getByRole("textbox", { name: "Cor secundária", exact: true }).fill("#c2410c");
+  // Cor de destaque (acento do 2 + 1): só o botão principal; a tela sugere matizes opostos.
+  await admin
+    .getByRole("button", { name: /^Usar #/ })
+    .first()
+    .click();
+  await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#4338ca");
   await admin.getByLabel("Fonte").selectOption("lato");
   await admin.getByText("Grande (18)").click();
   await admin.getByRole("button", { name: "Salvar identidade visual" }).click();
@@ -193,6 +199,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   const variavel = (nome: string) =>
     admin.evaluate((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), nome);
   await expect.poll(() => variavel("--primary")).toBe("#7a1238");
+  expect(await variavel("--cta")).toBe("#4338ca");
   expect(await admin.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain("Lato");
   expect(await admin.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe("18px");
   await admin.getByRole("tab", { name: "Identidade visual" }).click();
@@ -248,11 +255,13 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("tab", { name: "Papéis de empresa" }).click();
   await expect(admin.getByRole("textbox", { name: "Nome de Vendedora" })).toBeVisible();
 
-  // Busca do cabeçalho (opções do menu); menu lateral com favoritos e recolher guardados no servidor.
+  // Paleta de comandos do cabeçalho (Ctrl K: ações, páginas e documentos); menu lateral com favoritos e recolher guardados no servidor.
   const menu = admin.getByRole("navigation", { name: "Menu" });
   await admin.getByRole("searchbox", { name: "Procurar no menu" }).fill("pess");
-  await expect(admin.getByRole("banner").getByRole("link", { name: "Pessoas" })).toBeVisible();
-  await expect(admin.getByRole("banner").getByRole("link", { name: "Empresas" })).toHaveCount(0);
+  await expect(admin.getByRole("banner").getByRole("option", { name: "Pessoas", exact: true })).toBeVisible();
+  await expect(admin.getByRole("banner").getByRole("option", { name: "Empresas", exact: true })).toHaveCount(
+    0,
+  );
   await admin.getByRole("searchbox", { name: "Procurar no menu" }).fill("");
   await menu.getByRole("link", { name: "Empresas" }).hover();
   await admin.getByRole("button", { name: "Favoritar Empresas" }).click();

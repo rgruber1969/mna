@@ -82,7 +82,8 @@ export async function salvarIdentidade(acesso: Acesso | null, dados: DadosIdenti
   if (!r.success) return { erro: r.error.issues[0]?.message ?? "administracao.erros.dadosInvalidos" };
   const { nomeExibicao, corPrimaria, corDestaque, corAcento, fonte, tamanhoFonte } = r.data;
   if (!tamanhoValido(tamanhoFonte)) return { erro: "administracao.erros.tamanhoInvalido" };
-  if (!corValida(corPrimaria) || !corValida(corDestaque) || !corValida(corAcento)) return { erro: "administracao.erros.formatoDeCor" };
+  if (!corValida(corPrimaria) || !corValida(corDestaque) || !corValida(corAcento))
+    return { erro: "administracao.erros.formatoDeCor" };
   if (!fonteValida(fonte)) return { erro: "administracao.erros.fonteInvalida" };
   const problemas = problemasDeContraste({
     primaria: corPrimaria,

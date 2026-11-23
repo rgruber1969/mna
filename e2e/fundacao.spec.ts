@@ -19,3 +19,8 @@ test("API responde e a documentação abre", async ({ page, request }) => {
   await page.getByRole("link", { name: "Documentação da API" }).click();
   await expect(page.getByText("/api/status")).toBeVisible();
 });
+
+test("o endereço não vaza para outros sites (Referrer-Policy, ASVS V3.4.5)", async ({ request }) => {
+  const resposta = await request.get("/");
+  expect(resposta.headers()["referrer-policy"]).toBe("same-origin");
+});

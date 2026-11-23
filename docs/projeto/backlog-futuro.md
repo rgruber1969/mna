@@ -132,3 +132,18 @@ versão 1" é anotado aqui.
   Aparece uma vez por pessoa; uma opção nas preferências da conta
   ("Ver o tour de novo", guardada como flag por usuário) o reapresenta.
   Textos nas mensagens (idiomas) e cores pelos tokens do tema.
+
+## Layout (depois das propostas v3, 2026-11-23)
+
+* **Grade de 8 em todas as telas:** as telas novas (painel, kanban, painel
+  do negócio) já usam espaçamentos de 8/16/24; as demais ainda têm 6 e 12 px
+  e passam para a grade quando forem revisitadas.
+* **Tela cheia do negócio com as abas juntadas:** o painel central do kanban
+  já junta Empresas + Participantes ("Pessoas e empresas") e Tarefas +
+  Mensagens ("Atividade"); a tela `/negocios/[id]` ainda mantém as abas
+  separadas.
+* **Bordas de campos no tema escuro com 3:1:** as bordas ficaram mais
+  visíveis, mas os campos de formulário ainda não chegam a 3:1 sobre o
+  fundo dos cartões.
+* **"Concluir" direto no "Próximo passo":** hoje o botão abre a tarefa na aba
+  Atividade.

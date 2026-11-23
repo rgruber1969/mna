@@ -18,6 +18,8 @@ const slug = `neg-${sufixo}`;
 const email = `neg-${sufixo}@exemplo.test`;
 
 test.skip(process.env.DEV_ENTRAR_SO_COM_EMAIL !== "sim", "entrada de desenvolvimento desligada");
+// Os testes seguintes usam o negócio criado no primeiro (mesmo tenant): em sequência.
+test.describe.configure({ mode: "serial" });
 
 const dono = () => new pg.Pool({ connectionString: process.env.DATABASE_URL_MIGRACAO });
 
@@ -184,7 +186,9 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await page.getByRole("button", { name: "Mais ações de N-0001 Projeto Teste" }).click();
   await page.getByRole("menuitem", { name: /Mover para/ }).click();
   await page.getByRole("menuitem", { name: "Term Sheet" }).click();
-  await expect(page.getByRole("status").getByText("N-0001 Projeto Teste movido para Term Sheet")).toBeVisible();
+  await expect(
+    page.getByRole("status").getByText("N-0001 Projeto Teste movido para Term Sheet"),
+  ).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Term Sheet" }).getByText("N-0001 Projeto Teste"),
   ).toBeVisible({

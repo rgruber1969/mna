@@ -319,9 +319,7 @@ export function PainelSituacao({
   );
   return (
     <div className="border-border mt-6 border-t pt-4">
-      <p className="text-muted mb-2 text-xs font-semibold tracking-wider uppercase">
-        {t("situacaoTitulo")}
-      </p>
+      <p className="text-muted mb-2 text-xs font-semibold tracking-wider uppercase">{t("situacaoTitulo")}</p>
       <Mensagem estado={estado} />
       {fechado && <p className="text-muted mb-2 text-sm">{t("soConsulta")}</p>}
       <div className="flex flex-wrap gap-2">
