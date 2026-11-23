@@ -122,7 +122,7 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                             {e.razaoSocial}
                           </Link>
                           {e.doContratante && (
-                            <span className="text-accent ml-2 text-xs font-medium">{t("contratante")}</span>
+                            <span className="text-primary ml-2 text-xs font-medium">{t("contratante")}</span>
                           )}
                           {e.inativa && <span className="text-muted ml-2 text-xs">{t("inativa")}</span>}
                           {e.nomeFantasia && (

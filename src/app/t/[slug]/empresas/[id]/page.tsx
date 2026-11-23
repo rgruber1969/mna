@@ -177,7 +177,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                   ] as const
                 ).map(([chave, lista, vazio]) => (
                   <div key={chave}>
-                    <p className="text-accent mb-2 text-xs font-semibold tracking-widest uppercase">
+                    <p className="text-muted mb-2 text-xs font-semibold tracking-wider uppercase">
                       {tPart(chave)}
                     </p>
                     {lista.length === 0 ? (

@@ -44,7 +44,10 @@
       "vista": "Forma de ver os negócios",
       "vistaLista": "Lista",
       "vistaKanban": "Kanban",
-      "emAberto": "Em aberto"
+      "emAberto": "Em aberto",
+      "nenhumTexto": "Comece pelo codinome e pela vendedora.",
+      "nenhumComFiltro": "Nenhum negócio com os filtros escolhidos.",
+      "limparFiltros": "Limpar filtros"
     },
     "novo": {
       "titulo": "Novo negócio",
@@ -540,6 +543,8 @@
         "participacao": "Ver",
         "mensagem": "Responder"
       }
-    }
+    },
+    "semNegociosTexto": "Quando você participar de um negócio, o progresso dele aparece aqui.",
+    "novoNegocio": "Novo negócio"
   }
 }

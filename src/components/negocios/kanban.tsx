@@ -399,6 +399,17 @@ export function KanbanDeNegocios({
   const [erro, setErro] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   const [rapido, setRapido] = useState<"todos" | "atrasados" | "proximos">("todos");
+  // Filtro rápido no endereço (recarregar ou mandar o link mantém a mesma vista).
+  useEffect(() => {
+    const f = new URL(window.location.href).searchParams.get("filtro");
+    if (f === "atrasados" || f === "proximos") setRapido(f);
+  }, []);
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    if (rapido === "todos") u.searchParams.delete("filtro");
+    else u.searchParams.set("filtro", rapido);
+    if (u.href !== window.location.href) window.history.replaceState(window.history.state, "", u);
+  }, [rapido]);
   const [arrastado, setArrastado] = useState<string | null>(null);
   const [sobre, setSobre] = useState<string | null>(null);
   const [posicoes, setPosicoes] = useState<Record<string, string>>({});

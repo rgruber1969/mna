@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // O estado das telas vai no endereço (negócio aberto, aba, filtros, busca). Para ele não
+  // vazar para outros sites pelo cabeçalho Referer, o endereço completo só vai a páginas da
+  // própria aplicação (ASVS V3.4.5).
+  async headers() {
+    return [{ source: "/:caminho*", headers: [{ key: "Referrer-Policy", value: "same-origin" }] }];
+  },
   // Envios por server action: foto da conta (até 2 MB) e anexos do cadastro (até 10 MB).
   experimental: {
     serverActions: { bodySizeLimit: "11mb" },

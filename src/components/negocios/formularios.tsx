@@ -187,7 +187,7 @@ export function FormNovoNegocio({
         </span>
       </Rotulo>
       <fieldset className="border-border mb-3 border-t pt-3">
-        <legend className="text-accent pr-2 text-xs font-semibold tracking-widest uppercase">
+        <legend className="text-muted pr-2 text-xs font-semibold tracking-wider uppercase">
           {t("objeto")}
         </legend>
         <div className="mb-3 flex flex-wrap gap-4 text-sm">

@@ -62,6 +62,7 @@ export type Painel = {
   semana: { data: string; niveis: NivelDoPrazo[] }[];
   porEtapa: { nome: string; total: number }[];
   veNegocios: boolean;
+  podeCriar: boolean;
 };
 
 export async function painelDoUsuario(acesso: Acesso | null): Promise<Painel> {
@@ -69,7 +70,7 @@ export async function painelDoUsuario(acesso: Acesso | null): Promise<Painel> {
   const hoje = hojeEmSaoPaulo();
   const daquiA7 = somarDias(hoje, 7);
   const daquiA30 = somarDias(hoje, 30);
-  const veNegocios = await pode(a, "deals", "ver");
+  const [veNegocios, podeCriar] = await Promise.all([pode(a, "deals", "ver"), pode(a, "deals", "criar")]);
   const [quadro, alertas, diasDeAviso] = await Promise.all([
     veNegocios ? quadroDeNegocios(a, { situacao: "abertos" }) : null,
     minhasNotificacoes(a, 10),
@@ -221,6 +222,7 @@ export async function painelDoUsuario(acesso: Acesso | null): Promise<Painel> {
     semana,
     porEtapa,
     veNegocios,
+    podeCriar,
   };
 }
 

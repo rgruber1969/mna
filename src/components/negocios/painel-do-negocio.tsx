@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -243,6 +244,8 @@ export function PainelDoNegocio({
   const ts = useTranslations("negocios.situacoes");
   const tf = useTranslations("negocios.funil");
   const tm = useTranslations("mensagens");
+  const listaDeAbas = useRef<HTMLDivElement>(null);
+  const { estilo: traco, pronto } = useIndicadorDeslizante(listaDeAbas, `${aba}|${p === undefined}`);
   const [filtroAtividade, setFiltroAtividade] = useState<"tudo" | "tarefas" | "mensagens">("tudo");
   const atraso = c0.nivelDoPrazo === "atrasado" && c0.prazo ? -diasAte(c0.prazo, hoje) : 0;
   const tarefasAbertas = (p?.tarefas?.tarefas ?? []).filter(
@@ -363,7 +366,11 @@ export function PainelDoNegocio({
         ) : (
           <>
             <LinhaDasEtapas painel={p} hoje={hoje} dias={dias} />
-            <div role="tablist" className="border-border flex shrink-0 flex-wrap gap-x-1 border-b">
+            <div
+              ref={listaDeAbas}
+              role="tablist"
+              className="border-border relative flex shrink-0 flex-wrap gap-x-1 border-b"
+            >
               {abas.map((a) => (
                 <button
                   key={a.id}
@@ -371,11 +378,12 @@ export function PainelDoNegocio({
                   role="tab"
                   aria-selected={aba === a.id}
                   onClick={() => mudarAba(a.id)}
-                  className={`-mb-px border-b-2 px-3 py-2 text-sm whitespace-nowrap transition-colors duration-200 ${aba === a.id ? "border-primary text-primary font-semibold" : "text-muted hover:text-text border-transparent"}`}
+                  className={`-mb-px border-b-2 px-3 py-2 text-sm whitespace-nowrap transition-colors duration-200 ${aba === a.id ? `${pronto ? "border-transparent" : "border-primary"} text-primary font-semibold` : "text-muted hover:text-text border-transparent"}`}
                 >
                   {a.rotulo}
                 </button>
               ))}
+              <TracoDeslizante estilo={traco} />
             </div>
             <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
               {aba === "resumo" && (

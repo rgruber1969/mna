@@ -247,7 +247,7 @@ async function Painel({
                     <span>
                       <span className="font-medium">{e.nome}</span>
                       {e.doContratante && (
-                        <span className="text-accent ml-2 text-xs font-medium">{te("contratante")}</span>
+                        <span className="text-primary ml-2 text-xs font-medium">{te("contratante")}</span>
                       )}
                       <span className="text-muted block text-xs">
                         {[

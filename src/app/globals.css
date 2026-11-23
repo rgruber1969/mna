@@ -68,7 +68,7 @@
   --surface: #04070d;
   --text: #e6e9f0;
   --text-muted: #aeb7c8;
-  --border: #3b4966;
+  --border: #4a5a7a;
   --danger: #fb7185;
   --success: #4ade80;
   --warning: #facc15;
@@ -106,6 +106,18 @@
   --color-backdrop: var(--backdrop);
   --color-backdrop-foreground: var(--backdrop-foreground);
   --shadow-cartao: var(--sombra);
+  /*
+   * Escala tipográfica única 16 × 1,2ⁿ (ux-patterns; propostas de layout v3):
+   * 16 · 19 · 23 · 28 · 33; 12 e 14 só em rótulos e textos auxiliares.
+   */
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.4375rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 2.0625rem;
+  --text-3xl--line-height: 1.2;
   /* Fonte do tenant (white label) ou a padrão. */
   --font-sans: var(--fonte-marca);
 }

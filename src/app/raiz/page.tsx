@@ -11,7 +11,7 @@ export default function Inicio() {
   return (
     <main className="bg-surface flex flex-1 items-center justify-center px-6">
       <section className="border-border bg-background w-full max-w-xl rounded-lg border p-10">
-        <p className="text-accent text-sm font-semibold tracking-widest uppercase">{t("sobre")}</p>
+        <p className="text-muted text-sm font-semibold tracking-wider uppercase">{t("sobre")}</p>
         <h1 className="text-primary mt-3 text-3xl font-semibold">{produto.nome}</h1>
         <p className="text-muted mt-4 leading-relaxed">{t("texto")}</p>
         {/* /api/docs é rota da API (Hono), não página do Next: <a> é o correto aqui. */}

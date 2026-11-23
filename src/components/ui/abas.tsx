@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 
 /**
  * Abas das telas de cadastro (decisão menor "Telas de cadastro grandes"):
@@ -30,6 +31,8 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
   const [ativa, setAtiva] = useState(valida);
   const [comErro, setComErro] = useState<Set<string>>(new Set());
   const raiz = useRef<HTMLDivElement>(null);
+  const lista = useRef<HTMLDivElement>(null);
+  const { estilo, pronto } = useIndicadorDeslizante(lista, ativa);
 
   const ativar = useCallback((id: string) => {
     setAtiva(id);
@@ -66,7 +69,11 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
   return (
     <ContextoDasAbas.Provider value={{ ativa, ativar, revelarCampo }}>
       <div ref={raiz} onInvalidCapture={(e) => revelarElemento(e.target as Element)}>
-        <div role="tablist" className="border-border -mx-1 mb-4 flex flex-wrap gap-x-1 border-b">
+        <div
+          ref={lista}
+          role="tablist"
+          className="border-border relative -mx-1 mb-4 flex flex-wrap gap-x-1 border-b"
+        >
           {abas.map((a) => (
             <button
               key={a.id}
@@ -77,7 +84,7 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
               onClick={() => ativar(a.id)}
               className={`-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap ${
                 ativa === a.id
-                  ? "border-primary text-primary"
+                  ? `${pronto ? "border-transparent" : "border-primary"} text-primary`
                   : "text-muted hover:text-text border-transparent"
               }`}
             >
@@ -90,6 +97,7 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
               )}
             </button>
           ))}
+          <TracoDeslizante estilo={estilo} />
         </div>
         {children}
       </div>

@@ -9,6 +9,7 @@ import { painelDoUsuario, type NegocioDoPainel } from "@/server/services/painel"
 import { minhasMensagens } from "@/server/services/mensagens";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
+import { EstadoVazio } from "@/components/ui/estado-vazio";
 import { PrecisaDeVoce } from "@/components/painel/precisa-de-voce";
 import { EsqueletoDoPainel, EsqueletoDoPainelConteudo } from "@/components/ui/esqueletos";
 import { CORES_DO_NIVEL, diasAte, type NivelDoPrazo } from "@/config/prazos";
@@ -211,7 +212,11 @@ async function Conteudo({ acesso }: { acesso: AcessoTenant }) {
           link={p.veNegocios ? { href: "/negocios?vista=kanban", texto: tp("verKanban") } : undefined}
         >
           {p.negocios.length === 0 ? (
-            <p className="text-muted text-sm">{tp("semNegocios")}</p>
+            <EstadoVazio
+              titulo={tp("semNegocios")}
+              texto={tp("semNegociosTexto")}
+              acao={p.podeCriar ? { href: "/negocios/novo", rotulo: tp("novoNegocio") } : undefined}
+            />
           ) : (
             <div className="-mx-1 overflow-x-auto">
               <table className="w-full text-sm">

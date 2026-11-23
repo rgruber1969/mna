@@ -29,7 +29,7 @@
   },
   "cabecalho": {
     "procurar": "Procurar no menu",
-    "procurarDica": "Procurar menu ou documentos",
+    "procurarDica": "Procurar ou digitar um comando",
     "menuDoUsuario": "Menu do usuário",
     "administrador": "Administrador",
     "usuario": "Usuário",
@@ -48,7 +48,20 @@
     "idiomaEmBreve": "Inglês e espanhol em breve",
     "equipe": "Equipe",
     "buscarDocumentos": "Buscar documentos: “{termo}”",
-    "menuInvertido": "Menu lateral no tema oposto"
+    "menuInvertido": "Menu lateral no tema oposto",
+    "atalho": "Ctrl K",
+    "nadaEncontrado": "Nada encontrado.",
+    "grupos": {
+      "acoes": "Ações",
+      "paginas": "Páginas",
+      "documentos": "Documentos"
+    },
+    "acoes": {
+      "novoNegocio": "Novo negócio",
+      "novoContrato": "Novo contrato",
+      "novaEmpresa": "Nova empresa",
+      "novaPessoa": "Nova pessoa"
+    }
   },
   "notificacoes": {
     "titulo": "Notificações",

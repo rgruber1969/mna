@@ -81,7 +81,7 @@ export function AssinaturaRgruber({
 
 export function Cartao({ children, largura = "max-w-md" }: { children: ReactNode; largura?: string }) {
   return (
-    <section className={`bg-background shadow-cartao w-full ${largura} rounded-[10px] p-6 sm:p-7`}>
+    <section className={`bg-background border-border w-full border ${largura} rounded-[10px] p-6 sm:p-7`}>
       {children}
     </section>
   );
@@ -95,7 +95,7 @@ export function Cartao({ children, largura = "max-w-md" }: { children: ReactNode
 export function Titulo({ sobre, ajuda, children }: { sobre?: string; ajuda?: string; children: ReactNode }) {
   return (
     <header className="mb-6">
-      {sobre && <p className="text-accent text-xs font-semibold tracking-widest uppercase">{sobre}</p>}
+      {sobre && <p className="text-muted text-xs font-semibold tracking-wider uppercase">{sobre}</p>}
       <h1 className="text-text mt-1 flex items-center gap-2 text-xl font-bold">
         {children}
         {ajuda && <Ajuda texto={ajuda} />}

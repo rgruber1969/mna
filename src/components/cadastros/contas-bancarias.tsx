@@ -211,7 +211,7 @@ function ItemDaConta({
           {[conta.bancoCodigo, conta.bancoNome].filter(Boolean).join(" · ") || t("soPix")}
         </span>
         {conta.principal && (
-          <span className="text-accent ml-2 text-xs font-medium">{t("principalRotulo")}</span>
+          <span className="text-primary ml-2 text-xs font-medium">{t("principalRotulo")}</span>
         )}
         {linha(t("agencia"), ver.agencia)}
         {linha(conta.tipoConta ? t(`tipos.${conta.tipoConta}`) : t("conta"), ver.conta)}

@@ -74,7 +74,7 @@ function useCampoComErro(estado: { campo?: string } | undefined) {
 function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <fieldset className="border-border mb-4 border-t pt-3">
-      <legend className="text-accent pr-2 text-xs font-semibold tracking-widest uppercase">{titulo}</legend>
+      <legend className="text-muted pr-2 text-xs font-semibold tracking-wider uppercase">{titulo}</legend>
       <div className="grid gap-x-4 sm:grid-cols-2">{children}</div>
     </fieldset>
   );

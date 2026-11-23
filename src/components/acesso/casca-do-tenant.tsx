@@ -14,6 +14,7 @@ import {
 } from "@/app/acoes/notificacoes";
 import { minhasMensagensAcao } from "@/app/acoes/mensagens";
 import { BarraDeNavegacao } from "@/components/ui/barra-de-navegacao";
+import { PilulaDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
 import { aplicarMenuInvertido, aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
@@ -77,6 +78,7 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01" />
     </>
   ),
+  mais: <path d="M12 5v14M5 12h14" />,
   estrela: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />,
   lupa: (
     <>
@@ -171,79 +173,155 @@ const botaoRedondo =
 const painelSuspenso =
   "bg-background shadow-cartao border-border absolute right-0 z-40 mt-3 rounded-[10px] border";
 
-// --- Busca do cabeçalho ------------------------------------------------------------
+// --- Paleta de comandos (Ctrl K) ------------------------------------------------------
+//
+// A busca do cabeçalho vira paleta (propostas de layout v3; ux-patterns, ⌘K): Ctrl K (ou ⌘K)
+// abre de qualquer tela; grupos Ações / Páginas / Documentos; o 1º resultado já vem
+// selecionado; ↑ ↓ escolhem, Enter vai, Esc fecha. Só mostra o que o menu da pessoa já
+// mostra (as mesmas permissões).
+
+const ACOES: { item: string; href: string; chave: string }[] = [
+  { item: "negocios", href: "/negocios/novo", chave: "novoNegocio" },
+  { item: "contratos", href: "/contratos/novo", chave: "novoContrato" },
+  { item: "empresas", href: "/empresas/nova", chave: "novaEmpresa" },
+  { item: "pessoas", href: "/pessoas/nova", chave: "novaPessoa" },
+];
 
 function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
   const t = useTranslations("cabecalho");
   const router = useRouter();
   const [termo, setTermo] = useState("");
   const [aberto, setAberto] = useState(false);
+  const [selecionado, setSelecionado] = useState(0);
   const caixa = useRef<HTMLDivElement>(null);
+  const campo = useRef<HTMLInputElement>(null);
   useFecharFora(caixa, aberto, () => setAberto(false));
-  const achados = termo.trim()
-    ? itens.filter((i) => normalizar(i.rotulo).includes(normalizar(termo.trim())))
-    : [];
-  const buscaDeDocumentos = `/busca?q=${encodeURIComponent(termo.trim())}`;
+  useEffect(() => {
+    const atalho = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setAberto(true);
+        campo.current?.focus();
+        campo.current?.select();
+      }
+    };
+    document.addEventListener("keydown", atalho);
+    return () => document.removeEventListener("keydown", atalho);
+  }, []);
+  const q = normalizar(termo.trim());
+  const ids = new Set(itens.map((i) => i.item.id));
+  const acoes = ACOES.filter((a) => ids.has(a.item))
+    .map((a) => ({ href: a.href, rotulo: t(`acoes.${a.chave}`), icone: "mais" as const }))
+    .filter((a) => !q || normalizar(a.rotulo).includes(q));
+  const paginas = itens
+    .filter((i) => !q || normalizar(i.rotulo).includes(q))
+    .slice(0, q ? 8 : 6)
+    .map(({ item, rotulo }) => ({ href: item.href, rotulo, icone: item.icone }));
+  const documentos =
+    q.length >= 2
+      ? [
+          {
+            href: `/busca?q=${encodeURIComponent(termo.trim())}`,
+            rotulo: t("buscarDocumentos", { termo: termo.trim() }),
+            icone: "lupa" as const,
+          },
+        ]
+      : [];
+  const grupos = [
+    { chave: "acoes", lista: acoes },
+    { chave: "paginas", lista: paginas },
+    { chave: "documentos", lista: documentos },
+  ].filter((g) => g.lista.length);
+  const todos = grupos.flatMap((g) => g.lista);
+  const atual = Math.min(selecionado, Math.max(todos.length - 1, 0));
+  const ir = (href: string) => {
+    router.push(href);
+    setTermo("");
+    setAberto(false);
+    campo.current?.blur();
+  };
+  let indice = -1;
   return (
     <div ref={caixa} className="relative hidden sm:block">
-      <label className="bg-background border-border focus-within:border-primary flex w-80 items-center gap-2 rounded-full border px-4 py-2">
+      <label
+        className={`${aberto ? "w-[28rem]" : "w-80"} bg-background border-border focus-within:border-primary flex items-center gap-2 rounded-full border px-4 py-2 transition-[width] duration-150`}
+      >
+        <Icone nome="lupa" className="text-primary h-4 w-4" />
         <input
+          ref={campo}
           type="search"
+          aria-controls="paleta-de-comandos"
+          aria-activedescendant={aberto && todos.length ? `paleta-${atual}` : undefined}
           value={termo}
+          onFocus={() => setAberto(true)}
           onChange={(e) => {
             setTermo(e.target.value);
+            setSelecionado(0);
             setAberto(true);
           }}
           onKeyDown={(e) => {
-            if (e.key !== "Enter") return;
-            const destino = achados[0]?.item.href ?? (termo.trim().length >= 2 ? buscaDeDocumentos : null);
-            if (destino) {
-              router.push(destino);
-              setTermo("");
-              setAberto(false);
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+              e.preventDefault();
+              const passo = e.key === "ArrowDown" ? 1 : -1;
+              setSelecionado((atual + passo + todos.length) % Math.max(todos.length, 1));
+            } else if (e.key === "Enter" && todos[atual]) {
+              e.preventDefault();
+              ir(todos[atual].href);
             }
           }}
           aria-label={t("procurar")}
           placeholder={t("procurarDica")}
           className="text-text placeholder:text-muted w-full bg-transparent text-sm outline-none"
         />
-        <Icone nome="lupa" className="text-primary h-4 w-4" />
+        <kbd className="border-border text-muted hidden rounded border px-1.5 text-[10px] font-medium md:inline">
+          {t("atalho")}
+        </kbd>
       </label>
-      {aberto && termo.trim() && (
-        <ul className={`${painelSuspenso} left-0 w-72 py-2`}>
-          {termo.trim().length >= 2 && (
-            <li>
-              <Link
-                href={buscaDeDocumentos}
-                onClick={() => {
-                  setTermo("");
-                  setAberto(false);
-                }}
-                className="text-primary hover:bg-surface flex items-center gap-3 px-4 py-2 text-sm font-medium"
-              >
-                <Icone nome="lupa" className="h-4 w-4" />
-                {t("buscarDocumentos", { termo: termo.trim() })}
-              </Link>
-            </li>
+      {aberto && (
+        <div
+          id="paleta-de-comandos"
+          role="listbox"
+          aria-label={t("procurar")}
+          className={`${painelSuspenso} left-0 w-[28rem] animate-[entrada-suave_150ms_ease-out] py-2`}
+        >
+          {todos.length === 0 ? (
+            <p className="text-muted px-4 py-2 text-sm">{t("nadaEncontrado")}</p>
+          ) : (
+            grupos.map((g) => (
+              <div key={g.chave} role="group" aria-label={t(`grupos.${g.chave}`)}>
+                <p className="text-muted px-4 pt-2 pb-1 text-[10px] font-bold tracking-wider uppercase">
+                  {t(`grupos.${g.chave}`)}
+                </p>
+                {g.lista.map((o) => {
+                  indice++;
+                  const meu = indice;
+                  return (
+                    <Link
+                      key={o.href}
+                      id={`paleta-${meu}`}
+                      href={o.href}
+                      role="option"
+                      aria-selected={meu === atual}
+                      onMouseEnter={() => setSelecionado(meu)}
+                      onClick={() => {
+                        setTermo("");
+                        setAberto(false);
+                      }}
+                      className={`${meu === atual ? "bg-primary-soft text-primary font-semibold" : "text-text"} flex items-center gap-3 px-4 py-2 text-sm`}
+                    >
+                      <Icone
+                        nome={o.icone}
+                        className={`${meu === atual ? "text-primary" : "text-muted"} h-4 w-4`}
+                      />
+                      <span className="min-w-0 flex-1 truncate">{o.rotulo}</span>
+                      {meu === atual && <kbd className="text-muted text-[10px] font-medium">Enter</kbd>}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))
           )}
-          {achados.length === 0
-            ? null
-            : achados.map(({ item, rotulo }) => (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
-                    onClick={() => {
-                      setTermo("");
-                      setAberto(false);
-                    }}
-                    className="text-text hover:bg-surface flex items-center gap-3 px-4 py-2 text-sm"
-                  >
-                    <Icone nome={item.icone} className="text-muted h-4 w-4" />
-                    {rotulo}
-                  </Link>
-                </li>
-              ))}
-        </ul>
+        </div>
       )}
     </div>
   );
@@ -577,6 +655,13 @@ export function CascaDoTenant({
     .map((id) => todos.find((i) => i.id === id))
     .filter((i): i is Item => Boolean(i));
   const compacto = recolhido && !aberto;
+  const navegacao = useRef<HTMLElement>(null);
+  const { estilo: pilula, pronto: pilulaPronta } = useIndicadorDeslizante(
+    navegacao,
+    `${caminho}|${compacto}|${favoritos.join()}`,
+    '[aria-current="page"]',
+    "pilula",
+  );
   const ativo = (href: string) => (href === "/" ? caminho === "/" : caminho.startsWith(href));
   const logo = escuro ? (marca.logoEscuro ?? marca.logoClaro) : (marca.logoClaro ?? marca.logoEscuro);
 
@@ -602,7 +687,7 @@ export function CascaDoTenant({
           onClick={() => setAberto(false)}
           title={compacto ? nome : undefined}
           aria-current={ativo(item.href) ? "page" : undefined}
-          className={`${ativo(item.href) ? "bg-primary-soft text-primary font-semibold" : "text-text hover:bg-surface"} flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${compacto ? "justify-center" : "pr-9"}`}
+          className={`${ativo(item.href) ? `${pilulaPronta ? "" : "bg-primary-soft"} text-primary font-semibold` : "text-text hover:bg-surface"} relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${compacto ? "justify-center" : "pr-9"}`}
         >
           <Icone nome={item.icone} />
           <span className={compacto ? "sr-only" : "truncate"}>{nome}</span>
@@ -672,7 +757,12 @@ export function CascaDoTenant({
             )}
           </Link>
         </div>
-        <nav aria-label={t("rotulo")} className="flex-1 overflow-y-auto px-3 pt-2 pb-6">
+        <nav
+          ref={navegacao}
+          aria-label={t("rotulo")}
+          className="relative isolate flex-1 overflow-y-auto px-3 pt-2 pb-6"
+        >
+          <PilulaDeslizante estilo={pilula} />
           {favoritosVisiveis.length > 0 && (
             <div className="mb-4">
               {tituloDeGrupo(t("grupos.favoritos"))}

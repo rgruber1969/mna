@@ -10,6 +10,7 @@ import { lerPedido } from "@/config/paginacao";
 import { quadroDeNegocios } from "@/server/services/negocios-kanban";
 import { hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
 import { KanbanDeNegocios } from "@/components/negocios/kanban";
+import { EstadoVazio } from "@/components/ui/estado-vazio";
 import { Paginacao, TituloOrdenavel } from "@/components/ui/lista";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
@@ -58,6 +59,7 @@ async function Conteudo({ acesso, parametros }: { acesso: AcessoTenant; parametr
     listarTiposDeOperacao(acesso),
     pode(acesso, "deals", "criar"),
   ]);
+  const filtrado = Boolean(filtro.busca || filtro.situacao || filtro.tipo || filtro.lado);
   const estiloFiltro = "border-border bg-background text-text rounded-md border px-3 py-2 text-sm";
   const ordenavel = (rotulo: string, campo: (typeof ORDENS_DE_NEGOCIOS)[number]) => (
     <TituloOrdenavel
@@ -165,7 +167,11 @@ async function Conteudo({ acesso, parametros }: { acesso: AcessoTenant; parametr
             tipos={tipos.map((x) => ({ id: x.id, nome: x.nome }))}
           />
         ) : pagina.total === 0 ? (
-          <p className="text-muted text-sm">{t("nenhum")}</p>
+          <EstadoVazio
+            titulo={t("nenhum")}
+            texto={filtrado ? t("nenhumComFiltro") : t("nenhumTexto")}
+            limpar={filtrado ? { href: "/negocios", rotulo: t("limparFiltros") } : undefined}
+          />
         ) : (
           <>
             <div className="-mx-2 overflow-x-auto">
