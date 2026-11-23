@@ -61,6 +61,7 @@
     "erroAnexo": "Não foi possível enviar o anexo.",
     "tirarAnexo": "Tirar o anexo {nome}",
     "virarDocumento": "Transformar em documento",
-    "virouDocumento": "\"{nome}\" virou documento do negócio (aba Documentos). De início, só você e os administradores o veem; use \"Alterar quem vê\" para liberar."
+    "virouDocumento": "\"{nome}\" virou documento do negócio (aba Documentos). De início, só você e os administradores o veem; use \"Alterar quem vê\" para liberar.",
+    "regras": "Como funcionam as mensagens:\n• Cada conversa é sobre algo do negócio: o negócio todo, uma etapa, um documento ou uma tarefa. Todos que veem aquele item veem a conversa; não há conversa privada entre duas pessoas.\n• Canais por lado: \"Equipe do lado vendedor\", \"Equipe da compradora\" e \"Lado vendedor e compradora\" (este só depois do NDA daquela compradora). As compradoras nunca veem as conversas umas das outras.\n• Mensagens não podem ser editadas nem apagadas (auditoria): para corrigir, envie uma nova.\n• @ menciona quem está no canal; a pessoa recebe aviso no sino e por e-mail, sem o texto.\n• Anexos: até 10 por mensagem, conferidos pelo antivírus; \"Transformar em documento\" leva o anexo ao data room.\n• \"Marcar como tarefa\" cria uma tarefa com o texto da mensagem.\n• A conversa aberta se atualiza sozinha a cada 20 segundos (não é instantânea como o WhatsApp).\n• Resumo por e-mail das mensagens novas, sem o texto; cada pessoa liga ou desliga na página Mensagens."
   }
 }

@@ -196,7 +196,8 @@
       "ladoDoNovoPapel": "Lado no negócio do novo papel",
       "semLado": "Sem lado",
       "ladoVendedor": "Lado vendedor",
-      "ladoComprador": "Lado comprador"
+      "ladoComprador": "Lado comprador",
+      "emailFinanceiro": "E-mail do financeiro (nota fiscal e cobrança)"
     },
     "mensagens": {
       "empresaSalva": "Empresa salva.",
@@ -427,8 +428,7 @@
         "cadastroNaoEncontrado": "Cadastro não encontrado.",
         "contaNaoEncontrada": "Conta não encontrada."
       }
-    },
-    "emailFinanceiro": "E-mail do financeiro (nota fiscal e cobrança)"
+    }
   },
   "configuracoes": {
     "titulo": "Configurações",
@@ -485,6 +485,8 @@
       "salvar": "Salvar",
       "salvando": "Salvando...",
       "salvo": "Configuração salva."
-    }
+    },
+    "grupoTenant": "Tenant",
+    "grupoCadastros": "Cadastros auxiliares"
   }
 }

@@ -24,15 +24,29 @@ const ContextoDasAbas = createContext<Contexto | null>(null);
 
 export const useAbas = () => useContext(ContextoDasAbas);
 
-export type Aba = { id: string; rotulo: string };
+export type Aba = { id: string; rotulo: string; /** Grupo (só nas abas verticais). */ grupo?: string };
 
-export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: string; children: ReactNode }) {
+/**
+ * Com `vertical`, as abas ficam numa coluna à esquerda, em grupos com título
+ * (padrão para 8 abas ou mais, como Configurações); o conteúdo fica à direita.
+ */
+export function Abas({
+  abas,
+  inicial,
+  vertical = false,
+  children,
+}: {
+  abas: Aba[];
+  inicial?: string;
+  vertical?: boolean;
+  children: ReactNode;
+}) {
   const valida = abas.some((a) => a.id === inicial) ? inicial! : abas[0].id;
   const [ativa, setAtiva] = useState(valida);
   const [comErro, setComErro] = useState<Set<string>>(new Set());
   const raiz = useRef<HTMLDivElement>(null);
   const lista = useRef<HTMLDivElement>(null);
-  const { estilo, pronto } = useIndicadorDeslizante(lista, ativa);
+  const { estilo, pronto } = useIndicadorDeslizante(lista, vertical ? "" : ativa);
 
   const ativar = useCallback((id: string) => {
     setAtiva(id);
@@ -68,39 +82,90 @@ export function Abas({ abas, inicial, children }: { abas: Aba[]; inicial?: strin
 
   return (
     <ContextoDasAbas.Provider value={{ ativa, ativar, revelarCampo }}>
-      <div ref={raiz} onInvalidCapture={(e) => revelarElemento(e.target as Element)}>
+      {vertical ? (
         <div
-          ref={lista}
-          role="tablist"
-          className="border-border relative -mx-1 mb-4 flex flex-wrap gap-x-1 border-b"
+          ref={raiz}
+          onInvalidCapture={(e) => revelarElemento(e.target as Element)}
+          className="grid gap-6 md:grid-cols-[14rem_1fr]"
         >
-          {abas.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              role="tab"
-              id={`aba-${a.id}`}
-              aria-selected={ativa === a.id}
-              onClick={() => ativar(a.id)}
-              className={`-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap ${
-                ativa === a.id
-                  ? `${pronto ? "border-transparent" : "border-primary"} text-primary`
-                  : "text-muted hover:text-text border-transparent"
-              }`}
-            >
-              {a.rotulo}
-              {comErro.has(a.id) && (
-                <span
-                  aria-label="!"
-                  className="bg-danger ml-1.5 inline-block h-2 w-2 rounded-full align-middle"
-                />
-              )}
-            </button>
-          ))}
-          <TracoDeslizante estilo={estilo} />
+          <div
+            role="tablist"
+            aria-orientation="vertical"
+            className="md:border-border flex flex-col gap-0.5 md:border-r md:pr-3"
+          >
+            {abas.map((a, i) => (
+              <span key={a.id} className="contents">
+                {a.grupo && a.grupo !== abas[i - 1]?.grupo && (
+                  <span className="text-muted px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider uppercase first:pt-0">
+                    {a.grupo}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  role="tab"
+                  id={`aba-${a.id}`}
+                  aria-selected={ativa === a.id}
+                  onClick={() => ativar(a.id)}
+                  className={`relative rounded-md px-3 py-2 text-left text-sm transition-colors duration-150 ${
+                    ativa === a.id
+                      ? "bg-primary-soft text-primary font-semibold"
+                      : "text-text hover:bg-surface font-medium"
+                  }`}
+                >
+                  {ativa === a.id && (
+                    <span
+                      aria-hidden="true"
+                      className="bg-primary absolute inset-y-1.5 left-0 w-0.5 rounded-full"
+                    />
+                  )}
+                  {a.rotulo}
+                  {comErro.has(a.id) && (
+                    <span
+                      aria-label="!"
+                      className="bg-danger ml-1.5 inline-block h-2 w-2 rounded-full align-middle"
+                    />
+                  )}
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="min-w-0">{children}</div>
         </div>
-        {children}
-      </div>
+      ) : (
+        <div ref={raiz} onInvalidCapture={(e) => revelarElemento(e.target as Element)}>
+          <div
+            ref={lista}
+            role="tablist"
+            className="border-border relative -mx-1 mb-4 flex flex-wrap gap-x-1 border-b"
+          >
+            {abas.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                role="tab"
+                id={`aba-${a.id}`}
+                aria-selected={ativa === a.id}
+                onClick={() => ativar(a.id)}
+                className={`-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap ${
+                  ativa === a.id
+                    ? `${pronto ? "border-transparent" : "border-primary"} text-primary`
+                    : "text-muted hover:text-text border-transparent"
+                }`}
+              >
+                {a.rotulo}
+                {comErro.has(a.id) && (
+                  <span
+                    aria-label="!"
+                    className="bg-danger ml-1.5 inline-block h-2 w-2 rounded-full align-middle"
+                  />
+                )}
+              </button>
+            ))}
+            <TracoDeslizante estilo={estilo} />
+          </div>
+          {children}
+        </div>
+      )}
     </ContextoDasAbas.Provider>
   );
 }

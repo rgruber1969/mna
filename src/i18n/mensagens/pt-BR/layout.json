@@ -61,7 +61,8 @@
       "novoContrato": "Novo contrato",
       "novaEmpresa": "Nova empresa",
       "novaPessoa": "Nova pessoa"
-    }
+    },
+    "contaEPreferencias": "Conta e preferências"
   },
   "notificacoes": {
     "titulo": "Notificações",

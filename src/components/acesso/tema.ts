@@ -19,6 +19,8 @@ export function aplicarTema(p: PreferenciaDeTema) {
     localStorage.setItem("tema", p);
   } catch {}
   document.documentElement.dataset.tema = resolverTema(p);
+  // A preferência (claro, escuro ou sistema), para os dois menus do usuário mostrarem a mesma escolha.
+  document.documentElement.dataset.preferenciaTema = p;
   if (ouvinte) midiaEscura().removeEventListener("change", ouvinte);
   ouvinte = null;
   if (p === "sistema") {

@@ -1435,6 +1435,55 @@ describe("contratos de serviço", () => {
     if (!("id" in r)) throw new Error(r.erro);
     const c = await obterContrato(g, r.id);
     expect(c).toMatchObject({ honorarioFixo: "20000.00", successFeePercentual: "3.5000", podeEditar: true });
+    // Honorários variáveis apurados por mês, combinados com os fixos.
+    expect(await criarContrato(g, { ...base, honorarioVariavel: true })).toMatchObject({
+      erro: "contratos.erros.criterioObrigatorio",
+    });
+    expect(
+      await criarContrato(g, { ...base, honorarioVariavel: true, variavelCriterio: "horas" }),
+    ).toMatchObject({ erro: "contratos.erros.valorHoraObrigatorio" });
+    expect(
+      await criarContrato(g, {
+        ...base,
+        honorarioVariavel: true,
+        variavelCriterio: "percentual",
+        variavelPercentual: "2",
+      }),
+    ).toMatchObject({ erro: "contratos.erros.baseObrigatoria" });
+    const comVariavel = await criarContrato(g, {
+      ...base,
+      honorarioVariavel: true,
+      variavelCriterio: "horas",
+      variavelValorHora: "850,00",
+      variavelBase: "ignorada",
+      variavelTeto: "40.000,00",
+      variavelDiaApuracao: "25",
+    });
+    if (!("id" in comVariavel)) throw new Error(comVariavel.erro);
+    expect(await obterContrato(g, comVariavel.id)).toMatchObject({
+      honorarioFixo: "20000.00",
+      honorarioVariavel: true,
+      variavelCriterio: "horas",
+      variavelValorHora: "850.00",
+      variavelBase: null,
+      variavelTeto: "40000.00",
+      variavelDiaApuracao: 25,
+      meioRecebimento: "conta",
+    });
+    expect(
+      await criarContrato(g, { ...base, variavelDiaApuracao: "31", honorarioVariavel: true }),
+    ).toHaveProperty("erro");
+    // PIX: só com uma conta da contratada que tenha chave PIX.
+    const [{ id: semPix }] = (
+      await dono.query(
+        `insert into conta_bancaria (tenant_id, empresa_id, banco_nome) values ($1, $2, 'Banco Exemplo') returning id`,
+        [tenantId, contratante],
+      )
+    ).rows as { id: string }[];
+    expect(
+      await criarContrato(g, { ...base, contaBancariaId: semPix, meioRecebimento: "pix" }),
+    ).toMatchObject({ erro: "contratos.erros.contaSemPix" });
+    await excluirContrato(g, comVariavel.id);
     expect(c!.contratantes).toEqual(["Vendedora Exemplo Ltda"]);
     const ve = async (nome: string) =>
       (await listarContratos(acesso(nome), { dealId: negocioId })).some((x) => x.id === r.id);
@@ -1471,7 +1520,7 @@ describe("contratos de serviço", () => {
     ]);
     expect(await avisarFinanceiro(g, r.id)).toEqual({ enviados: 1 });
     expect((await obterContrato(g, r.id))!.financeiroAvisadoEm).not.toBeNull();
-  });
+  }, 20_000);
 
   it("avulso: só quem pode criar negócios cria; vê quem criou e a lista; depois é ligado a um negócio", async () => {
     const g = acesso("gestor");

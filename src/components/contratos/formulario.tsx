@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { contasDasEmpresasAcao, salvarContratoAcao } from "@/app/acoes/contratos";
 import { Aviso } from "@/components/ui/basicos";
+import { CampoDeValor } from "@/components/ui/campo-de-valor";
 import type { ValoresDoContrato } from "./valores";
 
 type Opcao = { id: string; nome: string };
@@ -118,7 +119,10 @@ export function FormContrato({
   const [v, setV] = useState<ValoresDoContrato>(inicial);
   const [erro, setErro] = useState<{ texto: string; campo?: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
-  const [contas, setContas] = useState<{ id: string; empresaId: string; descricao: string }[]>([]);
+  const [contas, setContas] = useState<
+    { id: string; empresaId: string; descricao: string; pix: string | null }[]
+  >([]);
+  const [fixoLigado, setFixoLigado] = useState(Boolean(inicial.honorarioFixo));
   const mudar = <K extends keyof ValoresDoContrato>(k: K, valor: ValoresDoContrato[K]) =>
     setV((x) => ({ ...x, [k]: valor }));
   const chaveContratadas = v.contratadas.join(",");
@@ -135,6 +139,7 @@ export function FormContrato({
     };
   }, [chaveContratadas, inicial.dealId]);
   const nomeDaEmpresa = useMemo(() => new Map(opcoes.empresas.map((e) => [e.id, e.nome])), [opcoes.empresas]);
+  const contasDoMeio = v.meioRecebimento === "pix" ? contas.filter((c) => c.pix) : contas;
   // Ao ligar a um negócio, as opções de perfis e pessoas passam a ser as do negócio (depois de salvar).
   const ligando = !inicial.dealId && v.dealId;
 
@@ -145,7 +150,7 @@ export function FormContrato({
     const r = await salvarContratoAcao(id ?? null, {
       ...v,
       contaBancariaId:
-        v.contratadas.length && contas.some((c) => c.id === v.contaBancariaId) ? v.contaBancariaId : "",
+        v.contratadas.length && contasDoMeio.some((c) => c.id === v.contaBancariaId) ? v.contaBancariaId : "",
     });
     setSalvando(false);
     if (r.erro) return setErro({ texto: r.erro, campo: r.campo });
@@ -260,85 +265,209 @@ export function FormContrato({
           </label>
         )}
       </div>
-      <fieldset className="border-border grid gap-4 rounded-md border p-3 sm:grid-cols-2">
+      <fieldset className="border-border space-y-4 rounded-md border p-3">
         <legend className="text-text px-1 text-sm font-medium">{t("condicoes")}</legend>
-        <label>
-          <span className={rotulo}>{t("honorarioFixo")}</span>
-          <input
-            inputMode="decimal"
-            value={v.honorarioFixo}
-            onChange={(e) => mudar("honorarioFixo", e.target.value)}
-            className={`${campo} ${erro?.campo === "honorarioFixo" ? "border-danger" : ""}`}
-          />
-        </label>
-        <label>
-          <span className={rotulo}>{t("periodicidade")}</span>
-          <select
-            value={v.periodicidade}
-            onChange={(e) => mudar("periodicidade", e.target.value as ValoresDoContrato["periodicidade"])}
-            className={campo}
-            disabled={!v.honorarioFixo}
-          >
-            <option value="">—</option>
-            {(["unico", "mensal", "trimestral", "semestral", "anual"] as const).map((x) => (
-              <option key={x} value={x}>
-                {t(`periodicidades.${x}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-        {v.honorarioFixo && (
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+        <p className="text-muted -mt-1 text-xs">{t("honorariosAjuda")}</p>
+        <div className="space-y-3">
+          <label className="text-text flex items-center gap-2 text-sm font-medium">
             <input
               type="checkbox"
-              checked={v.retainerDescontado}
-              onChange={(e) => mudar("retainerDescontado", e.target.checked)}
+              checked={fixoLigado}
+              onChange={(e) => {
+                setFixoLigado(e.target.checked);
+                if (!e.target.checked)
+                  setV((x) => ({ ...x, honorarioFixo: "", periodicidade: "", retainerDescontado: false }));
+              }}
             />
-            {t("retainerDescontado")}
+            {t("temFixo")}
           </label>
-        )}
-        <label>
-          <span className={rotulo}>{t("successFeePercentual")}</span>
-          <input
-            inputMode="decimal"
-            value={v.successFeePercentual}
-            onChange={(e) => mudar("successFeePercentual", e.target.value)}
-            className={`${campo} ${erro?.campo === "successFeePercentual" ? "border-danger" : ""}`}
-          />
-        </label>
-        <label>
-          <span className={rotulo}>{t("successFeeMinimo")}</span>
-          <input
-            inputMode="decimal"
-            value={v.successFeeMinimo}
-            onChange={(e) => mudar("successFeeMinimo", e.target.value)}
-            className={`${campo} ${erro?.campo === "successFeeMinimo" ? "border-danger" : ""}`}
-          />
-        </label>
-        <label className="sm:col-span-2">
-          <span className={rotulo}>{t("formaPagamento")}</span>
-          <input
-            value={v.formaPagamento}
-            onChange={(e) => mudar("formaPagamento", e.target.value)}
-            maxLength={1000}
-            className={campo}
-          />
-        </label>
-        <label className="sm:col-span-2">
-          <span className={rotulo}>{t("conta")}</span>
-          <select
-            value={v.contaBancariaId}
-            onChange={(e) => mudar("contaBancariaId", e.target.value)}
-            className={`${campo} ${erro?.campo === "contaBancariaId" ? "border-danger" : ""}`}
-          >
-            <option value="">{t("semConta")}</option>
-            {contas.map((c) => (
-              <option key={c.id} value={c.id}>
-                {nomeDaEmpresa.get(c.empresaId) ?? ""} · {c.descricao}
-              </option>
-            ))}
-          </select>
-        </label>
+          {fixoLigado && (
+            <div className="grid gap-4 pl-6 sm:grid-cols-2">
+              <label>
+                <span className={rotulo}>{t("honorarioFixo")}</span>
+                <CampoDeValor
+                  valor={v.honorarioFixo}
+                  mudar={(x) => mudar("honorarioFixo", x)}
+                  erro={erro?.campo === "honorarioFixo"}
+                />
+              </label>
+              <label>
+                <span className={rotulo}>{t("periodicidade")}</span>
+                <select
+                  value={v.periodicidade}
+                  onChange={(e) =>
+                    mudar("periodicidade", e.target.value as ValoresDoContrato["periodicidade"])
+                  }
+                  className={campo}
+                >
+                  <option value="">—</option>
+                  {(["unico", "mensal", "trimestral", "semestral", "anual"] as const).map((x) => (
+                    <option key={x} value={x}>
+                      {t(`periodicidades.${x}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={v.retainerDescontado}
+                  onChange={(e) => mudar("retainerDescontado", e.target.checked)}
+                />
+                {t("retainerDescontado")}
+              </label>
+            </div>
+          )}
+        </div>
+        <div className="border-border space-y-3 border-t pt-3">
+          <label className="text-text flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={v.honorarioVariavel}
+              onChange={(e) => mudar("honorarioVariavel", e.target.checked)}
+            />
+            {t("temVariavel")}
+          </label>
+          {v.honorarioVariavel && (
+            <div className="grid gap-4 pl-6 sm:grid-cols-2">
+              <label className="sm:col-span-2">
+                <span className={rotulo}>{t("variavelCriterio")}</span>
+                <select
+                  value={v.variavelCriterio}
+                  onChange={(e) =>
+                    mudar("variavelCriterio", e.target.value as ValoresDoContrato["variavelCriterio"])
+                  }
+                  className={`${campo} ${erro?.campo === "variavelCriterio" ? "border-danger" : ""}`}
+                >
+                  <option value="">—</option>
+                  {(["horas", "percentual", "outro"] as const).map((x) => (
+                    <option key={x} value={x}>
+                      {t(`criterios.${x}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {v.variavelCriterio === "horas" && (
+                <label>
+                  <span className={rotulo}>{t("variavelValorHora")}</span>
+                  <CampoDeValor
+                    valor={v.variavelValorHora}
+                    mudar={(x) => mudar("variavelValorHora", x)}
+                    erro={erro?.campo === "variavelValorHora"}
+                  />
+                </label>
+              )}
+              {v.variavelCriterio === "percentual" && (
+                <label>
+                  <span className={rotulo}>{t("variavelPercentual")}</span>
+                  <input
+                    inputMode="decimal"
+                    value={v.variavelPercentual}
+                    onChange={(e) => mudar("variavelPercentual", e.target.value)}
+                    className={`${campo} ${erro?.campo === "variavelPercentual" ? "border-danger" : ""}`}
+                  />
+                </label>
+              )}
+              {(v.variavelCriterio === "percentual" || v.variavelCriterio === "outro") && (
+                <label className={v.variavelCriterio === "outro" ? "sm:col-span-2" : ""}>
+                  <span className={rotulo}>
+                    {v.variavelCriterio === "percentual" ? t("variavelBase") : t("variavelDescricao")}
+                  </span>
+                  <input
+                    value={v.variavelBase}
+                    onChange={(e) => mudar("variavelBase", e.target.value)}
+                    maxLength={1000}
+                    placeholder={
+                      v.variavelCriterio === "percentual" ? t("variavelBaseDica") : t("variavelDescricaoDica")
+                    }
+                    className={`${campo} ${erro?.campo === "variavelBase" ? "border-danger" : ""}`}
+                  />
+                </label>
+              )}
+              <label>
+                <span className={rotulo}>{t("variavelTeto")}</span>
+                <CampoDeValor
+                  valor={v.variavelTeto}
+                  mudar={(x) => mudar("variavelTeto", x)}
+                  erro={erro?.campo === "variavelTeto"}
+                />
+              </label>
+              <label>
+                <span className={rotulo}>{t("variavelDiaApuracao")}</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={28}
+                  value={v.variavelDiaApuracao}
+                  onChange={(e) => mudar("variavelDiaApuracao", e.target.value)}
+                  className={`${campo} ${erro?.campo === "variavelDiaApuracao" ? "border-danger" : ""}`}
+                />
+              </label>
+            </div>
+          )}
+        </div>
+        <div className="border-border grid gap-4 border-t pt-3 sm:grid-cols-2">
+          <label>
+            <span className={rotulo}>{t("successFeePercentual")}</span>
+            <input
+              inputMode="decimal"
+              value={v.successFeePercentual}
+              onChange={(e) => mudar("successFeePercentual", e.target.value)}
+              className={`${campo} ${erro?.campo === "successFeePercentual" ? "border-danger" : ""}`}
+            />
+          </label>
+          <label>
+            <span className={rotulo}>{t("successFeeMinimo")}</span>
+            <CampoDeValor
+              valor={v.successFeeMinimo}
+              mudar={(x) => mudar("successFeeMinimo", x)}
+              erro={erro?.campo === "successFeeMinimo"}
+            />
+          </label>
+        </div>
+        <div className="border-border grid gap-4 border-t pt-3 sm:grid-cols-2">
+          <label className="sm:col-span-2">
+            <span className={rotulo}>{t("formaPagamento")}</span>
+            <input
+              value={v.formaPagamento}
+              onChange={(e) => mudar("formaPagamento", e.target.value)}
+              maxLength={1000}
+              className={campo}
+            />
+          </label>
+          <fieldset className="sm:col-span-2">
+            <legend className={rotulo}>{t("receberPor")}</legend>
+            <div className="flex flex-wrap gap-4 text-sm">
+              {(["conta", "pix"] as const).map((m) => (
+                <label key={m} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="meioRecebimento"
+                    checked={v.meioRecebimento === m}
+                    onChange={() => mudar("meioRecebimento", m)}
+                  />
+                  {t(`meios.${m}`)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <label className="sm:col-span-2">
+            <span className={rotulo}>{v.meioRecebimento === "pix" ? t("chavePix") : t("conta")}</span>
+            <select
+              value={v.contaBancariaId}
+              onChange={(e) => mudar("contaBancariaId", e.target.value)}
+              className={`${campo} ${erro?.campo === "contaBancariaId" ? "border-danger" : ""}`}
+            >
+              <option value="">{v.meioRecebimento === "pix" ? t("semChavePix") : t("semConta")}</option>
+              {contasDoMeio.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {nomeDaEmpresa.get(c.empresaId) ?? ""} · {v.meioRecebimento === "pix" ? c.pix : c.descricao}
+                </option>
+              ))}
+            </select>
+            <span className="text-muted mt-1 block text-xs">{t("contasAjuda")}</span>
+          </label>
+        </div>
       </fieldset>
       <label className="block">
         <span className={rotulo}>{t("observacoes")}</span>

@@ -70,6 +70,22 @@ async function Painel({
         .filter(Boolean)
         .join(" · ") + (c.retainerDescontado ? `\n${t("retainerDescontado")}` : "")
     : null;
+  const variavel = c.honorarioVariavel
+    ? [
+        c.variavelCriterio === "horas"
+          ? t("variavelHoras", { valor: moeda(c.variavelValorHora) ?? "—" })
+          : c.variavelCriterio === "percentual"
+            ? t("variavelPercentualDe", {
+                p: Number(c.variavelPercentual ?? 0).toLocaleString("pt-BR"),
+                base: c.variavelBase ?? "",
+              })
+            : c.variavelBase,
+        c.variavelTeto && t("variavelTetoDe", { valor: moeda(c.variavelTeto) ?? "" }),
+        c.variavelDiaApuracao && t("variavelFechamento", { dia: c.variavelDiaApuracao }),
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : null;
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
@@ -106,10 +122,18 @@ async function Painel({
                 honorarioFixo: paraCampo(c.honorarioFixo),
                 periodicidade: c.periodicidade ?? "",
                 retainerDescontado: c.retainerDescontado,
+                honorarioVariavel: c.honorarioVariavel,
+                variavelCriterio: c.variavelCriterio ?? "",
+                variavelValorHora: paraCampo(c.variavelValorHora),
+                variavelPercentual: paraCampo(c.variavelPercentual),
+                variavelBase: c.variavelBase ?? "",
+                variavelTeto: paraCampo(c.variavelTeto),
+                variavelDiaApuracao: c.variavelDiaApuracao ? String(c.variavelDiaApuracao) : "",
                 successFeePercentual: paraCampo(c.successFeePercentual),
                 successFeeMinimo: paraCampo(c.successFeeMinimo),
                 formaPagamento: c.formaPagamento ?? "",
                 contaBancariaId: c.contaBancariaId ?? "",
+                meioRecebimento: c.meioRecebimento,
                 observacoes: c.observacoes ?? "",
                 contratantes: c.partes.filter((p) => p.papel === "contratante").map((p) => p.empresaId),
                 contratadas: c.partes.filter((p) => p.papel === "contratada").map((p) => p.empresaId),
@@ -142,6 +166,7 @@ async function Painel({
               <h2 className="text-text mt-6 mb-2 text-base font-semibold">{t("condicoes")}</h2>
               <dl>
                 <Linha rotulo={t("honorarioFixo")}>{fixo}</Linha>
+                <Linha rotulo={t("honorarioVariavelRotulo")}>{variavel}</Linha>
                 <Linha rotulo={t("successFeePercentual")}>
                   {c.successFeePercentual
                     ? `${Number(c.successFeePercentual).toLocaleString("pt-BR")}%`
@@ -149,7 +174,9 @@ async function Painel({
                 </Linha>
                 <Linha rotulo={t("successFeeMinimo")}>{moeda(c.successFeeMinimo)}</Linha>
                 <Linha rotulo={t("formaPagamento")}>{c.formaPagamento}</Linha>
-                <Linha rotulo={t("conta")}>{c.conta}</Linha>
+                <Linha rotulo={t("recebimento")}>
+                  {c.conta ? `${t(`meios.${c.meioRecebimento}`)}: ${c.conta}` : null}
+                </Linha>
                 <Linha rotulo={t("observacoes")}>{c.observacoes}</Linha>
                 <Linha rotulo={t("quemVe")}>{c.acesso.length ? c.acesso.join(", ") : null}</Linha>
                 <Linha rotulo={t("criadoPor")}>{c.criadoPor}</Linha>

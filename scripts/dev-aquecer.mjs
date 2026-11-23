@@ -28,13 +28,18 @@ const rotas = [
   "/configuracoes",
   "/usuarios",
   "/perfis",
+  "/cadastro-por-documento",
+  "/configurar-2fa",
+  "/notificacoes",
 ];
+// Console da RGRUBER (admin.<domínio>).
+const rotasDoConsole = ["/entrar", "/", "/configurar-2fa", "/equipe", `/tenants/${zero}`, "/convite/aquecer"];
 
 // node:http em 127.0.0.1 com o Host do tenant (o Windows não resolve *.localhost para o Node).
-const pedir = (caminho) =>
+const pedir = (caminho, sub = tenant) =>
   new Promise((resolver) => {
     const req = request(
-      { host: "127.0.0.1", port: porta, path: caminho, headers: { host: `${tenant}.localhost:${porta}` } },
+      { host: "127.0.0.1", port: porta, path: caminho, headers: { host: `${sub}.localhost:${porta}` } },
       (r) => {
         r.resume();
         r.on("end", () => resolver(r.statusCode ?? 0));
@@ -50,4 +55,7 @@ for (let i = 0; i < 120 && (await pedir("/entrar")) === 0; i++) await new Promis
 
 const inicio = Date.now();
 for (const rota of rotas) await pedir(rota);
-console.log(`[aquecer] ${rotas.length} telas compiladas em ${Math.round((Date.now() - inicio) / 1000)} s.`);
+for (const rota of rotasDoConsole) await pedir(rota, "admin");
+console.log(
+  `[aquecer] ${rotas.length + rotasDoConsole.length} telas compiladas em ${Math.round((Date.now() - inicio) / 1000)} s.`,
+);

@@ -75,7 +75,7 @@ test("console: convite, senha e 2FA obrigatório; cadastro de tenant e convite d
   await page.getByRole("button", { name: "Aceitar convite" }).click();
 
   // Sem 2FA, o console só mostra a configuração do autenticador.
-  await expect(page).toHaveURL(/\/configurar-2fa$/);
+  await expect(page).toHaveURL(/\/configurar-2fa$/, { timeout: 30_000 });
   await page.getByLabel("Senha").fill(senha);
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.getByText("Não consegue ler o QR code?").click();
@@ -150,7 +150,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByLabel("Crie uma senha").fill(senha);
   await admin.getByLabel("Repita a senha").fill(senha);
   await admin.getByRole("button", { name: "Aceitar convite" }).click();
-  await expect(admin).toHaveURL(/\/configurar-2fa$/);
+  await expect(admin).toHaveURL(/\/configurar-2fa$/, { timeout: 30_000 });
   await admin.getByLabel("Nome da passkey").fill("Notebook do admin");
   await admin.getByRole("button", { name: "Cadastrar passkey" }).click();
   await expect(admin).toHaveURL(/\/entrar\?passkey=cadastrada$/);
@@ -272,8 +272,8 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   // mensagens): recarrega até a preferência aparecer gravada.
   await expect(async () => {
     await admin.reload();
-    await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible({ timeout: 3_000 });
-  }).toPass({ timeout: 20_000 });
+    await expect(admin.getByRole("button", { name: "Expandir menu" })).toBeVisible({ timeout: 10_000 });
+  }).toPass({ timeout: 60_000 });
   await admin.getByRole("button", { name: "Expandir menu" }).click();
   await expect(menu.getByText("Favoritos")).toBeVisible();
   await expect(menu.getByRole("link", { name: "Empresas" })).toHaveCount(2);
@@ -364,7 +364,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Exigir deste usuário" }).click();
   await expect(admin.getByText("Situação: exigida individualmente.")).toBeVisible();
   await usuaria.goto(base);
-  await expect(usuaria).toHaveURL(/\/configurar-2fa$/);
+  await expect(usuaria).toHaveURL(/\/configurar-2fa$/, { timeout: 30_000 });
   await usuaria.getByLabel("Nome da passkey").fill("Celular da usuária");
   await usuaria.getByRole("button", { name: "Cadastrar passkey" }).click();
   await expect(usuaria).toHaveURL(/\/entrar\?passkey=cadastrada$/);

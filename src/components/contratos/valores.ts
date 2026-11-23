@@ -13,10 +13,18 @@ export type ValoresDoContrato = {
   honorarioFixo: string;
   periodicidade: "" | "unico" | "mensal" | "trimestral" | "semestral" | "anual";
   retainerDescontado: boolean;
+  honorarioVariavel: boolean;
+  variavelCriterio: "" | "horas" | "percentual" | "outro";
+  variavelValorHora: string;
+  variavelPercentual: string;
+  variavelBase: string;
+  variavelTeto: string;
+  variavelDiaApuracao: string;
   successFeePercentual: string;
   successFeeMinimo: string;
   formaPagamento: string;
   contaBancariaId: string;
+  meioRecebimento: "conta" | "pix";
   observacoes: string;
   contratantes: string[];
   contratadas: string[];
@@ -37,10 +45,18 @@ export const valoresVazios = (dealId: string | null, usuarios: string[] = []): V
   honorarioFixo: "",
   periodicidade: "",
   retainerDescontado: false,
+  honorarioVariavel: false,
+  variavelCriterio: "",
+  variavelValorHora: "",
+  variavelPercentual: "",
+  variavelBase: "",
+  variavelTeto: "",
+  variavelDiaApuracao: "",
   successFeePercentual: "",
   successFeeMinimo: "",
   formaPagamento: "",
   contaBancariaId: "",
+  meioRecebimento: "conta",
   observacoes: "",
   contratantes: [],
   contratadas: [],

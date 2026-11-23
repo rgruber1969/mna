@@ -491,6 +491,15 @@ Regras construídas (item 17, respostas C1–C3, 2026-11-22):
   conta da contratada (mostrada mascarada). Simulação do success fee sobre
   um valor: o maior entre percentual e mínimo, menos o retainer pago quando
   descontado.
+* **Honorários combinados (2026-11-23):** fixos e/ou **variáveis apurados
+  por mês**, junto com o success fee. Os variáveis têm critério (horas
+  trabalhadas × valor-hora; percentual sobre uma base descrita; ou outro
+  critério descrito), limite mensal opcional e dia do fechamento (1 a 28).
+  Ainda não: o lançamento de cada apuração mensal (backlog).
+* **Recebimento (2026-11-23):** a contratada recebe na conta bancária ou
+  pela **chave PIX** de uma conta do cadastro dela (a chave aparece
+  mascarada); PIX só com conta que tenha chave cadastrada.
+* **Campos de valor** com máscara de reais (digita-se só números).
 * **Avulso (C2):** cria quem pode criar negócios; veem quem criou, os
   administradores e as pessoas da lista; edita quem vê e pode editar
   negócios; exclui quem criou ou administrador. Ligado a um negócio, passa

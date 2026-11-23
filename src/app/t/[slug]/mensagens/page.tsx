@@ -31,7 +31,9 @@ async function Painel() {
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
         <Cartao largura="max-w-3xl">
-          <Titulo sobre={t("paginaAjuda")}>{t("titulo")}</Titulo>
+          <Titulo sobre={t("paginaAjuda")} ajuda={t("regras")}>
+            {t("titulo")}
+          </Titulo>
           <ResumoDeMensagens resumo={resumoLocal} />
           <OpcaoDoResumo ligado={resumo} horas={horas} />
           <MensagensRecentes conversas={conversas} />

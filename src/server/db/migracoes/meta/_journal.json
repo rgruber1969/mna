@@ -330,6 +330,13 @@
       "when": 1795452632165,
       "tag": "0046_acento_e_aviso_prazo",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1795460020810,
+      "tag": "0047_contrato_variaveis_e_pix",
+      "breakpoints": true
     }
   ]
 }

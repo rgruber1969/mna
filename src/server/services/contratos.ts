@@ -53,8 +53,10 @@ import { pode } from "./permissoes/verificador";
  *
  * - Tipo (mandato do advisor, honorários advocatícios, outro), uma ou mais
  *   contratantes e contratadas, vigência, exclusividade, honorários fixos
- *   (retainer, descontados ou não do success fee), success fee (percentual
- *   e mínimo), forma de pagamento e conta da contratada; arquivos em versões.
+ *   (retainer, descontados ou não do success fee) e/ou variáveis apurados
+ *   mês a mês (por horas, percentual sobre uma base ou outro critério),
+ *   success fee (percentual e mínimo), forma de pagamento e onde a contratada
+ *   recebe (conta bancária ou chave PIX do cadastro); arquivos em versões.
  * - Pode nascer avulso e ser ligado a um negócio depois (C2).
  * - No negócio: permissões da matriz "Contratos"; quem vê é a lista de acesso
  *   de quem criou (pré-preenchida com o próprio lado), como nos documentos.
@@ -74,6 +76,8 @@ export const TIPOS_DE_CONTRATO = ["mandato", "honorarios", "outro"] as const;
 export const PERIODICIDADES = ["unico", "mensal", "trimestral", "semestral", "anual"] as const;
 export type TipoDeContrato = (typeof TIPOS_DE_CONTRATO)[number];
 export type Periodicidade = (typeof PERIODICIDADES)[number];
+export const CRITERIOS_VARIAVEIS = ["horas", "percentual", "outro"] as const;
+export type CriterioVariavel = (typeof CRITERIOS_VARIAVEIS)[number];
 
 // --- Cálculo ---------------------------------------------------------------------------------
 
@@ -197,11 +201,19 @@ export type ContratoDetalhe = ContratoResumo & {
   honorarioFixo: string | null;
   periodicidade: Periodicidade | null;
   retainerDescontado: boolean;
+  honorarioVariavel: boolean;
+  variavelCriterio: CriterioVariavel | null;
+  variavelValorHora: string | null;
+  variavelPercentual: string | null;
+  variavelBase: string | null;
+  variavelTeto: string | null;
+  variavelDiaApuracao: number | null;
   successFeePercentual: string | null;
   successFeeMinimo: string | null;
   formaPagamento: string | null;
   contaBancariaId: string | null;
-  /** Conta mascarada (ex.: "Itaú · ag ***12 · c/c ***45-6"). */
+  meioRecebimento: "conta" | "pix";
+  /** Conta ou chave PIX mascarada (ex.: "Itaú · ag ***12 · c ***456" ou "PIX CNPJ ***-61"). */
   conta: string | null;
   observacoes: string | null;
   partes: ParteDoContrato[];
@@ -337,7 +349,20 @@ async function linhaVisivel(a: AcessoTenant, id: string) {
   return { c, ctx, acessos, pode };
 }
 
-async function descreverConta(a: AcessoTenant, contaId: string | null): Promise<string | null> {
+const NOME_DA_CHAVE_PIX = {
+  cnpj: "CNPJ",
+  cpf: "CPF",
+  email: "e-mail",
+  telefone: "telefone",
+  aleatoria: "chave aleatória",
+} as const;
+
+/** Conta mascarada (agência e conta) ou, com meio "pix", a chave PIX mascarada da mesma conta. */
+async function descreverConta(
+  a: AcessoTenant,
+  contaId: string | null,
+  meio: "conta" | "pix" = "conta",
+): Promise<string | null> {
   if (!contaId) return null;
   const [x] = await comTenant(a.tenant.id, (tx) =>
     tx.select().from(contaBancaria).where(eq(contaBancaria.id, contaId)),
@@ -348,6 +373,13 @@ async function descreverConta(a: AcessoTenant, contaId: string | null): Promise<
     const s = await descriptografar(a.tenant.id, v);
     return s.length <= 3 ? "***" : `***${s.slice(-3)}`;
   };
+  if (meio === "pix") {
+    const chave = await mascarar(x.chavePixCifrada);
+    if (!chave) return null;
+    return ["PIX", x.tipoChavePix ? NOME_DA_CHAVE_PIX[x.tipoChavePix] : null, chave]
+      .filter(Boolean)
+      .join(" ");
+  }
   const [ag, cc] = await Promise.all([mascarar(x.agenciaCifrada), mascarar(x.contaCifrada)]);
   return [x.bancoNome ?? x.bancoCodigo, ag && `ag ${ag}`, cc && `c ${cc}`].filter(Boolean).join(" · ");
 }
@@ -376,7 +408,7 @@ export async function obterContrato(acesso: Acesso | null, id: string): Promise<
         .where(and(eq(contratoArquivo.contratoId, id)))
         .orderBy(desc(contratoArquivo.numero)),
     ),
-    descreverConta(a, c.contaBancariaId),
+    descreverConta(a, c.contaBancariaId, c.meioRecebimento),
     c.criadoPor
       ? comTenant(a.tenant.id, (tx) =>
           tx.select({ nome: usuario.name }).from(usuario).where(eq(usuario.id, c.criadoPor!)),
@@ -403,10 +435,18 @@ export async function obterContrato(acesso: Acesso | null, id: string): Promise<
     honorarioFixo: c.honorarioFixo,
     periodicidade: c.periodicidade,
     retainerDescontado: c.retainerDescontado,
+    honorarioVariavel: c.honorarioVariavel,
+    variavelCriterio: c.variavelCriterio,
+    variavelValorHora: c.variavelValorHora,
+    variavelPercentual: c.variavelPercentual,
+    variavelBase: c.variavelBase,
+    variavelTeto: c.variavelTeto,
+    variavelDiaApuracao: c.variavelDiaApuracao,
     successFeePercentual: c.successFeePercentual,
     successFeeMinimo: c.successFeeMinimo,
     formaPagamento: c.formaPagamento,
     contaBancariaId: c.contaBancariaId,
+    meioRecebimento: c.meioRecebimento,
     conta,
     observacoes: c.observacoes,
     partes,
@@ -507,12 +547,12 @@ export async function opcoesDoContrato(
   };
 }
 
-/** Contas das contratadas (mascaradas), para escolher a conta de pagamento. */
+/** Contas das contratadas (mascaradas), para escolher onde recebem: conta ou chave PIX. */
 export async function contasDasEmpresas(
   acesso: Acesso | null,
   dealId: string | null,
   empresaIds: string[],
-): Promise<{ id: string; empresaId: string; descricao: string; principal: boolean }[]> {
+): Promise<{ id: string; empresaId: string; descricao: string; pix: string | null; principal: boolean }[]> {
   const a = exigirTenant(acesso);
   const ids = empresaIds.filter(uuidValido).slice(0, 50);
   if (ids.length === 0) return [];
@@ -537,6 +577,7 @@ export async function contasDasEmpresas(
       empresaId: x.empresaId!,
       principal: x.principal,
       descricao: (await descreverConta(a, x.id)) ?? "—",
+      pix: await descreverConta(a, x.id, "pix"),
     })),
   );
 }
@@ -576,10 +617,25 @@ const DadosContrato = z.object({
   honorarioFixo: decimal(1e15, "contratos.erros.valorInvalido").prefault(""),
   periodicidade: z.enum([...PERIODICIDADES, ""], "contratos.erros.periodicidadeInvalida").prefault(""),
   retainerDescontado: z.boolean().default(false),
+  honorarioVariavel: z.boolean().default(false),
+  variavelCriterio: z.enum([...CRITERIOS_VARIAVEIS, ""], "contratos.erros.criterioInvalido").prefault(""),
+  variavelValorHora: decimal(1e15, "contratos.erros.valorInvalido").prefault(""),
+  variavelPercentual: decimal(100, "contratos.erros.percentualInvalido").prefault(""),
+  variavelBase: z.string().trim().max(1000).default(""),
+  variavelTeto: decimal(1e15, "contratos.erros.valorInvalido").prefault(""),
+  variavelDiaApuracao: z
+    .string()
+    .trim()
+    .default("")
+    .refine(
+      (v) => v === "" || (/^\d+$/.test(v) && Number(v) >= 1 && Number(v) <= 28),
+      "contratos.erros.diaInvalido",
+    ),
   successFeePercentual: decimal(100, "contratos.erros.percentualInvalido").prefault(""),
   successFeeMinimo: decimal(1e15, "contratos.erros.valorInvalido").prefault(""),
   formaPagamento: z.string().trim().max(1000).default(""),
   contaBancariaId: z.string().default(""),
+  meioRecebimento: z.enum(["conta", "pix"]).default("conta"),
   observacoes: z.string().trim().max(5000).default(""),
   contratantes: z.array(z.string()).max(20).default([]),
   contratadas: z.array(z.string()).max(20).default([]),
@@ -612,6 +668,16 @@ async function validar(
     return { erro: "contratos.erros.contratadaObrigatoria", campo: "contratadas" };
   if (d.inicio && d.fim && d.fim < d.inicio)
     return { erro: "contratos.erros.fimAntesDoInicio", campo: "fim" };
+  if (d.honorarioVariavel) {
+    if (!d.variavelCriterio)
+      return { erro: "contratos.erros.criterioObrigatorio", campo: "variavelCriterio" };
+    if (d.variavelCriterio === "horas" && !d.variavelValorHora)
+      return { erro: "contratos.erros.valorHoraObrigatorio", campo: "variavelValorHora" };
+    if (d.variavelCriterio === "percentual" && !d.variavelPercentual)
+      return { erro: "contratos.erros.percentualObrigatorio", campo: "variavelPercentual" };
+    if (d.variavelCriterio !== "horas" && !d.variavelBase)
+      return { erro: "contratos.erros.baseObrigatoria", campo: "variavelBase" };
+  }
   const opcoes = await opcoesDoContrato(a, dealId);
   const empresas = new Set(opcoes.empresas.map((e) => e.id));
   if (![...contratantes, ...contratadas].every((id) => empresas.has(id)))
@@ -621,12 +687,14 @@ async function validar(
       return { erro: "contratos.erros.contaInvalida", campo: "contaBancariaId" };
     const [conta] = await comTenant(a.tenant.id, (tx) =>
       tx
-        .select({ empresaId: contaBancaria.empresaId })
+        .select({ empresaId: contaBancaria.empresaId, pix: contaBancaria.chavePixCifrada })
         .from(contaBancaria)
         .where(eq(contaBancaria.id, d.contaBancariaId)),
     );
     if (!conta?.empresaId || !contratadas.includes(conta.empresaId))
       return { erro: "contratos.erros.contaInvalida", campo: "contaBancariaId" };
+    if (d.meioRecebimento === "pix" && !conta.pix)
+      return { erro: "contratos.erros.contaSemPix", campo: "contaBancariaId" };
   }
   const perfisValidos = new Set(opcoes.perfis.map((p) => p.id));
   const usuariosValidos = new Set(opcoes.usuarios.map((u) => u.id));
@@ -653,10 +721,19 @@ const colunas = (d: Validado) => ({
   honorarioFixo: d.honorarioFixo,
   periodicidade: d.honorarioFixo ? d.periodicidade || null : null,
   retainerDescontado: d.honorarioFixo ? d.retainerDescontado : false,
+  honorarioVariavel: d.honorarioVariavel,
+  variavelCriterio: d.honorarioVariavel ? d.variavelCriterio || null : null,
+  variavelValorHora: d.honorarioVariavel && d.variavelCriterio === "horas" ? d.variavelValorHora : null,
+  variavelPercentual:
+    d.honorarioVariavel && d.variavelCriterio === "percentual" ? d.variavelPercentual : null,
+  variavelBase: d.honorarioVariavel && d.variavelCriterio !== "horas" ? d.variavelBase || null : null,
+  variavelTeto: d.honorarioVariavel ? d.variavelTeto : null,
+  variavelDiaApuracao: d.honorarioVariavel && d.variavelDiaApuracao ? Number(d.variavelDiaApuracao) : null,
   successFeePercentual: d.successFeePercentual,
   successFeeMinimo: d.successFeeMinimo,
   formaPagamento: d.formaPagamento || null,
   contaBancariaId: d.contaBancariaId || null,
+  meioRecebimento: d.contaBancariaId ? d.meioRecebimento : "conta",
   observacoes: d.observacoes || null,
 });
 
@@ -898,7 +975,7 @@ export async function avisarFinanceiro(
   const [tr, marca, conta] = await Promise.all([
     tradutor(),
     marcaParaEmail(a.tenant.id),
-    descreverConta(a, v.c.contaBancariaId),
+    descreverConta(a, v.c.contaBancariaId, v.c.meioRecebimento),
   ]);
   const c = v.c;
   const endereco = (e: typeof empresa.$inferSelect) =>

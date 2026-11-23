@@ -464,14 +464,24 @@ function Sino({ inicial }: { inicial: { itens: Notificacao[]; naoLidas: number }
 
 // --- Usuário (menu suspenso com conta, tema e sair) ----------------------------------
 
+/**
+ * Menu do usuário (conta, tema, idioma, sair). Duas formas: no rodapé do menu
+ * lateral, o cartão com foto, nome e papel, abrindo para cima (padrão das
+ * skills de app desktop); na barra superior, só a foto (atalho, e o caminho
+ * no celular, onde o menu lateral fica escondido).
+ */
 function MenuDoUsuario({
   usuario,
   temaInicial,
   menuInvertidoInicial,
+  variante = "topo",
+  compacto = false,
 }: {
   usuario: { nome: string; foto?: string | null; papel: "administrador" | "usuario" };
   temaInicial: PreferenciaDeTema;
   menuInvertidoInicial: boolean;
+  variante?: "topo" | "lateral";
+  compacto?: boolean;
 }) {
   const t = useTranslations("cabecalho");
   const localeAtual = useLocale();
@@ -482,9 +492,27 @@ function MenuDoUsuario({
   useFecharFora(caixa, aberto, () => setAberto(false));
 
   // A preferência da conta vale em qualquer computador: sincroniza o navegador com ela.
-  useEffect(() => aplicarTema(temaInicial), [temaInicial]);
+  useEffect(() => {
+    if (variante === "topo") aplicarTema(temaInicial);
+  }, [temaInicial, variante]);
   const [invertido, setInvertido] = useState(menuInvertidoInicial);
-  useEffect(() => aplicarMenuInvertido(menuInvertidoInicial), [menuInvertidoInicial]);
+  useEffect(() => {
+    if (variante === "topo") aplicarMenuInvertido(menuInvertidoInicial);
+  }, [menuInvertidoInicial, variante]);
+  // Os dois menus (topo e lateral) mostram a mesma escolha: acompanham o atributo da página.
+  useEffect(() => {
+    const ver = () => {
+      const d = document.documentElement.dataset;
+      if (d.preferenciaTema) setTema(d.preferenciaTema as PreferenciaDeTema);
+      setInvertido(d.menuInvertido === "sim");
+    };
+    const obs = new MutationObserver(ver);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-preferencia-tema", "data-menu-invertido"],
+    });
+    return () => obs.disconnect();
+  }, []);
 
   function escolher(p: PreferenciaDeTema) {
     setTema(p);
@@ -494,24 +522,46 @@ function MenuDoUsuario({
 
   return (
     <div ref={caixa} className="relative">
-      <button
-        type="button"
-        onClick={() => setAberto(!aberto)}
-        aria-label={t("menuDoUsuario")}
-        aria-expanded={aberto}
-        className="flex items-center gap-3 text-left"
-      >
-        <Avatar nome={usuario.nome} foto={usuario.foto} tamanho={40} />
-        <span className="hidden md:block">
-          <span className="text-primary block text-xs">{t(usuario.papel)}</span>
-          <span className="text-text flex items-center gap-1 text-sm font-semibold">
-            {usuario.nome}
-            <Icone nome="seta" className="h-4 w-4" />
-          </span>
-        </span>
-      </button>
+      {variante === "topo" ? (
+        <button
+          type="button"
+          onClick={() => setAberto(!aberto)}
+          aria-label={t("menuDoUsuario")}
+          aria-expanded={aberto}
+          title={usuario.nome}
+          className="hover:ring-primary/30 block rounded-full transition-shadow hover:ring-4"
+        >
+          <Avatar nome={usuario.nome} foto={usuario.foto} tamanho={36} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAberto(!aberto)}
+          aria-label={t("contaEPreferencias")}
+          aria-expanded={aberto}
+          title={compacto ? usuario.nome : undefined}
+          className={`hover:bg-surface flex w-full items-center gap-3 rounded-md p-2 text-left transition-colors ${compacto ? "justify-center" : ""}`}
+        >
+          <Avatar nome={usuario.nome} foto={usuario.foto} tamanho={32} />
+          {!compacto && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="text-text block truncate text-sm font-semibold">{usuario.nome}</span>
+                <span className="text-muted block text-xs">{t(usuario.papel)}</span>
+              </span>
+              <Icone nome="seta" className="text-muted h-4 w-4 rotate-180" />
+            </>
+          )}
+        </button>
+      )}
       {aberto && (
-        <div className={`${painelSuspenso} w-60 py-2`}>
+        <div
+          className={
+            variante === "lateral"
+              ? "bg-background shadow-cartao border-border absolute bottom-full left-0 z-50 mb-2 w-60 rounded-[10px] border py-2"
+              : `${painelSuspenso} w-60 py-2`
+          }
+        >
           <Link
             href="/seguranca"
             onClick={() => setAberto(false)}
@@ -776,6 +826,15 @@ export function CascaDoTenant({
             </div>
           ))}
         </nav>
+        <div className="border-border border-t p-2">
+          <MenuDoUsuario
+            usuario={usuario}
+            temaInicial={tema}
+            menuInvertidoInicial={menuInvertido}
+            variante="lateral"
+            compacto={compacto}
+          />
+        </div>
       </aside>
       <div
         className={`${compacto ? "md:pl-[72px]" : "md:pl-60"} flex min-w-0 flex-1 flex-col transition-[padding] duration-200`}

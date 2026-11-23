@@ -231,9 +231,13 @@ async function Conteudo({ acesso }: { acesso: AcessoTenant }) {
                 </thead>
                 <tbody className="divide-border divide-y">
                   {p.negocios.map((n) => (
-                    <tr key={n.id}>
+                    <tr key={n.id} className="group hover:bg-surface relative transition-colors duration-150">
                       <td className="px-1 py-2.5">
-                        <Link href={`/negocios/${n.id}`} className="text-text font-semibold">
+                        {/* A linha inteira leva ao negócio (o link se estende sobre a linha). */}
+                        <Link
+                          href={`/negocios/${n.id}`}
+                          className="text-text group-hover:text-primary font-semibold transition-colors duration-150 after:absolute after:inset-0"
+                        >
                           {n.nome}
                         </Link>
                         {n.situacao !== "andamento" && (
@@ -251,6 +255,12 @@ async function Conteudo({ acesso }: { acesso: AcessoTenant }) {
                       </td>
                       <td className="text-text px-1 py-2.5 text-right whitespace-nowrap tabular-nums">
                         {n.valorEstimado !== null ? reais(n.valorEstimado) : "—"}
+                        <span
+                          aria-hidden="true"
+                          className="text-primary ml-2 inline-block -translate-x-1 opacity-0 transition duration-150 group-hover:translate-x-0 group-hover:opacity-100"
+                        >
+                          →
+                        </span>
                       </td>
                     </tr>
                   ))}

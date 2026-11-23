@@ -9,7 +9,7 @@ export default defineConfig({
   fullyParallel: true,
   reporter: "list",
   // Em desenvolvimento, a primeira visita a uma página espera a compilação.
-  expect: { timeout: 15_000 },
+  expect: { timeout: 30_000 },
   use: {
     baseURL: "http://localhost:3000",
     navigationTimeout: 30_000,

@@ -147,3 +147,11 @@ versão 1" é anotado aqui.
   fundo dos cartões.
 * **"Concluir" direto no "Próximo passo":** hoje o botão abre a tarefa na aba
   Atividade.
+
+## Contratos (depois dos honorários combinados, 2026-11-23)
+
+* **Lançamento das apurações mensais dos honorários variáveis:** a cada
+  fechamento, registrar horas ou base do mês, calcular o valor (respeitando o
+  limite mensal) e avisar o financeiro. Hoje o contrato guarda só as regras.
+* **Máscara de valor nas demais telas** (ofertas, valor estimado do
+  negócio): hoje só nos contratos.

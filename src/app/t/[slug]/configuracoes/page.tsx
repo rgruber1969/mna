@@ -58,6 +58,31 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
       acesso.administrador ? obterHorasDoResumo(acesso) : 1,
       acesso.administrador ? obterDiasDeAvisoDoPrazo(acesso) : 7,
     ]);
+  // Abas verticais em dois grupos (assunto), em ordem alfabética dentro de cada grupo.
+  const porNome = (x: { rotulo: string }, y: { rotulo: string }) => x.rotulo.localeCompare(y.rotulo, "pt-BR");
+  const doTenant = acesso.administrador
+    ? [
+        { id: "geral", rotulo: t("abaGeral") },
+        { id: "painel", rotulo: t("abaPainel") },
+        { id: "identidade", rotulo: t("abaIdentidade") },
+        { id: "chaves", rotulo: t("abaChaves") },
+      ].sort(porNome)
+    : [];
+  const cadastros = verCadastros
+    ? [
+        { id: "papeis", rotulo: t("abaPapeis") },
+        { id: "vinculos", rotulo: t("abaVinculos") },
+        { id: "operacoes", rotulo: t("abaOperacoes") },
+        { id: "etapas", rotulo: t("abaEtapas") },
+        { id: "categorias", rotulo: t("abaCategorias") },
+      ].sort(porNome)
+    : [];
+  const abas = [
+    ...doTenant.map((a) => ({ ...a, grupo: t("grupoTenant") })),
+    ...cadastros.map((a) => ({ ...a, grupo: t("grupoCadastros") })),
+  ];
+  const pedida = await aba;
+  const abaInicial = abas.some((a) => a.id === pedida) ? pedida : doTenant.length ? "geral" : abas[0]?.id;
   const permissoes = { podeCriar, podeEditar, podeExcluir };
   return (
     <EstruturaDoTenant acesso={acesso}>
@@ -66,32 +91,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
           <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
             {t("titulo")}
           </Titulo>
-          <Abas
-            inicial={await aba}
-            abas={[
-              ...(dias
-                ? [
-                    { id: "geral", rotulo: t("abaGeral") },
-                    { id: "painel", rotulo: t("abaPainel") },
-                  ]
-                : []),
-              ...(verCadastros
-                ? [
-                    { id: "papeis", rotulo: t("abaPapeis") },
-                    { id: "vinculos", rotulo: t("abaVinculos") },
-                    { id: "operacoes", rotulo: t("abaOperacoes") },
-                    { id: "etapas", rotulo: t("abaEtapas") },
-                    { id: "categorias", rotulo: t("abaCategorias") },
-                  ]
-                : []),
-              ...(acesso.administrador
-                ? [
-                    { id: "identidade", rotulo: t("abaIdentidade") },
-                    { id: "chaves", rotulo: t("abaChaves") },
-                  ]
-                : []),
-            ]}
-          >
+          <Abas vertical inicial={abaInicial} abas={abas}>
             {dias && (
               <PainelDeAba id="geral">
                 <FormConfiguracoes dias={dias} diasTarefa={diasTarefa} horasResumo={horasResumo} />

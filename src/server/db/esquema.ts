@@ -1327,11 +1327,27 @@ export const contrato = pgTable(
     periodicidade: text("periodicidade").$type<"unico" | "mensal" | "trimestral" | "semestral" | "anual">(),
     /** Os honorários fixos pagos são descontados do success fee (C1). */
     retainerDescontado: boolean("retainer_descontado").notNull().default(false),
+    /**
+     * Honorários variáveis apurados mês a mês (combináveis com os fixos): por horas
+     * trabalhadas (valor-hora), por percentual sobre uma base ou outro critério descrito.
+     */
+    honorarioVariavel: boolean("honorario_variavel").notNull().default(false),
+    variavelCriterio: text("variavel_criterio").$type<"horas" | "percentual" | "outro">(),
+    variavelValorHora: numeric("variavel_valor_hora", { precision: 18, scale: 2 }),
+    variavelPercentual: numeric("variavel_percentual", { precision: 7, scale: 4 }),
+    /** Base do percentual ou descrição do critério ("outro"). */
+    variavelBase: text("variavel_base"),
+    /** Limite mensal opcional dos variáveis. */
+    variavelTeto: numeric("variavel_teto", { precision: 18, scale: 2 }),
+    /** Dia do mês do fechamento da apuração (1 a 28). */
+    variavelDiaApuracao: integer("variavel_dia_apuracao"),
     successFeePercentual: numeric("success_fee_percentual", { precision: 7, scale: 4 }),
     successFeeMinimo: numeric("success_fee_minimo", { precision: 18, scale: 2 }),
     formaPagamento: text("forma_pagamento"),
-    /** Conta da contratada para o pagamento. */
+    /** Conta da contratada para o pagamento (cadastro de contas da empresa). */
     contaBancariaId: uuid("conta_bancaria_id").references(() => contaBancaria.id, { onDelete: "set null" }),
+    /** Como a contratada recebe: na conta (agência e conta) ou pela chave PIX da mesma conta. */
+    meioRecebimento: text("meio_recebimento").$type<"conta" | "pix">().notNull().default("conta"),
     observacoes: text("observacoes"),
     criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
     financeiroAvisadoEm: timestamp("financeiro_avisado_em", { withTimezone: true }),

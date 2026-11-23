@@ -38,7 +38,7 @@ export async function excluirContratoAcao(id: string): Promise<{ erro?: string }
 export async function contasDasEmpresasAcao(
   dealId: string | null,
   empresaIds: string[],
-): Promise<{ id: string; empresaId: string; descricao: string; principal: boolean }[]> {
+): Promise<{ id: string; empresaId: string; descricao: string; pix: string | null; principal: boolean }[]> {
   return contasDasEmpresas(await acesso(), dealId, empresaIds);
 }
 

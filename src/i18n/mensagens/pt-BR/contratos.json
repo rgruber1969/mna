@@ -30,7 +30,7 @@
     "naoVigente": "Fora da vigência",
     "exclusivo": "Com exclusividade",
     "exclusividadeAte": "Exclusividade até",
-    "honorarioFixo": "Honorários fixos (retainer), R$",
+    "honorarioFixo": "Valor dos honorários fixos",
     "periodicidade": "Periodicidade",
     "periodicidades": {
       "unico": "Único",
@@ -41,7 +41,7 @@
     },
     "retainerDescontado": "Honorários fixos pagos são descontados do success fee",
     "successFeePercentual": "Success fee (%)",
-    "successFeeMinimo": "Success fee mínimo, R$",
+    "successFeeMinimo": "Success fee mínimo",
     "formaPagamento": "Forma de pagamento",
     "conta": "Conta da contratada para pagamento",
     "semConta": "— nenhuma —",
@@ -90,7 +90,45 @@
       "contaInvalida": "A conta precisa ser de uma das contratadas.",
       "negocioNaoMuda": "Um contrato ligado a um negócio não muda de negócio.",
       "semEmailFinanceiro": "Nenhuma contratada tem e-mail do financeiro no cadastro da empresa (aba Dados).",
-      "dadosInvalidos": "Dados inválidos."
-    }
+      "dadosInvalidos": "Dados inválidos.",
+      "criterioInvalido": "Escolha como o valor do mês é apurado.",
+      "criterioObrigatorio": "Escolha como os honorários variáveis são apurados.",
+      "valorHoraObrigatorio": "Informe o valor-hora.",
+      "percentualObrigatorio": "Informe o percentual dos honorários variáveis.",
+      "baseObrigatoria": "Informe a base do percentual ou o critério de apuração.",
+      "diaInvalido": "O dia do fechamento vai de 1 a 28.",
+      "contaSemPix": "Essa conta não tem chave PIX cadastrada."
+    },
+    "honorariosAjuda": "Combine à vontade: honorários fixos, variáveis apurados por mês e success fee.",
+    "temFixo": "Honorários fixos",
+    "temVariavel": "Honorários variáveis, apurados por mês",
+    "variavelCriterio": "Como o valor do mês é apurado",
+    "criterios": {
+      "horas": "Horas trabalhadas × valor-hora",
+      "percentual": "Percentual sobre uma base",
+      "outro": "Outro critério"
+    },
+    "variavelValorHora": "Valor-hora",
+    "variavelPercentual": "Percentual (%)",
+    "variavelBase": "Base do percentual",
+    "variavelBaseDica": "Ex.: faturamento bruto do mês",
+    "variavelDescricao": "Critério de apuração",
+    "variavelDescricaoDica": "Descreva como o valor do mês é calculado",
+    "variavelTeto": "Limite mensal (opcional)",
+    "variavelDiaApuracao": "Dia do fechamento (1 a 28)",
+    "receberPor": "A contratada recebe por",
+    "meios": {
+      "conta": "Conta bancária",
+      "pix": "Chave PIX"
+    },
+    "chavePix": "Chave PIX da contratada",
+    "semChavePix": "Sem chave PIX definida",
+    "contasAjuda": "Vem do cadastro de contas da empresa contratada (aba Contas bancárias da empresa).",
+    "honorarioVariavelRotulo": "Honorários variáveis (mensais)",
+    "recebimento": "Recebimento",
+    "variavelHoras": "Horas trabalhadas × {valor} por hora",
+    "variavelPercentualDe": "{p}% sobre {base}",
+    "variavelTetoDe": "Limite de {valor} por mês",
+    "variavelFechamento": "Fechamento no dia {dia} de cada mês"
   }
 }

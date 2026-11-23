@@ -63,7 +63,7 @@ test.afterAll(async () => {
 });
 
 test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(240_000);
   await page.goto(`http://${slug}.${dominio}/entrar`);
   await page.waitForLoadState("networkidle");
   await page.getByLabel("E-mail (desenvolvimento)").fill(email);
@@ -240,13 +240,20 @@ test("contratos: cria no negócio, envia arquivo, simula o success fee e lista",
   await page.getByLabel("Título").fill("Mandato de venda");
   await page.getByRole("group", { name: "Contratante(s)" }).getByLabel("Vendedora de Teste Ltda").check();
   await page.getByRole("group", { name: "Contratada(s)" }).getByLabel("Escritório de Teste").check();
-  await page.getByLabel("Honorários fixos (retainer), R$").fill("20.000,00");
+  // Honorários fixos e variáveis (por hora) combinados; campos de valor com máscara.
+  await page.getByLabel("Honorários fixos", { exact: true }).check();
+  await page.getByLabel("Valor dos honorários fixos").pressSequentially("2000000");
+  await expect(page.getByLabel("Valor dos honorários fixos")).toHaveValue("20.000,00");
+  await page.getByLabel("Honorários variáveis, apurados por mês").check();
+  await page.getByLabel("Como o valor do mês é apurado").selectOption("horas");
+  await page.getByRole("textbox", { name: "Valor-hora", exact: true }).fill("850,00");
   await page.getByLabel("Success fee (%)").fill("2");
-  await page.getByLabel("Success fee mínimo, R$").fill("150.000,00");
+  await page.getByLabel("Success fee mínimo").fill("150.000,00");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Contrato salvo.")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "Mandato de venda" })).toBeVisible();
   await expect(page.getByText("R$ 20.000,00")).toBeVisible();
+  await expect(page.getByText("Horas trabalhadas × R$ 850,00 por hora")).toBeVisible();
   // Simulação: 2% de 10 milhões = 200 mil (acima do mínimo).
   await page.getByLabel("Simular success fee sobre o valor (R$)").fill("10.000.000");
   await expect(page.getByText("Success fee estimado: R$ 200.000,00")).toBeVisible();

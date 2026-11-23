@@ -265,7 +265,11 @@ export function ConversaDoItem({
                 {c.naoLidas > 0 && ` (${c.naoLidas})`}
               </button>
             ))}
-            <Ajuda texto={t("canaisAjuda")} />
+            <Ajuda
+              texto={`${t("canaisAjuda")}
+
+${t("regras")}`}
+            />
           </div>
           <div className="border-border bg-background max-h-[28rem] overflow-y-auto rounded-md border p-3">
             {conversa.mensagens.length === 0 ? (
