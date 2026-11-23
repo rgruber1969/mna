@@ -487,6 +487,51 @@
       "salvo": "Configuração salva."
     },
     "grupoTenant": "Tenant",
-    "grupoCadastros": "Cadastros auxiliares"
+    "grupoCadastros": "Cadastros auxiliares",
+    "abaGatilhos": "Gatilhos de tarefas",
+    "gatilhos": {
+      "aviso": "os gatilhos ainda são simulados: esta tela mostra os previstos, mas nenhuma tarefa é criada de verdade e nada é gravado.",
+      "explicacao": "Quando um evento acontece no negócio, uma tarefa é criada sozinha, com responsável e prazo, e aparece marcada como \"automática\".",
+      "colEvento": "Quando",
+      "colTarefa": "Tarefa criada",
+      "colResponsavel": "Responsável",
+      "colPrazo": "Prazo",
+      "colAtivo": "Ativo",
+      "ativoDe": "Gatilho ativo: {tarefa}",
+      "novo": "Novo gatilho",
+      "novoEmBreve": "Criar e editar gatilhos pelo próprio tenant chega numa próxima versão.",
+      "exemplos": {
+        "escolhida": {
+          "evento": "Uma compradora passa a \"Escolhida\" no funil",
+          "tarefa": "Enviar checklist de diligência",
+          "responsavel": "Lado comprador (auditoria e advogados da compradora escolhida)",
+          "prazo": "5 dias"
+        },
+        "diligencia": {
+          "evento": "A etapa Diligência é iniciada",
+          "tarefa": "Organizar o data room da diligência",
+          "responsavel": "Coordenador do negócio",
+          "prazo": "7 dias"
+        },
+        "nda": {
+          "evento": "Uma compradora assina o NDA",
+          "tarefa": "Liberar o teaser completo e o e-book",
+          "responsavel": "Lado vendedor",
+          "prazo": "2 dias"
+        },
+        "exclusividade": {
+          "evento": "Faltam 15 dias para o fim da exclusividade",
+          "tarefa": "Decidir sobre a prorrogação da exclusividade",
+          "responsavel": "Coordenador do negócio",
+          "prazo": "10 dias"
+        },
+        "closing": {
+          "evento": "A etapa Closing é iniciada",
+          "tarefa": "Conferir as condições precedentes (CPs)",
+          "responsavel": "Advogados do lado vendedor",
+          "prazo": "5 dias"
+        }
+      }
+    }
   }
 }

@@ -16,6 +16,8 @@ import {
   obterDiasDeLembreteDeTarefa,
 } from "@/server/services/negocios-andamento";
 import { FormPainelPrincipal } from "@/components/cadastros/painel-principal";
+import { GatilhosDeTarefas } from "@/components/cadastros/gatilhos";
+import { estaLigada } from "@/config/funcionalidades";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
@@ -66,6 +68,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
         { id: "painel", rotulo: t("abaPainel") },
         { id: "identidade", rotulo: t("abaIdentidade") },
         { id: "chaves", rotulo: t("abaChaves") },
+        ...(estaLigada("gatilhosDeTarefas") ? [{ id: "gatilhos", rotulo: t("abaGatilhos") }] : []),
       ].sort(porNome)
     : [];
   const cadastros = verCadastros
@@ -129,6 +132,9 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
               <>
                 <PainelDeAba id="identidade">
                   <PainelDeIdentidade acesso={acesso} />
+                </PainelDeAba>
+                <PainelDeAba id="gatilhos">
+                  <GatilhosDeTarefas />
                 </PainelDeAba>
                 <PainelDeAba id="chaves">
                   <PainelDeChaves acesso={acesso} />
