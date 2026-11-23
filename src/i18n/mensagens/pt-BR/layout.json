@@ -25,7 +25,11 @@
     "abrir": "Abrir menu",
     "fecharMenu": "Fechar menu",
     "favoritar": "Favoritar {item}",
-    "desfavoritar": "Tirar {item} dos favoritos"
+    "desfavoritar": "Tirar {item} dos favoritos",
+    "abrirMenu": "Abrir menu",
+    "subirFavorito": "Subir {item} nos favoritos",
+    "descerFavorito": "Descer {item} nos favoritos",
+    "arrasteFavoritos": "Arraste para mudar a ordem"
   },
   "cabecalho": {
     "procurar": "Procurar no menu",

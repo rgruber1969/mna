@@ -317,7 +317,7 @@
       "titulo": "Configurações gerais",
       "sobre": "Administração",
       "ajuda": "Regras gerais do tenant, definidas pelos administradores.",
-      "diasAviso": "Prazos de notificações — avisos antes do fim da exclusividade (dias)",
+      "diasAviso": "Exclusividade (dias antes do prazo)",
       "diasAvisoAjuda": "Ex.: \"15, 5\": o lado vendedor é avisado 15 e 5 dias antes do fim, além do início e do último dia.",
       "salvar": "Salvar",
       "diasTarefa": "Lembretes de tarefa (dias antes do prazo)",
@@ -492,13 +492,10 @@
       "emDia": "Em dia",
       "negocios": "Negócios em aberto",
       "carteira": "{valor} em carteira",
-      "semValor": "sem valor estimado",
-      "deAbertos": "de {n} prazos abertos",
-      "nenhumVencido": "nenhum vencido",
       "verLista": "ver na lista ao lado"
     },
     "progresso": {
-      "titulo": "Progresso dos meus negócios",
+      "titulo": "Meus negócios",
       "colNegocio": "Negócio",
       "colEtapa": "Etapa",
       "colProgresso": "Progresso",

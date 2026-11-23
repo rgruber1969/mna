@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { obterAcesso } from "@/server/services/acesso";
-import { alternarFavorito, definirMenuRecolhido } from "@/server/services/menu";
+import { alternarFavorito, definirMenuRecolhido, ordenarFavoritos } from "@/server/services/menu";
 
 /** Preferências do menu lateral: só repassam para a camada de serviços (ADR-0004). */
 
@@ -14,4 +14,8 @@ export async function alternarFavoritoAcao(itemId: string): Promise<string[]> {
 
 export async function definirMenuRecolhidoAcao(recolhido: boolean): Promise<void> {
   await definirMenuRecolhido(await acesso(), recolhido);
+}
+
+export async function ordenarFavoritosAcao(ordem: string[]): Promise<string[]> {
+  return ordenarFavoritos(await acesso(), ordem);
 }

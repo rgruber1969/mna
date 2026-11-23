@@ -10,6 +10,7 @@ import {
   grupoEconomico,
   pessoa,
   tipoVinculo,
+  usuario,
   vinculoPessoaEmpresa,
   contratoParte,
 } from "@/server/db/esquema";
@@ -18,6 +19,7 @@ import type { ErroDeServico } from "@/i18n/servidor";
 import type { Acesso, AcessoTenant } from "./acesso";
 import { exigirPermissao } from "./permissoes/verificador";
 import { situacoes } from "./situacao-de-acesso";
+import { enderecoDaFoto } from "./foto-da-conta";
 
 /**
  * Empresas e grupos econômicos do tenant (dominio.md, "Empresa"). Toda
@@ -130,6 +132,8 @@ export type EmpresaResumo = {
   doContratante: boolean;
   inativa: boolean;
   pessoas: number;
+  /** Até 4 pessoas ligadas (miniaturas na lista); só na lista paginada. */
+  rostos?: { nome: string; foto: string | null }[];
 };
 
 export const ORDENS_DE_EMPRESAS = ["razaoSocial", "cnpj", "grupo", "criadoEm"] as const;
@@ -192,11 +196,33 @@ export async function paginaDeEmpresas(
           .groupBy(vinculoPessoaEmpresa.empresaId)
       : [];
     const n = new Map(contagem.map((c) => [c.empresaId, c.n]));
+    // Miniaturas: as pessoas ligadas a cada empresa (foto da conta, quando a pessoa tem uma).
+    const ligadas = ids.length
+      ? await tx
+          .select({
+            empresaId: vinculoPessoaEmpresa.empresaId,
+            nome: pessoa.nome,
+            usuarioId: pessoa.usuarioId,
+            imagem: usuario.image,
+          })
+          .from(vinculoPessoaEmpresa)
+          .innerJoin(pessoa, eq(pessoa.id, vinculoPessoaEmpresa.pessoaId))
+          .leftJoin(usuario, eq(usuario.id, pessoa.usuarioId))
+          .where(inArray(vinculoPessoaEmpresa.empresaId, ids))
+          .orderBy(asc(pessoa.nome))
+      : [];
+    const rostos = Map.groupBy(ligadas, (x) => x.empresaId);
     return {
       itens: linhas.map(({ inativaEm, ...l }) => ({
         ...l,
         inativa: Boolean(inativaEm),
         pessoas: n.get(l.id) ?? 0,
+        rostos: [...new Map((rostos.get(l.id) ?? []).map((x) => [x.nome, x])).values()]
+          .slice(0, 4)
+          .map((x) => ({
+            nome: x.nome,
+            foto: x.usuarioId ? enderecoDaFoto(x.usuarioId, x.imagem) : null,
+          })),
       })),
       total,
       pagina,

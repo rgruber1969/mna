@@ -107,3 +107,17 @@ export async function alternarFavorito(acesso: Acesso | null, itemId: string): P
 export async function definirMenuRecolhido(acesso: Acesso | null, recolhido: boolean): Promise<void> {
   await gravar(exigirTenant(acesso), { recolhido });
 }
+
+/**
+ * Nova ordem dos favoritos (arrastar no menu ou setas pelo teclado). Só reordena
+ * os que já são favoritos: itens desconhecidos são ignorados e os que faltarem
+ * continuam no fim. Devolve a lista gravada.
+ */
+export async function ordenarFavoritos(acesso: Acesso | null, ordem: string[]): Promise<string[]> {
+  const a = exigirTenant(acesso);
+  const atuais = (await preferencias(a)).favoritos;
+  const pedidos = [...new Set(ordem)].filter((id) => atuais.includes(id));
+  const favoritos = [...pedidos, ...atuais.filter((id) => !pedidos.includes(id))];
+  await gravar(a, { favoritos });
+  return favoritos;
+}

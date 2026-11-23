@@ -336,7 +336,8 @@ describe("conta e pessoa", () => {
 
 describe("menu lateral", () => {
   it("mostra só o permitido; favoritos e recolhido ficam guardados por usuário", async () => {
-    const { alternarFavorito, definirMenuRecolhido, menuDoUsuario } = await import("./menu");
+    const { alternarFavorito, definirMenuRecolhido, menuDoUsuario, ordenarFavoritos } =
+      await import("./menu");
     const semPerfil = await menuDoUsuario(acesso(semPerfilId, false));
     expect(semPerfil.grupos.map((g) => g.chave)).toEqual(["inicio"]);
 
@@ -351,6 +352,15 @@ describe("menu lateral", () => {
     expect(await menuDoUsuario(a)).toMatchObject({ favoritos: ["pessoas"], recolhido: true });
     expect((await menuDoUsuario(acesso(semPerfilId, false))).favoritos).toEqual([]);
     expect(await alternarFavorito(a, "pessoas")).toEqual([]);
+    // Ordem manual (arrastar no menu): só reordena os que já são favoritos.
+    await alternarFavorito(a, "empresas");
+    await alternarFavorito(a, "pessoas");
+    expect(await ordenarFavoritos(a, ["pessoas", "inexistente", "empresas"])).toEqual([
+      "pessoas",
+      "empresas",
+    ]);
+    expect((await menuDoUsuario(a)).favoritos).toEqual(["pessoas", "empresas"]);
+    expect(await ordenarFavoritos(a, ["empresas"])).toEqual(["empresas", "pessoas"]);
   });
 });
 

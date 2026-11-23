@@ -143,23 +143,32 @@ export function PrecisaDeVoce({
         <ul className="divide-border mt-1 divide-y">
           {linhas.map((l) =>
             l.tipo === "mensagem" ? (
-              <li key={l.chave} className="flex items-start gap-2.5 py-2">
+              <li
+                key={l.chave}
+                className="group hover:bg-surface relative -mx-2 flex items-start gap-2.5 rounded-lg px-2 py-2 transition-colors duration-150"
+              >
                 <Icone tipo="mensagem" />
                 <span className="min-w-0 flex-1">
-                  <span className="text-text block truncate text-sm font-semibold">
+                  <span className="text-text group-hover:text-primary block truncate text-sm font-semibold transition-colors duration-150">
                     {[l.mensagem.autor, l.mensagem.negocio].filter(Boolean).join(" · ")}
                   </span>
                   <span className="text-muted block truncate text-xs">{l.mensagem.trecho}</span>
                 </span>
-                <Link href={l.mensagem.link} className="text-primary shrink-0 pt-0.5 text-xs font-bold">
+                <Link
+                  href={l.mensagem.link}
+                  className="text-primary shrink-0 pt-0.5 text-xs font-bold after:absolute after:inset-0"
+                >
                   {t("acoes.mensagem")}
                 </Link>
               </li>
             ) : (
-              <li key={l.chave} className="flex items-start gap-2.5 py-2">
+              <li
+                key={l.chave}
+                className="group hover:bg-surface relative -mx-2 flex items-start gap-2.5 rounded-lg px-2 py-2 transition-colors duration-150"
+              >
                 <Icone tipo={l.tipo} nivel={l.prazo.nivel} />
                 <span className="min-w-0 flex-1">
-                  <span className="text-text block truncate text-sm font-semibold">
+                  <span className="text-text group-hover:text-primary block truncate text-sm font-semibold transition-colors duration-150">
                     {t(`titulos.${l.tipo}`, { texto: l.prazo.texto })}
                   </span>
                   <span className="text-muted block truncate text-xs">
@@ -171,7 +180,10 @@ export function PrecisaDeVoce({
                     </span>
                   </span>
                 </span>
-                <Link href={l.prazo.link} className="text-primary shrink-0 pt-0.5 text-xs font-bold">
+                <Link
+                  href={l.prazo.link}
+                  className="text-primary shrink-0 pt-0.5 text-xs font-bold after:absolute after:inset-0"
+                >
                   {t(`acoes.${l.tipo}`)}
                 </Link>
               </li>

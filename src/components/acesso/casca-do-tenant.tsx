@@ -6,7 +6,7 @@ import { Suspense, useEffect, useRef, useState, useTransition, type ReactNode, t
 import { useFormatter, useLocale, useNow, useTranslations } from "next-intl";
 import { IDIOMAS } from "@/i18n/idiomas";
 import { definirMenuInvertidoAcao, definirTemaAcao } from "@/app/acoes/conta";
-import { alternarFavoritoAcao, definirMenuRecolhidoAcao } from "@/app/acoes/menu";
+import { alternarFavoritoAcao, definirMenuRecolhidoAcao, ordenarFavoritosAcao } from "@/app/acoes/menu";
 import {
   marcarTodasComoLidasAcao,
   minhasNotificacoesAcao,
@@ -79,6 +79,8 @@ const ICONES: Record<string, ReactNode> = {
     </>
   ),
   mais: <path d="M12 5v14M5 12h14" />,
+  // Seta para a esquerda (recolher o menu); girada 180° para expandir.
+  chevron: <path d="M15 6l-6 6 6 6" />,
   estrela: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />,
   lupa: (
     <>
@@ -727,11 +729,54 @@ export function CascaDoTenant({
     iniciar(async () => setFavoritos(await alternarFavoritoAcao(id)));
   }
 
+  // Ordem manual dos favoritos: arrastar (a lista se reorganiza enquanto arrasta) ou, pelo
+  // teclado, os botões de subir e descer. Grava ao soltar.
+  const [arrastandoFavorito, setArrastandoFavorito] = useState<string | null>(null);
+  function moverFavorito(id: string, para: number) {
+    setFavoritos((f) => {
+      const sem = f.filter((x) => x !== id);
+      sem.splice(Math.max(0, Math.min(para, sem.length)), 0, id);
+      return sem;
+    });
+  }
+  function gravarOrdem(lista: string[]) {
+    iniciar(async () => setFavoritos(await ordenarFavoritosAcao(lista)));
+  }
+
   const linha = (item: Item, emFavoritos = false) => {
     const favorito = favoritos.includes(item.id);
     const nome = rotulo(item);
     return (
-      <li key={`${emFavoritos ? "f" : "g"}-${item.id}`} className="group relative">
+      <li
+        key={`${emFavoritos ? "f" : "g"}-${item.id}`}
+        className={`group relative ${emFavoritos && arrastandoFavorito === item.id ? "opacity-50" : ""}`}
+        draggable={emFavoritos && !compacto}
+        onDragStart={
+          emFavoritos
+            ? (e) => {
+                e.dataTransfer.effectAllowed = "move";
+                setArrastandoFavorito(item.id);
+              }
+            : undefined
+        }
+        onDragOver={
+          emFavoritos
+            ? (e) => {
+                if (!arrastandoFavorito || arrastandoFavorito === item.id) return;
+                e.preventDefault();
+                moverFavorito(arrastandoFavorito, favoritos.indexOf(item.id));
+              }
+            : undefined
+        }
+        onDragEnd={
+          emFavoritos
+            ? () => {
+                setArrastandoFavorito(null);
+                gravarOrdem(favoritos);
+              }
+            : undefined
+        }
+      >
         <Link
           href={item.href}
           onClick={() => setAberto(false)}
@@ -742,6 +787,36 @@ export function CascaDoTenant({
           <Icone nome={item.icone} />
           <span className={compacto ? "sr-only" : "truncate"}>{nome}</span>
         </Link>
+        {!compacto && emFavoritos && (
+          <span className="absolute top-1/2 right-1 flex -translate-y-1/2 flex-col opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+            {(
+              [
+                ["subirFavorito", -1, "rotate-90"],
+                ["descerFavorito", 1, "-rotate-90"],
+              ] as const
+            ).map(([chave, passo, giro]) => {
+              const i = favoritos.indexOf(item.id);
+              const fora = i + passo < 0 || i + passo >= favoritos.length;
+              return (
+                <button
+                  key={chave}
+                  type="button"
+                  disabled={fora}
+                  aria-label={t(chave, { item: nome })}
+                  onClick={() => {
+                    const nova = favoritos.filter((x) => x !== item.id);
+                    nova.splice(i + passo, 0, item.id);
+                    setFavoritos(nova);
+                    gravarOrdem(nova);
+                  }}
+                  className="text-muted hover:text-primary grid h-3.5 w-5 place-items-center disabled:opacity-30"
+                >
+                  <Icone nome="chevron" className={`h-3 w-3 ${giro}`} />
+                </button>
+              );
+            })}
+          </span>
+        )}
         {!compacto && !emFavoritos && (
           <button
             type="button"
@@ -794,6 +869,19 @@ export function CascaDoTenant({
         data-menu-lateral
         className={`${aberto ? "translate-x-0" : "-translate-x-full"} ${compacto ? "md:w-[72px]" : "md:w-60"} ${aberto ? "shadow-cartao" : ""} bg-background text-text border-border fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-[transform,width] duration-200 md:translate-x-0 md:border-r md:shadow-none`}
       >
+        {/* Recolher/expandir: botão redondo na borda do próprio menu, à altura do logo (padrão das skills). */}
+        <button
+          type="button"
+          onClick={alternarRecolhido}
+          aria-label={recolhido ? t("expandir") : t("recolher")}
+          title={recolhido ? t("expandir") : t("recolher")}
+          className="bg-background border-border text-muted hover:text-primary hover:border-primary absolute top-5 -right-3 z-10 hidden h-6 w-6 place-items-center rounded-full border shadow-sm transition-colors md:grid"
+        >
+          <Icone
+            nome="chevron"
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${recolhido ? "rotate-180" : ""}`}
+          />
+        </button>
         <div className={`flex h-16 items-center px-5 ${compacto ? "justify-center px-2" : ""}`}>
           <Link href="/" className="text-primary min-w-0 truncate text-lg font-bold" title={marca.nome}>
             {compacto && marca.icone ? (
@@ -842,11 +930,12 @@ export function CascaDoTenant({
         <header
           className={`${rolou ? "bg-surface/85 border-border backdrop-blur-md" : "border-transparent"} sticky top-0 z-20 flex h-16 items-center gap-3 border-b px-3 transition-colors duration-200 sm:px-6`}
         >
+          {/* No celular, as três linhas abrem o menu (gaveta); no computador, o recolher fica na borda do menu. */}
           <button
             type="button"
-            onClick={alternarRecolhido}
-            aria-label={recolhido ? t("expandir") : t("recolher")}
-            className={botaoRedondo}
+            onClick={() => setAberto(true)}
+            aria-label={t("abrirMenu")}
+            className={`${botaoRedondo} md:hidden`}
           >
             <Icone nome="menu" />
           </button>

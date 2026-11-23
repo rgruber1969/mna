@@ -16,7 +16,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoGrupo } from "@/components/cadastros/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, estiloTabela, Titulo } from "@/components/ui/basicos";
+import { Avatar, Cartao, estiloTabela, Titulo } from "@/components/ui/basicos";
 
 /** Empresas e grupos econômicos do tenant (dominio.md, "Empresa"). */
 async function Painel({ busca }: { busca: Promise<Record<string, string | string[] | undefined>> }) {
@@ -134,7 +134,21 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                         </td>
                         <td className={`${estiloTabela.td} text-muted text-xs`}>{e.grupo ?? "—"}</td>
                         <td className={`${estiloTabela.td} text-muted text-right text-xs`}>
-                          {t("pessoas", { n: e.pessoas })}
+                          <span
+                            className="inline-flex items-center justify-end gap-2"
+                            title={(e.rostos ?? []).map((p) => p.nome).join(", ") || undefined}
+                          >
+                            {(e.rostos ?? []).length > 0 && (
+                              <span className="flex" aria-hidden="true">
+                                {(e.rostos ?? []).map((p, i) => (
+                                  <span key={p.nome} className={i > 0 ? "-ml-2" : ""}>
+                                    <Avatar nome={p.nome} foto={p.foto} tamanho={24} />
+                                  </span>
+                                ))}
+                              </span>
+                            )}
+                            {t("pessoas", { n: e.pessoas })}
+                          </span>
                         </td>
                       </tr>
                     ))}

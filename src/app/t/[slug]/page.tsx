@@ -60,7 +60,7 @@ function Numero({
 }: {
   rotulo: string;
   valor: number;
-  detalhe: string;
+  detalhe?: string;
   nivel?: NivelDoPrazo;
   href: string;
 }) {
@@ -79,7 +79,7 @@ function Numero({
       >
         {valor}
       </span>
-      <span className="text-muted block truncate text-xs">{detalhe}</span>
+      {detalhe && <span className="text-muted block truncate text-xs">{detalhe}</span>}
     </Link>
   );
 }
@@ -123,7 +123,6 @@ async function Conteudo({ acesso }: { acesso: AcessoTenant }) {
   const ts = await getTranslations("negocios.situacoes");
   const [p, mensagens] = await Promise.all([painelDoUsuario(acesso), minhasMensagens(acesso, 10)]);
   const { numeros: q, diasDeAviso: dias } = p;
-  const abertos = q.vencidos + q.proximos + q.emDia;
   const primeiro = p.prazos.find((z) => z.nivel !== "emDia");
   const tituloDoItem = (z: (typeof p.prazos)[number]) => tp(`precisa.titulos.${z.tipo}`, { texto: z.texto });
   const novas = mensagens.conversas
@@ -179,30 +178,26 @@ async function Conteudo({ acesso }: { acesso: AcessoTenant }) {
         <Numero
           rotulo={tp("kpi.vencidos")}
           valor={q.vencidos}
-          detalhe={q.vencidos ? tp("kpi.verLista") : tp("kpi.nenhumVencido")}
+          detalhe={q.vencidos ? tp("kpi.verLista") : undefined}
           nivel={q.vencidos ? "atrasado" : undefined}
           href="/tarefas?filtro=atrasadas"
         />
         <Numero
           rotulo={tp("kpi.proximos", { dias })}
           valor={q.proximos}
-          detalhe={tp("kpi.deAbertos", { n: abertos })}
           nivel={q.proximos ? "proximo" : undefined}
           href="/tarefas"
         />
         <Numero
           rotulo={tp("kpi.emDia")}
           valor={q.emDia}
-          detalhe={tp("kpi.deAbertos", { n: abertos })}
           nivel={q.emDia ? "emDia" : undefined}
           href="/tarefas"
         />
         <Numero
           rotulo={tp("kpi.negocios")}
           valor={q.negocios}
-          detalhe={
-            q.carteira !== null ? tp("kpi.carteira", { valor: reais(q.carteira) }) : tp("kpi.semValor")
-          }
+          detalhe={q.carteira !== null ? tp("kpi.carteira", { valor: reais(q.carteira) }) : undefined}
           href="/negocios?vista=kanban"
         />
       </div>
