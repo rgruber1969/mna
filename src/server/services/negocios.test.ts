@@ -655,6 +655,15 @@ describe("andamento: funil, exclusividade, situação e histórico", () => {
     expect(await obterDiasDeAviso(acesso("gestor"))).toEqual([10, 3]);
   });
 
+  it("exportação do negócio em PDF (simulada): só administradores, auditada", async () => {
+    const { exportarNegocio } = await import("./exportacao-do-negocio");
+    const r = await exportarNegocio(acesso("admin", true), negocioId);
+    if ("erro" in r) throw new Error(r.erro);
+    expect(Buffer.from(r.conteudo, "base64").subarray(0, 5).toString()).toBe("%PDF-");
+    expect(r.nome).toMatch(/demonstracao.pdf$/);
+    await expect(exportarNegocio(acesso("gestor"), negocioId)).rejects.toThrow();
+  });
+
   it("configurações: dias do amarelo no semáforo dos prazos (administradores salvam, todos leem)", async () => {
     expect(await obterDiasDeAvisoDoPrazo(acesso("gestor"))).toBe(7);
     expect(await salvarDiasDeAvisoDoPrazo(acesso("admin", true), "0")).toMatchObject({

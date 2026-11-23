@@ -223,7 +223,8 @@
       "escolhaEtapas": "Escolha ao menos uma etapa para o alcance.",
       "diasDeLembreteInvalidos": "Informe de 1 a 5 números de dias, entre 0 e 60, separados por vírgula.",
       "diasDeAvisoDoPrazoInvalidos": "Informe um número inteiro de dias, de 1 a 30.",
-      "temConteudo": "O negócio já tem documentos, tarefas ou mensagens: não pode ser excluído, só encerrado."
+      "temConteudo": "O negócio já tem documentos, tarefas ou mensagens: não pode ser excluído, só encerrado.",
+      "funcionalidadeDesligada": "Esta funcionalidade não está disponível neste ambiente."
     },
     "andamento": {
       "situacaoTitulo": "Situação do negócio",
@@ -452,6 +453,31 @@
       "pessoasTitulo": "Pessoas",
       "funilNda": "NDA {n}",
       "funilProposta": "Proposta {n}"
+    },
+    "exportacao": {
+      "botao": "Exportar o negócio (PDF)",
+      "ajuda": "Exportação completa do negócio, usada no fim da retenção antes da exclusão. Só administradores.",
+      "aviso": "a exportação ainda é simulada: o PDF traz só o resumo do negócio (dados, empresas, pessoas e etapas). Documentos, mensagens e histórico completos entram na versão real.",
+      "gerando": "Gerando…",
+      "pdf": {
+        "demonstracao": "DEMONSTRAÇÃO: exportação simulada (só o resumo do negócio)",
+        "nomeInterno": "Nome interno",
+        "tipo": "Tipo de operação",
+        "inicio": "Início",
+        "previsao": "Previsão de fechamento",
+        "valor": "Valor estimado",
+        "empresas": "Empresas",
+        "pessoas": "Pessoas",
+        "etapas": "Etapas",
+        "faltam": "Na versão real: documentos com todas as versões, mensagens, tarefas, ofertas, contratos e o histórico completo.",
+        "geradoEm": "Gerado em {data}",
+        "situacoes": {
+          "nao_iniciada": "não iniciada",
+          "andamento": "em andamento",
+          "concluida": "concluída",
+          "pulada": "pulada"
+        }
+      }
     }
   },
   "painel": {

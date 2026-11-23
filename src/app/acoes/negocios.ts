@@ -1,6 +1,7 @@
 "use server";
 
 import { salvarHorasDoResumo } from "@/server/services/mensagens";
+import { exportarNegocio } from "@/server/services/exportacao-do-negocio";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { traduzirErro } from "@/i18n/servidor";
@@ -191,4 +192,12 @@ export async function salvarDiasDeAvisoDoPrazoAcao(_: Estado, f: FormData): Prom
   const t = await getTranslations("configuracoes.painel");
   const r = await salvarDiasDeAvisoDoPrazo(await acesso(), texto(f, "diasAvisoPrazo"));
   return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : { ok: t("salvo") };
+}
+
+/** Exportação do negócio em PDF (item 22, simulada): devolve o arquivo em base64 para o navegador baixar. */
+export async function exportarNegocioAcao(
+  dealId: string,
+): Promise<{ nome?: string; conteudo?: string; erro?: string }> {
+  const r = await exportarNegocio(await acesso(), dealId);
+  return "erro" in r ? { erro: await traduzirErro(r) } : r;
 }

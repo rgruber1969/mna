@@ -21,6 +21,8 @@ import {
 import { formatarCnpj } from "@/config/documentos";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
+import { ExportarNegocio } from "@/components/negocios/exportar";
+import { estaLigada } from "@/config/funcionalidades";
 import {
   FormDadosDoNegocio,
   FormIncluirEmpresa,
@@ -227,6 +229,11 @@ async function Painel({
                 <p className="text-muted mt-2 text-sm">
                   {tt("motivoRegistrado", { motivo: tt(`motivos.${andamento.motivoEncerramento}`) })}
                 </p>
+              )}
+              {acesso.administrador && estaLigada("exportacaoDoNegocio") && (
+                <div className="border-border mt-6 border-t pt-4">
+                  <ExportarNegocio dealId={n.id} />
+                </div>
               )}
               {n.podeExcluir && (
                 <div className="border-border mt-6 border-t pt-4">
