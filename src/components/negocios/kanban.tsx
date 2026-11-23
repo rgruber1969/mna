@@ -1,25 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal, flushSync } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { moverNegocioParaEtapaAcao, painelDoNegocioAcao } from "@/app/acoes/kanban";
-import { EtapasDoNegocio } from "@/components/negocios/etapas";
-import { DataRoomDoNegocio } from "@/components/negocios/documentos";
-import { TarefasDoNegocio } from "@/components/negocios/tarefas";
-import { MensagensDoNegocio } from "@/components/negocios/mensagens";
-import { HistoricoPaginado } from "@/components/negocios/historico";
 import { Avatar, Aviso } from "@/components/ui/basicos";
+import { CORES_DO_NIVEL, diasAte, type NivelDoPrazo } from "@/config/prazos";
+import { PainelDoNegocio, type Painel } from "@/components/negocios/painel-do-negocio";
 
 /**
- * Kanban de negócios (item 15): colunas = etapas padrão, com ícone, total e
- * atrasados; cartão com faixa de cor pelo prazo estimado, progresso das
- * etapas, fotos das pessoas e menu "…"; busca no topo. Arrastar (ou "Mover
- * para") muda a etapa. Clicar abre o painel em abas, sem sair do quadro.
+ * Kanban de negócios (item 15; propostas de layout v3, modelo A): totais da
+ * carteira numa caixa discreta, filtros rápidos, colunas = etapas padrão com
+ * ícone, contagem e valor; cartão com a cor da situação do prazo (fundo
+ * fosco + faixa + etiqueta com texto), mini barra do funil de compradoras e
+ * progresso. Mover de etapa é otimista, com "Desfazer". Clicar abre o
+ * detalhe num painel central que cresce a partir do cartão.
  */
 
-type Nivel = "atrasado" | "proximo" | "atencao" | "emDia" | null;
 type Cartao = {
   id: string;
   nome: string;
@@ -34,28 +33,28 @@ type Cartao = {
   funil: Record<string, string[]> | null;
   pessoas: { nome: string; foto: string | null }[];
   prazo: string | null;
-  nivelDoPrazo: Nivel;
+  nivelDoPrazo: NivelDoPrazo | null;
+  fimDaEtapa: string | null;
+  previsaoFechamento: string | null;
+  valorEstimado: number | null;
   progresso: { feitas: number; total: number };
 };
-type Painel = Awaited<ReturnType<typeof painelDoNegocioAcao>>;
 
 const FUNIL = ["prospectada", "teaser", "nda", "proposta", "escolhida"] as const;
-const br = (d: string | null) => (d ? d.split("-").reverse().join("/") : null);
+const br = (d: string) => d.split("-").reverse().join("/");
+const curta = (d: string) => br(d).slice(0, 5);
 const semAcento = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-
-/** Cor da faixa e do prazo (tokens semânticos). */
-const corDoNivel: Record<Exclude<Nivel, null>, { faixa: string; texto: string }> = {
-  emDia: { faixa: "bg-success", texto: "text-success" },
-  atencao: { faixa: "bg-warning opacity-60", texto: "text-warning" },
-  proximo: { faixa: "bg-warning", texto: "text-warning" },
-  atrasado: { faixa: "bg-danger", texto: "text-danger" },
+const reais = (v: number) =>
+  v >= 1_000_000
+    ? `R$ ${(v / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`
+    : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const somar = (data: string, dias: number) => {
+  const d = new Date(`${data}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
 };
-/**
- * Ícone de cada coluna: fundo sólido nas cores da identidade visual (principal
- * e destaque, alternadas) e figura clara; desenho próprio para cada etapa
- * (pelo nome; etapas sem desenho conhecido usam a sequência de reserva).
- */
-const coresDasColunas = ["bg-primary text-primary-foreground", "bg-accent text-accent-foreground"];
+
+/** Desenho de cada etapa (pelo nome); etapas sem desenho conhecido usam a sequência de reserva. */
 const DESENHOS: { chave: RegExp; d: string }[] = [
   { chave: /iniciar/, d: "M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" }, // relógio
   { chave: /prospec/, d: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4" }, // lupa
@@ -85,19 +84,18 @@ function desenhoDa(nome: string, indice: number) {
   return DESENHOS.find((x) => x.chave.test(n))?.d ?? RESERVA[indice % RESERVA.length];
 }
 
+/** Ícone da coluna: 24 px, todos iguais (fundo suave da marca, desenho na cor da marca), em vetor. */
 function IconeDaColuna({ nome, indice }: { nome: string; indice: number }) {
   return (
-    <span
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shadow-sm ${coresDasColunas[indice % coresDasColunas.length]}`}
-    >
+    <span className="bg-primary-soft text-primary ring-primary/15 grid h-6 w-6 shrink-0 place-items-center rounded-md ring-1 ring-inset">
       <svg
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="h-5 w-5"
+        className="h-[15px] w-[15px]"
         aria-hidden="true"
       >
         <path d={desenhoDa(nome, indice)} />
@@ -106,7 +104,75 @@ function IconeDaColuna({ nome, indice }: { nome: string; indice: number }) {
   );
 }
 
-/** Menu "…" do cartão. */
+/** Funil no cartão: mini barra (do mais claro, prospectadas, ao mais escuro, com proposta) + resumo curto. */
+function MiniFunil({ funil }: { funil: Record<string, string[]> }) {
+  const t = useTranslations("negocios.kanban");
+  const tf = useTranslations("negocios.funil");
+  const n = (s: string) => funil[s]?.length ?? 0;
+  const total = FUNIL.reduce((x, s) => x + n(s), 0);
+  if (total === 0) return null;
+  if (n("escolhida") > 0 && total === n("escolhida"))
+    return <p className="text-muted">{t("funilEscolhida")}</p>;
+  const nda = n("nda") + n("proposta") + n("escolhida");
+  const proposta = n("proposta") + n("escolhida");
+  const tons = ["opacity-25", "opacity-50", "opacity-75", "opacity-100", "opacity-100"];
+  const lista = FUNIL.filter((s) => n(s))
+    .map((s) => `${tf(s)} ${n(s)}`)
+    .join(", ");
+  return (
+    <div className="mt-1.5" title={lista}>
+      <span
+        className="flex h-1.5 gap-0.5 overflow-hidden rounded-full"
+        role="img"
+        aria-label={t("funilAria", { lista })}
+      >
+        {FUNIL.map((s, i) =>
+          n(s) ? <span key={s} className={`bg-primary ${tons[i]}`} style={{ flexGrow: n(s) }} /> : null,
+        )}
+      </span>
+      <p className="text-muted mt-1">
+        {[
+          String(total),
+          nda > 0 && t("funilNda", { n: nda }),
+          proposta > 0 && t("funilProposta", { n: proposta }),
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </p>
+    </div>
+  );
+}
+
+function ChipDoPrazo({ cartao: c, hoje }: { cartao: Cartao; hoje: string }) {
+  const t = useTranslations("negocios.kanban.chip");
+  if (!c.prazo || !c.nivelDoPrazo)
+    return (
+      <span className="text-muted">
+        {c.situacao === "andamento" && c.etapa ? t("semPrazo") : t("semPrazoEtapa")}
+      </span>
+    );
+  const d = diasAte(c.prazo, hoje);
+  const data = curta(c.prazo);
+  const texto =
+    d < 0
+      ? t("atraso", { data, n: -d })
+      : d === 0
+        ? t("hoje", { data })
+        : c.nivelDoPrazo === "proximo"
+          ? t("emDias", { data, n: d })
+          : t("data", { data });
+  const cor = CORES_DO_NIVEL[c.nivelDoPrazo];
+  return (
+    <span
+      className={`${cor.fundo} ${cor.texto} inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap`}
+    >
+      <span className={`${cor.faixa} h-1.5 w-1.5 rounded-full`} aria-hidden="true" />
+      {texto}
+    </span>
+  );
+}
+
+/** Menu "⋮" do cartão: aparece ao passar o mouse ou ao focar (teclado). */
 function MenuDoCartao({
   cartao,
   colunas,
@@ -151,17 +217,17 @@ function MenuDoCartao({
         aria-expanded={aberto}
         aria-label={t("maisAcoes", { negocio: cartao.nome })}
         onClick={() => setAberto((x) => !x)}
-        className="text-muted hover:text-text rounded px-1 text-base leading-none"
+        className={`${aberto ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"} text-muted hover:text-text rounded px-1 text-base leading-none transition-opacity`}
       >
         ⋮
       </button>
       {aberto && (
         <div
           role="menu"
-          className="bg-background border-border absolute top-6 right-0 z-20 w-48 rounded-md border py-1 shadow-lg"
+          className="bg-background border-border shadow-cartao absolute top-6 right-0 z-20 w-48 rounded-md border py-1"
         >
           {item(t("detalhes"), () => abrir())}
-          {item(t("verTarefas"), () => abrir("tarefas"))}
+          {item(t("verTarefas"), () => abrir("atividade"))}
           {item(t("verDocumentos"), () => abrir("documentos"))}
           <Link
             href={`/negocios/${cartao.id}`}
@@ -218,7 +284,7 @@ function Fotos({ pessoas }: { pessoas: { nome: string; foto: string | null }[] }
         </span>
       ))}
       {pessoas.length > 3 && (
-        <span className="bg-success/15 text-success -ml-2 flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1 text-[10px] font-semibold">
+        <span className="bg-primary-soft text-primary -ml-2 flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1 text-[10px] font-semibold">
           +{pessoas.length - 3}
         </span>
       )}
@@ -226,52 +292,101 @@ function Fotos({ pessoas }: { pessoas: { nome: string; foto: string | null }[] }
   );
 }
 
-function AbasDoPainel({
-  abas,
-  ativa,
-  mudar,
-}: {
-  abas: { id: string; rotulo: string }[];
-  ativa: string;
-  mudar: (id: string) => void;
-}) {
+/** Totais da carteira numa caixa discreta (borda fina, sem sombra, divisórias entre os números). */
+function Totais({ cartoes, hoje }: { cartoes: Cartao[]; hoje: string }) {
+  const t = useTranslations("negocios.kanban.totais");
+  const soma = (lista: Cartao[]) => lista.reduce((x, c) => x + (c.valorEstimado ?? 0), 0);
+  const ate = (dias: number) =>
+    cartoes.filter(
+      (c) =>
+        c.previsaoFechamento && c.previsaoFechamento >= hoje && c.previsaoFechamento <= somar(hoje, dias),
+    );
+  const em90 = ate(90);
+  const em180 = ate(180);
+  const atrasados = cartoes.filter((c) => c.nivelDoPrazo === "atrasado").length;
+  const item = "border-border px-4 first:pl-0 sm:px-5 [&:not(:first-child)]:border-l";
   return (
-    <div role="tablist" className="border-border mb-3 flex shrink-0 flex-wrap gap-1 border-b">
-      {abas.map((a) => (
-        <button
-          key={a.id}
-          type="button"
-          role="tab"
-          aria-selected={ativa === a.id}
-          onClick={() => mudar(a.id)}
-          className={`-mb-px border-b-2 px-3 py-2 text-sm whitespace-nowrap ${ativa === a.id ? "border-primary text-primary font-medium" : "text-muted border-transparent"}`}
-        >
-          {a.rotulo}
-        </button>
-      ))}
-    </div>
+    <section
+      aria-label={t("rotulo")}
+      className="bg-background/70 border-border mb-3 flex flex-wrap items-stretch gap-y-2 rounded-xl border px-4 py-2.5 sm:px-5"
+    >
+      <div className={item}>
+        <p className="text-muted text-[11px] font-semibold">{t("carteira")}</p>
+        <p className="text-text text-xl font-bold tabular-nums">{reais(soma(cartoes))}</p>
+      </div>
+      <div className={item}>
+        <p className="text-muted text-[11px] font-semibold">{t("abertos")}</p>
+        <p className="text-text text-xl font-bold tabular-nums">{cartoes.length}</p>
+      </div>
+      <div className={item}>
+        <p className="text-muted text-[11px] font-semibold">{t("atrasados")}</p>
+        <p className={`text-xl font-bold tabular-nums ${atrasados ? "text-danger" : "text-text"}`}>
+          {atrasados}
+        </p>
+      </div>
+      <div className={item}>
+        <p className="text-muted text-[11px] font-semibold">{t("closing")}</p>
+        <p className="text-muted flex flex-wrap items-baseline gap-x-5 text-xs">
+          <span>
+            <b className="text-text mr-1 text-xl tabular-nums">{em90.length}</b>
+            {t("em90", { valor: reais(soma(em90)) })}
+          </span>
+          <span>
+            <b className="text-text mr-1 text-xl tabular-nums">{em180.length}</b>
+            {t("em180", { valor: reais(soma(em180)) })}
+          </span>
+        </p>
+      </div>
+    </section>
   );
 }
 
-function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
-  return (
-    <div className="border-border flex gap-3 border-b py-1.5 text-sm last:border-0">
-      <span className="text-muted w-40 shrink-0">{rotulo}</span>
-      <span className="text-text">{children}</span>
-    </div>
+/** Aviso no canto inferior direito, com "Desfazer" (some sozinho; pausa com o mouse em cima). */
+function AvisoDeMovimento({ texto, desfazer }: { texto: string; desfazer: () => void }) {
+  const t = useTranslations("negocios.kanban");
+  return createPortal(
+    <div
+      role="status"
+      className="bg-background border-border shadow-cartao border-l-primary fixed right-4 bottom-4 z-50 flex animate-[entrada-suave_350ms_cubic-bezier(0.34,1.56,0.64,1)] items-center gap-4 rounded-xl border border-l-4 px-4 py-3 text-sm"
+    >
+      <span className="text-text">{texto}</span>
+      <button type="button" onClick={desfazer} className="text-primary font-bold">
+        {t("desfazer")}
+      </button>
+    </div>,
+    document.body,
   );
+}
+
+type Aberto = { cartao: Cartao; painel: Painel | undefined; aba: string };
+type Pendente = { id: string; de: string; para: string; texto: string };
+
+/** View Transitions do navegador, quando houver e sem "reduzir movimento"; senão, troca direto. */
+function comTransicao(atualizar: () => void, tipo: "abrir" | "fechar") {
+  const doc = document as Document & {
+    startViewTransition?: (cb: () => void) => { finished: Promise<void> };
+  };
+  if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    atualizar();
+    return Promise.resolve();
+  }
+  document.documentElement.dataset.transicao = tipo;
+  const vt = doc.startViewTransition(() => flushSync(atualizar));
+  return vt.finished.finally(() => delete document.documentElement.dataset.transicao);
 }
 
 export function KanbanDeNegocios({
   colunas,
   cartoes,
   hoje,
+  diasDeAviso,
   filtros,
   tipos,
 }: {
   colunas: { id: string; nome: string }[];
   cartoes: Cartao[];
   hoje: string;
+  diasDeAviso: number;
   /** Filtros da lista (situação, lado, tipo), aplicados ao escolher. */
   filtros: { situacao: string; lado: string; tipo: string };
   tipos: { id: string; nome: string }[];
@@ -280,21 +395,26 @@ export function KanbanDeNegocios({
   const tl = useTranslations("negocios.lista");
   const tsit = useTranslations("negocios.situacoes");
   const ts = useTranslations("negocios.situacoes");
-  const tf = useTranslations("negocios.funil");
-  const tm = useTranslations("mensagens");
   const router = useRouter();
-  const [movendo, iniciar] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
+  const [rapido, setRapido] = useState<"todos" | "atrasados" | "proximos">("todos");
   const [arrastado, setArrastado] = useState<string | null>(null);
   const [sobre, setSobre] = useState<string | null>(null);
-  const [aberto, setAberto] = useState<{ cartao: Cartao; painel: Painel | undefined; aba: string } | null>(
-    null,
-  );
+  const [posicoes, setPosicoes] = useState<Record<string, string>>({});
+  const [pendente, setPendente] = useState<Pendente | null>(null);
+  const [aberto, setAberto] = useState<Aberto | null>(null);
+  const [animando, setAnimando] = useState<string | null>(null);
+  const tempo = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendenteRef = useRef<Pendente | null>(null);
+
   const todas = [{ id: "a-iniciar", nome: t("aIniciar") }, ...colunas];
+  const colunaDe = useCallback((c: Cartao) => posicoes[c.id] ?? c.colunaId, [posicoes]);
   const termo = semAcento(busca.trim());
-  const visiveis = termo
-    ? cartoes.filter((c) =>
+  const visiveis = cartoes
+    .filter(
+      (c) =>
+        !termo ||
         [
           c.nome,
           c.nomeInterno ?? "",
@@ -302,67 +422,180 @@ export function KanbanDeNegocios({
           ...c.coordenadores,
           ...c.pessoas.map((p) => p.nome),
         ].some((x) => semAcento(x).includes(termo)),
-      )
-    : cartoes;
+    )
+    .filter((c) =>
+      rapido === "atrasados"
+        ? c.nivelDoPrazo === "atrasado"
+        : rapido === "proximos"
+          ? c.nivelDoPrazo === "proximo"
+          : true,
+    );
+  const atrasados = cartoes.filter((c) => c.nivelDoPrazo === "atrasado").length;
+  const proximos = cartoes.filter((c) => c.nivelDoPrazo === "proximo").length;
+  /** Ordem de navegação do painel: coluna a coluna, de cima para baixo. */
+  const porColuna = todas.map((col) => visiveis.filter((c) => colunaDe(c) === col.id));
+  const ordem = porColuna.flat();
+
+  // --- Mover de etapa: otimista, grava depois de 4 s (ou ao sair), com "Desfazer" ---------------
+  const gravar = useCallback(
+    async (p: Pendente) => {
+      const r = await moverNegocioParaEtapaAcao(p.id, p.para);
+      if (r.erro) {
+        setErro(r.erro);
+        setPosicoes((x) => {
+          const { [p.id]: _, ...resto } = x;
+          void _;
+          return resto;
+        });
+      } else router.refresh();
+    },
+    [router],
+  );
+  const confirmarPendente = useCallback(() => {
+    if (tempo.current) clearTimeout(tempo.current);
+    const p = pendenteRef.current;
+    pendenteRef.current = null;
+    setPendente(null);
+    if (p) void gravar(p);
+  }, [gravar]);
+  useEffect(() => () => confirmarPendente(), [confirmarPendente]);
+  // Depois que o servidor confirma (dados novos), a posição local deixa de ser necessária.
+  useEffect(() => {
+    setPosicoes((x) => {
+      const resto = Object.fromEntries(
+        Object.entries(x).filter(([id, col]) => cartoes.find((c) => c.id === id)?.colunaId !== col),
+      );
+      return Object.keys(resto).length === Object.keys(x).length ? x : resto;
+    });
+  }, [cartoes]);
 
   function mover(id: string, colunaId: string) {
     const c = cartoes.find((x) => x.id === id);
     const destino = todas.find((x) => x.id === colunaId);
-    if (!c || !destino || c.colunaId === colunaId || colunaId === "a-iniciar") return;
-    if (!window.confirm(t("confirmarMover", { negocio: c.nome, etapa: destino.nome }))) return;
-    iniciar(async () => {
-      const r = await moverNegocioParaEtapaAcao(id, colunaId);
-      setErro(r.erro ?? null);
-      if (!r.erro) router.refresh();
-    });
+    if (!c || !destino || colunaDe(c) === colunaId || colunaId === "a-iniciar") return;
+    confirmarPendente();
+    const p = {
+      id,
+      de: colunaDe(c),
+      para: colunaId,
+      texto: t("movido", { negocio: c.nome, etapa: destino.nome }),
+    };
+    setErro(null);
+    setPosicoes((x) => ({ ...x, [id]: colunaId }));
+    pendenteRef.current = p;
+    setPendente(p);
+    tempo.current = setTimeout(confirmarPendente, 4000);
+  }
+  function desfazer() {
+    if (tempo.current) clearTimeout(tempo.current);
+    const p = pendenteRef.current;
+    pendenteRef.current = null;
+    setPendente(null);
+    if (p)
+      setPosicoes((x) => {
+        const { [p.id]: _, ...resto } = x;
+        void _;
+        return resto;
+      });
   }
 
-  async function abrir(c: Cartao, aba = "resumo") {
-    // Mesmo cartão: recarrega por baixo, sem apagar o painel (não perde avisos nem a rolagem).
-    setAberto((x) => (x?.cartao.id === c.id ? { ...x, aba } : { cartao: c, painel: undefined, aba }));
+  // --- Painel central ----------------------------------------------------------------------
+  const carregar = useCallback(async (c: Cartao) => {
     const painel = await painelDoNegocioAcao(c.id);
     setAberto((x) => (x?.cartao.id === c.id ? { ...x, painel } : x));
+  }, []);
+
+  const escreverEndereco = (id: string | null, aba?: string, novo = false) => {
+    const u = new URL(window.location.href);
+    if (id) u.searchParams.set("negocio", id);
+    else u.searchParams.delete("negocio");
+    if (id && aba && aba !== "resumo") u.searchParams.set("aba", aba);
+    else u.searchParams.delete("aba");
+    window.history[novo ? "pushState" : "replaceState"](window.history.state, "", u);
+  };
+
+  function abrir(c: Cartao, aba = "resumo", animar = true) {
+    if (aberto?.cartao.id === c.id) {
+      setAberto({ ...aberto, aba });
+      escreverEndereco(c.id, aba);
+      void carregar(c);
+      return;
+    }
+    const trocar = () => {
+      setAnimando(null);
+      setAberto({ cartao: c, painel: undefined, aba });
+    };
+    escreverEndereco(c.id, aba, !aberto);
+    if (animar && !aberto) {
+      flushSync(() => setAnimando(c.id));
+      void comTransicao(trocar, "abrir");
+    } else trocar();
+    void carregar(c);
   }
 
-  const p = aberto?.painel;
-  const c0 = aberto?.cartao;
-  const abasDoPainel = [
-    { id: "resumo", rotulo: t("abas.resumo") },
-    ...(p?.etapas ? [{ id: "etapas", rotulo: t("abas.etapas") }] : []),
-    { id: "empresas", rotulo: `${t("abas.empresas")} (${p?.empresas.length ?? 0})` },
-    { id: "participantes", rotulo: `${t("abas.participantes")} (${p?.participantes.length ?? 0})` },
-    ...(p?.tarefas
-      ? [
-          {
-            id: "tarefas",
-            rotulo: `${t("abas.tarefas")} (${
-              p.tarefas.tarefas.filter((x) => x.situacao !== "concluida" && x.situacao !== "cancelada").length
-            })`,
-          },
-        ]
-      : []),
-    ...(p?.dataRoom
-      ? [{ id: "documentos", rotulo: `${t("abas.documentos")} (${p.dataRoom.documentos.length})` }]
-      : []),
-    ...(p
-      ? [
-          {
-            id: "mensagens",
-            rotulo:
-              p.mensagens && p.mensagens.novas > 0
-                ? tm("abaComNovas", p.mensagens)
-                : tm("abaComTotal", { total: p.mensagens?.total ?? 0 }),
-          },
-        ]
-      : []),
-    { id: "historico", rotulo: t("abas.historico") },
-  ];
+  const fechar = useCallback(() => {
+    if (!aberto) return;
+    const id = aberto.cartao.id;
+    escreverEndereco(null);
+    void comTransicao(() => {
+      setAberto(null);
+      setAnimando(id);
+    }, "fechar").then(() => setAnimando(null));
+  }, [aberto]);
+
+  // Abre o negócio que já vem no endereço (link compartilhado ou recarga da página).
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    const id = u.searchParams.get("negocio");
+    const c = id && cartoes.find((x) => x.id === id);
+    if (c) abrir(c, u.searchParams.get("aba") ?? "resumo", false);
+    const voltar = () => {
+      if (!new URL(window.location.href).searchParams.get("negocio")) setAberto(null);
+    };
+    window.addEventListener("popstate", voltar);
+    return () => window.removeEventListener("popstate", voltar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só na montagem
+  }, []);
+
+  // Teclado com o painel aberto: ↑ ↓ na mesma coluna, ← → colunas vizinhas, Esc fecha.
+  useEffect(() => {
+    if (!aberto) return;
+    const tecla = (e: KeyboardEvent) => {
+      const alvo = e.target as HTMLElement;
+      if (alvo.closest("input, textarea, select, [contenteditable=true]")) return;
+      if (e.key === "Escape") return fechar();
+      const col = porColuna.findIndex((l) => l.some((c) => c.id === aberto.cartao.id));
+      if (col < 0) return;
+      const pos = porColuna[col].findIndex((c) => c.id === aberto.cartao.id);
+      let alvoCartao: Cartao | undefined;
+      if (e.key === "ArrowDown") alvoCartao = porColuna[col][pos + 1];
+      else if (e.key === "ArrowUp") alvoCartao = porColuna[col][pos - 1];
+      else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const passo = e.key === "ArrowRight" ? 1 : -1;
+        for (let i = col + passo; i >= 0 && i < porColuna.length; i += passo)
+          if (porColuna[i].length) {
+            alvoCartao = porColuna[i][Math.min(pos, porColuna[i].length - 1)];
+            break;
+          }
+      } else return;
+      e.preventDefault();
+      if (alvoCartao) abrir(alvoCartao, aberto.aba, false);
+    };
+    window.addEventListener("keydown", tecla);
+    return () => window.removeEventListener("keydown", tecla);
+  });
+
+  const indice = aberto ? ordem.findIndex((c) => c.id === aberto.cartao.id) : -1;
+  const pill = (ativo: boolean) =>
+    `rounded-full border px-3 py-1 text-xs font-medium transition-colors ${ativo ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-muted hover:text-text"}`;
 
   return (
     <div>
+      <Totais cartoes={visiveis} hoje={hoje} />
       <form
         className="mb-3 flex flex-wrap items-center gap-2"
         onChange={(e) => (e.target as HTMLElement).tagName === "SELECT" && e.currentTarget.requestSubmit()}
+        onSubmit={() => setRapido("todos")}
       >
         <input type="hidden" name="vista" value="kanban" />
         <input
@@ -373,11 +606,37 @@ export function KanbanDeNegocios({
           aria-label={t("buscar")}
           className="border-border bg-background text-text focus:border-primary w-full max-w-xs rounded-full border px-4 py-1.5 text-sm outline-none"
         />
+        <span role="group" aria-label={t("filtros.rapidos")} className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            aria-pressed={rapido === "todos"}
+            onClick={() => setRapido("todos")}
+            className={pill(rapido === "todos")}
+          >
+            {t("filtros.todos")}
+          </button>
+          <button
+            type="button"
+            aria-pressed={rapido === "atrasados"}
+            onClick={() => setRapido(rapido === "atrasados" ? "todos" : "atrasados")}
+            className={pill(rapido === "atrasados")}
+          >
+            {t("filtros.atrasados", { n: atrasados })}
+          </button>
+          <button
+            type="button"
+            aria-pressed={rapido === "proximos"}
+            onClick={() => setRapido(rapido === "proximos" ? "todos" : "proximos")}
+            className={pill(rapido === "proximos")}
+          >
+            {t("filtros.proximos", { n: proximos, dias: diasDeAviso })}
+          </button>
+        </span>
         <select
           name="situacao"
           defaultValue={filtros.situacao}
           aria-label={tl("filtroSituacao")}
-          className={"border-border bg-background text-text rounded-md border px-2 py-1.5 text-sm"}
+          className="border-border bg-background text-text rounded-full border px-3 py-1 text-xs"
         >
           <option value="">{tl("todasSituacoes")}</option>
           <option value="abertos">{tl("emAberto")}</option>
@@ -391,7 +650,7 @@ export function KanbanDeNegocios({
           name="lado"
           defaultValue={filtros.lado}
           aria-label={tl("filtroLado")}
-          className={"border-border bg-background text-text rounded-md border px-2 py-1.5 text-sm"}
+          className="border-border bg-background text-text rounded-full border px-3 py-1 text-xs"
         >
           <option value="">{tl("todosLados")}</option>
           <option value="vendedor">{tl("ladoVendedor")}</option>
@@ -401,7 +660,7 @@ export function KanbanDeNegocios({
           name="tipo"
           defaultValue={filtros.tipo}
           aria-label={tl("filtroTipo")}
-          className={"border-border bg-background text-text rounded-md border px-2 py-1.5 text-sm"}
+          className="border-border bg-background text-text rounded-full border px-3 py-1 text-xs"
         >
           <option value="">{tl("todosTipos")}</option>
           {tipos.map((x) => (
@@ -414,21 +673,24 @@ export function KanbanDeNegocios({
           className="text-muted ml-auto flex flex-wrap items-center gap-3 text-xs"
           aria-label={t("legenda")}
         >
-          {(["emDia", "atencao", "proximo", "atrasado"] as const).map((n) => (
+          {(["emDia", "proximo", "atrasado"] as const).map((n) => (
             <span key={n} className="flex items-center gap-1">
-              <span className={`inline-block h-2.5 w-2.5 rounded-full ${corDoNivel[n].faixa}`} />{" "}
-              {t(`niveis.${n}`)}
+              <span className={`inline-block h-2 w-2 rounded-sm ${CORES_DO_NIVEL[n].faixa}`} />{" "}
+              {t(`niveis.${n}`, { dias: diasDeAviso })}
             </span>
           ))}
+          <span className="flex items-center gap-1">
+            <span className="bg-border inline-block h-2 w-2 rounded-sm" /> {t("niveis.semPrazo")}
+          </span>
         </span>
       </form>
       {erro && <Aviso>{erro}</Aviso>}
-      <div
-        className={`grid auto-cols-[minmax(13rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 ${movendo ? "opacity-70" : ""}`}
-      >
+      <div className="grid auto-cols-[minmax(12.5rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2">
         {todas.map((coluna, i) => {
-          const daColuna = visiveis.filter((c) => c.colunaId === coluna.id);
-          const atrasados = daColuna.filter((c) => c.nivelDoPrazo === "atrasado").length;
+          const daColuna = porColuna[i];
+          if (coluna.id === "a-iniciar" && daColuna.length === 0) return null;
+          const atrasadosDaColuna = daColuna.filter((c) => c.nivelDoPrazo === "atrasado").length;
+          const valor = reais(daColuna.reduce((x, c) => x + (c.valorEstimado ?? 0), 0));
           return (
             <section
               key={coluna.id}
@@ -445,256 +707,115 @@ export function KanbanDeNegocios({
                 if (arrastado) mover(arrastado, coluna.id);
                 setArrastado(null);
               }}
-              className={`bg-surface min-w-0 rounded-xl border p-3 ${sobre === coluna.id ? "border-primary" : "border-transparent"}`}
+              className={`bg-surface min-w-0 rounded-xl border p-2.5 transition-colors ${sobre === coluna.id ? "border-primary bg-primary-soft" : "border-border"}`}
             >
-              <header className="mb-3">
-                <h3 className="text-text truncate text-sm font-semibold" title={coluna.nome}>
-                  {coluna.nome}
-                </h3>
-                <div className="mt-2 flex items-center gap-2">
+              <header className="mb-2.5 px-1">
+                <h3 className="flex items-center gap-2">
                   <IconeDaColuna nome={coluna.nome} indice={i} />
-                  <span>
-                    <span className="text-text block text-xl leading-none font-bold">{daColuna.length}</span>
-                    <span className={`text-xs ${atrasados ? "text-danger" : "text-muted"}`}>
-                      {atrasados ? t("atrasados", { n: atrasados }) : t("negocios", { n: daColuna.length })}
-                    </span>
+                  <span className="text-text min-w-0 truncate text-sm font-semibold" title={coluna.nome}>
+                    {coluna.nome}
                   </span>
-                </div>
+                  <span className="border-border bg-background text-muted rounded-full border px-1.5 text-[11px] tabular-nums">
+                    {daColuna.length}
+                  </span>
+                </h3>
+                <p className={`mt-1 text-[11px] ${atrasadosDaColuna ? "text-danger" : "text-muted"}`}>
+                  {atrasadosDaColuna
+                    ? t("colunaAtrasados", { n: atrasadosDaColuna, valor })
+                    : t("colunaValor", { valor })}
+                </p>
               </header>
               <ul className="flex min-h-16 flex-col gap-2">
-                {daColuna.map((c) => (
-                  <li
-                    key={c.id}
-                    draggable={c.podeMover}
-                    onDragStart={(e) => {
-                      setArrastado(c.id);
-                      e.dataTransfer.effectAllowed = "move";
-                    }}
-                    onDragEnd={() => setArrastado(null)}
-                    className={`bg-background relative rounded-lg p-3 pl-4 text-xs shadow-sm ${c.podeMover ? "cursor-grab" : ""}`}
-                  >
-                    {c.nivelDoPrazo && (
+                {daColuna.map((c) => {
+                  const nivel = c.nivelDoPrazo;
+                  const cor = nivel ? CORES_DO_NIVEL[nivel] : null;
+                  const fundo = nivel === "atrasado" || nivel === "proximo" ? cor!.fundo : "bg-background";
+                  return (
+                    <li
+                      key={c.id}
+                      draggable={c.podeMover}
+                      onDragStart={(e) => {
+                        setArrastado(c.id);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragEnd={() => setArrastado(null)}
+                      style={{ viewTransitionName: animando === c.id ? "negocio-aberto" : undefined }}
+                      className={`${fundo} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-[border-color,transform] duration-150 hover:-translate-y-px ${c.podeMover ? "cursor-grab active:cursor-grabbing" : ""} ${aberto?.cartao.id === c.id ? "ring-primary ring-2" : ""}`}
+                    >
                       <span
-                        className={`absolute inset-y-0 left-0 w-1.5 rounded-l-lg ${corDoNivel[c.nivelDoPrazo].faixa}`}
+                        className={`absolute inset-y-0 left-0 w-1 ${cor ? cor.faixa : "bg-border"}`}
                         aria-hidden="true"
                       />
-                    )}
-                    <div className="flex items-start justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => abrir(c)}
-                        className="text-text text-left text-sm font-semibold break-words"
-                      >
-                        {c.nome}
-                      </button>
-                      <MenuDoCartao
-                        cartao={c}
-                        colunas={colunas}
-                        abrir={(aba) => abrir(c, aba)}
-                        mover={(col) => mover(c.id, col)}
-                      />
-                    </div>
-                    {c.nomeInterno && <p className="text-muted break-words">{c.nomeInterno}</p>}
-                    {c.vendedoras && c.vendedoras.length > 0 && (
-                      <p className="text-muted mt-0.5 break-words">{c.vendedoras.join(", ")}</p>
-                    )}
-                    {c.situacao !== "andamento" && (
-                      <p className="text-warning mt-1 font-medium">{ts(c.situacao as never)}</p>
-                    )}
-                    {c.funil && (
-                      <ul className="mt-1 space-y-0.5">
-                        {FUNIL.filter((s) => c.funil![s]?.length).map((s) => (
-                          <li key={s} className="text-muted break-words">
-                            <span className="text-text font-medium">{tf(s)}:</span> {c.funil![s].join(", ")}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {c.progresso.total > 0 && (
-                      <div className="bg-surface mt-2 h-1.5 overflow-hidden rounded-full">
-                        <div
-                          className="bg-primary h-full rounded-full"
-                          style={{ width: `${(c.progresso.feitas / c.progresso.total) * 100}%` }}
+                      <div className="flex items-start justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => abrir(c)}
+                          className="text-text text-left text-sm font-semibold break-words"
+                        >
+                          {c.nome}
+                        </button>
+                        <MenuDoCartao
+                          cartao={c}
+                          colunas={colunas}
+                          abrir={(aba) => abrir(c, aba)}
+                          mover={(col) => mover(c.id, col)}
                         />
                       </div>
-                    )}
-                    <div className="mt-2 flex items-end justify-between gap-2">
-                      <span className="text-muted">
-                        {t("progresso", { feitas: c.progresso.feitas, total: c.progresso.total })}
-                        {c.prazo && (
-                          <span
-                            className={`block font-medium ${c.nivelDoPrazo ? corDoNivel[c.nivelDoPrazo].texto : ""}`}
-                          >
-                            {t("prazo", { data: br(c.prazo) ?? "" })}
-                          </span>
-                        )}
-                      </span>
-                      <Fotos pessoas={c.pessoas} />
-                    </div>
-                  </li>
-                ))}
+                      {c.nomeInterno && <p className="text-muted break-words">{c.nomeInterno}</p>}
+                      {c.vendedoras && c.vendedoras.length > 0 && (
+                        <p className="text-muted mt-0.5 break-words">{c.vendedoras.join(", ")}</p>
+                      )}
+                      {c.situacao !== "andamento" && (
+                        <p className="text-warning mt-1 font-medium">{ts(c.situacao as never)}</p>
+                      )}
+                      {c.funil && <MiniFunil funil={c.funil} />}
+                      {c.progresso.total > 0 && (
+                        <div
+                          className="bg-border mt-2 h-1 overflow-hidden rounded-full"
+                          title={t("progresso", { feitas: c.progresso.feitas, total: c.progresso.total })}
+                        >
+                          <div
+                            className="bg-primary h-full rounded-full"
+                            style={{ width: `${(c.progresso.feitas / c.progresso.total) * 100}%` }}
+                          />
+                        </div>
+                      )}
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <ChipDoPrazo cartao={c} hoje={hoje} />
+                        <Fotos pessoas={c.pessoas} />
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           );
         })}
       </div>
-      {aberto && c0 && (
-        <div
-          className="fixed inset-0 z-40 flex justify-end"
-          role="dialog"
-          aria-modal="true"
-          aria-label={c0.nome}
-        >
-          <button
-            type="button"
-            aria-label={t("fechar")}
-            onClick={() => setAberto(null)}
-            className="bg-backdrop/40 absolute inset-0"
-          />
-          <aside className="bg-background relative flex h-full w-full max-w-6xl flex-col p-5 shadow-xl">
-            <div className="mb-3 flex shrink-0 items-start justify-between gap-3">
-              <div>
-                <h2 className="text-text text-lg font-bold">{c0.nome}</h2>
-                <p className="text-muted text-sm">
-                  {[c0.nomeInterno, ts(c0.situacao as never), c0.etapa && t("etapa", { etapa: c0.etapa })]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              </div>
-              <span className="flex items-center gap-3">
-                <Link href={`/negocios/${c0.id}`} className="text-primary text-sm font-medium">
-                  {t("abrirNegocio")}
-                </Link>
-                <button type="button" onClick={() => setAberto(null)} className="text-muted text-sm">
-                  {t("fechar")}
-                </button>
-              </span>
-            </div>
-            {p === undefined ? (
-              <p className="text-muted text-sm">{t("carregando")}</p>
-            ) : p === null ? (
-              <p className="text-muted text-sm">{t("semAcesso")}</p>
-            ) : (
-              <>
-                <AbasDoPainel
-                  abas={abasDoPainel}
-                  ativa={aberto.aba}
-                  mudar={(aba) => setAberto((x) => (x ? { ...x, aba } : x))}
-                />
-                <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-                  {aberto.aba === "resumo" && (
-                    <div>
-                      {p.resumo?.nomeInterno && (
-                        <Linha rotulo={t("resumo.nomeInterno")}>{p.resumo.nomeInterno}</Linha>
-                      )}
-                      {p.resumo?.tipo && <Linha rotulo={t("resumo.tipo")}>{p.resumo.tipo}</Linha>}
-                      <Linha rotulo={t("resumo.situacao")}>{ts(c0.situacao as never)}</Linha>
-                      <Linha rotulo={t("resumo.etapa")}>{c0.etapa ?? t("aIniciar")}</Linha>
-                      {p.resumo && <Linha rotulo={t("resumo.inicio")}>{br(p.resumo.dataInicio)}</Linha>}
-                      {p.resumo?.previsaoFechamento && (
-                        <Linha rotulo={t("resumo.previsao")}>{br(p.resumo.previsaoFechamento)}</Linha>
-                      )}
-                      {c0.prazo && (
-                        <Linha rotulo={t("resumo.prazo")}>
-                          <span className={c0.nivelDoPrazo ? corDoNivel[c0.nivelDoPrazo].texto : ""}>
-                            {br(c0.prazo)}
-                            {c0.nivelDoPrazo && ` · ${t(`niveis.${c0.nivelDoPrazo}`)}`}
-                          </span>
-                        </Linha>
-                      )}
-                      {p.resumo?.valorEstimado && (
-                        <Linha rotulo={t("resumo.valor")}>
-                          {Number(p.resumo.valorEstimado).toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                          })}
-                        </Linha>
-                      )}
-                      {c0.coordenadores.length > 0 && (
-                        <Linha rotulo={t("resumo.coordenador")}>{c0.coordenadores.join(", ")}</Linha>
-                      )}
-                      {c0.funil && (
-                        <Linha rotulo={t("resumo.funil")}>
-                          {FUNIL.filter((s) => c0.funil![s]?.length)
-                            .map((s) => `${tf(s)}: ${c0.funil![s].join(", ")}`)
-                            .join(" · ")}
-                        </Linha>
-                      )}
-                      {p.resumo?.descricao && (
-                        <Linha rotulo={t("resumo.descricao")}>{p.resumo.descricao}</Linha>
-                      )}
-                    </div>
-                  )}
-                  {aberto.aba === "etapas" && p.etapas && (
-                    <EtapasDoNegocio
-                      dealId={c0.id}
-                      etapas={p.etapas.etapas}
-                      podeIncluir={p.etapas.podeIncluir}
-                      podeExcluir={p.etapas.podeExcluir}
-                      hoje={hoje}
-                      soLinhaDoTempo
-                    />
-                  )}
-                  {aberto.aba === "empresas" && (
-                    <ul className="divide-border divide-y text-sm">
-                      {p.empresas.map((e) => (
-                        <li key={e.id} className="py-2">
-                          <span className="text-text font-medium">{e.nome}</span>
-                          <span className="text-muted block text-xs">
-                            {[
-                              e.papel,
-                              e.situacaoFunil && tf(e.situacaoFunil as never),
-                              e.atuaPara && t("trabalhaPara", { nome: e.atuaPara }),
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {aberto.aba === "participantes" && (
-                    <ul className="divide-border divide-y text-sm">
-                      {p.participantes.map((x) => (
-                        <li key={x.id} className="py-2">
-                          <span className="text-text font-medium">{x.nome}</span>
-                          <span className="text-muted block text-xs">
-                            {[
-                              x.perfil ?? t("contato"),
-                              x.empresa,
-                              x.prazo && t("ate", { data: br(x.prazo) ?? "" }),
-                            ]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {aberto.aba === "tarefas" && p.tarefas && (
-                    <TarefasDoNegocio
-                      dealId={c0.id}
-                      quadro={p.tarefas}
-                      etapaFiltro=""
-                      aoMudar={() => abrir(c0, "tarefas")}
-                    />
-                  )}
-                  {aberto.aba === "documentos" && p.dataRoom && (
-                    <DataRoomDoNegocio
-                      dealId={c0.id}
-                      dr={p.dataRoom}
-                      etapaFiltro=""
-                      aoMudar={() => abrir(c0, "documentos")}
-                    />
-                  )}
-                  {aberto.aba === "mensagens" && <MensagensDoNegocio dealId={c0.id} />}
-                  {aberto.aba === "historico" && <HistoricoPaginado eventos={p.historico} />}
-                </div>
-              </>
-            )}
-          </aside>
-        </div>
+      {aberto && (
+        <PainelDoNegocio
+          cartao={aberto.cartao}
+          painel={aberto.painel}
+          aba={aberto.aba}
+          mudarAba={(aba) => {
+            setAberto((x) => (x ? { ...x, aba } : x));
+            escreverEndereco(aberto.cartao.id, aba);
+          }}
+          hoje={hoje}
+          dias={diasDeAviso}
+          posicao={{ i: Math.max(indice, 0) + 1, n: ordem.length }}
+          anterior={indice > 0 ? () => abrir(ordem[indice - 1], aberto.aba, false) : null}
+          proximo={
+            indice >= 0 && indice < ordem.length - 1
+              ? () => abrir(ordem[indice + 1], aberto.aba, false)
+              : null
+          }
+          fechar={fechar}
+          recarregar={(aba) => abrir(aberto.cartao, aba, false)}
+          nomeDaTransicao={animando === null ? "negocio-aberto" : undefined}
+        />
       )}
+      {pendente && <AvisoDeMovimento texto={pendente.texto} desfazer={desfazer} />}
     </div>
   );
 }

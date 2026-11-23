@@ -333,12 +333,12 @@
       "semAcesso": "Você não tem acesso a este negócio.",
       "semEventos": "Nenhum evento.",
       "buscar": "Procurar nos negócios…",
-      "legenda": "Cores pelo prazo estimado",
+      "legenda": "Cores pelo prazo da etapa",
       "niveis": {
         "emDia": "Em dia",
-        "atencao": "Atenção (até 15 dias)",
-        "proximo": "Próximo (até 7 dias)",
-        "atrasado": "Atrasado"
+        "proximo": "Vence em até {dias} dias",
+        "atrasado": "Atrasado",
+        "semPrazo": "Sem prazo"
       },
       "atrasados": "{n, plural, one {# atrasado} other {# atrasados}}",
       "negocios": "{n, plural, =0 {nenhum negócio} one {# negócio} other {# negócios}}",
@@ -357,7 +357,9 @@
         "tarefas": "Tarefas",
         "documentos": "Documentos",
         "historico": "Histórico",
-        "mensagens": "Mensagens"
+        "mensagens": "Mensagens",
+        "pessoas": "Pessoas e empresas",
+        "atividade": "Atividade"
       },
       "resumo": {
         "nomeInterno": "Nome interno",
@@ -374,7 +376,76 @@
       },
       "trabalhaPara": "trabalha para {nome}",
       "contato": "Contato (sem acesso)",
-      "ate": "até {data}"
+      "ate": "até {data}",
+      "totais": {
+        "rotulo": "Totais da carteira",
+        "carteira": "Em carteira",
+        "abertos": "Negócios em aberto",
+        "atrasados": "Atrasados",
+        "closing": "Closing previsto",
+        "em90": "em 90 dias · {valor}",
+        "em180": "em 180 dias · {valor}",
+        "semValor": "—"
+      },
+      "filtros": {
+        "rapidos": "Filtros rápidos",
+        "todos": "Todos",
+        "atrasados": "Atrasados {n}",
+        "proximos": "Vencem em {dias} dias {n}",
+        "maisFiltros": "Mais filtros"
+      },
+      "chip": {
+        "atraso": "{data} · {n, plural, one {# dia} other {# dias}} de atraso",
+        "emDias": "{data} · em {n, plural, one {# dia} other {# dias}}",
+        "hoje": "{data} · hoje",
+        "data": "{data}",
+        "semPrazo": "sem prazo",
+        "semPrazoEtapa": "sem prazo de etapa"
+      },
+      "colunaValor": "{valor}",
+      "colunaAtrasados": "{n, plural, one {# atrasado} other {# atrasados}} · {valor}",
+      "funilEscolhida": "Compradora escolhida",
+      "funilAria": "Compradoras por situação: {lista}",
+      "movido": "{negocio} movido para {etapa}",
+      "desfazer": "Desfazer",
+      "moverPara": "Mover para {etapa}",
+      "painel": {
+        "anterior": "Negócio anterior",
+        "proximo": "Próximo negócio",
+        "posicao": "{i} de {n}",
+        "atalhos": "↑ ↓ na mesma coluna · ← → colunas vizinhas · Esc fecha",
+        "mensagem": "Mensagem",
+        "etapaAtrasada": "etapa {n, plural, one {# dia} other {# dias}} atrasada",
+        "proximoPasso": "Próximo passo",
+        "venceu": "venceu {data}",
+        "vence": "vence {data}",
+        "semData": "sem prazo",
+        "abrirTarefa": "Abrir tarefa",
+        "verEtapas": "Ver etapas",
+        "fimDaEtapa": "Fim da etapa {etapa}",
+        "responsaveis": "Responsáveis: {nomes}",
+        "semProximo": "Nenhuma tarefa aberta nem prazo de etapa.",
+        "noPrazo": "no prazo",
+        "atrasou": "+{n, plural, one {# dia} other {# dias}} (prev. {data})",
+        "desde": "desde {data}",
+        "prev": "prev. {data}",
+        "diasAtraso": "{n, plural, one {# dia} other {# dias}} de atraso",
+        "emDias": "em {n, plural, one {# dia} other {# dias}}",
+        "emDia": "em dia",
+        "semPrevisao": "sem previsão",
+        "linhaDoTempo": "Linha do tempo das etapas",
+        "valorBase": "Previsão de fechamento: {data}"
+      },
+      "abaComNovas": "{rotulo} · {n} novas",
+      "atividade": {
+        "tudo": "Tudo",
+        "tarefas": "Tarefas",
+        "mensagens": "Mensagens"
+      },
+      "empresasTitulo": "Empresas",
+      "pessoasTitulo": "Pessoas",
+      "funilNda": "NDA {n}",
+      "funilProposta": "Proposta {n}"
     }
   },
   "painel": {

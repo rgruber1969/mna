@@ -180,11 +180,11 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(
     page.getByRole("region", { name: "Prospecção" }).getByText("N-0001 Projeto Teste"),
   ).toBeVisible();
-  // Menu ⋮ do cartão → Mover para → Term Sheet (com confirmação).
-  page.once("dialog", (d) => d.accept());
+  // Menu ⋮ do cartão → Mover para → Term Sheet: muda na hora, com aviso e "Desfazer" (sem confirmação).
   await page.getByRole("button", { name: "Mais ações de N-0001 Projeto Teste" }).click();
   await page.getByRole("menuitem", { name: /Mover para/ }).click();
   await page.getByRole("menuitem", { name: "Term Sheet" }).click();
+  await expect(page.getByRole("status").getByText("N-0001 Projeto Teste movido para Term Sheet")).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Term Sheet" }).getByText("N-0001 Projeto Teste"),
   ).toBeVisible({

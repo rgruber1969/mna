@@ -202,3 +202,42 @@ input[type="file"]::file-selector-button:hover {
     animation-delay: 0ms !important;
   }
 }
+
+/* Fundo escurecido do painel do negócio e dos diálogos: aparece suave. */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * Transição cartão → painel (View Transitions do navegador): o cartão clicado
+ * cresce até virar o painel central (350 ms, desacelerando) e encolhe de volta
+ * para o mesmo cartão ao fechar (250 ms). "Nada aparece do nada."
+ */
+::view-transition-group(negocio-aberto) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+:root[data-transicao="fechar"]::view-transition-group(negocio-aberto) {
+  animation-duration: 250ms;
+}
+::view-transition-old(negocio-aberto),
+::view-transition-new(negocio-aberto) {
+  height: 100%;
+  animation-duration: inherit;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 120ms !important;
+  }
+}
