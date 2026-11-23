@@ -240,7 +240,8 @@ test("contratos: cria no negócio, envia arquivo, simula o success fee e lista",
   await page.getByLabel("Título").fill("Mandato de venda");
   await page.getByRole("group", { name: "Contratante(s)" }).getByLabel("Vendedora de Teste Ltda").check();
   await page.getByRole("group", { name: "Contratada(s)" }).getByLabel("Escritório de Teste").check();
-  // Honorários fixos e variáveis (por hora) combinados; campos de valor com máscara.
+  // Cadastro em abas. Honorários fixos e variáveis (por hora) combinados; campos de valor com máscara.
+  await page.getByRole("tab", { name: "Honorários" }).click();
   await page.getByLabel("Honorários fixos", { exact: true }).check();
   await page.getByLabel("Valor dos honorários fixos").pressSequentially("2000000");
   await expect(page.getByLabel("Valor dos honorários fixos")).toHaveValue("20.000,00");

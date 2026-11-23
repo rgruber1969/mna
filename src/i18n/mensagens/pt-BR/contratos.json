@@ -42,7 +42,7 @@
     "retainerDescontado": "Honorários fixos pagos são descontados do success fee",
     "successFeePercentual": "Success fee (%)",
     "successFeeMinimo": "Success fee mínimo",
-    "formaPagamento": "Forma de pagamento",
+    "formaPagamento": "Condições de pagamento",
     "conta": "Conta da contratada para pagamento",
     "semConta": "— nenhuma —",
     "observacoes": "Observações",
@@ -123,12 +123,19 @@
     },
     "chavePix": "Chave PIX da contratada",
     "semChavePix": "Sem chave PIX definida",
-    "contasAjuda": "Vem do cadastro de contas da empresa contratada (aba Contas bancárias da empresa).",
     "honorarioVariavelRotulo": "Honorários variáveis (mensais)",
     "recebimento": "Recebimento",
     "variavelHoras": "Horas trabalhadas × {valor} por hora",
     "variavelPercentualDe": "{p}% sobre {base}",
     "variavelTetoDe": "Limite de {valor} por mês",
-    "variavelFechamento": "Fechamento no dia {dia} de cada mês"
+    "variavelFechamento": "Fechamento no dia {dia} de cada mês",
+    "abas": {
+      "partes": "Partes e objeto",
+      "vigencia": "Vigência",
+      "honorarios": "Honorários",
+      "pagamento": "Pagamento",
+      "acesso": "Acesso e observações"
+    },
+    "formaPagamentoDica": "Ex.: nota fiscal até o dia 5; vencimento em 15 dias; 30% na assinatura e 70% no closing"
   }
 }
