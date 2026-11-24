@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
+import { useAbas } from "@/components/ui/abas";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -161,6 +162,100 @@ export function LinhaDasEtapas({
   );
 }
 
+/**
+ * Resumo do negócio em modo consulta (painel do kanban e tela do negócio):
+ * próximo passo, dados principais, valor estimado e o funil de compradoras.
+ * Sem `irPara`, troca de aba pelas abas da tela (quando dentro de <Abas>).
+ */
+export function ResumoDoNegocio({
+  painel: p,
+  cartao: c0,
+  hoje,
+  dias,
+  irPara,
+}: {
+  painel: Pick<NonNullable<Painel>, "tarefas" | "resumo">;
+  cartao: CartaoDoPainel;
+  hoje: string;
+  dias: number;
+  irPara?: (aba: string) => void;
+}) {
+  const t = useTranslations("negocios.kanban");
+  const ts = useTranslations("negocios.situacoes");
+  const tf = useTranslations("negocios.funil");
+  const abas = useAbas();
+  const mudarAba = irPara ?? ((aba: string) => abas?.ativar(aba === "funil" ? "compradoras" : aba));
+  const contagem = (x: string) => c0.funil?.[x]?.length ?? 0;
+  const chegaram = (i: number) => FUNIL.slice(i).reduce((x, y) => x + contagem(y), 0);
+  const totalFunil = chegaram(0);
+  return (
+                <div className="space-y-4">
+                  <ProximoPasso painel={p} cartao={c0} hoje={hoje} dias={dias} irPara={mudarAba} />
+                  <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+                    <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {p.resumo?.nomeInterno && (
+                        <Campo rotulo={t("resumo.nomeInterno")}>{p.resumo.nomeInterno}</Campo>
+                      )}
+                      {p.resumo?.tipo && <Campo rotulo={t("resumo.tipo")}>{p.resumo.tipo}</Campo>}
+                      <Campo rotulo={t("resumo.situacao")}>{ts(c0.situacao as never)}</Campo>
+                      <Campo rotulo={t("resumo.etapa")}>{c0.etapa ?? t("aIniciar")}</Campo>
+                      {p.resumo && <Campo rotulo={t("resumo.inicio")}>{br(p.resumo.dataInicio)}</Campo>}
+                      {p.resumo?.previsaoFechamento && (
+                        <Campo rotulo={t("resumo.previsao")}>{br(p.resumo.previsaoFechamento)}</Campo>
+                      )}
+                      {c0.coordenadores.length > 0 && (
+                        <Campo rotulo={t("resumo.coordenador")}>{c0.coordenadores.join(", ")}</Campo>
+                      )}
+                      {p.resumo?.descricao && (
+                        <Campo rotulo={t("resumo.descricao")} largo>
+                          <span className="font-normal">{p.resumo.descricao}</span>
+                        </Campo>
+                      )}
+                    </dl>
+                    {(p.resumo?.valorEstimado || c0.funil) && (
+                      <div className="bg-primary-soft space-y-2 rounded-xl p-4">
+                        {p.resumo?.valorEstimado && (
+                          <>
+                            <p className="text-muted text-xs">{t("resumo.valor")}</p>
+                            <p className="text-text text-2xl leading-none font-bold tabular-nums">
+                              {reais(Number(p.resumo.valorEstimado))}
+                            </p>
+                          </>
+                        )}
+                        {c0.funil && totalFunil > 0 && (
+                          <>
+                            <p className="flex items-center justify-between gap-2 pt-2 text-xs">
+                              <span className="text-text font-semibold">{t("resumo.funil")}</span>
+                              <Link
+                                href={`/negocios/${c0.id}?aba=compradoras`}
+                                className="text-primary font-semibold"
+                              >
+                                {t("painel.abrirFunil")} →
+                              </Link>
+                            </p>
+                            <div className="grid grid-cols-[6rem_1fr_1.5rem] items-center gap-x-2 gap-y-1 text-xs">
+                              {FUNIL.map((s, i) => (
+                                <span key={s} className="contents">
+                                  <span className="text-muted">{tf(s)}</span>
+                                  <span className="bg-border h-1.5 overflow-hidden rounded-full">
+                                    <span
+                                      className="bg-primary block h-full rounded-full"
+                                      style={{ width: `${(chegaram(i) / totalFunil) * 100}%` }}
+                                    />
+                                  </span>
+                                  <span className="text-text text-right tabular-nums">{chegaram(i)}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+  );
+}
+
 function ProximoPasso({
   painel,
   cartao,
@@ -168,7 +263,7 @@ function ProximoPasso({
   dias,
   irPara,
 }: {
-  painel: NonNullable<Painel>;
+  painel: Pick<NonNullable<Painel>, "tarefas">;
   cartao: CartaoDoPainel;
   hoje: string;
   dias: number;
@@ -300,9 +395,6 @@ export function PainelDoNegocio({
       : []),
     { id: "historico", rotulo: t("abas.historico") },
   ];
-  const contagem = (s: string) => c0.funil?.[s]?.length ?? 0;
-  const chegaram = (i: number) => FUNIL.slice(i).reduce((x, s) => x + contagem(s), 0);
-  const totalFunil = chegaram(0);
 
   // No body: nenhum ancestral (com transform ou animação) prende o painel e o fundo escurecido.
   return createPortal(
@@ -431,70 +523,7 @@ export function PainelDoNegocio({
             </div>
             <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
               {aba === "resumo" && (
-                <div className="space-y-4">
-                  <ProximoPasso painel={p} cartao={c0} hoje={hoje} dias={dias} irPara={mudarAba} />
-                  <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-                    <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {p.resumo?.nomeInterno && (
-                        <Campo rotulo={t("resumo.nomeInterno")}>{p.resumo.nomeInterno}</Campo>
-                      )}
-                      {p.resumo?.tipo && <Campo rotulo={t("resumo.tipo")}>{p.resumo.tipo}</Campo>}
-                      <Campo rotulo={t("resumo.situacao")}>{ts(c0.situacao as never)}</Campo>
-                      <Campo rotulo={t("resumo.etapa")}>{c0.etapa ?? t("aIniciar")}</Campo>
-                      {p.resumo && <Campo rotulo={t("resumo.inicio")}>{br(p.resumo.dataInicio)}</Campo>}
-                      {p.resumo?.previsaoFechamento && (
-                        <Campo rotulo={t("resumo.previsao")}>{br(p.resumo.previsaoFechamento)}</Campo>
-                      )}
-                      {c0.coordenadores.length > 0 && (
-                        <Campo rotulo={t("resumo.coordenador")}>{c0.coordenadores.join(", ")}</Campo>
-                      )}
-                      {p.resumo?.descricao && (
-                        <Campo rotulo={t("resumo.descricao")} largo>
-                          <span className="font-normal">{p.resumo.descricao}</span>
-                        </Campo>
-                      )}
-                    </dl>
-                    {(p.resumo?.valorEstimado || c0.funil) && (
-                      <div className="bg-primary-soft space-y-2 rounded-xl p-4">
-                        {p.resumo?.valorEstimado && (
-                          <>
-                            <p className="text-muted text-xs">{t("resumo.valor")}</p>
-                            <p className="text-text text-2xl leading-none font-bold tabular-nums">
-                              {reais(Number(p.resumo.valorEstimado))}
-                            </p>
-                          </>
-                        )}
-                        {c0.funil && totalFunil > 0 && (
-                          <>
-                            <p className="flex items-center justify-between gap-2 pt-2 text-xs">
-                              <span className="text-text font-semibold">{t("resumo.funil")}</span>
-                              <Link
-                                href={`/negocios/${c0.id}?aba=compradoras`}
-                                className="text-primary font-semibold"
-                              >
-                                {t("painel.abrirFunil")} →
-                              </Link>
-                            </p>
-                            <div className="grid grid-cols-[6rem_1fr_1.5rem] items-center gap-x-2 gap-y-1 text-xs">
-                              {FUNIL.map((s, i) => (
-                                <span key={s} className="contents">
-                                  <span className="text-muted">{tf(s)}</span>
-                                  <span className="bg-border h-1.5 overflow-hidden rounded-full">
-                                    <span
-                                      className="bg-primary block h-full rounded-full"
-                                      style={{ width: `${(chegaram(i) / totalFunil) * 100}%` }}
-                                    />
-                                  </span>
-                                  <span className="text-text text-right tabular-nums">{chegaram(i)}</span>
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ResumoDoNegocio painel={p} cartao={c0} hoje={hoje} dias={dias} irPara={mudarAba} />
               )}
               {aba === "etapas" && p.etapas && (
                 <EtapasDoNegocio

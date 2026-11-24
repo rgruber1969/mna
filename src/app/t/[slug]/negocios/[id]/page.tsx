@@ -53,7 +53,7 @@ import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
 import { TabelaDeContratos } from "@/components/contratos/detalhe";
 import { condicoesDaOferta, ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
 import { CondicoesDaOfertaEscolhida } from "@/components/ofertas/condicoes";
-import { LinhaDasEtapas } from "@/components/negocios/painel-do-negocio";
+import { LinhaDasEtapas, ResumoDoNegocio } from "@/components/negocios/painel-do-negocio";
 import { Alternador } from "@/components/ui/alternador";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
 import { obterPedido, pedidosDoNegocio } from "@/server/services/pedidos";
@@ -184,6 +184,27 @@ async function Painel({
     valorEstimado: n.valorEstimado ? String(Number(n.valorEstimado)).replace(".", ",") : "",
     descricao: n.descricao ?? "",
   };
+  // Resumo em consulta (o mesmo do painel do kanban): etapa atual, coordenadores e o funil por situação.
+  const etapaAtual = etapas?.principal
+    ? etapas.etapas.find((e) => e.nome === etapas.principal!.nome && e.situacao === "andamento")
+    : null;
+  const cartaoDoResumo = {
+    id: n.id,
+    nome: n.nome,
+    nomeInterno: n.nomeInterno,
+    situacao: n.situacao,
+    etapa: etapas?.principal?.nome ?? null,
+    coordenadores: n.participantes.filter((p) => p.coordenador).map((p) => p.nome),
+    funil: funil
+      ? Object.fromEntries(
+          [...Map.groupBy(funil.cartoes, (c) => c.situacao)].map(([k, v]) => [k, v.map((c) => c.nome)]),
+        )
+      : null,
+    prazo: null,
+    nivelDoPrazo: null,
+    fimDaEtapa: etapaAtual?.fimPrevisto ?? null,
+    valorEstimado: n.valorEstimado ? Number(n.valorEstimado) : null,
+  };
   const lado = (l: "vendedor" | "comprador" | null) =>
     l === "vendedor" ? t("ladoVendedor") : l === "comprador" ? t("ladoComprador") : null;
 
@@ -236,6 +257,7 @@ async function Painel({
             inicial={ABA_ANTIGA[(await aba) ?? ""] ?? (await aba)}
             abas={[
               { id: "resumo", rotulo: t("abaResumo"), grupo: t("grupoNegocio") },
+              { id: "dados", rotulo: t("abaDadosGerais"), grupo: t("grupoNegocio") },
               ...(etapas ? [{ id: "etapas", rotulo: t("abaEtapas"), grupo: t("grupoNegocio") }] : []),
               {
                 id: "pessoas",
@@ -297,6 +319,24 @@ async function Painel({
             ]}
           >
             <PainelDeAba id="resumo">
+              <ResumoDoNegocio
+                painel={{
+                  tarefas,
+                  resumo: {
+                    nomeInterno: n.nomeInterno,
+                    tipo: n.tipo,
+                    dataInicio: n.dataInicio,
+                    previsaoFechamento: n.previsaoFechamento,
+                    valorEstimado: n.valorEstimado,
+                    descricao: n.descricao,
+                  },
+                }}
+                cartao={cartaoDoResumo}
+                hoje={hoje}
+                dias={diasDeAviso}
+              />
+            </PainelDeAba>
+            <PainelDeAba id="dados">
               <FormDadosDoNegocio
                 id={n.id}
                 inicial={inicial}
