@@ -584,9 +584,10 @@ export function EtapasDoNegocio({
   tarefasPorEtapa?: Record<string, number>;
 }) {
   const t = useTranslations("etapas");
-  const [vista, setVista] = useState<"lista" | "tempo" | "diagrama">("lista");
+  // Abre na linha do tempo; a lista (edição) vem depois (pedido de 2026-11-24).
+  const [vista, setVista] = useState<"lista" | "tempo" | "diagrama">("tempo");
   const vistas =
-    diagrama === "desligada" ? (["lista", "tempo"] as const) : (["lista", "tempo", "diagrama"] as const);
+    diagrama === "desligada" ? (["tempo", "lista"] as const) : (["tempo", "lista", "diagrama"] as const);
   if (soLinhaDoTempo) return <LinhaDoTempo etapas={etapas} hoje={hoje} />;
   return (
     <div>

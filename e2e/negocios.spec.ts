@@ -110,6 +110,8 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(page.getByText(/^Exclusividade de /)).toBeVisible();
   // Etapas: iniciar a Prospecção vira a etapa atual do negócio.
   await page.getByRole("tab", { name: "Etapas" }).click();
+  // Abre na linha do tempo; iniciar a etapa fica em Edição.
+  await page.getByRole("button", { name: "Edição" }).click();
   await page.getByRole("button", { name: "Iniciar" }).first().click();
   await expect(page.getByText(/Etapa: Prospecção/)).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Linha do tempo" }).click();
