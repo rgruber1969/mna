@@ -535,7 +535,10 @@
       "escolhidaOferta": "escolhida",
       "abrirOfertas": "Abrir as ofertas",
       "historico": "Histórico no funil",
-      "ausente": "Ausente"
+      "ausente": "Ausente",
+      "telaCheia": "Tela cheia",
+      "sairDaTelaCheia": "Fechar a tela cheia",
+      "titulo": "Funil de compradoras"
     },
     "inclusaoRapida": {
       "novaEmpresa": "Nova empresa",

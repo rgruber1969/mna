@@ -1,7 +1,7 @@
 "use client";
 
 import { hojeNoBrasil } from "@/config/prazos";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { excluirItemAcao, ligarDocumentoAcao, salvarItemAcao } from "@/app/acoes/pedidos";
@@ -14,6 +14,7 @@ import {
 } from "@/config/pedidos";
 import { Ajuda, Aviso } from "@/components/ui/basicos";
 import { Janela } from "@/components/ui/janela";
+import { Atualizando } from "@/components/ui/atualizando";
 import type { ItemNaTela, PedidoDetalhe } from "@/server/services/pedidos";
 import { botaoPrincipal, botaoSecundario, campo, rotulo } from "./aba";
 import { TOM_DA_SITUACAO } from "./detalhe";
@@ -59,6 +60,8 @@ export function JanelaDoItem({
   );
   const [erro, setErro] = useState<{ texto: string; campo?: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [gravado, setGravado] = useState(false);
+  const [atualizando, iniciarAtualizacao] = useTransition();
   const somenteLeitura = !d.podeEditar;
   const muda = (k: keyof typeof v) => (e: { target: { value: string } }) =>
     setV({ ...v, [k]: e.target.value });
@@ -72,9 +75,13 @@ export function JanelaDoItem({
     const r = await salvarItemAcao(d.id, item?.id ?? null, { ...v, situacoes });
     setSalvando(false);
     if (r.erro) return setErro({ texto: r.erro, campo: r.campo });
-    fechar();
-    router.refresh();
+    setGravado(true);
+    iniciarAtualizacao(() => router.refresh());
   }
+  // Fecha quando a lista já veio atualizada.
+  useEffect(() => {
+    if (gravado && !atualizando) fechar();
+  }, [gravado, atualizando, fechar]);
   async function excluir() {
     if (!item || !window.confirm(t("confirmarExcluir"))) return;
     const r = await excluirItemAcao(item.id);
@@ -361,11 +368,14 @@ export function JanelaDoItem({
           <button type="button" onClick={fechar} className={botaoSecundario}>
             {t("fechar")}
           </button>
-          {!somenteLeitura && (
-            <button disabled={salvando} className={botaoPrincipal}>
-              {salvando ? t("salvando") : t("salvar")}
-            </button>
-          )}
+          {!somenteLeitura &&
+            (gravado ? (
+              <Atualizando />
+            ) : (
+              <button disabled={salvando} className={botaoPrincipal}>
+                {salvando ? t("salvando") : t("salvar")}
+              </button>
+            ))}
         </div>
       </form>
     </Janela>

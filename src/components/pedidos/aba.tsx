@@ -1,13 +1,14 @@
 "use client";
 
 import { hojeNoBrasil } from "@/config/prazos";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { salvarPedidoAcao } from "@/app/acoes/pedidos";
 import { Ajuda, Aviso, estiloTabela } from "@/components/ui/basicos";
 import { EstadoVazio } from "@/components/ui/estado-vazio";
 import { Janela } from "@/components/ui/janela";
+import { Atualizando } from "@/components/ui/atualizando";
 import type { PedidoDetalhe, PedidosDoNegocio } from "@/server/services/pedidos";
 import { DetalheDoPedido } from "./detalhe";
 
@@ -150,6 +151,8 @@ export function FormularioDoPedido({
   });
   const [erro, setErro] = useState<{ texto: string; campo?: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [gravado, setGravado] = useState(false);
+  const [atualizando, iniciarAtualizacao] = useTransition();
   const muda = (k: keyof typeof v) => (e: { target: { value: string } }) =>
     setV({ ...v, [k]: e.target.value });
   async function salvar(e: React.FormEvent) {
@@ -160,10 +163,16 @@ export function FormularioDoPedido({
     const r = await salvarPedidoAcao(dealId, pedido?.id ?? null, resto, origemId || undefined);
     setSalvando(false);
     if (r.erro) return setErro({ texto: r.erro, campo: r.campo });
-    fechar();
-    if (!pedido && r.id) abrir(r.id);
-    else router.refresh();
+    setGravado(true);
+    iniciarAtualizacao(() => {
+      if (!pedido && r.id) abrir(r.id);
+      else router.refresh();
+    });
   }
+  // Editando: fecha quando a tela atualizou. Criando: a janela some quando o pedido abre.
+  useEffect(() => {
+    if (gravado && !atualizando && pedido) fechar();
+  }, [gravado, atualizando, pedido, fechar]);
   const comErro = (c: string) => (erro?.campo === c ? "border-danger" : "");
   return (
     <Janela
@@ -283,9 +292,13 @@ export function FormularioDoPedido({
           <button type="button" onClick={fechar} className={botaoSecundario}>
             {t("cancelar")}
           </button>
-          <button disabled={salvando} className={botaoPrincipal}>
-            {salvando ? t("salvando") : t("salvar")}
-          </button>
+          {gravado ? (
+            <Atualizando />
+          ) : (
+            <button disabled={salvando} className={botaoPrincipal}>
+              {salvando ? t("salvando") : t("salvar")}
+            </button>
+          )}
         </div>
       </form>
     </Janela>

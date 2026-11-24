@@ -13,6 +13,7 @@ import {
 } from "@/app/acoes/ebook";
 import { AvisoDeSimulacao } from "@/components/ui/aviso-de-simulacao";
 import { Aviso } from "@/components/ui/basicos";
+import { Atualizando } from "@/components/ui/atualizando";
 import { baixarBase64 } from "@/components/ui/baixar";
 import type { EbookDoNegocio, VersaoDoEbook } from "@/server/services/ebook";
 
@@ -52,11 +53,17 @@ export function NovaVersao({
   const [aberto, setAberto] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [pendente, iniciar] = useTransition();
-  if (!aberto)
+  const [gravado, setGravado] = useState(false);
+  const [atualizando, iniciarAtualizacao] = useTransition();
+  if (gravado && atualizando) return <Atualizando />;
+  if (!aberto || gravado)
     return (
       <button
         type="button"
-        onClick={() => setAberto(true)}
+        onClick={() => {
+          setGravado(false);
+          setAberto(true);
+        }}
         className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
       >
         {t("novaVersao")}
@@ -75,8 +82,8 @@ export function NovaVersao({
             observacoes: String(f.get("observacoes") ?? ""),
           });
           if (r.erro) return setErro(r.erro);
-          setAberto(false);
-          aoCriar();
+          setGravado(true);
+          iniciarAtualizacao(() => aoCriar());
         })
       }
     >

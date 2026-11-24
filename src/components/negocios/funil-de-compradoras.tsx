@@ -248,6 +248,7 @@ export function FunilDeCompradoras({
   const [escolha, setEscolha] = useState<string | null>(null);
   const [gaveta, setGaveta] = useState<Gavetas | null>(null);
   const [preparacaoRecolhida, setPreparacaoRecolhida] = useState(false);
+  const [telaCheia, setTelaCheia] = useState(false);
   const tempo = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendenteRef = useRef<Pendente | null>(null);
 
@@ -370,6 +371,218 @@ export function FunilDeCompradoras({
 
   const cartaoAberto = gaveta?.tipo === "compradora" ? cartoes.find((c) => c.id === gaveta.id) : null;
 
+  // Colunas que cabem na largura (sem rolagem lateral): a Preparação recolhida vira uma tira estreita.
+  const colunasDoQuadro = `${comPreparacao ? (preparacaoRecolhida ? "2.25rem " : "minmax(0,1fr) ") : ""}repeat(${COLUNAS.length}, minmax(0, 1fr))`;
+  useEffect(() => {
+    if (!telaCheia) return;
+    const tecla = (e: KeyboardEvent) => e.key === "Escape" && !gaveta && setTelaCheia(false);
+    window.addEventListener("keydown", tecla);
+    return () => window.removeEventListener("keydown", tecla);
+  }, [telaCheia, gaveta]);
+  const quadro = (
+    <div
+      className={`grid ${telaCheia ? "gap-3" : "gap-2"} ${movendo ? "opacity-80" : ""}`}
+      style={{ gridTemplateColumns: colunasDoQuadro }}
+    >
+      {comPreparacao &&
+        (preparacaoRecolhida ? (
+          <button
+            type="button"
+            onClick={alternarPreparacao}
+            title={t("mostrarPreparacao")}
+            className="border-border text-muted hover:border-primary w-9 rounded-xl border border-dashed py-3 text-[11px] font-semibold tracking-wide uppercase [writing-mode:vertical-rl]"
+          >
+            {t("preparacao")} ▸
+          </button>
+        ) : (
+          <section
+            aria-label={t("preparacao")}
+            className="border-border min-w-0 rounded-xl border border-dashed p-2.5"
+          >
+            <header className="mb-2.5 px-1">
+              <h3 className="flex items-center gap-2">
+                <Icone coluna="preparacao" />
+                <span className="text-text min-w-0 text-sm leading-tight font-semibold break-words">
+                  {t("preparacao")}
+                </span>
+                <Ajuda texto={t("preparacaoDica")} />
+
+                <button
+                  type="button"
+                  onClick={alternarPreparacao}
+                  aria-label={t("recolherPreparacao")}
+                  title={t("recolherPreparacao")}
+                  className="text-muted hover:text-text ml-auto text-xs"
+                >
+                  ◂
+                </button>
+              </h3>
+            </header>
+            <ul className="flex flex-col gap-2">
+              {TEASERS.map((material) => {
+                const m = teasers.find((x) => x.material === material);
+                const ultima = m?.versoes[0];
+                return (
+                  <li key={material}>
+                    <button
+                      type="button"
+                      onClick={() => setGaveta({ tipo: "teasers" })}
+                      className="border-border bg-background hover:border-primary w-full rounded-lg border p-3 text-left text-xs"
+                    >
+                      <span className="text-text flex items-center gap-1.5 text-sm font-semibold">
+                        <IconeDoMaterial material={material} />
+                        {te(`materiais.${material}`)}
+                      </span>
+                      <span className="text-muted">
+                        {ultima
+                          ? `${te("versao", { numero: ultima.numero })} · ${te(`situacoes.${ultima.situacao}`)}`
+                          : t("ausente")}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
+      {COLUNAS.map((coluna) => {
+        const daColuna = cartoes.filter((c) => situacaoDe(c) === coluna);
+        return (
+          <section
+            key={coluna}
+            aria-label={tf(coluna)}
+            onDragOver={(e) => {
+              if (!podeEditar || !arrastado) return;
+              e.preventDefault();
+              setSobre(coluna);
+            }}
+            onDragLeave={() => setSobre((x) => (x === coluna ? null : x))}
+            onDrop={(e) => {
+              e.preventDefault();
+              setSobre(null);
+              if (arrastado) mover(arrastado, coluna);
+              setArrastado(null);
+            }}
+            className={`bg-surface min-w-0 rounded-xl border p-2.5 transition-colors ${sobre === coluna ? "border-primary bg-primary-soft" : "border-border"}`}
+          >
+            <header className="mb-2.5 px-1">
+              <h3 className="flex items-center gap-2">
+                <Icone coluna={coluna} />
+                <span
+                  className="text-text min-w-0 text-sm leading-tight font-semibold break-words"
+                  title={tf(coluna)}
+                >
+                  {tf(coluna)}
+                </span>
+                <span className="border-border bg-background text-muted rounded-full border px-1.5 text-[11px] tabular-nums">
+                  {daColuna.length}
+                </span>
+              </h3>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {coluna === "prospectada" &&
+                  ebook &&
+                  atalho(t("teasers", { n: versoes(teasers) }), () => setGaveta({ tipo: "teasers" }))}
+                {coluna === "nda" &&
+                  ebook &&
+                  atalho(t("completos", { n: versoes(completos) }), () => setGaveta({ tipo: "completos" }))}
+                {coluna === "proposta" &&
+                  ofertas &&
+                  atalho(t("ofertas", { n: ofertas.ofertas.length }), () => setGaveta({ tipo: "ofertas" }))}
+                {(coluna === "nda" || coluna === "proposta") &&
+                  podeRegistrar &&
+                  atalho(t("registrarOferta"), () => setGaveta({ tipo: "ofertas", nova: true }), true)}
+              </div>
+            </header>
+            <ul className="flex min-h-16 flex-col gap-2">
+              {daColuna.map((c) => {
+                const ultimo = [...c.historico].reverse().find((h) => h.para === situacaoDe(c)) ?? null;
+                const desde = ultimo ? new Date(ultimo.quando) : null;
+                const parada =
+                  desde &&
+                  !["escolhida", "descartada"].includes(situacaoDe(c)) &&
+                  (Date.now() - desde.getTime()) / 86_400_000 > diasParada;
+                const dela = ofertasDe(c.empresaId);
+                const ultimaOferta = dela[0];
+                return (
+                  <li
+                    key={c.id}
+                    draggable={podeEditar}
+                    onDragStart={(e) => {
+                      setArrastado(c.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragEnd={() => setArrastado(null)}
+                    className={`${parada ? "bg-warning-soft" : "bg-background"} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-colors ${podeEditar ? "cursor-grab" : ""}`}
+                  >
+                    <span
+                      className={`absolute inset-y-0 left-0 w-1 ${parada ? "bg-warning-fill" : situacaoDe(c) === "descartada" ? "bg-border" : "bg-success"}`}
+                      aria-hidden="true"
+                    />
+                    <div className="flex items-start justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setGaveta({ tipo: "compradora", id: c.id })}
+                        className="text-text text-left text-sm font-semibold break-words"
+                      >
+                        {c.nome}
+                      </button>
+                      <MenuDoCartao
+                        cartao={c}
+                        podeEditar={podeEditar}
+                        abrir={() => setGaveta({ tipo: "compradora", id: c.id })}
+                        ofertas={
+                          dela.length ? () => setGaveta({ tipo: "ofertas", compradoraId: c.empresaId }) : null
+                        }
+                        mover={(para) => mover(c.id, para)}
+                      />
+                    </div>
+                    <p className={`mt-0.5 ${parada ? "text-warning font-medium" : "text-muted"}`}>
+                      {[
+                        desde && t(parada ? "paradaDesde" : "desde", { data: br(desde) }),
+                        c.equipe.length > 0 && t("equipe", { n: c.equipe.length }),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                    {dela.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setGaveta({ tipo: "ofertas", compradoraId: c.empresaId })}
+                        className="text-primary mt-1 block text-left font-medium"
+                      >
+                        {t("ofertasDaCompradora", {
+                          n: dela.length,
+                          valor: reais(totalNominal(ultimaOferta)),
+                        })}
+                      </button>
+                    )}
+                    {c.observacoes && (
+                      <p className="text-muted mt-1 line-clamp-2" title={c.observacoes}>
+                        {c.observacoes}
+                      </p>
+                    )}
+                    {c.equipe.length > 0 && (
+                      <p className="mt-2 flex items-center" title={c.equipe.join(", ")}>
+                        {c.equipe.slice(0, 3).map((n, i) => (
+                          <span
+                            key={n}
+                            className={`bg-primary-soft text-primary ring-background grid h-[22px] w-[22px] place-items-center rounded-full text-[9px] font-bold ring-2 ${i > 0 ? "-ml-1.5" : ""}`}
+                          >
+                            {iniciais(n)}
+                          </span>
+                        ))}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div>
       {erro && <Aviso>{erro}</Aviso>}
@@ -409,203 +622,38 @@ export function FunilDeCompradoras({
           </div>
         </div>
       )}
-      <div
-        className={`grid auto-cols-[minmax(12.5rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2 ${movendo ? "opacity-80" : ""}`}
-      >
-        {comPreparacao &&
-          (preparacaoRecolhida ? (
-            <button
-              type="button"
-              onClick={alternarPreparacao}
-              title={t("mostrarPreparacao")}
-              className="border-border text-muted hover:border-primary w-9 rounded-xl border border-dashed py-3 text-[11px] font-semibold tracking-wide uppercase [writing-mode:vertical-rl]"
-            >
-              {t("preparacao")} ▸
-            </button>
-          ) : (
-            <section
-              aria-label={t("preparacao")}
-              className="border-border min-w-0 rounded-xl border border-dashed p-2.5"
-            >
-              <header className="mb-2.5 px-1">
-                <h3 className="flex items-center gap-2">
-                  <Icone coluna="preparacao" />
-                  <span className="text-text min-w-0 truncate text-sm font-semibold">{t("preparacao")}</span>
-                  <Ajuda texto={t("preparacaoDica")} />
-
-                  <button
-                    type="button"
-                    onClick={alternarPreparacao}
-                    aria-label={t("recolherPreparacao")}
-                    title={t("recolherPreparacao")}
-                    className="text-muted hover:text-text ml-auto text-xs"
-                  >
-                    ◂
-                  </button>
-                </h3>
-              </header>
-              <ul className="flex flex-col gap-2">
-                {TEASERS.map((material) => {
-                  const m = teasers.find((x) => x.material === material);
-                  const ultima = m?.versoes[0];
-                  return (
-                    <li key={material}>
-                      <button
-                        type="button"
-                        onClick={() => setGaveta({ tipo: "teasers" })}
-                        className="border-border bg-background hover:border-primary w-full rounded-lg border p-3 text-left text-xs"
-                      >
-                        <span className="text-text flex items-center gap-1.5 text-sm font-semibold">
-                          <IconeDoMaterial material={material} />
-                          {te(`materiais.${material}`)}
-                        </span>
-                        <span className="text-muted">
-                          {ultima
-                            ? `${te("versao", { numero: ultima.numero })} · ${te(`situacoes.${ultima.situacao}`)}`
-                            : t("ausente")}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ))}
-        {COLUNAS.map((coluna) => {
-          const daColuna = cartoes.filter((c) => situacaoDe(c) === coluna);
-          return (
-            <section
-              key={coluna}
-              aria-label={tf(coluna)}
-              onDragOver={(e) => {
-                if (!podeEditar || !arrastado) return;
-                e.preventDefault();
-                setSobre(coluna);
-              }}
-              onDragLeave={() => setSobre((x) => (x === coluna ? null : x))}
-              onDrop={(e) => {
-                e.preventDefault();
-                setSobre(null);
-                if (arrastado) mover(arrastado, coluna);
-                setArrastado(null);
-              }}
-              className={`bg-surface min-w-0 rounded-xl border p-2.5 transition-colors ${sobre === coluna ? "border-primary bg-primary-soft" : "border-border"}`}
-            >
-              <header className="mb-2.5 px-1">
-                <h3 className="flex items-center gap-2">
-                  <Icone coluna={coluna} />
-                  <span className="text-text min-w-0 truncate text-sm font-semibold" title={tf(coluna)}>
-                    {tf(coluna)}
-                  </span>
-                  <span className="border-border bg-background text-muted rounded-full border px-1.5 text-[11px] tabular-nums">
-                    {daColuna.length}
-                  </span>
-                </h3>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {coluna === "prospectada" &&
-                    ebook &&
-                    atalho(t("teasers", { n: versoes(teasers) }), () => setGaveta({ tipo: "teasers" }))}
-                  {coluna === "nda" &&
-                    ebook &&
-                    atalho(t("completos", { n: versoes(completos) }), () => setGaveta({ tipo: "completos" }))}
-                  {coluna === "proposta" &&
-                    ofertas &&
-                    atalho(t("ofertas", { n: ofertas.ofertas.length }), () => setGaveta({ tipo: "ofertas" }))}
-                  {(coluna === "nda" || coluna === "proposta") &&
-                    podeRegistrar &&
-                    atalho(t("registrarOferta"), () => setGaveta({ tipo: "ofertas", nova: true }), true)}
-                </div>
-              </header>
-              <ul className="flex min-h-16 flex-col gap-2">
-                {daColuna.map((c) => {
-                  const ultimo = [...c.historico].reverse().find((h) => h.para === situacaoDe(c)) ?? null;
-                  const desde = ultimo ? new Date(ultimo.quando) : null;
-                  const parada =
-                    desde &&
-                    !["escolhida", "descartada"].includes(situacaoDe(c)) &&
-                    (Date.now() - desde.getTime()) / 86_400_000 > diasParada;
-                  const dela = ofertasDe(c.empresaId);
-                  const ultimaOferta = dela[0];
-                  return (
-                    <li
-                      key={c.id}
-                      draggable={podeEditar}
-                      onDragStart={(e) => {
-                        setArrastado(c.id);
-                        e.dataTransfer.effectAllowed = "move";
-                      }}
-                      onDragEnd={() => setArrastado(null)}
-                      className={`${parada ? "bg-warning-soft" : "bg-background"} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-colors ${podeEditar ? "cursor-grab" : ""}`}
-                    >
-                      <span
-                        className={`absolute inset-y-0 left-0 w-1 ${parada ? "bg-warning-fill" : situacaoDe(c) === "descartada" ? "bg-border" : "bg-success"}`}
-                        aria-hidden="true"
-                      />
-                      <div className="flex items-start justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setGaveta({ tipo: "compradora", id: c.id })}
-                          className="text-text text-left text-sm font-semibold break-words"
-                        >
-                          {c.nome}
-                        </button>
-                        <MenuDoCartao
-                          cartao={c}
-                          podeEditar={podeEditar}
-                          abrir={() => setGaveta({ tipo: "compradora", id: c.id })}
-                          ofertas={
-                            dela.length
-                              ? () => setGaveta({ tipo: "ofertas", compradoraId: c.empresaId })
-                              : null
-                          }
-                          mover={(para) => mover(c.id, para)}
-                        />
-                      </div>
-                      <p className={`mt-0.5 ${parada ? "text-warning font-medium" : "text-muted"}`}>
-                        {[
-                          desde && t(parada ? "paradaDesde" : "desde", { data: br(desde) }),
-                          c.equipe.length > 0 && t("equipe", { n: c.equipe.length }),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                      {dela.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setGaveta({ tipo: "ofertas", compradoraId: c.empresaId })}
-                          className="text-primary mt-1 block text-left font-medium"
-                        >
-                          {t("ofertasDaCompradora", {
-                            n: dela.length,
-                            valor: reais(totalNominal(ultimaOferta)),
-                          })}
-                        </button>
-                      )}
-                      {c.observacoes && (
-                        <p className="text-muted mt-1 line-clamp-2" title={c.observacoes}>
-                          {c.observacoes}
-                        </p>
-                      )}
-                      {c.equipe.length > 0 && (
-                        <p className="mt-2 flex items-center" title={c.equipe.join(", ")}>
-                          {c.equipe.slice(0, 3).map((n, i) => (
-                            <span
-                              key={n}
-                              className={`bg-primary-soft text-primary ring-background grid h-[22px] w-[22px] place-items-center rounded-full text-[9px] font-bold ring-2 ${i > 0 ? "-ml-1.5" : ""}`}
-                            >
-                              {iniciais(n)}
-                            </span>
-                          ))}
-                        </p>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          );
-        })}
+      <div className="mb-2 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setTelaCheia(true)}
+          className="border-border text-text hover:border-primary rounded-md border px-2.5 py-1 text-xs font-medium"
+        >
+          ⤢ {t("telaCheia")}
+        </button>
       </div>
+      {telaCheia
+        ? createPortal(
+            <div
+              className="bg-background fixed inset-0 z-40 flex flex-col p-4 sm:p-6"
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("titulo")}
+            >
+              <header className="mb-4 flex items-center gap-3">
+                <h2 className="text-text flex-1 text-lg font-bold tracking-tight">{t("titulo")}</h2>
+                <button
+                  type="button"
+                  onClick={() => setTelaCheia(false)}
+                  className="border-border text-text hover:border-primary rounded-md border px-3 py-1.5 text-sm font-medium"
+                >
+                  {t("sairDaTelaCheia")}
+                </button>
+              </header>
+              <div className="min-h-0 flex-1 overflow-y-auto">{quadro}</div>
+            </div>,
+            document.body,
+          )
+        : quadro}
 
       {gaveta && (gaveta.tipo === "teasers" || gaveta.tipo === "completos") && ebook && (
         <Gaveta
