@@ -22,7 +22,7 @@ import { formatarCnpj } from "@/config/documentos";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { ExportarNegocio } from "@/components/negocios/exportar";
-import { estaLigada, modoDa } from "@/config/funcionalidades";
+import { estaLigada, estaSimulada, modoDa } from "@/config/funcionalidades";
 import {
   FormDadosDoNegocio,
   FormIncluirEmpresa,
@@ -48,6 +48,8 @@ import { ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
 import { obterPedido, pedidosDoNegocio } from "@/server/services/pedidos";
 import { AbaDePedidos } from "@/components/pedidos/aba";
+import { ebookDoNegocio } from "@/server/services/ebook";
+import { AbaDoEbook } from "@/components/ebook/aba";
 import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
@@ -105,7 +107,7 @@ async function Painel({
     [tipos, opcoesEmp, opcoesPart, andamento],
     [funil, totalMsg, contratos, opcoesContrato, tc],
     [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd],
-    [etapas, alcances, dataRoom, tarefas],
+    [etapas, alcances, dataRoom, tarefas, ebook, tb],
   ] = await Promise.all([
     Promise.all([
       listarTiposDeOperacao(acesso),
@@ -133,6 +135,8 @@ async function Painel({
       n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
       dataRoomDoNegocio(acesso, n.id),
       tarefasDoNegocio(acesso, n.id),
+      ebookDoNegocio(acesso, n.id),
+      getTranslations("ebook"),
     ]),
   ]);
   const mostraContratos = contratos.length > 0 || opcoesContrato.podeCriar;
@@ -211,6 +215,7 @@ async function Painel({
               },
               ...(ofertas ? [{ id: "ofertas", rotulo: `${to("titulo")} (${ofertas.ofertas.length})` }] : []),
               ...(pedidos ? [{ id: "pedidos", rotulo: `${tpd("aba")} (${pedidos.pedidos.length})` }] : []),
+              ...(ebook ? [{ id: "ebook", rotulo: tb("aba") }] : []),
               ...(mostraContratos
                 ? [{ id: "contratos", rotulo: `${tc("titulo")} (${contratos.length})` }]
                 : []),
@@ -389,6 +394,11 @@ async function Painel({
                   dados={pedidos}
                   detalhe={pedidoAberto && pedidoAberto.dealId === n.id ? pedidoAberto : null}
                 />
+              </PainelDeAba>
+            )}
+            {ebook && (
+              <PainelDeAba id="ebook">
+                <AbaDoEbook dealId={n.id} dados={ebook} simulado={estaSimulada("ebook")} />
               </PainelDeAba>
             )}
             {mostraContratos && (

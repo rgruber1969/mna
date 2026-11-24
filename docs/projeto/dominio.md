@@ -466,6 +466,34 @@ pelo responsável):
 **OnePager:** uma página com destaques, grandes números e tese (versões
 teaser e completa).
 
+Regras construídas (item 19, **simulado**: fluxo real e PDF de exemplo,
+2026-11-23):
+
+* **Aba "E-book" no negócio**, com os quatro materiais; cada um tem
+  versões numeradas (1, 2, 3…), identidade visual escolhida (escritório,
+  vendedora, advisor ou combinada), observações e a opção de incluir os
+  números do valuation.
+* **Situações:** em revisão → aprovada → disponível ao comprador. Cria
+  quem tem "E-book × criar" (advisor, coordenador); comenta e aprova quem
+  tem "comentar" e "aprovar" (em geral a vendedora), enquanto a versão está
+  em revisão; libera quem tem "liberar", só depois de aprovada. Excluir só
+  em revisão. Tudo isso só do lado vendedor (e administradores).
+* **Lado comprador:** vê só as versões disponíveis; os materiais
+  **completos só para compradoras que já passaram do NDA** no funil (NDA,
+  proposta ou escolhida). Não vê os comentários da revisão. Ao liberar, quem
+  passa a ver recebe aviso no sino (o e-mail com link fica para a versão
+  real).
+* **PDF de exemplo:** "Abrir PDF" monta na hora um PDF com a estrutura
+  aprovada (teaser com as seções resumidas e sem estrutura societária;
+  OnePager só com sumário, tese e próximos passos) e textos de
+  demonstração; com o valuation marcado, entra a faixa de valor do
+  valuation. Lado vendedor precisa de "baixar"; o comprador abre o que foi
+  liberado a ele. Tudo auditado (`ebook.*`).
+* **API:** `GET/POST /v1/negocios/{id}/ebook`, `POST /v1/ebook/{id}/comentarios`,
+  `/aprovar`, `/liberar` e `GET /v1/ebook/{id}/pdf`.
+* Ainda não: geração automática do conteúdo, upload do PDF final e logo da
+  vendedora no negócio, e-mail ao comprador.
+
 ### Contrato de serviço
 
 Contrato de prestação de serviço ligado ao processo, com **tipo**:

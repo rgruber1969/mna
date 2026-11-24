@@ -2001,3 +2001,138 @@ describe("templates DOCX (item 13, simulado)", () => {
     }
   });
 });
+
+describe("e-book e OnePager (item 19, simulado: fluxo real)", () => {
+  it("advisor cria, vendedora comenta e aprova, liberação ao comprador respeita o NDA", async () => {
+    const eb = await import("./ebook");
+    const g = acesso("gestor");
+    const adm = acesso("admin", true);
+    const { tipos } = await opcoesParaNovoNegocio(g);
+    const novo = await criarNegocio(g, {
+      codinome: "Projeto Ebook",
+      nomeInterno: "Venda com e-book",
+      tipoOperacaoId: tipos.find((t) => t.nome === "Aquisição total")!.id,
+      percentual: "",
+      papelContratanteId: await papel("escritorio-vendedora"),
+      objeto: "empresas",
+      vendedoras: [vendedora],
+      grupoId: "",
+      dataInicio: "2026-11-23",
+    });
+    if (!("id" in novo)) throw new Error(novo.erro);
+    const dealId = novo.id;
+    for (const c of [compradoraA, compradoraB])
+      await adicionarEmpresaAoNegocio(g, dealId, { empresaId: c, papelId: await papel("compradora") });
+    await criarConta("repv", "usuario-externo");
+    const [{ id: contato }] = (
+      await dono.query(`select id from tipo_vinculo where tenant_id = $1 and padrao = 'contato'`, [tenantId])
+    ).rows as { id: string }[];
+    await adicionarVinculo(adm, {
+      pessoaId: await pessoaDe("repv"),
+      empresaId: vendedora,
+      tipoId: contato,
+      cargo: "",
+      percentual: "",
+    });
+    const representante = await perfilDeDeal("representante");
+    for (const [nome, empresaId] of [
+      ["repv", vendedora],
+      ["externo", compradoraA],
+      ["compradorb", compradoraB],
+    ])
+      expect(
+        await adicionarParticipante(g, dealId, {
+          pessoaId: await pessoaDe(nome),
+          perfilId: representante,
+          empresaId,
+          lado: "",
+          prazo: "",
+        }),
+      ).toEqual({ ok: true });
+    const funil = await funilDoNegocio(g, dealId);
+    const cartaoA = funil!.cartoes.find((c) => c.nome === "Compradora A S.A.")!;
+    await alterarSituacaoNoFunil(g, dealId, { dealEmpresaId: cartaoA.id, situacao: "nda" });
+
+    // O coordenador (lado vendedor) cria versões numeradas por material.
+    const v1 = await eb.criarVersaoDoEbook(g, dealId, { material: "ebook_teaser", identidade: "vendedora" });
+    const v2 = await eb.criarVersaoDoEbook(g, dealId, { material: "ebook_teaser" });
+    if ("erro" in v1 || "erro" in v2) throw new Error("versão não criada");
+    expect([v1.numero, v2.numero]).toEqual([1, 2]);
+    expect(await eb.criarVersaoDoEbook(g, dealId, { material: "outro" as never })).toMatchObject({
+      erro: "ebook.erros.materialInvalido",
+    });
+    // A compradora não vê nada antes da liberação; quem não participa nem vê a aba.
+    expect((await eb.ebookDoNegocio(acesso("externo"), dealId))!.materiais).toEqual([]);
+    expect(await eb.ebookDoNegocio(acesso("curioso"), dealId)).toBeNull();
+    expect(await eb.comentarVersaoDoEbook(acesso("externo"), v1.id, "Quero ver")).toMatchObject({
+      erro: "ebook.erros.naoEncontrado",
+    });
+    // Revisão: a vendedora comenta e aprova; o coordenador não comenta nem libera antes da aprovação.
+    expect(await eb.comentarVersaoDoEbook(acesso("repv"), v1.id, "Ajustar os números do sumário")).toEqual({
+      ok: true,
+    });
+    expect(await eb.comentarVersaoDoEbook(g, v1.id, "Feito")).toMatchObject({
+      erro: "ebook.erros.semPermissao",
+    });
+    expect(await eb.liberarVersaoDoEbook(g, v1.id)).toMatchObject({ erro: "ebook.erros.situacaoNaoPermite" });
+    expect(await eb.aprovarVersaoDoEbook(acesso("repv"), v1.id)).toEqual({ ok: true });
+    expect(await eb.liberarVersaoDoEbook(acesso("repv"), v1.id)).toMatchObject({
+      erro: "ebook.erros.semPermissao",
+    });
+    // Teaser liberado: as duas compradoras são avisadas.
+    expect(await eb.liberarVersaoDoEbook(g, v1.id)).toEqual({ ok: true, avisados: 2 });
+    const vistoA = await eb.ebookDoNegocio(acesso("externo"), dealId);
+    expect(vistoA!.materiais.map((m) => [m.material, m.versoes.map((v) => v.numero)])).toEqual([
+      ["ebook_teaser", [1]],
+    ]);
+    expect(vistoA!.materiais[0].versoes[0].comentarios).toEqual([]);
+    const pdf = await eb.pdfDaVersaoDoEbook(acesso("externo"), v1.id);
+    if ("erro" in pdf) throw new Error(pdf.erro);
+    expect(Buffer.from(pdf.conteudo, "base64").subarray(0, 5).toString()).toBe("%PDF-");
+    expect(await eb.pdfDaVersaoDoEbook(acesso("externo"), v2.id)).toMatchObject({
+      erro: "ebook.erros.naoEncontrado",
+    });
+    // Completo: só a compradora que passou do NDA recebe.
+    const c1 = await eb.criarVersaoDoEbook(g, dealId, { material: "ebook_completo", incluiValuation: true });
+    if ("erro" in c1) throw new Error(c1.erro);
+    await eb.aprovarVersaoDoEbook(acesso("repv"), c1.id);
+    expect(await eb.liberarVersaoDoEbook(g, c1.id)).toEqual({ ok: true, avisados: 1 });
+    expect((await eb.ebookDoNegocio(acesso("externo"), dealId))!.materiais.map((m) => m.material)).toEqual([
+      "ebook_teaser",
+      "ebook_completo",
+    ]);
+    expect((await eb.ebookDoNegocio(acesso("compradorb"), dealId))!.materiais.map((m) => m.material)).toEqual(
+      ["ebook_teaser"],
+    );
+    const avisos = (
+      await dono.query(
+        `select usuario_id from notificacao where tenant_id = $1 and tipo = 'ebook_liberado'`,
+        [tenantId],
+      )
+    ).rows.map((r) => r.usuario_id);
+    expect(avisos.filter((u) => u === contas.externo)).toHaveLength(2);
+    expect(avisos.filter((u) => u === contas.compradorb)).toHaveLength(1);
+    // Lado vendedor vê tudo, com os comentários; só se exclui versão em revisão.
+    const doVendedor = await eb.ebookDoNegocio(acesso("repv"), dealId);
+    expect(doVendedor!.materiais).toHaveLength(4);
+    expect(doVendedor!.materiais[0].versoes.find((v) => v.numero === 1)!.comentarios[0].texto).toBe(
+      "Ajustar os números do sumário",
+    );
+    expect(await eb.excluirVersaoDoEbook(g, v1.id)).toMatchObject({ erro: "ebook.erros.situacaoNaoPermite" });
+    expect(await eb.excluirVersaoDoEbook(g, v2.id)).toEqual({ ok: true });
+    const tiposAuditados = (
+      await dono.query(
+        `select distinct tipo from evento_auditoria where tenant_id = $1 and alvo_id = $2 and tipo like 'ebook.%'`,
+        [tenantId, dealId],
+      )
+    ).rows.map((r) => r.tipo);
+    expect(tiposAuditados.sort()).toEqual([
+      "ebook.aprovado",
+      "ebook.baixado",
+      "ebook.comentado",
+      "ebook.excluido",
+      "ebook.liberado",
+      "ebook.versao_criada",
+    ]);
+  });
+});
