@@ -727,7 +727,31 @@ oferta, Contratos). No topo, a linha das etapas, com um atalho só,
 **Compradoras e ofertas**, embaixo da etapa de prospecção (as ofertas são
 das compradoras: funil e ofertas ficam na mesma aba). Endereços antigos
 (`?aba=tarefas`, `mensagens`, `empresas`, `participantes`, `funil`,
-`ofertas`) continuam abrindo a aba nova que os reúne.
+`ofertas`, `ebook`) continuam abrindo a aba nova que os reúne.
+
+Ajustes de 2026-11-24:
+
+* **Resumo** em modo consulta, o mesmo do painel do kanban (próximo passo,
+  dados principais, valor estimado e o gráfico do funil); o formulário fica
+  na aba **Dados gerais**.
+* **Etapas** abre na **linha do tempo**; a lista vem depois, com o nome
+  **Edição**. No **diagrama**, as subetapas aparecem em pílulas abaixo da
+  etapa-mãe, com as datas realizadas (ou as previstas).
+* **Compradoras e ofertas** (proposta "funil e materiais", decisões do
+  responsável): o funil usa a largura toda da página e o padrão do kanban de
+  negócios (ícone e contador nas colunas, faixa de cor no cartão, menu ⋮,
+  arrastar com "Desfazer" em 4 s; escolher e descartar continuam pedindo
+  confirmação). Antes de "Prospectada" há a coluna opcional **Preparação**
+  (só o lado vendedor; pode ser recolhida), com os cartões dos teasers
+  (e-book e OnePager): clicar abre a gaveta deles. Atalhos nos cabeçalhos:
+  **Teasers** (Prospectada), **Completos** e **Registrar oferta** (NDA
+  assinado), **Ofertas** e **Registrar oferta** (Proposta recebida). Os
+  atalhos e os cartões abrem uma **gaveta à direita** (versões, comentários,
+  aprovação, liberação e PDF dos materiais; ofertas; detalhe da compradora
+  com observações, ofertas e histórico). Faixa amarela: compradora parada
+  na mesma situação há mais de 30 dias. A aba **E-book** deixou de existir;
+  do lado comprador (sem funil), os materiais liberados e as ofertas
+  aparecem direto em Compradoras e ofertas.
 
 ### Kanban de deals
 
