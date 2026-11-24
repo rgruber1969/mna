@@ -25,7 +25,7 @@ export async function AbasDeAcesso({
   ];
   if (abas.length < 2) return null;
   return (
-    <nav aria-label={t("acesso")} className="border-border flex w-full max-w-6xl gap-5 border-b">
+    <nav aria-label={t("acesso")} className="border-border flex w-full basis-full gap-5 border-b">
       {abas.map((a) => (
         <Link
           key={a.id}
