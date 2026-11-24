@@ -858,6 +858,26 @@ export async function salvarDiasDeAviso(acesso: Acesso | null, texto: string): P
   return { ok: true };
 }
 
+/** Dias parada na mesma situação para o cartão da compradora ficar amarelo (padrão 30). */
+export async function obterDiasDeCompradoraParada(acesso: Acesso | null): Promise<number> {
+  const a = exigirTenant(acesso);
+  const [c] = await banco()
+    .select({ dias: tenant.diasCompradoraParada })
+    .from(tenant)
+    .where(eq(tenant.id, a.tenant.id));
+  return c?.dias ?? 30;
+}
+
+export async function salvarDiasDeCompradoraParada(acesso: Acesso | null, texto: string): Promise<Resultado> {
+  const a = exigirAdministrador(acesso);
+  const dias = Number(texto);
+  if (!Number.isInteger(dias) || dias < 1 || dias > 365)
+    return { erro: "negocios.erros.diasParadaInvalidos", campo: "diasParada" };
+  await banco().update(tenant).set({ diasCompradoraParada: dias }).where(eq(tenant.id, a.tenant.id));
+  await auditar(a, "tenant.configuracoes_alteradas", "tenant", a.tenant.id, { diasCompradoraParada: dias });
+  return { ok: true };
+}
+
 // --- Andamento e histórico na tela do negócio -------------------------------------------------
 
 export type Andamento = {

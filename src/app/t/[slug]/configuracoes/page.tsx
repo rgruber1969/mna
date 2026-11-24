@@ -16,6 +16,7 @@ import {
   obterDiasDeAviso,
   obterDiasDeAvisoDoPrazo,
   obterDiasDeLembreteDeTarefa,
+  obterDiasDeCompradoraParada,
 } from "@/server/services/negocios-andamento";
 import { FormPainelPrincipal } from "@/components/cadastros/painel-principal";
 import { GatilhosDeTarefas } from "@/components/cadastros/gatilhos";
@@ -66,6 +67,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     fontes,
     prioridades,
     templates,
+    diasParada,
   ] = await Promise.all([
     acesso.administrador ? obterDiasDeAviso(acesso) : null,
     verCadastros ? listarPapeis(acesso) : [],
@@ -80,6 +82,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     verCadastros ? listarFontes(acesso) : [],
     verCadastros ? obterPrioridades(acesso) : [],
     verCadastros && estaLigada("templatesDocx") ? telaDeTemplates(acesso) : null,
+    acesso.administrador ? obterDiasDeCompradoraParada(acesso) : 30,
   ]);
   const tt = await getTranslations("templates");
   const comTemplates = templates && !("erro" in templates) ? templates : null;
@@ -123,7 +126,12 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
           <Abas vertical inicial={abaInicial} abas={abas}>
             {dias && (
               <PainelDeAba id="geral">
-                <FormConfiguracoes dias={dias} diasTarefa={diasTarefa} horasResumo={horasResumo} />
+                <FormConfiguracoes
+                  dias={dias}
+                  diasTarefa={diasTarefa}
+                  horasResumo={horasResumo}
+                  diasParada={diasParada}
+                />
               </PainelDeAba>
             )}
             {dias && (

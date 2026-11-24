@@ -107,8 +107,6 @@ const iniciais = (nome: string) =>
     .slice(0, 2)
     .map((p) => p[0]!.toUpperCase())
     .join("");
-/** Dias parada na mesma situação para a faixa ficar amarela (sem movimento no funil). */
-const DIAS_PARADA = 30;
 
 function AvisoDeMovimento({ texto, desfazer }: { texto: string; desfazer: () => void }) {
   const t = useTranslations("negocios.kanban");
@@ -225,7 +223,10 @@ export function FunilDeCompradoras({
   ebook,
   ofertas,
   opcoesOferta,
+  diasParada = 30,
 }: {
+  /** Dias parada na mesma situação para o cartão ficar amarelo (Configurações › Prazos de eventos). */
+  diasParada?: number;
   dealId: string;
   cartoes: Cartao[];
   podeEditar: boolean;
@@ -522,7 +523,7 @@ export function FunilDeCompradoras({
                   const parada =
                     desde &&
                     !["escolhida", "descartada"].includes(situacaoDe(c)) &&
-                    (Date.now() - desde.getTime()) / 86_400_000 > DIAS_PARADA;
+                    (Date.now() - desde.getTime()) / 86_400_000 > diasParada;
                   const dela = ofertasDe(c.empresaId);
                   const ultimaOferta = dela[0];
                   return (

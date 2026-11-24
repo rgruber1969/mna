@@ -1,0 +1,1 @@
+ALTER TABLE "tenant" ADD COLUMN "dias_compradora_parada" integer DEFAULT 30 NOT NULL;

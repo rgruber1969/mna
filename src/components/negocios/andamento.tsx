@@ -469,10 +469,12 @@ export function FormConfiguracoes({
   dias,
   diasTarefa,
   horasResumo,
+  diasParada,
 }: {
   dias: number[];
   diasTarefa: number[];
   horasResumo: number;
+  diasParada: number;
 }) {
   const t = useTranslations("negocios.configuracoes");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarDiasDeAvisoAcao);
@@ -506,6 +508,19 @@ export function FormConfiguracoes({
           className={`${estiloCampo} w-32`}
         />
         <span className="text-muted mt-1 block text-xs">{t("horasResumoAjuda")}</span>
+      </label>
+      <label className="mb-3 block">
+        <span className="text-text mb-1 block text-sm font-medium">{t("diasParada")}</span>
+        <input
+          name="diasParada"
+          type="number"
+          min={1}
+          max={365}
+          defaultValue={diasParada}
+          required
+          className={`${estiloCampo} w-32`}
+        />
+        <span className="text-muted mt-1 block text-xs">{t("diasParadaAjuda")}</span>
       </label>
       <button type="submit" disabled={salvando} className={estiloBotao}>
         {t("salvar")}

@@ -72,6 +72,8 @@ export const tenant = pgTable("tenant", {
   diasAvisoPrazo: integer("dias_aviso_prazo").notNull().default(7),
   /** Intervalo, em horas, do resumo de mensagens novas por e-mail (M2). */
   horasResumoMensagens: integer("horas_resumo_mensagens").notNull().default(1),
+  /** Funil de compradoras: dias parada na mesma situação para o cartão ficar amarelo. */
+  diasCompradoraParada: integer("dias_compradora_parada").notNull().default(30),
   /** Escala de prioridade dos itens de pedido de documentos (da mais urgente à menos). */
   prioridadesPedido: jsonb("prioridades_pedido")
     .$type<string[]>()

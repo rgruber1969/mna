@@ -48,6 +48,7 @@ import {
   funilDoNegocio,
   hojeEmSaoPaulo,
   obterDiasDeAvisoDoPrazo,
+  obterDiasDeCompradoraParada,
 } from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
@@ -128,7 +129,7 @@ async function Painel({
   const [
     [tipos, opcoesEmp, opcoesPart, andamento],
     [funil, totalMsg, contratos, opcoesContrato, tc],
-    [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd, condicoes, diasDeAviso],
+    [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd, condicoes, diasDeAviso, diasParada],
     [etapas, alcances, dataRoom, tarefas, ebook, tb],
   ] = await Promise.all([
     Promise.all([
@@ -153,6 +154,7 @@ async function Painel({
       getTranslations("pedidos"),
       condicoesDaOferta(acesso, n.id),
       obterDiasDeAvisoDoPrazo(acesso),
+      obterDiasDeCompradoraParada(acesso),
     ]),
     Promise.all([
       etapasDoNegocio(acesso, n.id),
@@ -484,6 +486,7 @@ async function Painel({
                         ebook={ebook}
                         ofertas={ofertas}
                         opcoesOferta={opcoesOferta}
+                        diasParada={diasParada}
                       />
                     </section>
                   )}

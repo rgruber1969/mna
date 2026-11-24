@@ -24,6 +24,7 @@ import {
   encerrarAcessosExternos,
   prorrogarExclusividade,
   salvarDiasDeAviso,
+  salvarDiasDeCompradoraParada,
   salvarDiasDeLembreteDeTarefa,
   salvarDiasDeAvisoDoPrazo,
   salvarObservacoesDoFunil,
@@ -174,7 +175,9 @@ export async function salvarDiasDeAvisoAcao(_: Estado, f: FormData): Promise<Est
   const r2 = await salvarDiasDeLembreteDeTarefa(a, texto(f, "diasTarefa"));
   if ("erro" in r2) return { erro: await traduzirErro(r2), campo: r2.campo };
   const r3 = await salvarHorasDoResumo(a, texto(f, "horasResumo"));
-  return "erro" in r3 ? { erro: await traduzirErro(r3), campo: r3.campo } : { ok: t("configuracoesSalvas") };
+  if ("erro" in r3) return { erro: await traduzirErro(r3), campo: r3.campo };
+  const r4 = await salvarDiasDeCompradoraParada(a, texto(f, "diasParada"));
+  return "erro" in r4 ? { erro: await traduzirErro(r4), campo: r4.campo } : { ok: t("configuracoesSalvas") };
 }
 
 export async function salvarObservacoesDoFunilAcao(_: Estado, f: FormData): Promise<Estado> {
