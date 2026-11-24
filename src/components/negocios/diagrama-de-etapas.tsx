@@ -7,8 +7,8 @@ import { AvisoDeSimulacao } from "@/components/ui/aviso-de-simulacao";
 /**
  * Diagrama das etapas do negócio (item 10, **simulado**): as etapas em
  * colunas, da esquerda para a direita, com setas de dependência; etapas sem
- * dependência ficam na coluna da anterior (em paralelo); subetapas dentro da
- * etapa-mãe. Navegável (clicar ou Enter mostra os detalhes, zoom). A edição
+ * dependência ficam na coluna da anterior (em paralelo); subetapas em
+ * pílulas abaixo da etapa-mãe, com as datas (realizadas ou previstas). Navegável (clicar ou Enter mostra os detalhes, zoom). A edição
  * gráfica é só demonstração: arrastar move as caixas na tela e nada é
  * gravado (a edição real é pela lista).
  */
@@ -24,6 +24,13 @@ const estilo = {
 
 const br = (d: string | null) => (d ? d.split("-").reverse().join("/") : null);
 const cortar = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+const curta = (d: string | null) => (d ? d.split("-").reverse().slice(0, 2).join("/") : null);
+/** Datas da subetapa na pílula: realizadas, quando houver; senão, previstas. */
+const periodo = (e: EtapaDoDiagrama) => {
+  const de = curta(e.inicioReal ?? e.inicioPrevisto);
+  const ate = curta(e.fimReal ?? e.fimPrevisto);
+  return de || ate ? `${de ?? "…"}–${ate ?? "…"}` : "";
+};
 
 export function DiagramaDeEtapas({
   etapas,
@@ -181,9 +188,19 @@ export function DiagramaDeEtapas({
                 onPointerMove={mover}
                 onPointerUp={() => (arrasto.current = null)}
               >
+                {e.subetapas.length > 0 && (
+                  <line
+                    x1={18}
+                    y1={CABECALHO}
+                    x2={18}
+                    y2={CABECALHO + 6 + (e.subetapas.length - 1) * SUB + (SUB - 6) / 2}
+                    className="stroke-border"
+                    strokeWidth={1.5}
+                  />
+                )}
                 <rect
                   width={LARGURA}
-                  height={c.altura}
+                  height={CABECALHO}
                   rx={10}
                   className={estilo[e.situacao].caixa}
                   strokeWidth={ativa ? 2.5 : 1.25}
@@ -197,16 +214,37 @@ export function DiagramaDeEtapas({
                 <text x={14} y={42} className="fill-muted text-[11px]">
                   {datas[0] || datas[1] ? `${datas[0] ?? "…"} → ${datas[1] ?? "…"}` : te("semDatasCurto")}
                 </text>
-                {e.subetapas.map((s, i) => (
-                  <g key={s.id} transform={`translate(10,${CABECALHO + i * SUB})`}>
-                    <rect width={LARGURA - 20} height={SUB - 4} rx={6} className={estilo[s.situacao].caixa} />
-                    <circle cx={10} cy={(SUB - 4) / 2} r={3.5} className={estilo[s.situacao].ponto} />
-                    <text x={20} y={(SUB - 4) / 2 + 4} className="fill-text text-[11px]">
-                      <title>{s.nome}</title>
-                      {cortar(s.nome, 28)}
-                    </text>
-                  </g>
-                ))}
+                {e.subetapas.map((s, i) => {
+                  const altura = SUB - 6;
+                  const datas = periodo(s);
+                  return (
+                    <g key={s.id} transform={`translate(26,${CABECALHO + 6 + i * SUB})`}>
+                      <title>{`${s.nome}: ${te(`situacoes.${s.situacao}`)}${datas ? ` · ${datas}` : ""}`}</title>
+                      <rect
+                        width={LARGURA - 26}
+                        height={altura}
+                        rx={altura / 2}
+                        className={estilo[s.situacao].caixa}
+                        strokeWidth={1}
+                        strokeDasharray={s.situacao === "pulada" ? "4 3" : undefined}
+                      />
+                      <circle cx={10} cy={altura / 2} r={3} className={estilo[s.situacao].ponto} />
+                      <text x={18} y={altura / 2 + 3.5} className="fill-text text-[10.5px]">
+                        {cortar(s.nome, datas ? 15 : 26)}
+                      </text>
+                      {datas && (
+                        <text
+                          x={LARGURA - 34}
+                          y={altura / 2 + 3.5}
+                          textAnchor="end"
+                          className="fill-muted text-[10px] tabular-nums"
+                        >
+                          {datas}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
               </g>
             );
           })}
