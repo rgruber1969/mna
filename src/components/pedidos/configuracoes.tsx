@@ -51,6 +51,7 @@ export function TabelaDeFontes({
     if (r.erro) return setErro(r.erro);
     router.refresh();
   }
+  // Edição numa linha só da tabela, em grade (sem rolagem lateral, mesmo em telas médias).
   const linhaDeEdicao = (
     valores: Valores,
     mudar: (x: Valores) => void,
@@ -58,59 +59,59 @@ export function TabelaDeFontes({
     chave: string,
   ) => (
     <tr key={chave} className={estiloTabela.linha}>
-      <td className={`${estiloTabela.td} min-w-72`}>
-        <input
-          value={valores.nome}
-          onChange={(e) => mudar({ ...valores, nome: e.target.value })}
-          aria-label={t("nome")}
-          className={campo}
-        />
-        <input
-          value={valores.observacao}
-          onChange={(e) => mudar({ ...valores, observacao: e.target.value })}
-          aria-label={t("observacao")}
-          placeholder={t("observacao")}
-          className={`${campo} mt-1 text-xs`}
-        />
+      <td colSpan={5} className={estiloTabela.td}>
+        <div className="grid items-center gap-2 md:grid-cols-12">
+          <input
+            value={valores.nome}
+            onChange={(e) => mudar({ ...valores, nome: e.target.value })}
+            aria-label={t("nome")}
+            placeholder={t("nome")}
+            className={`${campo} md:col-span-4`}
+          />
+          <input
+            value={valores.orgao}
+            onChange={(e) => mudar({ ...valores, orgao: e.target.value })}
+            aria-label={t("orgao")}
+            placeholder={t("orgao")}
+            className={`${campo} md:col-span-4`}
+          />
+          <select
+            value={valores.abrangencia}
+            onChange={(e) => mudar({ ...valores, abrangencia: e.target.value as Valores["abrangencia"] })}
+            aria-label={t("abrangencia")}
+            className={`${campo} md:col-span-2`}
+          >
+            {(["federal", "estadual", "municipal"] as const).map((x) => (
+              <option key={x} value={x}>
+                {t(`abrangencias.${x}`)}
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-2 text-sm md:col-span-2">
+            <input
+              type="checkbox"
+              checked={valores.gratuito}
+              onChange={(e) => mudar({ ...valores, gratuito: e.target.checked })}
+            />
+            {t("gratuito")}
+          </label>
+          <input
+            value={valores.observacao}
+            onChange={(e) => mudar({ ...valores, observacao: e.target.value })}
+            aria-label={t("observacao")}
+            placeholder={t("observacao")}
+            className={`${campo} text-xs md:col-span-4`}
+          />
+          <input
+            value={valores.link}
+            onChange={(e) => mudar({ ...valores, link: e.target.value })}
+            aria-label={t("link")}
+            placeholder="https://"
+            className={`${campo} text-xs md:col-span-4`}
+          />
+          <span className="text-right whitespace-nowrap md:col-span-4">{acoes}</span>
+        </div>
       </td>
-      <td className={estiloTabela.td}>
-        <input
-          value={valores.orgao}
-          onChange={(e) => mudar({ ...valores, orgao: e.target.value })}
-          aria-label={t("orgao")}
-          className={campo}
-        />
-        <input
-          value={valores.link}
-          onChange={(e) => mudar({ ...valores, link: e.target.value })}
-          aria-label={t("link")}
-          placeholder="https://"
-          className={`${campo} mt-1 text-xs`}
-        />
-      </td>
-      <td className={estiloTabela.td}>
-        <select
-          value={valores.abrangencia}
-          onChange={(e) => mudar({ ...valores, abrangencia: e.target.value as Valores["abrangencia"] })}
-          aria-label={t("abrangencia")}
-          className={campo}
-        >
-          {(["federal", "estadual", "municipal"] as const).map((x) => (
-            <option key={x} value={x}>
-              {t(`abrangencias.${x}`)}
-            </option>
-          ))}
-        </select>
-      </td>
-      <td className={`${estiloTabela.td} text-center`}>
-        <input
-          type="checkbox"
-          checked={valores.gratuito}
-          onChange={(e) => mudar({ ...valores, gratuito: e.target.checked })}
-          aria-label={t("gratuito")}
-        />
-      </td>
-      <td className={`${estiloTabela.td} text-right whitespace-nowrap`}>{acoes}</td>
     </tr>
   );
   return (
@@ -121,13 +122,13 @@ export function TabelaDeFontes({
       </div>
       {erro && <Aviso>{erro}</Aviso>}
       <div className="-mx-2 overflow-x-auto">
-        <table className={estiloTabela.tabela}>
+        <table className={`${estiloTabela.tabela} table-fixed`}>
           <thead className={estiloTabela.cabecalho}>
             <tr>
-              <th className={estiloTabela.th}>{t("nome")}</th>
-              <th className={estiloTabela.th}>{t("orgao")}</th>
-              <th className={estiloTabela.th}>{t("abrangencia")}</th>
-              <th className={`${estiloTabela.th} text-center`}>{t("gratuito")}</th>
+              <th className={`${estiloTabela.th} w-[36%]`}>{t("nome")}</th>
+              <th className={`${estiloTabela.th} w-[28%]`}>{t("orgao")}</th>
+              <th className={`${estiloTabela.th} w-[13%]`}>{t("abrangencia")}</th>
+              <th className={`${estiloTabela.th} w-[9%] text-center`}>{t("gratuito")}</th>
               <th className={estiloTabela.th} />
             </tr>
           </thead>
@@ -161,7 +162,7 @@ export function TabelaDeFontes({
                   )
                 ) : (
                   <tr className={estiloTabela.linha}>
-                    <td className={`${estiloTabela.td} min-w-72 text-sm`}>
+                    <td className={`${estiloTabela.td} text-sm`}>
                       {f.nome}
                       {f.observacao && <span className="text-muted block text-xs">{f.observacao}</span>}
                     </td>
@@ -182,24 +183,26 @@ export function TabelaDeFontes({
                     <td className={`${estiloTabela.td} text-center text-sm`}>
                       {f.gratuito ? t("sim") : t("nao")}
                     </td>
-                    <td className={`${estiloTabela.td} text-right whitespace-nowrap`}>
-                      {podeEditar && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditando(f.id);
-                            setV({ ...f, link: f.link ?? "", observacao: f.observacao ?? "" });
-                          }}
-                          className="text-primary mr-3 text-sm"
-                        >
-                          {t("editar")}
-                        </button>
-                      )}
-                      {podeExcluir && (
-                        <button type="button" onClick={() => excluir(f)} className="text-danger text-sm">
-                          {t("excluir")}
-                        </button>
-                      )}
+                    <td className={`${estiloTabela.td} text-right`}>
+                      <span className="flex flex-wrap justify-end gap-x-3 gap-y-1">
+                        {podeEditar && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditando(f.id);
+                              setV({ ...f, link: f.link ?? "", observacao: f.observacao ?? "" });
+                            }}
+                            className="text-primary text-sm"
+                          >
+                            {t("editar")}
+                          </button>
+                        )}
+                        {podeExcluir && (
+                          <button type="button" onClick={() => excluir(f)} className="text-danger text-sm">
+                            {t("excluir")}
+                          </button>
+                        )}
+                      </span>
                     </td>
                   </tr>
                 )}

@@ -116,7 +116,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
-        <Cartao largura="max-w-6xl">
+        <Cartao largura="max-w-[1600px]">
           <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
             {t("titulo")}
           </Titulo>

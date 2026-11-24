@@ -719,6 +719,8 @@ export function CascaDoTenant({
     "pilula",
   );
   const ativo = (href: string) => (href === "/" ? caminho === "/" : caminho.startsWith(href));
+  /** O item é o atual (o endereço dele ou um dos que ele reúne, como as abas de Usuários e acesso). */
+  const itemAtivo = (item: Item) => [item.href, ...(item.tambem ?? [])].some(ativo);
   const logo = escuro ? (marca.logoEscuro ?? marca.logoClaro) : (marca.logoClaro ?? marca.logoEscuro);
 
   function alternarRecolhido() {
@@ -785,8 +787,8 @@ export function CascaDoTenant({
           href={item.href}
           onClick={() => setAberto(false)}
           title={compacto ? nome : undefined}
-          aria-current={[item.href, ...(item.tambem ?? [])].some(ativo) ? "page" : undefined}
-          className={`${ativo(item.href) ? `${pilulaPronta ? "" : "bg-primary-soft"} text-primary font-semibold` : "text-text hover:bg-surface"} relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${compacto ? "justify-center" : "pr-9"}`}
+          aria-current={itemAtivo(item) ? "page" : undefined}
+          className={`${itemAtivo(item) ? `${pilulaPronta ? "" : "bg-primary-soft"} text-primary font-semibold` : "text-text hover:bg-surface"} relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${compacto ? "justify-center" : "pr-9"}`}
         >
           <Icone nome={item.icone} />
           <span className={compacto ? "sr-only" : "truncate"}>{nome}</span>

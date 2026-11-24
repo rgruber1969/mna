@@ -164,7 +164,10 @@ export async function listarPerfis(acesso: Acesso | null): Promise<PainelDePerfi
   return { modo: a.tenant.modoPermissoes, perfis };
 }
 
-export type DetalheDoPerfil = Omit<PerfilResumo, "pessoas"> & { matriz: Matriz; usuarios: { id: string; nome: string }[] };
+export type DetalheDoPerfil = Omit<PerfilResumo, "pessoas"> & {
+  matriz: Matriz;
+  usuarios: { id: string; nome: string }[];
+};
 
 async function perfilDoTenant(tx: Transacao, perfilId: string) {
   if (!uuidValido(perfilId)) return null;
