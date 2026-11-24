@@ -342,7 +342,7 @@ export function DetalheDoPedido({ detalhe: d, dados }: { detalhe: PedidoDetalhe;
                       {itens.map((i) => (
                         <tr
                           key={i.id}
-                          className={`${estiloTabela.linha} hover:bg-surface cursor-pointer`}
+                          className={`${estiloTabela.linha} cursor-pointer`}
                           onClick={() => setItemAberto(i.id)}
                         >
                           <td className={`${estiloTabela.td} text-muted font-mono text-xs whitespace-nowrap`}>

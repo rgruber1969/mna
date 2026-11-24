@@ -70,12 +70,15 @@ async function Painel({ consulta }: { consulta: Promise<Record<string, string | 
                 </thead>
                 <tbody>
                   {usuarios.map((u) => (
-                    <tr key={u.id} className={estiloTabela.linha}>
+                    <tr key={u.id} className={`${estiloTabela.linha} ${estiloTabela.linhaClicavel}`}>
                       <td className={estiloTabela.td}>
                         <span className="flex items-center gap-3">
                           <Avatar nome={u.nome} foto={u.foto} tamanho={40} />
                           <span className="min-w-0">
-                            <Link href={`/usuarios/${u.id}`} className="text-text block font-semibold">
+                            <Link
+                              href={`/usuarios/${u.id}`}
+                              className={`text-text block font-semibold ${estiloTabela.linkDaLinha}`}
+                            >
                               {u.nome}
                             </Link>
                             <span className="text-muted block truncate text-xs">{u.email}</span>

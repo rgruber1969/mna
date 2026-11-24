@@ -94,12 +94,15 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                 </thead>
                 <tbody>
                   {pagina.itens.map((p) => (
-                    <tr key={p.id} className={estiloTabela.linha}>
+                    <tr key={p.id} className={`${estiloTabela.linha} ${estiloTabela.linhaClicavel}`}>
                       <td className={estiloTabela.td}>
                         <span className="flex items-center gap-3">
                           <Avatar nome={p.nome} foto={p.foto} tamanho={40} />
                           <span className="min-w-0">
-                            <Link href={`/pessoas/${p.id}`} className="text-text block font-semibold">
+                            <Link
+                              href={`/pessoas/${p.id}`}
+                              className={`text-text block font-semibold ${estiloTabela.linkDaLinha}`}
+                            >
                               {p.nome}
                               {p.inativa && (
                                 <span className="text-muted ml-2 text-xs font-normal">{t("inativa")}</span>
