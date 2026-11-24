@@ -1,6 +1,6 @@
 "use client";
 
-import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
+import { BotaoDeIcone, EspacoDeIcone } from "@/components/ui/icone-de-acao";
 import { Fragment, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -778,23 +778,27 @@ export function DataRoomDoNegocio({
                         )}
                       </td>
                       <td className={`${estiloTabela.td} whitespace-nowrap`}>
-                        <span className="flex gap-3 text-xs">
-                          {podeVer(ultima) && (
+                        <span className="flex items-center gap-1">
+                          {podeVer(ultima) ? (
                             <Visualizar
                               id={ultima.id}
                               tipo={ultima.tipo!}
                               nome={ultima.nomeArquivo}
                               endereco={`/api/documentos/versoes/${ultima.id}/previa`}
                             />
+                          ) : (
+                            <EspacoDeIcone />
                           )}
-                          {ultima.podeBaixar && (
+                          {ultima.podeBaixar ? (
                             <BotaoDeIcone
                               tipo="baixar"
                               rotulo={t("baixar")}
                               onClick={() => baixar(ultima.id)}
                             />
+                          ) : (
+                            <EspacoDeIcone />
                           )}
-                          {d.podeEditar && (
+                          {d.podeEditar ? (
                             <BotaoDeIcone
                               tipo="editar"
                               rotulo={t("editar")}
@@ -803,13 +807,17 @@ export function DataRoomDoNegocio({
                                 setEditandoDoc(d.id);
                               }}
                             />
+                          ) : (
+                            <EspacoDeIcone />
                           )}
-                          {d.podeNovaVersao && !envio && (
+                          {d.podeNovaVersao && !envio ? (
                             <BotaoDeIcone
                               tipo="novaVersao"
                               rotulo={t("novaVersao")}
                               onClick={() => novaVersao(d)}
                             />
+                          ) : (
+                            <EspacoDeIcone />
                           )}
                         </span>
                       </td>
@@ -872,14 +880,16 @@ export function DataRoomDoNegocio({
                                     })}
                                   </span>
                                 </span>
-                                <span className="flex items-center gap-3">
-                                  {podeVer(v) && (
+                                <span className="flex items-center gap-1">
+                                  {podeVer(v) ? (
                                     <Visualizar
                                       id={v.id}
                                       tipo={v.tipo!}
                                       nome={v.nomeArquivo}
                                       endereco={`/api/documentos/versoes/${v.id}/previa`}
                                     />
+                                  ) : (
+                                    <EspacoDeIcone />
                                   )}
                                   {v.podeBaixar && (
                                     <BotaoDeIcone

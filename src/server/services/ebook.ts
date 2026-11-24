@@ -120,6 +120,8 @@ export type VersaoDoEbook = {
   podeAprovar: boolean;
   podeLiberar: boolean;
   podeExcluir: boolean;
+  /** Versão do arquivo no data room (para visualizar na tela); vazio nas versões antigas de demonstração. */
+  documentoVersaoId: string | null;
 };
 
 export type EbookDoNegocio = {
@@ -203,6 +205,7 @@ export async function ebookDoNegocio(acesso: Acesso | null, dealId: string): Pro
     podeAprovar: aberto && v.situacao === "em_revisao" && ctx.pode("aprovar"),
     podeLiberar: aberto && v.situacao === "aprovada" && ctx.pode("liberar"),
     podeExcluir: aberto && v.situacao === "em_revisao" && ctx.pode("excluir"),
+    documentoVersaoId: v.documentoVersaoId,
   }));
   return {
     vendedor: ctx.vendedor,

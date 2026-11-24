@@ -1,6 +1,6 @@
 "use client";
 
-import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
+import { BotaoDeIcone, EspacoDeIcone } from "@/components/ui/icone-de-acao";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -15,6 +15,7 @@ import {
 } from "@/app/acoes/ebook";
 import { AvisoDeSimulacao } from "@/components/ui/aviso-de-simulacao";
 import { Aviso } from "@/components/ui/basicos";
+import { Visualizar } from "@/components/cadastros/previa-do-anexo";
 import { Atualizando } from "@/components/ui/atualizando";
 import { baixarBase64 } from "@/components/ui/baixar";
 import type { EbookDoNegocio, VersaoDoEbook } from "@/server/services/ebook";
@@ -181,7 +182,8 @@ export function Versao({
       setErro(null);
       const r = await pdfDaVersaoDoEbookAcao(v.id);
       if (r.erro) return setErro(r.erro);
-      if (r.url) return void window.open(r.url, "_blank", "noopener");
+      // Link temporário do data room: baixa o arquivo.
+      if (r.url) return void window.location.assign(r.url);
       if (!r.conteudo || !r.nome) return setErro("");
       baixarBase64(r.conteudo, r.nome, "application/pdf");
     });
@@ -212,9 +214,22 @@ export function Versao({
       </p>
       {v.observacoes && <p className="text-text mt-1 text-xs whitespace-pre-line">{v.observacoes}</p>}
       <div className="mt-2 flex flex-wrap gap-2">
-        <button type="button" disabled={pendente} onClick={abrir} className={botao}>
-          {pendente ? t("abrindo") : t("abrirPdf")}
-        </button>
+        {v.documentoVersaoId ? (
+          <Visualizar
+            id={v.documentoVersaoId}
+            tipo="application/pdf"
+            nome={`${material} v${v.numero}`}
+            endereco={`/api/documentos/versoes/${v.documentoVersaoId}/previa`}
+          />
+        ) : (
+          <EspacoDeIcone />
+        )}
+        <BotaoDeIcone
+          tipo="baixar"
+          rotulo={pendente ? t("abrindo") : t("baixar")}
+          disabled={pendente}
+          onClick={abrir}
+        />
         {v.podeAprovar && (
           <button
             type="button"

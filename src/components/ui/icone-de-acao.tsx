@@ -57,3 +57,8 @@ export function BotaoDeIcone({
     </button>
   );
 }
+
+/** Lugar vazio do tamanho de um botão de ícone (alinha as ações de linhas que não têm todas). */
+export function EspacoDeIcone() {
+  return <span aria-hidden="true" className="inline-block h-7 w-7" />;
+}

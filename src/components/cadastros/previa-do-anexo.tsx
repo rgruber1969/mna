@@ -175,9 +175,12 @@ export function Visualizar({
             <button type="button" className={botao} onClick={() => setZoom((z) => Math.min(3, z + 0.25))}>
               +
             </button>
-            <a href={`/api/anexos/${id}`} className={botao}>
-              {t("baixar")}
-            </a>
+            {/* Baixar daqui só para anexos de cadastro; documentos e materiais baixam pelo ícone da linha (link auditado do data room). */}
+            {!endereco && (
+              <a href={`/api/anexos/${id}`} className={botao}>
+                {t("baixar")}
+              </a>
+            )}
             <button type="button" className={botao} onClick={() => janela.current?.close()}>
               {t("fechar")}
             </button>
