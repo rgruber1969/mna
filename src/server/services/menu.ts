@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { estaLigada, type Funcionalidade } from "@/config/funcionalidades";
 import { comTenant } from "@/server/db/cliente";
 import { preferenciaMenu } from "@/server/db/esquema";
 import { exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
@@ -17,7 +18,13 @@ export type ItemDoMenu = { id: string; href: string; icone: string };
 export type GrupoDoMenu = { chave: string; itens: ItemDoMenu[] };
 export type Menu = { grupos: GrupoDoMenu[]; favoritos: string[]; recolhido: boolean };
 
-type Definicao = ItemDoMenu & { recurso?: Recurso; soAdministrador?: boolean; ouAdministrador?: boolean };
+type Definicao = ItemDoMenu & {
+  recurso?: Recurso;
+  soAdministrador?: boolean;
+  ouAdministrador?: boolean;
+  /** Funcionalidade simulada ou ainda não real: o item some quando ela está desligada. */
+  funcionalidade?: Funcionalidade;
+};
 
 const GRUPOS: { chave: string; itens: Definicao[] }[] = [
   { chave: "inicio", itens: [{ id: "painel", href: "/", icone: "casa" }] },
@@ -26,6 +33,13 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
     itens: [
       { id: "negocios", href: "/negocios", icone: "maleta", recurso: "deals" },
       { id: "contratos", href: "/contratos", icone: "contrato", recurso: "deals" },
+      {
+        id: "templates",
+        href: "/templates",
+        icone: "modelo",
+        recurso: "deals",
+        funcionalidade: "templatesDocx",
+      },
     ],
   },
   {
@@ -61,6 +75,7 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
 const IDS = new Set(GRUPOS.flatMap((g) => g.itens.map((i) => i.id)));
 
 async function visivel(a: AcessoTenant, item: Definicao): Promise<boolean> {
+  if (item.funcionalidade && !estaLigada(item.funcionalidade)) return false;
   if (item.soAdministrador) return a.administrador;
   if (item.ouAdministrador && a.administrador) return true;
   return item.recurso ? pode(a, item.recurso, "ver") : true;

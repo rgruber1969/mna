@@ -33,6 +33,7 @@ import {
   salvarItem,
 } from "@/server/services/pedidos";
 import { SITUACOES_DO_ITEM } from "@/config/pedidos";
+import { gerarDocumentoDoTemplate, telaDeTemplates } from "@/server/services/templates";
 
 /**
  * API REST v1 (itens 25 e 26; ADR-0004, ADR-0013). Autenticação por chave de
@@ -78,6 +79,7 @@ async function comAcesso(c: Context, fn: (a: Acesso) => Promise<unknown>) {
 }
 
 export function registrarRotasV1(api: OpenAPIHono) {
+  registrarRotasDasSimuladas(api);
   api.openAPIRegistry.registerComponent("securitySchemes", "chaveDeApi", {
     type: "http",
     scheme: "bearer",
@@ -709,5 +711,46 @@ export function registrarRotasV1(api: OpenAPIHono) {
         const { periodo, situacao } = c.req.valid("json");
         return definirSituacaoDoItem(a, c.req.valid("param").id, periodo, situacao);
       }) as never,
+  );
+}
+
+/**
+ * Funcionalidades simuladas (itens 13, 18 e 19): as mesmas operações das
+ * telas, com o mesmo aviso de demonstração no retorno.
+ */
+function registrarRotasDasSimuladas(api: OpenAPIHono) {
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/templates",
+      tags: ["Templates (demonstração)"],
+      summary: "Templates DOCX e os negócios e contratos que a chave pode usar para preenchê-los",
+      security: seguranca,
+      responses: respostas("Templates"),
+    }),
+    (c) => comAcesso(c, (a) => telaDeTemplates(a)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/templates/{codigo}/gerar",
+      tags: ["Templates (demonstração)"],
+      summary: "Gera o DOCX de exemplo preenchido com o negócio ou o contrato (conteúdo em base64)",
+      security: seguranca,
+      request: {
+        params: z.object({
+          codigo: z
+            .string()
+            .max(40)
+            .openapi({ param: { name: "codigo", in: "path" } }),
+        }),
+        body: { content: { "application/json": { schema: z.object({ alvoId: z.uuid() }) } } },
+      },
+      responses: respostas("Arquivo DOCX em base64"),
+    }),
+    (c) =>
+      comAcesso(c, (a) =>
+        gerarDocumentoDoTemplate(a, c.req.valid("param").codigo, c.req.valid("json").alvoId),
+      ) as never,
   );
 }

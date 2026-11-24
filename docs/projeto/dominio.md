@@ -590,6 +590,18 @@ Etapas padrão:
   podem ser atrelados aos documentos padrão. Na versão 1, por
   **preenchimento de campos** (o sistema gera o DOCX preenchido; a edição
   acontece no Word).
+* **Templates na demonstração** (item 13, simulado, construído em
+  2026-11-23; modelos da resposta D7): menu **Templates** (quem vê
+  negócios), com lista fixa de modelos: para o **negócio**, NDA, Term Sheet
+  e Procuração (negócio, tipo, vendedoras com CNPJ, compradoras, valor
+  estimado, previsão de fechamento, escritório, data); para o
+  **contrato**, mandato de venda e carta de honorários (partes, objeto,
+  vigência, honorário fixo, success fee, data). "Gerar DOCX" devolve um
+  Word de demonstração preenchido só com o que a pessoa vê no negócio ou
+  no contrato escolhido; geração auditada (`template.gerado`). API:
+  `GET /v1/templates` e `POST /v1/templates/{codigo}/gerar`. Ainda não:
+  envio dos modelos do escritório com campos marcados no Word, ligação
+  com os documentos padrão das etapas e endereços das partes.
 * **Lista de acesso por versão:** quem envia uma versão escolhe, por perfil
   e/ou usuário, quem pode **ver e baixar** aquela versão (regras em
   `perfis-e-permissoes.md`). Quem quiser alterar baixa, edita (ex.:

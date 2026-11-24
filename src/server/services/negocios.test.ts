@@ -1953,3 +1953,51 @@ describe("pedidos de documentos", () => {
     });
   });
 });
+
+describe("templates DOCX (item 13, simulado)", () => {
+  it("gera o DOCX de exemplo com os campos do negócio e do contrato que a pessoa vê, auditado", async () => {
+    const { gerarDocumentoDoTemplate, telaDeTemplates } = await import("./templates");
+    const adm = acesso("admin", true);
+    const tela = await telaDeTemplates(adm);
+    if ("erro" in tela) throw new Error(tela.erro);
+    expect(tela.templates.map((x) => x.codigo)).toEqual([
+      "nda",
+      "term-sheet",
+      "procuracao",
+      "mandato",
+      "honorarios",
+    ]);
+    expect(tela.negocios.some((n) => n.id === negocioId)).toBe(true);
+    const r = await gerarDocumentoDoTemplate(adm, "nda", negocioId);
+    if ("erro" in r) throw new Error(r.erro);
+    expect(r.nome).toMatch(/^nda-.*-demonstracao\.docx$/);
+    const zip = unzipSync(Buffer.from(r.conteudo, "base64"));
+    expect(Object.keys(zip)).toEqual(expect.arrayContaining(["[Content_Types].xml", "word/document.xml"]));
+    const xml = new TextDecoder().decode(zip["word/document.xml"]);
+    const n = await obterNegocio(adm, negocioId);
+    expect(xml).toContain(n!.nome.replace(/&/g, "&amp;"));
+    expect(xml).toContain("DEMONSTRAÇÃO");
+    const [ev] = (
+      await dono.query(
+        `select alvo_tipo, detalhes from evento_auditoria where tenant_id = $1 and tipo = 'template.gerado'`,
+        [tenantId],
+      )
+    ).rows;
+    expect(ev).toMatchObject({ alvo_tipo: "deal", detalhes: { template: "nda", simulada: true } });
+    // Quem não vê o negócio não gera; template de contrato não aceita negócio.
+    expect(await gerarDocumentoDoTemplate(acesso("curioso"), "nda", negocioId)).toMatchObject({
+      erro: "templates.erros.negocioObrigatorio",
+    });
+    expect(await gerarDocumentoDoTemplate(adm, "mandato", negocioId)).toMatchObject({
+      erro: "templates.erros.contratoObrigatorio",
+    });
+    expect(await gerarDocumentoDoTemplate(adm, "inexistente", negocioId)).toMatchObject({
+      erro: "templates.erros.templateInexistente",
+    });
+    if (tela.contratos.length) {
+      const c = await gerarDocumentoDoTemplate(adm, "mandato", tela.contratos[0].id);
+      if ("erro" in c) throw new Error(c.erro);
+      expect(c.nome).toMatch(/^mandato-/);
+    }
+  });
+});

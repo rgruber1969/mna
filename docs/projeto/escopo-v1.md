@@ -63,7 +63,7 @@ Como cada item simulado aparece na demonstração:
 |---|---|
 | 3 | Botões "Entrar com Google" e "Entrar com Microsoft" na tela de entrada, com aviso de demonstração; ao clicar, explicam que a função chega numa próxima versão (decidido em 2026-11-18) |
 | 10 | Diagrama visual das etapas do deal de exemplo, navegável, sem edição gráfica (a edição em lista é real) |
-| 13 | Lista de templates e botão "gerar" que devolve um DOCX de exemplo |
+| 13 | Menu Templates com NDA, Term Sheet e Procuração (negócio) e mandato e carta de honorários (contrato); "Gerar DOCX" devolve um Word de exemplo preenchido com os campos do negócio ou do contrato escolhido (construído em 2026-11-23) |
 | 18 | Telas com um valuation fictício completo (premissas, métodos, ponderação, rateio entre vendedoras, painel); a comparação com ofertas reais usa esses números, com aviso |
 | 19 | Fluxo real de status (versões, comentários, liberação ao comprador) com PDFs de exemplo, sem geração automática |
 | 21, 22 | Telas com botão de exportação que devolve PDF/XLSX de exemplo |

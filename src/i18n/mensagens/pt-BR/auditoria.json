@@ -46,6 +46,7 @@
     },
     "tipos": {
       "negocio_exportado": "Negócio exportado (PDF)",
+      "template_gerado": "Documento gerado a partir de template (DOCX)",
       "auditoria_exportada": "Auditoria exportada",
       "tenant_configuracoes_alteradas": "Configurações do tenant alteradas",
       "tenant_identidade_alterada": "Identidade visual alterada",
