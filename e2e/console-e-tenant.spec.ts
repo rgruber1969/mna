@@ -191,7 +191,7 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
     .first()
     .click();
   await admin.getByRole("textbox", { name: "Cor de destaque", exact: true }).fill("#4338ca");
-  await admin.getByLabel("Fonte").selectOption("lato");
+  await admin.locator("select[name=fonte]").selectOption("lato");
   await admin.getByText("Grande (18)").click();
   await admin.getByRole("button", { name: "Salvar identidade visual" }).click();
   await expect(admin.getByText("Identidade visual salva.")).toBeVisible();
