@@ -2136,3 +2136,28 @@ describe("e-book e OnePager (item 19, simulado: fluxo real)", () => {
     ]);
   });
 });
+
+describe("valuation (item 18, simulado)", () => {
+  it("valuation fictício para quem tem Valuations × ver; comparação só com as ofertas que a pessoa vê", async () => {
+    const { telaDoValuation } = await import("./valuation");
+    const adm = acesso("admin", true);
+    const tela = await telaDoValuation(adm, negocioId);
+    if ("erro" in tela) throw new Error(tela.erro);
+    expect(tela.resultado.somaDosPesos).toBe(100);
+    expect(tela.comparacao?.dealId).toBe(negocioId);
+    const { ofertas } = (await ofertasDoNegocio(adm, negocioId))!;
+    expect(tela.comparacao!.ofertas.map((o) => o.id).sort()).toEqual(ofertas.map((o) => o.id).sort());
+    // Quem não vê o negócio recebe o valuation, mas sem comparação; sem a permissão, nada.
+    const curioso = await telaDoValuation(acesso("curioso"), negocioId);
+    if ("erro" in curioso) throw new Error(curioso.erro);
+    expect(curioso.comparacao).toBeNull();
+    await expect(telaDoValuation(acesso("externo"))).rejects.toBeInstanceOf(AcessoNegado);
+    const [{ n }] = (
+      await dono.query(
+        `select count(*)::int n from evento_auditoria where tenant_id = $1 and tipo = 'valuation.visualizado'`,
+        [tenantId],
+      )
+    ).rows;
+    expect(n).toBe(2);
+  });
+});

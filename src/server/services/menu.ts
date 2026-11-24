@@ -34,6 +34,13 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
       { id: "negocios", href: "/negocios", icone: "maleta", recurso: "deals" },
       { id: "contratos", href: "/contratos", icone: "contrato", recurso: "deals" },
       {
+        id: "valuations",
+        href: "/valuations",
+        icone: "grafico",
+        recurso: "valuations",
+        funcionalidade: "valuation",
+      },
+      {
         id: "templates",
         href: "/templates",
         icone: "modelo",

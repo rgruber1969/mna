@@ -34,6 +34,7 @@ import {
 } from "@/server/services/pedidos";
 import { SITUACOES_DO_ITEM } from "@/config/pedidos";
 import { gerarDocumentoDoTemplate, telaDeTemplates } from "@/server/services/templates";
+import { telaDoValuation } from "@/server/services/valuation";
 import {
   aprovarVersaoDoEbook,
   comentarVersaoDoEbook,
@@ -762,6 +763,20 @@ function registrarRotasDasSimuladas(api: OpenAPIHono) {
       comAcesso(c, (a) =>
         gerarDocumentoDoTemplate(a, c.req.valid("param").codigo, c.req.valid("json").alvoId),
       ) as never,
+  );
+
+  // --- Valuation (fictício; comparação com as ofertas reais) ---------------------------------
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/valuations/demonstracao",
+      tags: ["Valuation (demonstração)"],
+      summary: "Valuation fictício completo e, com ?negocio=, as ofertas reais desse negócio para comparar",
+      security: seguranca,
+      request: { query: z.object({ negocio: z.uuid().optional() }) },
+      responses: respostas("Valuation"),
+    }),
+    (c) => comAcesso(c, (a) => telaDoValuation(a, c.req.valid("query").negocio)) as never,
   );
 
   // --- E-book e OnePager (fluxo real, PDF de exemplo) ---------------------------------------

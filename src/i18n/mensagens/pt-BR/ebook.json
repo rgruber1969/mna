@@ -78,7 +78,7 @@
       "projeto": "Projeto {codinome}",
       "versao": "Versão {numero} · identidade visual: {identidade}",
       "exemplo": "Texto de exemplo desta seção. Na versão real, o conteúdo vem dos dados do negócio, do cadastro da empresa e dos arquivos anexados.",
-      "valuationPendente": "Números do valuation: entram aqui quando o valuation do negócio estiver disponível.",
+      "valuation": "Valuation (demonstração): valor ponderado {ponderado}; faixa esperada de {minimo} a {maximo}.",
       "teaser": {
         "sumario": "Grandes números em faixas (ex.: receita entre R$ 50 e 80 milhões).",
         "historico": "Marcos sem nomes nem datas identificáveis.",

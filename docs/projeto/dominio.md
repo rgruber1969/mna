@@ -376,6 +376,32 @@ principalmente pelo advisor.
   puxa números dos valuations que pode ver.
 * **Saída na V1:** tela com resumo e gráficos.
 
+Demonstração (item 18, **simulado**, construído em 2026-11-23):
+
+* Menu **Valuations** (quem tem "Valuations × ver") com **um valuation
+  fictício completo** (empresa, DRE e transações fictícias): abas Painel,
+  Premissas, Métodos e ponderação, Cenários e sensibilidade, Rateio entre
+  vendedoras, Tese do setor e Comparação com ofertas.
+* **Contas reais sobre números fictícios** (`src/config/valuation.ts`, as
+  mesmas que a versão real vai usar): fluxo de caixa descontado (5 anos,
+  WACC e perpetuidade), múltiplos (média de EV/EBITDA, EV/Receita e
+  EV/ARR), transações comparáveis (mediana), patrimonial ajustado e regra
+  de bolso; valor do equity = valor da firma menos dívida líquida e
+  contingências; ponderado pelos pesos (100%); cenários pessimista, base e
+  otimista; tabela de sensibilidade WACC × perpetuidade; rateio do
+  ponderado entre as vendedoras pelo percentual e critério registrados.
+* **Painel:** um eixo em R$ milhões com uma barra por método, a faixa
+  mínimo–máximo sombreada, o ponderado tracejado e as ofertas como
+  losangos.
+* **Comparação com ofertas reais:** a pessoa escolhe um negócio que vê, e
+  entram as ofertas dele que ela vê (total da oferta, percentual sobre o
+  ponderado e posição na faixa), com aviso de que o valuation é fictício.
+* Consulta auditada (`valuation.visualizado`); API `GET
+  /v1/valuations/demonstracao?negocio=`. O e-book, com a opção marcada,
+  mostra o ponderado e a faixa deste valuation.
+* Ainda não: criar e editar valuations, versões, aprovação, visibilidade
+  definida pelo criador, ligação ao negócio e importação da planilha.
+
 ### Ofertas
 
 * Registro das **ofertas recebidas** de compradores, na negociação informal
@@ -412,7 +438,9 @@ Regras construídas (item 32, respostas O1–O4, 2026-11-22):
 * **Comparação (O3):** total (à vista + parcelas + earnout estimado) e
   valor presente pela taxa anual informada na tela (o earnout entra sem
   desconto); só para quem vê todas as ofertas. A faixa do valuation entra
-  quando o valuation existir (item 18).
+  quando o valuation existir (item 18); na demonstração, a comparação com
+  o valuation fictício fica na tela do valuation (aba Comparação com
+  ofertas).
 * **Rateio (O4):** percentuais das vendedoras e critério no negócio (lado
   vendedor com "Ofertas × editar"), somando 100%; uma oferta pode ter
   rateio próprio. Só aparece para quem vê as vendedoras.

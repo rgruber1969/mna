@@ -3,6 +3,7 @@ import { z } from "zod";
 import { tradutor, type ErroDeServico } from "@/i18n/servidor";
 import { estaLigada } from "@/config/funcionalidades";
 import { pdfDeTexto } from "@/server/arquivos/pdf-simples";
+import { resultadoDoValuation, VALUATION_DE_EXEMPLO } from "@/config/valuation";
 import { comTenant } from "@/server/db/cliente";
 import {
   deal,
@@ -450,7 +451,17 @@ export async function pdfDaVersaoDoEbook(
     t("versao", { numero: String(v.numero), identidade: tr(`ebook.identidades.${v.identidade}`) }),
     "",
   ];
-  const valuation = v.incluiValuation ? [t("valuationPendente")] : [];
+  // Números do valuation de demonstração (item 18), só se quem montou marcou a opção.
+  const mi = (x: number) => `R$ ${(x / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
+  const valuation = v.incluiValuation
+    ? [
+        t("valuation", {
+          minimo: mi(VALUATION_DE_EXEMPLO.faixa.minimo),
+          maximo: mi(VALUATION_DE_EXEMPLO.faixa.maximo),
+          ponderado: mi(resultadoDoValuation(VALUATION_DE_EXEMPLO).ponderado),
+        }),
+      ]
+    : [];
   const secoes = onepager
     ? (["sumario", "tese", "proximos"] as const)
     : SECOES.filter((s) => !(teaser && s === "societaria"));
