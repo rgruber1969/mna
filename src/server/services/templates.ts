@@ -50,7 +50,8 @@ export type AlvoDoTemplate = "negocio" | "contrato";
 export type TelaDeTemplates = {
   templates: { codigo: CodigoDoTemplate; alvo: AlvoDoTemplate; campos: string[] }[];
   negocios: { id: string; nome: string }[];
-  contratos: { id: string; nome: string }[];
+  /** `tipo`: o mandato só oferece contratos de mandato (do advisor); a carta, os de honorários. */
+  contratos: { id: string; nome: string; tipo: string }[];
 };
 
 const desligada = { erro: "templates.erros.funcionalidadeDesligada" } as const;
@@ -71,6 +72,7 @@ export async function telaDeTemplates(acesso: Acesso | null): Promise<TelaDeTemp
     contratos: contratos.map((c) => ({
       id: c.id,
       nome: c.negocio ? `${c.titulo} · ${c.negocio}` : c.titulo,
+      tipo: c.tipo,
     })),
   };
 }

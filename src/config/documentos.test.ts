@@ -31,3 +31,13 @@ describe("documentos", () => {
     expect(mascararDocumento("AB")).toBe("***");
   });
 });
+
+describe("digitação de CNPJ e CPF", () => {
+  it("limita aos dígitos do documento e formata enquanto digita", async () => {
+    const { digitandoCnpj, digitandoCpf } = await import("./documentos");
+    expect(digitandoCnpj("112223330001819999")).toBe("11.222.333/0001-81");
+    expect(digitandoCnpj("11222")).toBe("11.222");
+    expect(digitandoCpf("529982247259999")).toBe("529.982.247-25");
+    expect(digitandoCpf("5299")).toBe("529.9");
+  });
+});

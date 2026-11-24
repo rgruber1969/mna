@@ -64,7 +64,7 @@ async function Conteudo({ parametros, administrador }: { parametros: Parametros;
     negocio: um(parametros, "negocio"),
     busca: um(parametros, "busca"),
   };
-  const pedido = lerPedido(parametros, ORDENS_DA_AUDITORIA, "ocorridoEm", "desc");
+  const pedido = lerPedido(parametros, ORDENS_DA_AUDITORIA, "ocorridoEm", "desc", 10);
   const [pagina, opcoes, retencao] = await Promise.all([
     paginaDaAuditoria(acesso, filtro, pedido),
     opcoesDaAuditoria(acesso),

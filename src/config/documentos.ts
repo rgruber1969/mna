@@ -63,6 +63,30 @@ export const formatarCnpj = (v: string) =>
 export const formatarCpf = (v: string) =>
   soDigitos(v).replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
 
+/**
+ * Enquanto a pessoa digita: guarda no máximo os dígitos do documento (CNPJ 14,
+ * CPF 11) e vai pondo a pontuação conforme digita.
+ */
+export function digitandoCnpj(v: string): string {
+  const d = soDigitos(v).slice(0, 14);
+  return [
+    d.slice(0, 2),
+    d.slice(2, 5) && `.${d.slice(2, 5)}`,
+    d.slice(5, 8) && `.${d.slice(5, 8)}`,
+    d.slice(8, 12) && `/${d.slice(8, 12)}`,
+    d.slice(12) && `-${d.slice(12)}`,
+  ].join("");
+}
+export function digitandoCpf(v: string): string {
+  const d = soDigitos(v).slice(0, 11);
+  return [
+    d.slice(0, 3),
+    d.slice(3, 6) && `.${d.slice(3, 6)}`,
+    d.slice(6, 9) && `.${d.slice(6, 9)}`,
+    d.slice(9) && `-${d.slice(9)}`,
+  ].join("");
+}
+
 export const formatarCep = (v: string) => soDigitos(v).replace(/^(\d{5})(\d{3})$/, "$1-$2");
 
 /** CPF mascarado: só os dígitos do meio aparecem (ex.: ***.456.789-**). */

@@ -6,7 +6,7 @@ import { gerarDocumentoDoTemplateAcao } from "@/app/acoes/templates";
 import { Aviso, estiloTabela } from "@/components/ui/basicos";
 import { baixarBase64 } from "@/components/ui/baixar";
 
-type Opcao = { id: string; nome: string };
+type Opcao = { id: string; nome: string; tipo?: string };
 type Template = { codigo: string; alvo: "negocio" | "contrato"; campos: string[] };
 
 const TIPO_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -116,7 +116,12 @@ export function ListaDeTemplates({
                 <LinhaDoTemplate
                   key={x.codigo}
                   template={x}
-                  opcoes={alvo === "negocio" ? negocios : contratos}
+                  opcoes={
+                    alvo === "negocio"
+                      ? negocios
+                      : // Mandato de venda: só contratos de mandato (advisor); carta de honorários: só os de honorários.
+                        contratos.filter((c) => !c.tipo || c.tipo === x.codigo || c.tipo === "outro")
+                  }
                 />
               )),
           ])}

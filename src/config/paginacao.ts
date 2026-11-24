@@ -28,10 +28,12 @@ export function lerPedido<O extends string>(
   ordens: readonly O[],
   ordemPadrao: O,
   direcaoPadrao: Direcao = "asc",
+  /** Tamanho padrão da página desta lista (telas pesadas usam 10). */
+  porPaginaPadrao: number = TAMANHO_PADRAO,
 ): PedidoDePagina<O> {
   const pagina = Math.max(1, Math.floor(Number(um(parametros.pagina)) || 1));
   const tamanho = Number(um(parametros.porPagina));
-  const porPagina = (TAMANHOS_DE_PAGINA as readonly number[]).includes(tamanho) ? tamanho : TAMANHO_PADRAO;
+  const porPagina = (TAMANHOS_DE_PAGINA as readonly number[]).includes(tamanho) ? tamanho : porPaginaPadrao;
   const pedida = um(parametros.ordem) as O | undefined;
   const ordem = pedida && ordens.includes(pedida) ? pedida : ordemPadrao;
   const dir = um(parametros.direcao);

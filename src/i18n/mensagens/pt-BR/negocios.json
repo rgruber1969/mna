@@ -102,7 +102,7 @@
       "etapaComParalelas": "Etapa: {etapa} (+{n} em paralelo)",
       "abaDocumentos": "Documentos",
       "abaTarefas": "Tarefas",
-      "abaPessoas": "Pessoas",
+      "abaPessoas": "Empresas e pessoas",
       "abaAtividade": "Atividade",
       "abaCompradoras": "Compradoras e ofertas",
       "grupoNegocio": "Negócio",
@@ -380,7 +380,7 @@
         "documentos": "Documentos",
         "historico": "Histórico",
         "mensagens": "Mensagens",
-        "pessoas": "Pessoas e empresas",
+        "pessoas": "Empresas e pessoas",
         "atividade": "Atividade"
       },
       "resumo": {

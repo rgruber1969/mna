@@ -120,7 +120,7 @@
       "observacao": "Observação do solicitante",
       "resposta": "Resposta",
       "ondeObter": "Onde obter",
-      "fonte": "Fonte de documentos",
+      "fonte": "Fontes de documentos",
       "fonteNenhuma": "Escolher no catálogo…",
       "fonteGratuita": "gratuito",
       "fontePaga": "pago",
@@ -226,7 +226,7 @@
       "documentosAnteriores": "No pedido anterior, atendido por: {documentos}"
     },
     "fontes": {
-      "titulo": "Fonte de documentos",
+      "titulo": "Fontes de documentos",
       "texto": "Catálogo de documentos comuns em M&A (sobretudo certidões) com o órgão emissor e o link oficial, para ajudar quem responde os pedidos. Links oficiais mudam: confira de vez em quando.",
       "nome": "Documento",
       "orgao": "Órgão emissor",

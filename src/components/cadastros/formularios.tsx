@@ -17,7 +17,15 @@ import {
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { PainelDeAba, SoNasAbas, useAbas } from "@/components/ui/abas";
 import { Aviso, Botao } from "@/components/ui/basicos";
-import { cepValido, cnpjValido, formatarCep, formatarCnpj, soDigitos } from "@/config/documentos";
+import {
+  cepValido,
+  cnpjValido,
+  formatarCep,
+  formatarCnpj,
+  soDigitos,
+  digitandoCnpj,
+  digitandoCpf,
+} from "@/config/documentos";
 
 type Valores = Record<string, string>;
 
@@ -229,8 +237,9 @@ export function FormEmpresa({
                   name="cnpj"
                   aria-label={t("cnpj")}
                   value={valores.cnpj ?? ""}
-                  onChange={(e) => mudar("cnpj", e.target.value)}
+                  onChange={(e) => mudar("cnpj", digitandoCnpj(e.target.value))}
                   inputMode="numeric"
+                  maxLength={18}
                   className={estiloCampo}
                 />
                 <button
@@ -454,8 +463,10 @@ function CampoSensivel({
         rotulo={t(`sensiveis.${campo}`)}
         nome={campo}
         valores={valores}
-        mudar={mudar}
+        mudar={campo === "cpf" || campo === "conjugeCpf" ? (n, v) => mudar(n, digitandoCpf(v)) : mudar}
         className="mb-0"
+        inputMode={campo === "cpf" || campo === "conjugeCpf" ? "numeric" : undefined}
+        maxLength={campo === "cpf" || campo === "conjugeCpf" ? 14 : undefined}
         placeholder={mascarado ? t("atual", { valor: mascarado }) : ""}
         autoComplete="off"
         ajuda={mascarado ? t("manterAtual") : t("criptografadoAoSalvar")}

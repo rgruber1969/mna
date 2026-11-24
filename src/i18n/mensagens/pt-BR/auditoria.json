@@ -42,7 +42,7 @@
       "auditoria": "Auditoria",
       "chave_api": "Chaves de API",
       "conta": "Conta",
-      "fonte_de_documento": "Fonte de documentos"
+      "fonte_de_documento": "Fontes de documentos"
     },
     "tipos": {
       "negocio_exportado": "Negócio exportado (PDF)",
@@ -68,9 +68,9 @@
       "perfil_criado": "Perfil criado",
       "perfil_editado": "Perfil editado",
       "perfil_excluido": "Perfil excluído",
-      "cadastro_fonte_criada": "Documento incluído na Fonte de documentos",
-      "cadastro_fonte_editada": "Documento da Fonte de documentos alterado",
-      "cadastro_fonte_excluida": "Documento excluído da Fonte de documentos",
+      "cadastro_fonte_criada": "Documento incluído na Fontes de documentos",
+      "cadastro_fonte_editada": "Documento da Fontes de documentos alterado",
+      "cadastro_fonte_excluida": "Documento excluído da Fontes de documentos",
       "cadastro_prioridades_definidas": "Prioridades dos pedidos alteradas"
     },
     "limpeza": {
