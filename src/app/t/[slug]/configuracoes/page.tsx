@@ -9,6 +9,8 @@ import { listarPapeis, listarTiposDeVinculo, perfisDeDeal } from "@/server/servi
 import { listarEtapasPadrao } from "@/server/services/etapas";
 import { listarCategorias } from "@/server/services/documentos";
 import { listarTiposDeOperacao } from "@/server/services/negocios";
+import { listarFontes, obterPrioridades } from "@/server/services/pedidos";
+import { FormPrioridades, TabelaDeFontes } from "@/components/pedidos/configuracoes";
 import {
   hojeEmSaoPaulo,
   obterDiasDeAviso,
@@ -47,19 +49,33 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     pode(acesso, "cadastros", "editar"),
     pode(acesso, "cadastros", "excluir"),
   ]);
-  const [dias, papeis, perfis, vinculos, operacoes, etapas, categorias, diasTarefa, horasResumo, diasPrazo] =
-    await Promise.all([
-      acesso.administrador ? obterDiasDeAviso(acesso) : null,
-      verCadastros ? listarPapeis(acesso) : [],
-      verCadastros ? perfisDeDeal(acesso) : [],
-      verCadastros ? listarTiposDeVinculo(acesso) : [],
-      verCadastros ? listarTiposDeOperacao(acesso) : [],
-      verCadastros ? listarEtapasPadrao(acesso) : [],
-      verCadastros ? listarCategorias(acesso) : [],
-      acesso.administrador ? obterDiasDeLembreteDeTarefa(acesso) : [],
-      acesso.administrador ? obterHorasDoResumo(acesso) : 1,
-      acesso.administrador ? obterDiasDeAvisoDoPrazo(acesso) : 7,
-    ]);
+  const [
+    dias,
+    papeis,
+    perfis,
+    vinculos,
+    operacoes,
+    etapas,
+    categorias,
+    diasTarefa,
+    horasResumo,
+    diasPrazo,
+    fontes,
+    prioridades,
+  ] = await Promise.all([
+    acesso.administrador ? obterDiasDeAviso(acesso) : null,
+    verCadastros ? listarPapeis(acesso) : [],
+    verCadastros ? perfisDeDeal(acesso) : [],
+    verCadastros ? listarTiposDeVinculo(acesso) : [],
+    verCadastros ? listarTiposDeOperacao(acesso) : [],
+    verCadastros ? listarEtapasPadrao(acesso) : [],
+    verCadastros ? listarCategorias(acesso) : [],
+    acesso.administrador ? obterDiasDeLembreteDeTarefa(acesso) : [],
+    acesso.administrador ? obterHorasDoResumo(acesso) : 1,
+    acesso.administrador ? obterDiasDeAvisoDoPrazo(acesso) : 7,
+    verCadastros ? listarFontes(acesso) : [],
+    verCadastros ? obterPrioridades(acesso) : [],
+  ]);
   // Abas verticais em dois grupos (assunto), em ordem alfabética dentro de cada grupo.
   const porNome = (x: { rotulo: string }, y: { rotulo: string }) => x.rotulo.localeCompare(y.rotulo, "pt-BR");
   const doTenant = acesso.administrador
@@ -78,6 +94,8 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
         { id: "operacoes", rotulo: t("abaOperacoes") },
         { id: "etapas", rotulo: t("abaEtapas") },
         { id: "categorias", rotulo: t("abaCategorias") },
+        { id: "fontes", rotulo: t("abaFontes") },
+        { id: "prioridades", rotulo: t("abaPrioridades") },
       ].sort(porNome)
     : [];
   const abas = [
@@ -118,6 +136,12 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                 </PainelDeAba>
                 <PainelDeAba id="etapas">
                   <TabelaDeEtapas etapas={etapas} {...permissoes} />
+                </PainelDeAba>
+                <PainelDeAba id="fontes">
+                  <TabelaDeFontes fontes={fontes} {...permissoes} />
+                </PainelDeAba>
+                <PainelDeAba id="prioridades">
+                  <FormPrioridades prioridades={prioridades} podeEditar={podeEditar} />
                 </PainelDeAba>
                 <PainelDeAba id="categorias">
                   <TabelaDeTipos

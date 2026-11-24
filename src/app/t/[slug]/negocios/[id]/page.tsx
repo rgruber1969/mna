@@ -46,6 +46,8 @@ import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
 import { TabelaDeContratos } from "@/components/contratos/detalhe";
 import { ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
+import { obterPedido, pedidosDoNegocio } from "@/server/services/pedidos";
+import { AbaDePedidos } from "@/components/pedidos/aba";
 import { Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
@@ -69,8 +71,10 @@ async function Painel({
   aba,
   etapa,
   conversa,
+  pedido,
 }: {
   id: Promise<string>;
+  pedido: Promise<string | undefined>;
   aba: Promise<string | undefined>;
   etapa: Promise<string | undefined>;
   conversa: Promise<{ alvo?: string; canal?: string }>;
@@ -100,7 +104,7 @@ async function Painel({
   const [
     [tipos, opcoesEmp, opcoesPart, andamento],
     [funil, totalMsg, contratos, opcoesContrato, tc],
-    [ofertas, opcoesOferta, to],
+    [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd],
     [etapas, alcances, dataRoom, tarefas],
   ] = await Promise.all([
     Promise.all([
@@ -116,7 +120,14 @@ async function Painel({
       opcoesDoContrato(acesso, n.id),
       getTranslations("contratos"),
     ]),
-    Promise.all([ofertasDoNegocio(acesso, n.id), opcoesDaOferta(acesso, n.id), getTranslations("ofertas")]),
+    Promise.all([
+      ofertasDoNegocio(acesso, n.id),
+      opcoesDaOferta(acesso, n.id),
+      getTranslations("ofertas"),
+      pedidosDoNegocio(acesso, n.id),
+      pedido.then((p) => (p ? obterPedido(acesso, p) : null)),
+      getTranslations("pedidos"),
+    ]),
     Promise.all([
       etapasDoNegocio(acesso, n.id),
       n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
@@ -199,6 +210,7 @@ async function Painel({
                     : tm("abaComTotal", { total: totalMsg?.total ?? 0 }),
               },
               ...(ofertas ? [{ id: "ofertas", rotulo: `${to("titulo")} (${ofertas.ofertas.length})` }] : []),
+              ...(pedidos ? [{ id: "pedidos", rotulo: `${tpd("aba")} (${pedidos.pedidos.length})` }] : []),
               ...(mostraContratos
                 ? [{ id: "contratos", rotulo: `${tc("titulo")} (${contratos.length})` }]
                 : []),
@@ -369,6 +381,15 @@ async function Painel({
                 <AbaDeOfertas dealId={n.id} dados={ofertas} opcoes={opcoesOferta} />
               </PainelDeAba>
             )}
+            {pedidos && (
+              <PainelDeAba id="pedidos">
+                <AbaDePedidos
+                  dealId={n.id}
+                  dados={pedidos}
+                  detalhe={pedidoAberto && pedidoAberto.dealId === n.id ? pedidoAberto : null}
+                />
+              </PainelDeAba>
+            )}
             {mostraContratos && (
               <PainelDeAba id="contratos">
                 {opcoesContrato.podeCriar && (
@@ -421,6 +442,7 @@ export default function Page({ params, searchParams }: PageProps<"/t/[slug]/nego
         id={params.then((p) => p.id)}
         aba={searchParams.then((q) => (typeof q.aba === "string" ? q.aba : undefined))}
         etapa={searchParams.then((q) => (typeof q.etapa === "string" ? q.etapa : undefined))}
+        pedido={searchParams.then((q) => (typeof q.pedido === "string" ? q.pedido : undefined))}
         conversa={searchParams.then((q) => ({
           alvo: typeof q.conversa === "string" ? q.conversa : undefined,
           canal: typeof q.canal === "string" ? q.canal : undefined,

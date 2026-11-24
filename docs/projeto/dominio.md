@@ -812,6 +812,46 @@ Etapas padrão:
   confidencialidade a decidir; ver `pendencias.md`). A troca é feita no
   módulo de resumo, sem mudar as telas.
 
+### Pedidos de documentos (construído em 2026-11-23)
+
+Aba **Pedidos** no negócio, sem recortes da proposta acima:
+
+* **Pedido:** número no negócio, título, compradora (ou nenhuma = pedido
+  interno do lado vendedor), empresa e pessoas do solicitante, data,
+  data-base, períodos de revisão, amostragem e descrição. Rodada 1 "Lista
+  inicial" criada junto; outras rodadas a qualquer momento.
+* **Item:** assunto (livre, com sugestões), código, grupo, subgrupo,
+  prioridade (escala do tenant em Configurações › Prioridades dos pedidos),
+  descrição, formato, tipo (documento ou pergunta), data do pedido,
+  observação do solicitante; resposta, onde obter (com o catálogo),
+  responsável do lado vendedor, departamento e data de entrega (preenchida
+  sozinha na primeira vez que o item fica entregue ou aprovado).
+* **Situação por período** (ou única, sem períodos); a situação geral é
+  derivada: não aplicável se todos forem; aprovado se todos os aplicáveis;
+  entregue se todos entregues ou aprovados; em análise se nada pendente e
+  algo em análise; parcial se algo andou; senão pendente. **Dias em
+  aberto** = do pedido à entrega (ou hoje).
+* **Data room:** cada item liga documentos (só os que a pessoa vê).
+* **Conversa por item** na mensageria (alvo "item de pedido", com os canais
+  de cada lado).
+* **Painel** situação × assunto, com a parte atendida.
+* **Importar planilha** (XLSX): cada aba vira assunto; o cabeçalho é achado
+  sozinho; colunas de ano ou "Data-base" viram períodos; aba sem cabeçalho
+  de itens é ignorada; linha só com código vira o grupo dos itens
+  seguintes; itens já existentes (mesmo assunto e código) não se repetem;
+  primeiro se confere, depois se importa (rodada existente ou nova).
+* **Exportar** a lista respondida no formato do solicitante: as colunas
+  dele (com situação, resposta, entrega e períodos atualizados) e as
+  nossas no fim, mais a aba "Painel". Auditado.
+* **Rediligência:** novo pedido a partir de um pedido de outro negócio da
+  mesma vendedora (lado vendedor): copia itens e respostas; situações
+  voltam a pendente; a resposta registra os documentos que atendiam o item
+  antes (os arquivos ficam no outro negócio e precisam ser enviados de novo).
+* **Catálogo "onde obter"** em Configurações (padrão com 15 certidões e
+  documentos comuns, links oficiais a conferir de vez em quando).
+* API: `/v1/negocios/{id}/pedidos`, `/v1/pedidos/{id}`, inclusão de item e
+  mudança de situação.
+
 ## Pendências de domínio
 
 * Gatilhos de tarefas automáticas (a informar).

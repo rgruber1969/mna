@@ -14,7 +14,8 @@ export function EstadoVazio({
   titulo: string;
   texto?: string;
   acao?: { href: string; rotulo: string };
-  limpar?: { href: string; rotulo: string };
+  /** Link (filtros no endereço) ou clique (filtros na tela). */
+  limpar?: { href: string; rotulo: string } | { onClick: () => void; rotulo: string };
 }) {
   return (
     <div className="border-border flex flex-col items-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center">
@@ -29,11 +30,16 @@ export function EstadoVazio({
             + {acao.rotulo}
           </Link>
         )}
-        {limpar && (
-          <Link href={limpar.href} className="text-primary text-sm font-semibold">
-            {limpar.rotulo}
-          </Link>
-        )}
+        {limpar &&
+          ("href" in limpar ? (
+            <Link href={limpar.href} className="text-primary text-sm font-semibold">
+              {limpar.rotulo}
+            </Link>
+          ) : (
+            <button type="button" onClick={limpar.onClick} className="text-primary text-sm font-semibold">
+              {limpar.rotulo}
+            </button>
+          ))}
       </span>
     </div>
   );

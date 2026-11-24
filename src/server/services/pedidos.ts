@@ -1033,7 +1033,9 @@ export async function importarPlanilhaDoPedido(
         if (s) situacoes[p] = s;
       }
       const geral = lerSituacao(valor(linha, "situacao"));
-      if (geral && Object.keys(periodos).length === 0) situacoes[SEM_PERIODO] = geral;
+      // Aba sem colunas de período: a situação geral vale para todos os períodos do pedido.
+      if (geral && Object.keys(periodos).length === 0)
+        for (const p of periodosDoPedido.length ? periodosDoPedido : [SEM_PERIODO]) situacoes[p] = geral;
       novos.push({
         assunto,
         codigo: codigo.slice(0, 40) || null,
@@ -1367,7 +1369,10 @@ export async function listarFontes(acesso: Acesso | null): Promise<FonteNaTela[]
         observacao: fonteDeDocumento.observacao,
       })
       .from(fonteDeDocumento)
-      .orderBy(asc(fonteDeDocumento.abrangencia), asc(fonteDeDocumento.nome)),
+      .orderBy(
+        sql`case ${fonteDeDocumento.abrangencia} when 'federal' then 1 when 'estadual' then 2 else 3 end`,
+        asc(fonteDeDocumento.nome),
+      ),
   );
 }
 

@@ -25,6 +25,14 @@ import {
   linkDoArquivoDaOferta,
   ofertasDoNegocio,
 } from "@/server/services/ofertas";
+import {
+  criarPedido,
+  definirSituacaoDoItem,
+  obterPedido,
+  pedidosDoNegocio,
+  salvarItem,
+} from "@/server/services/pedidos";
+import { SITUACOES_DO_ITEM } from "@/config/pedidos";
 
 /**
  * API REST v1 (itens 25 e 26; ADR-0004, ADR-0013). Autenticação por chave de
@@ -588,5 +596,118 @@ export function registrarRotasV1(api: OpenAPIHono) {
       responses: respostas("Link"),
     }),
     (c) => comAcesso(c, (a) => linkDoArquivoDaOferta(a, c.req.valid("param").id)) as never,
+  );
+
+  // --- Pedidos de documentos (D4) ----------------------------------------------------------------
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/negocios/{id}/pedidos",
+      tags: ["Pedidos de documentos"],
+      summary: "Pedidos de documentos que a chave vê no negócio, com os totais por situação",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Pedidos"),
+    }),
+    (c) => comAcesso(c, (a) => pedidosDoNegocio(a, c.req.valid("param").id)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/negocios/{id}/pedidos",
+      tags: ["Pedidos de documentos"],
+      summary: "Cria um pedido de documentos (períodos separados por vírgula)",
+      security: seguranca,
+      request: {
+        params: Id,
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                titulo: z.string().max(160),
+                data: DataApi,
+                compradoraId: z.uuid().optional(),
+                solicitanteId: z.uuid().optional(),
+                solicitantePessoas: z.string().max(500).optional(),
+                dataBase: DataApi.optional(),
+                periodos: z.string().max(300).optional(),
+                amostragem: z.string().max(300).optional(),
+                descricao: z.string().max(2000).optional(),
+              }),
+            },
+          },
+        },
+      },
+      responses: respostas("Pedido criado"),
+    }),
+    (c) => comAcesso(c, (a) => criarPedido(a, c.req.valid("param").id, c.req.valid("json"))) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/pedidos/{id}",
+      tags: ["Pedidos de documentos"],
+      summary: "Pedido com rodadas, itens (situação por período, documentos que a chave vê) e painel",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Pedido"),
+    }),
+    (c) => comAcesso(c, (a) => obterPedido(a, c.req.valid("param").id)) as never,
+  );
+  const ItemApi = z.object({
+    rodadaId: z.uuid(),
+    assunto: z.string().max(80),
+    codigo: z.string().max(40).optional(),
+    grupo: z.string().max(160).optional(),
+    subgrupo: z.string().max(160).optional(),
+    prioridade: z.string().max(40).optional(),
+    descricao: z.string().max(4000),
+    formato: z.string().max(80).optional(),
+    tipo: z.enum(["documento", "pergunta"]).optional(),
+    dataPedido: DataApi,
+    dataEntrega: DataApi.optional(),
+    departamento: z.string().max(120).optional(),
+    responsavelId: z.uuid().optional(),
+    observacaoSolicitante: z.string().max(4000).optional(),
+    resposta: z.string().max(4000).optional(),
+    ondeObter: z.string().max(1000).optional(),
+    situacoes: z.record(z.string().max(30), z.enum(SITUACOES_DO_ITEM)).optional(),
+  });
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/pedidos/{id}/itens",
+      tags: ["Pedidos de documentos"],
+      summary: "Inclui um item no pedido",
+      security: seguranca,
+      request: { params: Id, body: { content: { "application/json": { schema: ItemApi } } } },
+      responses: respostas("Item incluído"),
+    }),
+    (c) => comAcesso(c, (a) => salvarItem(a, c.req.valid("param").id, null, c.req.valid("json"))) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/pedidos/itens/{id}/situacao",
+      tags: ["Pedidos de documentos"],
+      summary: "Muda a situação de um período do item (periodo vazio quando o pedido não tem períodos)",
+      security: seguranca,
+      request: {
+        params: Id,
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({ periodo: z.string().max(30), situacao: z.enum(SITUACOES_DO_ITEM) }),
+            },
+          },
+        },
+      },
+      responses: respostas("Situação alterada"),
+    }),
+    (c) =>
+      comAcesso(c, (a) => {
+        const { periodo, situacao } = c.req.valid("json");
+        return definirSituacaoDoItem(a, c.req.valid("param").id, periodo, situacao);
+      }) as never,
   );
 }

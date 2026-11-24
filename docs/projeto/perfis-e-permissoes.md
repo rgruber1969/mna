@@ -175,6 +175,15 @@ tipos de vínculo entre pessoa e empresa.
 (lista de acesso); vale também para contratos, e-book e ofertas. "C" é
 enviar documento ou nova versão.
 
+* **Pedidos de documentos** (recurso de deal, 2026-11-23): ver, criar,
+  editar, excluir e baixar (exportar a planilha respondida). Padrão:
+  Coordenador V C E X B; Advogado, Advisor, Contador e Auditor V C E B;
+  Representante V E B; Somente leitura V. Do lado comprador, só os pedidos
+  da própria compradora; pedido interno (sem compradora) só o lado
+  vendedor. Perfis padrão de tenants antigos recebem o recurso novo ao
+  rodar `pnpm tenants:completar-padrao` (recurso que o tenant já ajustou
+  fica como está).
+
 * **Etapas: "Alterar (lado comprador)"** (2026-11-19): do lado comprador,
   criar, editar, mover ou excluir etapas exige também esta permissão,
   desmarcada por padrão em todos os perfis (o tenant marca em Perfis, se

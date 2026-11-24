@@ -532,6 +532,8 @@
           "prazo": "5 dias"
         }
       }
-    }
+    },
+    "abaFontes": "Onde obter documentos",
+    "abaPrioridades": "Prioridades dos pedidos"
   }
 }

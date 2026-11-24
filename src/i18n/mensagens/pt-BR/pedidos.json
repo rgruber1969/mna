@@ -62,7 +62,8 @@
       "nomeDaRodada": "Nome da rodada",
       "nomeDaRodadaExemplo": "Ex.: Complementar 1",
       "dataDaRodada": "Data",
-      "criarRodada": "Criar rodada"
+      "criarRodada": "Criar rodada",
+      "fechar": "Fechar"
     },
     "filtros": {
       "busca": "Buscar",
@@ -136,7 +137,8 @@
       "salvar": "Salvar item",
       "salvando": "Salvando…",
       "excluir": "Excluir item",
-      "confirmarExcluir": "Excluir este item do pedido?"
+      "confirmarExcluir": "Excluir este item do pedido?",
+      "conversa": "Conversa"
     },
     "painel": {
       "assunto": "Assunto",
@@ -180,7 +182,9 @@
         "resposta": "resposta",
         "ondeObter": "onde obter",
         "situacao": "situação"
-      }
+      },
+      "fechar": "Fechar",
+      "cancelar": "Cancelar"
     },
     "situacoes": {
       "pendente": "Pendente",

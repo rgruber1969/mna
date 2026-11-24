@@ -1765,6 +1765,16 @@ describe("API: contratos e ofertas", () => {
     const contratos = await chamar(`/v1/contratos?negocio=${negocioId}`);
     expect(contratos.status).toBe(200);
     expect(Array.isArray(((await contratos.json()) as { contratos: unknown[] }).contratos)).toBe(true);
+    const pedidos = await chamar(`/v1/negocios/${negocioId}/pedidos`);
+    expect(pedidos.status).toBe(200);
+    const novoPedido = await chamar(`/v1/negocios/${negocioId}/pedidos`, {
+      titulo: "Pela API",
+      data: "2026-11-22",
+    });
+    expect(novoPedido.status).toBe(200);
+    const { id: pedidoId } = (await novoPedido.json()) as { id: string };
+    const detalhe = await chamar(`/v1/pedidos/${pedidoId}`);
+    expect(((await detalhe.json()) as { titulo: string }).titulo).toBe("Pela API");
   });
 });
 
