@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { alterarSituacaoNoFunilAcao } from "@/app/acoes/negocios";
 import { totalNominal } from "@/config/ofertas";
-import { Aviso } from "@/components/ui/basicos";
+import { Ajuda, Aviso } from "@/components/ui/basicos";
 import { Gaveta } from "@/components/ui/gaveta";
 import { COMPLETOS, NovaVersao, TEASERS, Versao } from "@/components/ebook/aba";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
@@ -62,6 +62,31 @@ function Icone({ coluna }: { coluna: Coluna | "preparacao" }) {
         <path d={DESENHOS[coluna]} />
       </svg>
     </span>
+  );
+}
+
+/** Ícones pequenos dos materiais: e-book (livro) e OnePager (folha). */
+function IconeDoMaterial({ material }: { material: string }) {
+  const livro = material.startsWith("ebook");
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-primary h-4 w-4 shrink-0"
+      aria-hidden="true"
+    >
+      <path
+        d={
+          livro
+            ? "M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 7h6"
+            : "M6 3h9l4 4v14H6zM15 3v4h4M9 12h7M9 16h5"
+        }
+      />
+    </svg>
   );
 }
 
@@ -346,7 +371,6 @@ export function FunilDeCompradoras({
 
   return (
     <div>
-      <p className="text-muted mb-3 text-sm">{podeEditar ? ta("funilExplicacao") : ta("funilSoLeitura")}</p>
       {erro && <Aviso>{erro}</Aviso>}
       {escolhida && (
         <div
@@ -406,6 +430,7 @@ export function FunilDeCompradoras({
                 <h3 className="flex items-center gap-2">
                   <Icone coluna="preparacao" />
                   <span className="text-text min-w-0 truncate text-sm font-semibold">{t("preparacao")}</span>
+                  <Ajuda texto={t("preparacaoDica")} />
 
                   <button
                     type="button"
@@ -417,12 +442,6 @@ export function FunilDeCompradoras({
                     ◂
                   </button>
                 </h3>
-                <p className="text-muted mt-1 text-[11px]">
-                  <span className="mr-1 rounded-full border border-dashed px-1.5 text-[10px] font-semibold uppercase">
-                    {t("opcional")}
-                  </span>
-                  {t("preparacaoDica")}
-                </p>
               </header>
               <ul className="flex flex-col gap-2">
                 {TEASERS.map((material) => {
@@ -435,13 +454,14 @@ export function FunilDeCompradoras({
                         onClick={() => setGaveta({ tipo: "teasers" })}
                         className="border-border bg-background hover:border-primary w-full rounded-lg border p-3 text-left text-xs"
                       >
-                        <span className="text-text block text-sm font-semibold">
+                        <span className="text-text flex items-center gap-1.5 text-sm font-semibold">
+                          <IconeDoMaterial material={material} />
                           {te(`materiais.${material}`)}
                         </span>
                         <span className="text-muted">
                           {ultima
                             ? `${te("versao", { numero: ultima.numero })} · ${te(`situacoes.${ultima.situacao}`)}`
-                            : te("nenhumaVersao")}
+                            : t("ausente")}
                         </span>
                       </button>
                     </li>
@@ -606,9 +626,12 @@ export function FunilDeCompradoras({
               const m = ebook.materiais.find((x) => x.material === material);
               return (
                 <section key={material}>
-                  <h3 className="text-text text-sm font-semibold">{te(`materiais.${material}`)}</h3>
+                  <h3 className="text-text flex items-center gap-1.5 text-sm font-semibold">
+                    <IconeDoMaterial material={material} />
+                    {te(`materiais.${material}`)}
+                  </h3>
                   {!m || m.versoes.length === 0 ? (
-                    <p className="text-muted mt-1 text-sm">{te("nenhumaVersao")}</p>
+                    <p className="text-muted mt-1 text-sm">{t("ausente")}</p>
                   ) : (
                     <ul className="divide-border divide-y">
                       {m.versoes.map((v) => (

@@ -59,7 +59,7 @@ import { Alternador } from "@/components/ui/alternador";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
 import { obterPedido, pedidosDoNegocio } from "@/server/services/pedidos";
 import { AbaDePedidos } from "@/components/pedidos/aba";
-import { Cartao, Titulo } from "@/components/ui/basicos";
+import { Ajuda, Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Abas antigas (links já enviados, e-mails, avisos) → aba nova que as reúne. */
 const ABA_ANTIGA: Record<string, string> = {
@@ -472,7 +472,10 @@ async function Painel({
                   {funil && (
                     <section>
                       <h3 className="text-text mb-3 text-base font-semibold">
-                        {`${t("abaFunil")} (${funil.cartoes.length})`}
+                        <span className="inline-flex items-center gap-1.5">
+                          {`${t("abaFunil")} (${funil.cartoes.length})`}
+                          <Ajuda texto={tt(funil.podeEditar ? "funilExplicacao" : "funilSoLeitura")} />
+                        </span>
                       </h3>
                       <FunilDeCompradoras
                         dealId={n.id}

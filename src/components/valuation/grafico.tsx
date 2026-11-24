@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { METODOS, type Metodo } from "@/config/valuation";
+import { Ajuda } from "@/components/ui/basicos";
 import { milhoes } from "./formato";
 
 /**
@@ -13,7 +14,9 @@ export function GraficoDoValuation({
   ponderado,
   faixa,
   ofertas,
+  semOfertas = false,
 }: {
+  semOfertas?: boolean;
   valores: Record<Metodo, number>;
   ponderado: number;
   faixa: { minimo: number; maximo: number };
@@ -35,8 +38,14 @@ export function GraficoDoValuation({
   const base = TOPO + linhas * LINHA;
   return (
     <figure className="m-0">
-      <figcaption className="text-text mb-1 text-sm font-semibold">{t("painel.grafico")}</figcaption>
-      <p className="text-muted mb-2 text-xs">{t("painel.graficoDescricao")}</p>
+      <figcaption className="mb-1 flex justify-end">
+        <span className="sr-only">{t("painel.grafico")}</span>
+        <Ajuda
+          texto={[t("painel.grafico"), t("painel.graficoDescricao"), semOfertas ? t("painel.semOfertas") : ""]
+            .filter(Boolean)
+            .join("\n\n")}
+        />
+      </figcaption>
       <svg viewBox={`0 0 ${L} ${A}`} className="h-auto w-full" role="img" aria-label={t("painel.grafico")}>
         {/* Faixa esperada (mínimo–máximo), atrás de tudo. */}
         <rect

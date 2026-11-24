@@ -501,7 +501,7 @@
     "funilQuadro": {
       "preparacao": "Preparação",
       "opcional": "opcional",
-      "preparacaoDica": "Materiais de apresentação do negócio (não são compradoras). Clique para ver, revisar e liberar.",
+      "preparacaoDica": "Opcional. Materiais de apresentação do negócio (não são compradoras). Clique para ver, revisar e liberar. Pode ser recolhida (pular).",
       "recolherPreparacao": "Recolher a Preparação (pular)",
       "mostrarPreparacao": "Mostrar a Preparação",
       "teasers": "Teasers ({n})",
@@ -529,7 +529,8 @@
       "rodada": "Rodada {n}",
       "escolhidaOferta": "escolhida",
       "abrirOfertas": "Abrir as ofertas",
-      "historico": "Histórico no funil"
+      "historico": "Histórico no funil",
+      "ausente": "Ausente"
     }
   },
   "painel": {

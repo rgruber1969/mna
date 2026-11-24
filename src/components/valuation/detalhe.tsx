@@ -6,7 +6,7 @@ import {
   type DadosDoValuation,
   type ResultadoDoValuation,
 } from "@/config/valuation";
-import { estiloTabela } from "@/components/ui/basicos";
+import { Ajuda, estiloTabela } from "@/components/ui/basicos";
 import type { TelaDoValuation } from "@/server/services/valuation";
 import { br, milhoes, pct, reais } from "./formato";
 import { GraficoDoValuation } from "./grafico";
@@ -30,12 +30,14 @@ function Tabela({ cabecalho, children }: { cabecalho: React.ReactNode; children:
   );
 }
 
-function Numero({ rotulo, valor, detalhe }: { rotulo: string; valor: string; detalhe?: string }) {
+function Numero({ rotulo, valor, ajuda }: { rotulo: string; valor: string; ajuda?: string }) {
   return (
     <div className="border-border rounded-lg border p-3">
-      <p className="text-muted text-xs">{rotulo}</p>
+      <p className="text-muted flex items-center gap-1 text-xs">
+        {rotulo}
+        {ajuda && <Ajuda texto={ajuda} />}
+      </p>
       <p className="text-text text-xl font-semibold tabular-nums">{valor}</p>
-      {detalhe && <p className="text-muted mt-1 text-xs">{detalhe}</p>}
     </div>
   );
 }
@@ -56,7 +58,7 @@ export function PainelDoValuation({
             minimo: milhoes(dados.faixa.minimo),
             maximo: milhoes(dados.faixa.maximo),
           })}
-          detalhe={t("painel.faixaExplicacao")}
+          ajuda={t("painel.faixaExplicacao")}
         />
         <Numero
           rotulo={t("painel.cenarios")}
@@ -75,8 +77,8 @@ export function PainelDoValuation({
           rotulo: `${o.compradora} (${t("comparacao.rodada")} ${o.rodada})`,
           total: o.total,
         }))}
+        semOfertas={!comparacao}
       />
-      {!comparacao && <p className="text-muted text-xs">{t("painel.semOfertas")}</p>}
     </div>
   );
 }
