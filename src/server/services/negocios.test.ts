@@ -1953,3 +1953,74 @@ describe("pedidos de documentos", () => {
     });
   });
 });
+
+describe("oferta escolhida e condições da oferta", () => {
+  it("parcelas em meses após o closing, escolha da oferta, condições ajustáveis e original congelada", async () => {
+    const { somarMeses, vencimento } = await import("@/config/ofertas");
+    expect(somarMeses("2027-01-31", 1)).toBe("2027-02-28");
+    expect(vencimento({ data: "", meses: 12 }, "2027-06-06")).toBe("2028-06-06");
+    // Valor presente no closing: 1.100 em 12 meses a 10% a.a. vale ~1.000.
+    expect(
+      Math.round(
+        valorPresente(
+          {
+            data: "2026-01-01",
+            enterpriseValue: null,
+            equityValue: null,
+            parcelaVista: "0",
+            parcelas: [{ valor: "1100", data: "", meses: 12 }],
+            earnoutValor: null,
+          },
+          10,
+          "2027-01-01",
+        ),
+      ),
+    ).toBe(1000);
+    const { aceitarOferta, condicoesDaOferta, salvarCondicoesDaOferta } = await import("./ofertas");
+    const g = acesso("gestor");
+    expect(
+      await criarOferta(g, negocioId, {
+        compradoraId: compradoraA,
+        data: "2026-11-23",
+        instrumento: "loi",
+        parcelas: [{ valor: "1000", data: "" }],
+      }),
+    ).toMatchObject({ erro: "ofertas.erros.parcelaIncompleta" });
+    const r = await criarOferta(g, negocioId, {
+      compradoraId: compradoraA,
+      data: "2026-11-23",
+      instrumento: "loi",
+      parcelaVista: "5.000.000",
+      parcelas: [
+        { valor: "1.000.000", data: "", meses: 12 },
+        { valor: "1.000.000", data: "2028-12-31" },
+      ],
+      perfis: [await perfilDeDeal("advogado")],
+    });
+    if (!("id" in r)) throw new Error(r.erro);
+    // Só o lado vendedor com "Ofertas × editar" escolhe.
+    expect(await aceitarOferta(acesso("adva"), r.id)).toMatchObject({ erro: expect.any(String) });
+    expect(await aceitarOferta(g, r.id)).toMatchObject({ ok: true });
+    const c = await condicoesDaOferta(g, negocioId);
+    expect(c?.condicoes.parcelas.map((p) => ({ ...p, valor: Number(p.valor) }))).toEqual([
+      { valor: 1000000, data: "", meses: 12 },
+      { valor: 1000000, data: "2028-12-31" },
+    ]);
+    expect(c?.alterada).toBe(false);
+    expect(await condicoesDaOferta(acesso("compb2"), negocioId)).toBeNull();
+    // Ajuste das condições: a original continua como estava na escolha.
+    expect(
+      await salvarCondicoesDaOferta(g, negocioId, {
+        instrumento: "loi",
+        parcelaVista: "5.500.000",
+        parcelas: [{ valor: "500.000", data: "", meses: 24 }],
+      }),
+    ).toEqual({ ok: true });
+    const depois = await condicoesDaOferta(g, negocioId);
+    expect(Number(depois?.condicoes.parcelaVista)).toBe(5500000);
+    expect(Number(depois?.original.parcelaVista)).toBe(5000000);
+    expect(depois?.alterada).toBe(true);
+    const lista = await ofertasDoNegocio(g, negocioId);
+    expect(lista!.ofertas.filter((o) => o.aceita).map((o) => o.id)).toEqual([r.id]);
+  });
+});

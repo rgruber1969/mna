@@ -365,6 +365,13 @@
       "when": 1795475955828,
       "tag": "0051_rls_forcado_pedidos",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1795481722867,
+      "tag": "0052_oferta_aceita_e_condicoes",
+      "breakpoints": true
     }
   ]
 }

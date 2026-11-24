@@ -4,6 +4,9 @@ import { headers } from "next/headers";
 import { traduzirErro } from "@/i18n/servidor";
 import { obterAcesso } from "@/server/services/acesso";
 import {
+  aceitarOferta,
+  salvarCondicoesDaOferta,
+  type DadosDasCondicoes,
   concluirArquivoDaOferta,
   criarOferta,
   editarOferta,
@@ -60,4 +63,14 @@ export async function concluirArquivoDaOfertaAcao(arquivoId: string): Promise<Re
 export async function linkDoArquivoDaOfertaAcao(arquivoId: string): Promise<{ url?: string; erro?: string }> {
   const r = await linkDoArquivoDaOferta(await acesso(), arquivoId);
   return "erro" in r ? { erro: await traduzirErro(r) } : r;
+}
+
+export async function aceitarOfertaAcao(id: string): Promise<Resposta & { funil?: boolean }> {
+  const r = await aceitarOferta(await acesso(), id);
+  return "erro" in r ? { erro: await traduzirErro(r) } : { funil: r.funil };
+}
+
+export async function salvarCondicoesAcao(dealId: string, dados: DadosDasCondicoes): Promise<Resposta> {
+  const r = await salvarCondicoesDaOferta(await acesso(), dealId, dados);
+  return "erro" in r ? { erro: await traduzirErro(r), campo: r.campo } : {};
 }

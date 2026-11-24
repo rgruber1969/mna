@@ -82,8 +82,45 @@
       "parcelaIncompleta": "Cada parcela precisa de valor e vencimento.",
       "rateioInvalido": "Os percentuais do rateio precisam somar 100%.",
       "anteriorInvalida": "A oferta anterior precisa ser da mesma compradora.",
-      "dadosInvalidos": "Dados inválidos."
+      "dadosInvalidos": "Dados inválidos.",
+      "mesesInvalidos": "Meses após o closing: de 1 a 600."
     },
-    "criterioRateio": "Critério do rateio"
+    "criterioRateio": "Critério do rateio",
+    "abas": {
+      "valores": "Valores e parcelas",
+      "condicoes": "Condições",
+      "garantias": "Garantias e prazos",
+      "rateio": "Rateio",
+      "acesso": "Acesso"
+    },
+    "vencimentoTipo": "Vence em",
+    "mesesAposClosing": "Meses após o closing",
+    "mesesAposClosingCurto": "closing + {n} meses",
+    "dataFixa": "Data fixa",
+    "meses": "Meses",
+    "vencimentoEstimado": "≈ {data}",
+    "closingBase": "Parcelas em meses contam a partir do closing; enquanto ele não acontece, a estimativa usa a previsão de fechamento do negócio ({data}).",
+    "closingSemPrevisao": "Parcelas em meses contam a partir do closing. Informe a previsão de fechamento do negócio para ver os vencimentos estimados.",
+    "somaRateio": "Soma: {soma}% (precisa dar 100%)",
+    "escolher": "Escolher esta oferta",
+    "escolhida": "Escolhida",
+    "confirmarEscolher": "Escolher a oferta de {compradora}? Os atributos dela vão para a aba \"Condições da oferta\" do negócio, onde podem ser ajustados.",
+    "confirmarTrocarEscolha": "Já há uma oferta escolhida. Trocar pela oferta de {compradora}? As Condições da oferta passam a ser as desta oferta.",
+    "escolhidaComFunil": "Oferta escolhida: a compradora foi para \"Escolhida\" no funil e as condições estão na aba Condições da oferta.",
+    "escolhidaSemFunil": "Oferta escolhida: as condições estão na aba Condições da oferta.",
+    "condicoesDaOferta": {
+      "aba": "Condições da oferta",
+      "titulo": "Condições da oferta escolhida",
+      "ajuda": "Os atributos da oferta escolhida, trazidos como sugestão para o negócio. Quem pode editar ofertas, do lado vendedor, ajusta o que mudar na negociação; a oferta original continua guardada como estava no momento da escolha.",
+      "origem": "Oferta de {origem}, escolhida em {data} por {quem}",
+      "alterada": "Ajustada em relação à oferta original",
+      "original": "Oferta original",
+      "originalTitulo": "Oferta original (no momento da escolha)",
+      "fechar": "Fechar",
+      "salvar": "Salvar condições",
+      "salvando": "Salvando…",
+      "salvas": "Condições salvas.",
+      "somenteConsulta": "Só consulta: ajustar exige editar ofertas, do lado vendedor."
+    }
   }
 }
