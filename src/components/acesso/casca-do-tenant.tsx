@@ -678,6 +678,17 @@ export function CascaDoTenant({
   const [aberto, setAberto] = useState(false);
   const [escuro, setEscuro] = useState(false);
   const [rolou, setRolou] = useState(false);
+  // Digitando num campo, Alt + tecla numérica com o Num Lock desligado vira Alt+Home / Alt+← / Alt+→
+  // (ex.: o código Alt+167 do §), e o navegador sairia da tela, perdendo o que foi digitado.
+  useEffect(() => {
+    const proteger = (e: KeyboardEvent) => {
+      if (!e.altKey || !["Home", "ArrowLeft", "ArrowRight"].includes(e.key)) return;
+      if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable=true]"))
+        e.preventDefault();
+    };
+    window.addEventListener("keydown", proteger, true);
+    return () => window.removeEventListener("keydown", proteger, true);
+  }, []);
   const [, iniciar] = useTransition();
 
   // Barra superior sem fundo no topo da página; ao rolar, ganha fundo translúcido e uma linha fina.

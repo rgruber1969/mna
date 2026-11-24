@@ -2,7 +2,7 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
-import { useAbas } from "@/components/ui/abas";
+import { pedirAba, useAbas } from "@/components/ui/abas";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -150,6 +150,7 @@ export function LinhaDasEtapas({
             {atalho && e.id === daProspeccao && (
               <Link
                 href={atalho.href}
+                onClick={(e) => pedirAba("compradoras") && e.preventDefault()}
                 className="border-primary/40 text-primary hover:bg-primary-soft mt-0.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
               >
                 {atalho.rotulo} →
@@ -224,7 +225,11 @@ export function ResumoDoNegocio({
               <>
                 <p className="flex items-center justify-between gap-2 pt-2 text-xs">
                   <span className="text-text font-semibold">{t("resumo.funil")}</span>
-                  <Link href={`/negocios/${c0.id}?aba=compradoras`} className="text-primary font-semibold">
+                  <Link
+                    href={`/negocios/${c0.id}?aba=compradoras`}
+                    onClick={(e) => pedirAba("compradoras") && e.preventDefault()}
+                    className="text-primary font-semibold"
+                  >
                     {t("painel.abrirFunil")} →
                   </Link>
                 </p>

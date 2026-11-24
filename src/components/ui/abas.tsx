@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode, useEffect } from "react";
 import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 
 /**
@@ -66,6 +66,21 @@ export function Abas({
     },
     [parametro],
   );
+
+  // Atalhos de fora das abas (linha das etapas, resumo) pedem "abrir a aba X" sem navegar de novo.
+  useEffect(() => {
+    if (parametro !== "aba") return;
+    const pedido = (e: Event) => {
+      const d = (e as CustomEvent<{ id: string; tratado: boolean }>).detail;
+      if (abas.some((a) => a.id === d.id)) {
+        d.tratado = true;
+        ativar(d.id);
+        raiz.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+    window.addEventListener("mna:abrir-aba", pedido);
+    return () => window.removeEventListener("mna:abrir-aba", pedido);
+  }, [abas, ativar, parametro]);
 
   /** Mostra na hora o painel do elemento (antes de o navegador tentar focar o campo). */
   const revelarElemento = useCallback((el: Element | null) => {
@@ -202,4 +217,15 @@ export function SoNasAbas({ ids, children }: { ids: string[]; children: ReactNod
   const abas = useAbas();
   if (abas && !ids.includes(abas.ativa)) return null;
   return <>{children}</>;
+}
+
+/**
+ * Pede às abas da tela que abram a aba `id` (true se alguma atendeu). Atalhos
+ * usam no clique: se atendeu, não navegam; se não (ex.: no painel do kanban),
+ * o link segue para a página.
+ */
+export function pedirAba(id: string): boolean {
+  const detalhe = { id, tratado: false };
+  window.dispatchEvent(new CustomEvent("mna:abrir-aba", { detail: detalhe }));
+  return detalhe.tratado;
 }
