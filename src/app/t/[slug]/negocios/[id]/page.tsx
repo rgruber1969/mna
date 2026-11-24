@@ -33,6 +33,9 @@ import {
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
 import { FunilDeCompradoras } from "@/components/negocios/funil-de-compradoras";
+import { InclusaoRapida } from "@/components/negocios/inclusao-rapida";
+import { pode } from "@/server/services/permissoes/verificador";
+import { listarGrupos } from "@/server/services/empresas";
 import { etapasDoNegocio, opcoesDeAlcance } from "@/server/services/etapas";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
@@ -129,7 +132,19 @@ async function Painel({
   const [
     [tipos, opcoesEmp, opcoesPart, andamento],
     [funil, totalMsg, contratos, opcoesContrato, tc],
-    [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd, condicoes, diasDeAviso, diasParada],
+    [
+      ofertas,
+      opcoesOferta,
+      to,
+      pedidos,
+      pedidoAberto,
+      tpd,
+      condicoes,
+      diasDeAviso,
+      diasParada,
+      podeCriarEmpresa,
+      grupos,
+    ],
     [etapas, alcances, dataRoom, tarefas, ebook, tb],
   ] = await Promise.all([
     Promise.all([
@@ -155,6 +170,8 @@ async function Painel({
       condicoesDaOferta(acesso, n.id),
       obterDiasDeAvisoDoPrazo(acesso),
       obterDiasDeCompradoraParada(acesso),
+      pode(acesso, "empresas", "criar"),
+      listarGrupos(acesso).catch(() => []),
     ]),
     Promise.all([
       etapasDoNegocio(acesso, n.id),
@@ -333,6 +350,7 @@ async function Painel({
                     valorEstimado: n.valorEstimado,
                     descricao: n.descricao,
                   },
+                  participantes: n.participantes,
                 }}
                 cartao={cartaoDoResumo}
                 hoje={hoje}
@@ -380,7 +398,10 @@ async function Painel({
               <div className="grid gap-8 xl:grid-cols-2">
                 <section aria-label={t("abaEmpresas")}>
                   <h3 className="text-muted mb-1 text-xs font-semibold tracking-wider uppercase">
-                    {`${t("abaEmpresas")} (${n.empresas.length})`}
+                    <span className="flex items-center justify-between gap-2">
+                      {`${t("abaEmpresas")} (${n.empresas.length})`}
+                      {opcoesEmp && podeCriarEmpresa && <InclusaoRapida qual="empresa" grupos={grupos} />}
+                    </span>
                   </h3>
                   <ul className="divide-border divide-y text-sm">
                     {n.empresas.map((e) => (
@@ -425,7 +446,10 @@ async function Painel({
                 </section>
                 <section aria-label={t("abaParticipantes")}>
                   <h3 className="text-muted mb-1 text-xs font-semibold tracking-wider uppercase">
-                    {`${t("abaParticipantes")} (${n.participantes.length})`}
+                    <span className="flex items-center justify-between gap-2">
+                      {`${t("abaParticipantes")} (${n.participantes.length})`}
+                      {opcoesPart && podeCriarEmpresa && <InclusaoRapida qual="pessoa" grupos={grupos} />}
+                    </span>
                   </h3>
                   <ListaPaginada
                     className="divide-border divide-y text-sm"

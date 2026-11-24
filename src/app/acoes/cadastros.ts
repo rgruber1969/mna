@@ -107,6 +107,7 @@ export async function salvarEmpresaAcao(_: EstadoEmpresa, f: FormData): Promise<
     ? await editarEmpresa(await acesso(), id, dadosEmpresa(f))
     : await criarEmpresa(await acesso(), dadosEmpresa(f), { ignorarParecida: decisao === "criar" });
   if ("erro" in r) return { erro: await traduzirErro(r), parecida: r.parecida, campo: r.campo };
+  if (!id && texto(f, "naTela")) return { ok: t("empresaSalva") };
   return id ? { ok: t("empresaSalva") } : { destino: `/empresas/${r.id}` };
 }
 
@@ -186,6 +187,7 @@ export async function salvarPessoaAcao(_: Estado, f: FormData): Promise<Estado> 
   }
   const r = await criarPessoa(await acesso(), dadosPessoa(f));
   if ("erro" in r) return { erro: await traduzirErro(r), campo: r.campo };
+  if (texto(f, "naTela")) return { ok: t("pessoaSalva") };
   return { destino: `/pessoas/${r.id}${r.parecidas ? "?parecidas=1" : ""}` };
 }
 

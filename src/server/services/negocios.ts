@@ -19,8 +19,10 @@ import {
   documento,
   mensagem,
   tarefa,
+  usuario,
 } from "@/server/db/esquema";
 import { AcessoNegado, exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
+import { enderecoDaFoto } from "./foto-da-conta";
 import { auditar } from "./empresas";
 import { notificar } from "./notificacoes";
 import { avisarPorEmail } from "./negocios-avisos";
@@ -723,6 +725,8 @@ export type NegocioDetalhe = {
     /** Etapas do alcance; null = negócio inteiro. */
     alcance: string[] | null;
     coordenador: boolean;
+    /** Foto da conta da pessoa (quem tem usuário e enviou foto). */
+    foto: string | null;
   }[];
 };
 
@@ -784,6 +788,7 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
         pessoaId: pessoa.id,
         nome: pessoa.nome,
         usuarioId: pessoa.usuarioId,
+        imagem: usuario.image,
         perfil: perfil.nome,
         perfilPadrao: perfil.padrao,
         empresaId: participacaoDeal.empresaId,
@@ -795,6 +800,7 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
       })
       .from(participacaoDeal)
       .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
+      .leftJoin(usuario, eq(usuario.id, pessoa.usuarioId))
       .leftJoin(perfil, eq(perfil.id, participacaoDeal.perfilId))
       .leftJoin(empresa, eq(empresa.id, participacaoDeal.empresaId))
       .where(eq(participacaoDeal.dealId, id))
@@ -873,6 +879,7 @@ export async function obterNegocio(acesso: Acesso | null, id: string): Promise<N
         prazo: p.prazo,
         alcance: p.alcance === "etapas" ? p.etapaIds.map((id) => nomeDaEtapa.get(id) ?? "—") : null,
         coordenador: p.perfilPadrao === "coordenador-deal",
+        foto: p.usuarioId ? enderecoDaFoto(p.usuarioId, p.imagem) : null,
       })),
   };
 }

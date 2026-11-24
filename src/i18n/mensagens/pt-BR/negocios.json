@@ -397,7 +397,9 @@
         "valor": "Valor estimado",
         "coordenador": "Coordenador",
         "funil": "Funil de compradoras",
-        "descricao": "Descrição"
+        "descricao": "Descrição",
+        "valorEstimado": "Valor estimado",
+        "pessoas": "Pessoas envolvidas ({n})"
       },
       "trabalhaPara": "trabalha para {nome}",
       "contato": "Contato (sem acesso)",
@@ -534,6 +536,14 @@
       "abrirOfertas": "Abrir as ofertas",
       "historico": "Histórico no funil",
       "ausente": "Ausente"
+    },
+    "inclusaoRapida": {
+      "novaEmpresa": "Nova empresa",
+      "novaPessoa": "Nova pessoa",
+      "tituloEmpresa": "Nova empresa",
+      "tituloPessoa": "Nova pessoa",
+      "explicacao": "O cadastro fica em Empresas e Pessoas. Ao salvar, esta janela fecha e você já pode vinculá-la ao negócio aqui.",
+      "fechar": "Fechar"
     }
   },
   "painel": {

@@ -164,14 +164,21 @@ export function FormEmpresa({
   inicial,
   grupos,
   podeSalvar,
+  aoSalvarNaTela,
 }: {
   id?: string;
   inicial: Valores;
   grupos: { id: string; nome: string }[];
   podeSalvar: boolean;
+  /** Inclusão sem sair da tela (ex.: no negócio): ao criar, avisa em vez de abrir a empresa. */
+  aoSalvarNaTela?: () => void;
 }) {
   const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarEmpresaAcao);
+  useEffect(() => {
+    if (estado?.ok && aoSalvarNaTela) aoSalvarNaTela();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só quando a resposta muda
+  }, [estado]);
   const parecida = (estado as EstadoEmpresa)?.parecida;
   useCampoComErro(estado);
   const [valores, mudar] = useValores(inicial);
@@ -202,6 +209,7 @@ export function FormEmpresa({
   return (
     <form action={salvar}>
       {id && <input type="hidden" name="id" value={id} />}
+      {aoSalvarNaTela && <input type="hidden" name="naTela" value="1" />}
       {parecida ? (
         <div
           role="alert"
@@ -487,6 +495,7 @@ export function FormPessoa({
   podeSalvar,
   emailDeLogin,
   curto = false,
+  aoSalvarNaTela,
 }: {
   id?: string;
   inicial: Valores;
@@ -496,9 +505,15 @@ export function FormPessoa({
   emailDeLogin?: boolean;
   /** Criação: só o essencial (nome, e-mail, telefone e CPF); o resto, depois, nas abas. */
   curto?: boolean;
+  /** Inclusão sem sair da tela (ex.: no negócio): ao criar, avisa em vez de abrir a pessoa. */
+  aoSalvarNaTela?: () => void;
 }) {
   const t = useTranslations("cadastros.formularios");
   const [estado, salvar, salvando] = useAcaoComAtualizacao(salvarPessoaAcao);
+  useEffect(() => {
+    if (estado?.ok && aoSalvarNaTela) aoSalvarNaTela();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só quando a resposta muda
+  }, [estado]);
   const [valores, mudar] = useValores(inicial);
   useCampoComErro(estado);
   const sensivel = (campo: Sensivel) => (
@@ -507,6 +522,7 @@ export function FormPessoa({
   if (curto)
     return (
       <form action={salvar}>
+        {aoSalvarNaTela && <input type="hidden" name="naTela" value="1" />}
         <Mensagem estado={estado} />
         <p className="text-muted mb-4 text-sm">{t("criacaoCurta")}</p>
         <Secao titulo={t("dadosPessoais")}>

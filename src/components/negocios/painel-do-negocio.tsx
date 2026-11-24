@@ -3,6 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 import { pedirAba, useAbas } from "@/components/ui/abas";
+import { Avatar } from "@/components/ui/basicos";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -175,7 +176,9 @@ export function ResumoDoNegocio({
   dias,
   irPara,
 }: {
-  painel: Pick<NonNullable<Painel>, "tarefas" | "resumo">;
+  painel: Pick<NonNullable<Painel>, "tarefas" | "resumo"> & {
+    participantes?: { id: string; nome: string; foto?: string | null; perfil?: string | null }[];
+  };
   cartao: CartaoDoPainel;
   hoje: string;
   dias: number;
@@ -204,6 +207,25 @@ export function ResumoDoNegocio({
           )}
           {c0.coordenadores.length > 0 && (
             <Campo rotulo={t("resumo.coordenador")}>{c0.coordenadores.join(", ")}</Campo>
+          )}
+          <Campo rotulo={t("resumo.valorEstimado")}>
+            {p.resumo?.valorEstimado ? reais(Number(p.resumo.valorEstimado)) : "—"}
+          </Campo>
+          {(p.participantes?.length ?? 0) > 0 && (
+            <Campo rotulo={t("resumo.pessoas", { n: p.participantes!.length })}>
+              <span className="mt-1 flex items-center" title={p.participantes!.map((x) => x.nome).join(", ")}>
+                {p.participantes!.slice(0, 6).map((x, i) => (
+                  <span key={x.id} className={`ring-background rounded-full ring-2 ${i > 0 ? "-ml-2" : ""}`}>
+                    <Avatar nome={x.nome} foto={x.foto ?? null} tamanho={26} />
+                  </span>
+                ))}
+                {p.participantes!.length > 6 && (
+                  <span className="bg-primary-soft text-primary ring-background -ml-2 grid h-[26px] min-w-[26px] place-items-center rounded-full px-1 text-[10px] font-semibold ring-2">
+                    +{p.participantes!.length - 6}
+                  </span>
+                )}
+              </span>
+            </Campo>
           )}
           {p.resumo?.descricao && (
             <Campo rotulo={t("resumo.descricao")} largo>
