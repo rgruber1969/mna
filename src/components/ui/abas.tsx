@@ -34,11 +34,14 @@ export function Abas({
   abas,
   inicial,
   vertical = false,
+  parametro = "aba",
   children,
 }: {
   abas: Aba[];
   inicial?: string;
   vertical?: boolean;
+  /** Nome do parâmetro do endereço (abas dentro de outra aba usam outro, ex.: "secao"). */
+  parametro?: string;
   children: ReactNode;
 }) {
   const valida = abas.some((a) => a.id === inicial) ? inicial! : abas[0].id;
@@ -48,18 +51,21 @@ export function Abas({
   const lista = useRef<HTMLDivElement>(null);
   const { estilo, pronto } = useIndicadorDeslizante(lista, vertical ? "" : ativa);
 
-  const ativar = useCallback((id: string) => {
-    setAtiva(id);
-    setComErro((s) => {
-      if (!s.has(id)) return s;
-      const n = new Set(s);
-      n.delete(id);
-      return n;
-    });
-    const url = new URL(window.location.href);
-    url.searchParams.set("aba", id);
-    window.history.replaceState(window.history.state, "", url);
-  }, []);
+  const ativar = useCallback(
+    (id: string) => {
+      setAtiva(id);
+      setComErro((s) => {
+        if (!s.has(id)) return s;
+        const n = new Set(s);
+        n.delete(id);
+        return n;
+      });
+      const url = new URL(window.location.href);
+      url.searchParams.set(parametro, id);
+      window.history.replaceState(window.history.state, "", url);
+    },
+    [parametro],
+  );
 
   /** Mostra na hora o painel do elemento (antes de o navegador tentar focar o campo). */
   const revelarElemento = useCallback((el: Element | null) => {

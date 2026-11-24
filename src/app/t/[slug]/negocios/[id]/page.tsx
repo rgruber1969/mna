@@ -40,15 +40,33 @@ import { totaisDeMensagens } from "@/server/services/mensagens";
 import { tarefasDoNegocio } from "@/server/services/tarefas";
 import { dataRoomDoNegocio } from "@/server/services/documentos";
 import { HistoricoPaginado } from "@/components/negocios/historico";
-import { andamentoDoNegocio, funilDoNegocio, hojeEmSaoPaulo } from "@/server/services/negocios-andamento";
+import {
+  andamentoDoNegocio,
+  funilDoNegocio,
+  hojeEmSaoPaulo,
+  obterDiasDeAvisoDoPrazo,
+} from "@/server/services/negocios-andamento";
 import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { listarContratos, opcoesDoContrato } from "@/server/services/contratos";
 import { TabelaDeContratos } from "@/components/contratos/detalhe";
-import { ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
+import { condicoesDaOferta, ofertasDoNegocio, opcoesDaOferta } from "@/server/services/ofertas";
+import { CondicoesDaOfertaEscolhida } from "@/components/ofertas/condicoes";
+import { LinhaDasEtapas } from "@/components/negocios/painel-do-negocio";
+import { Alternador } from "@/components/ui/alternador";
 import { AbaDeOfertas } from "@/components/ofertas/aba";
 import { obterPedido, pedidosDoNegocio } from "@/server/services/pedidos";
 import { AbaDePedidos } from "@/components/pedidos/aba";
 import { Cartao, Titulo } from "@/components/ui/basicos";
+
+/** Abas antigas (links já enviados, e-mails, avisos) → aba nova que as reúne. */
+const ABA_ANTIGA: Record<string, string> = {
+  tarefas: "atividade",
+  mensagens: "atividade",
+  empresas: "pessoas",
+  participantes: "pessoas",
+  funil: "compradoras",
+  ofertas: "compradoras",
+};
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
 function traduzirParametros(
@@ -72,9 +90,11 @@ async function Painel({
   etapa,
   conversa,
   pedido,
+  vista,
 }: {
   id: Promise<string>;
   pedido: Promise<string | undefined>;
+  vista: Promise<string | undefined>;
   aba: Promise<string | undefined>;
   etapa: Promise<string | undefined>;
   conversa: Promise<{ alvo?: string; canal?: string }>;
@@ -104,7 +124,7 @@ async function Painel({
   const [
     [tipos, opcoesEmp, opcoesPart, andamento],
     [funil, totalMsg, contratos, opcoesContrato, tc],
-    [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd],
+    [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd, condicoes, diasDeAviso],
     [etapas, alcances, dataRoom, tarefas],
   ] = await Promise.all([
     Promise.all([
@@ -127,6 +147,8 @@ async function Painel({
       pedidosDoNegocio(acesso, n.id),
       pedido.then((p) => (p ? obterPedido(acesso, p) : null)),
       getTranslations("pedidos"),
+      condicoesDaOferta(acesso, n.id),
+      obterDiasDeAvisoDoPrazo(acesso),
     ]),
     Promise.all([
       etapasDoNegocio(acesso, n.id),
@@ -190,36 +212,83 @@ async function Painel({
               {t("avisoSigilo")}
             </p>
           )}
+          {etapas && etapas.etapas.length > 0 && (
+            <div className="mb-6">
+              <LinhaDasEtapas
+                etapas={etapas.etapas}
+                hoje={hoje}
+                dias={diasDeAviso}
+                atalho={
+                  funil || ofertas
+                    ? { href: `/negocios/${n.id}?aba=compradoras`, rotulo: t("abaCompradoras") }
+                    : null
+                }
+              />
+            </div>
+          )}
           <Abas
-            inicial={await aba}
+            key={(await aba) ?? ""}
+            vertical
+            inicial={ABA_ANTIGA[(await aba) ?? ""] ?? (await aba)}
             abas={[
-              { id: "resumo", rotulo: t("abaResumo") },
-              ...(etapas ? [{ id: "etapas", rotulo: t("abaEtapas") }] : []),
-              ...(tarefas
-                ? [{ id: "tarefas", rotulo: `${t("abaTarefas")} (${tarefasAbertas.length})` }]
-                : []),
-              ...(dataRoom
-                ? [{ id: "documentos", rotulo: `${t("abaDocumentos")} (${dataRoom.documentos.length})` }]
-                : []),
-              ...(funil ? [{ id: "funil", rotulo: `${t("abaFunil")} (${funil.cartoes.length})` }] : []),
+              { id: "resumo", rotulo: t("abaResumo"), grupo: t("grupoNegocio") },
+              ...(etapas ? [{ id: "etapas", rotulo: t("abaEtapas"), grupo: t("grupoNegocio") }] : []),
               {
-                id: "mensagens",
+                id: "pessoas",
+                rotulo: `${t("abaPessoas")} (${n.empresas.length + n.participantes.length})`,
+                grupo: t("grupoNegocio"),
+              },
+              ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)
+                ? [{ id: "exclusividade", rotulo: t("abaExclusividade"), grupo: t("grupoNegocio") }]
+                : []),
+              { id: "historico", rotulo: t("abaHistorico"), grupo: t("grupoNegocio") },
+              {
+                id: "atividade",
                 rotulo:
                   totalMsg && totalMsg.novas > 0
-                    ? tm("abaComNovas", totalMsg)
-                    : tm("abaComTotal", { total: totalMsg?.total ?? 0 }),
+                    ? `${t("abaAtividade")} (${tarefasAbertas.length}) · ${tm("novas", { n: totalMsg.novas })}`
+                    : `${t("abaAtividade")} (${tarefasAbertas.length + (totalMsg?.total ?? 0)})`,
+                grupo: t("grupoTrabalho"),
               },
-              ...(ofertas ? [{ id: "ofertas", rotulo: `${to("titulo")} (${ofertas.ofertas.length})` }] : []),
-              ...(pedidos ? [{ id: "pedidos", rotulo: `${tpd("aba")} (${pedidos.pedidos.length})` }] : []),
+              ...(dataRoom
+                ? [
+                    {
+                      id: "documentos",
+                      rotulo: `${t("abaDocumentos")} (${dataRoom.documentos.length})`,
+                      grupo: t("grupoTrabalho"),
+                    },
+                  ]
+                : []),
+              ...(pedidos
+                ? [
+                    {
+                      id: "pedidos",
+                      rotulo: `${tpd("aba")} (${pedidos.pedidos.length})`,
+                      grupo: t("grupoTrabalho"),
+                    },
+                  ]
+                : []),
+              ...(funil || ofertas
+                ? [
+                    {
+                      id: "compradoras",
+                      rotulo: `${t("abaCompradoras")} (${funil?.cartoes.length ?? ofertas?.ofertas.length ?? 0})`,
+                      grupo: t("grupoComercial"),
+                    },
+                  ]
+                : []),
+              ...(condicoes
+                ? [{ id: "condicoes", rotulo: to("condicoesDaOferta.aba"), grupo: t("grupoComercial") }]
+                : []),
               ...(mostraContratos
-                ? [{ id: "contratos", rotulo: `${tc("titulo")} (${contratos.length})` }]
+                ? [
+                    {
+                      id: "contratos",
+                      rotulo: `${tc("titulo")} (${contratos.length})`,
+                      grupo: t("grupoComercial"),
+                    },
+                  ]
                 : []),
-              { id: "empresas", rotulo: `${t("abaEmpresas")} (${n.empresas.length})` },
-              { id: "participantes", rotulo: `${t("abaParticipantes")} (${n.participantes.length})` },
-              ...(andamento.verExclusividade && (andamento.exclusividade || temEscolhida)
-                ? [{ id: "exclusividade", rotulo: t("abaExclusividade") }]
-                : []),
-              { id: "historico", rotulo: t("abaHistorico") },
             ]}
           >
             <PainelDeAba id="resumo">
@@ -259,91 +328,123 @@ async function Painel({
                 </div>
               )}
             </PainelDeAba>
-            <PainelDeAba id="empresas">
-              <ul className="divide-border divide-y text-sm">
-                {n.empresas.map((e) => (
-                  <li key={e.id} className="flex items-start justify-between gap-2 py-2">
-                    <span>
-                      <span className="font-medium">{e.nome}</span>
-                      {e.doContratante && (
-                        <span className="text-primary ml-2 text-xs font-medium">{te("contratante")}</span>
-                      )}
-                      <span className="text-muted block text-xs">
-                        {[
-                          e.papel,
-                          lado(e.lado),
-                          e.situacaoFunil && tf(e.situacaoFunil),
-                          e.atuaPara && te("trabalhaPara", { nome: e.atuaPara }),
-                          e.cnpj && formatarCnpj(e.cnpj),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                    </span>
-                    {n.podeEditar && (
-                      <BotaoDeAcao
-                        acao={removerEmpresaDoNegocioAcao}
-                        campos={{ dealId: n.id, id: e.id }}
-                        rotulo={te("remover")}
-                        confirmar={te("confirmarRemover", { nome: e.nome, papel: e.papel })}
-                        perigo
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {opcoesEmp && (
-                <FormIncluirEmpresa
-                  dealId={n.id}
-                  papeis={opcoesEmp.papeis}
-                  empresas={opcoesEmp.empresas}
-                  compradoras={n.compradoras}
-                />
-              )}
+            <PainelDeAba id="pessoas">
+              <div className="grid gap-8 xl:grid-cols-2">
+                <section aria-label={t("abaEmpresas")}>
+                  <h3 className="text-muted mb-1 text-xs font-semibold tracking-wider uppercase">
+                    {`${t("abaEmpresas")} (${n.empresas.length})`}
+                  </h3>
+                  <ul className="divide-border divide-y text-sm">
+                    {n.empresas.map((e) => (
+                      <li key={e.id} className="flex items-start justify-between gap-2 py-2">
+                        <span>
+                          <span className="font-medium">{e.nome}</span>
+                          {e.doContratante && (
+                            <span className="text-primary ml-2 text-xs font-medium">{te("contratante")}</span>
+                          )}
+                          <span className="text-muted block text-xs">
+                            {[
+                              e.papel,
+                              lado(e.lado),
+                              e.situacaoFunil && tf(e.situacaoFunil),
+                              e.atuaPara && te("trabalhaPara", { nome: e.atuaPara }),
+                              e.cnpj && formatarCnpj(e.cnpj),
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        </span>
+                        {n.podeEditar && (
+                          <BotaoDeAcao
+                            acao={removerEmpresaDoNegocioAcao}
+                            campos={{ dealId: n.id, id: e.id }}
+                            rotulo={te("remover")}
+                            confirmar={te("confirmarRemover", { nome: e.nome, papel: e.papel })}
+                            perigo
+                          />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {opcoesEmp && (
+                    <FormIncluirEmpresa
+                      dealId={n.id}
+                      papeis={opcoesEmp.papeis}
+                      empresas={opcoesEmp.empresas}
+                      compradoras={n.compradoras}
+                    />
+                  )}
+                </section>
+                <section aria-label={t("abaParticipantes")}>
+                  <h3 className="text-muted mb-1 text-xs font-semibold tracking-wider uppercase">
+                    {`${t("abaParticipantes")} (${n.participantes.length})`}
+                  </h3>
+                  <ListaPaginada
+                    className="divide-border divide-y text-sm"
+                    itens={n.participantes.map((p) => (
+                      <li key={p.id} className="flex items-start justify-between gap-2 py-2">
+                        <span>
+                          <span className="font-medium">{p.nome}</span>
+                          <span className="text-muted block text-xs">
+                            {[
+                              p.perfil ?? tp("contato"),
+                              p.empresa ? tp("representando", { empresa: p.empresa }) : null,
+                              lado(p.lado),
+                              p.prazo && tp("ate", { data: p.prazo.split("-").reverse().join("/") }),
+                              p.alcance && tp("alcanceEtapas", { etapas: p.alcance.join(", ") }),
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        </span>
+                        {n.podeGerirParticipantes && (
+                          <BotaoDeAcao
+                            acao={removerParticipanteAcao}
+                            campos={{ dealId: n.id, id: p.id }}
+                            rotulo={tp("remover")}
+                            confirmar={tp("confirmarRemover", { nome: p.nome })}
+                            perigo
+                          />
+                        )}
+                      </li>
+                    ))}
+                  />
+                  {opcoesPart && (
+                    <FormIncluirParticipante
+                      dealId={n.id}
+                      pessoas={opcoesPart.pessoas}
+                      perfis={opcoesPart.perfis}
+                      etapas={alcances}
+                    />
+                  )}
+                </section>
+              </div>
             </PainelDeAba>
-            <PainelDeAba id="participantes">
-              <ListaPaginada
-                className="divide-border divide-y text-sm"
-                itens={n.participantes.map((p) => (
-                  <li key={p.id} className="flex items-start justify-between gap-2 py-2">
-                    <span>
-                      <span className="font-medium">{p.nome}</span>
-                      <span className="text-muted block text-xs">
-                        {[
-                          p.perfil ?? tp("contato"),
-                          p.empresa ? tp("representando", { empresa: p.empresa }) : null,
-                          lado(p.lado),
-                          p.prazo && tp("ate", { data: p.prazo.split("-").reverse().join("/") }),
-                          p.alcance && tp("alcanceEtapas", { etapas: p.alcance.join(", ") }),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                    </span>
-                    {n.podeGerirParticipantes && (
-                      <BotaoDeAcao
-                        acao={removerParticipanteAcao}
-                        campos={{ dealId: n.id, id: p.id }}
-                        rotulo={tp("remover")}
-                        confirmar={tp("confirmarRemover", { nome: p.nome })}
-                        perigo
-                      />
-                    )}
-                  </li>
-                ))}
-              />
-              {opcoesPart && (
-                <FormIncluirParticipante
-                  dealId={n.id}
-                  pessoas={opcoesPart.pessoas}
-                  perfis={opcoesPart.perfis}
-                  etapas={alcances}
-                />
-              )}
-            </PainelDeAba>
-            {funil && (
-              <PainelDeAba id="funil">
-                <KanbanDoFunil dealId={n.id} cartoes={funil.cartoes} podeEditar={funil.podeEditar} />
+            {(funil || ofertas) && (
+              <PainelDeAba id="compradoras">
+                <div className="space-y-8">
+                  {funil && (
+                    <section>
+                      <h3 className="text-text mb-3 text-base font-semibold">
+                        {`${t("abaFunil")} (${funil.cartoes.length})`}
+                      </h3>
+                      <KanbanDoFunil dealId={n.id} cartoes={funil.cartoes} podeEditar={funil.podeEditar} />
+                    </section>
+                  )}
+                  {ofertas && (
+                    <section className={funil ? "border-border border-t pt-6" : ""}>
+                      <h3 className="text-text mb-3 text-base font-semibold">
+                        {`${to("titulo")} (${ofertas.ofertas.length})`}
+                      </h3>
+                      <AbaDeOfertas dealId={n.id} dados={ofertas} opcoes={opcoesOferta} />
+                    </section>
+                  )}
+                </div>
+              </PainelDeAba>
+            )}
+            {condicoes && (
+              <PainelDeAba id="condicoes">
+                <CondicoesDaOfertaEscolhida dealId={n.id} dados={condicoes} />
               </PainelDeAba>
             )}
             {etapas && (
@@ -359,26 +460,46 @@ async function Painel({
                 />
               </PainelDeAba>
             )}
-            {tarefas && (
-              <PainelDeAba id="tarefas">
-                <TarefasDoNegocio dealId={n.id} quadro={tarefas} etapaFiltro={(await etapa) ?? ""} />
-              </PainelDeAba>
-            )}
+            <PainelDeAba id="atividade">
+              <Alternador
+                parametro="vista"
+                inicial={(await aba) === "mensagens" || (await conversa).alvo ? "mensagens" : await vista}
+                partes={[
+                  ...(tarefas
+                    ? [
+                        {
+                          id: "tarefas",
+                          rotulo: `${t("abaTarefas")} (${tarefasAbertas.length})`,
+                          conteudo: (
+                            <TarefasDoNegocio
+                              dealId={n.id}
+                              quadro={tarefas}
+                              etapaFiltro={(await etapa) ?? ""}
+                            />
+                          ),
+                        },
+                      ]
+                    : []),
+                  {
+                    id: "mensagens",
+                    rotulo:
+                      totalMsg && totalMsg.novas > 0
+                        ? tm("abaComNovas", totalMsg)
+                        : tm("abaComTotal", { total: totalMsg?.total ?? 0 }),
+                    conteudo: (
+                      <AbaDeMensagens
+                        dealId={n.id}
+                        conversaInicial={(await conversa).alvo}
+                        canalInicial={(await conversa).canal}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </PainelDeAba>
             {dataRoom && (
               <PainelDeAba id="documentos">
                 <DataRoomDoNegocio dealId={n.id} dr={dataRoom} etapaFiltro={(await etapa) ?? ""} />
-              </PainelDeAba>
-            )}
-            <PainelDeAba id="mensagens">
-              <AbaDeMensagens
-                dealId={n.id}
-                conversaInicial={(await conversa).alvo}
-                canalInicial={(await conversa).canal}
-              />
-            </PainelDeAba>
-            {ofertas && (
-              <PainelDeAba id="ofertas">
-                <AbaDeOfertas dealId={n.id} dados={ofertas} opcoes={opcoesOferta} />
               </PainelDeAba>
             )}
             {pedidos && (
@@ -443,6 +564,7 @@ export default function Page({ params, searchParams }: PageProps<"/t/[slug]/nego
         aba={searchParams.then((q) => (typeof q.aba === "string" ? q.aba : undefined))}
         etapa={searchParams.then((q) => (typeof q.etapa === "string" ? q.etapa : undefined))}
         pedido={searchParams.then((q) => (typeof q.pedido === "string" ? q.pedido : undefined))}
+        vista={searchParams.then((q) => (typeof q.vista === "string" ? q.vista : undefined))}
         conversa={searchParams.then((q) => ({
           alvo: typeof q.conversa === "string" ? q.conversa : undefined,
           canal: typeof q.canal === "string" ? q.canal : undefined,
