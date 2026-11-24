@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone, type TipoDeAcao } from "@/components/ui/icone-de-acao";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
@@ -39,12 +40,15 @@ export function BotaoDeAcao({
   rotulo,
   confirmar,
   perigo = false,
+  icone,
 }: {
   acao: Acao;
   campos: Record<string, string>;
   rotulo: string;
   confirmar?: string;
   perigo?: boolean;
+  /** Ação de linha só com ícone (o rótulo vira a dica). */
+  icone?: TipoDeAcao;
 }) {
   const [estado, executar, enviando] = useAcaoComAtualizacao(acao);
   const t = useTranslations("administracao");
@@ -59,12 +63,21 @@ export function BotaoDeAcao({
       {Object.entries(campos).map(([nome, valor]) => (
         <input key={nome} type="hidden" name={nome} value={valor} />
       ))}
-      <button
-        disabled={enviando}
-        className={`${perigo ? "border-danger text-danger" : "border-primary text-primary"} rounded-md border px-3 py-1 text-xs font-medium disabled:opacity-60`}
-      >
-        {enviando ? t("botao.aguarde") : rotulo}
-      </button>
+      {icone ? (
+        <BotaoDeIcone
+          type="submit"
+          tipo={icone}
+          rotulo={enviando ? t("botao.aguarde") : rotulo}
+          disabled={enviando}
+        />
+      ) : (
+        <button
+          disabled={enviando}
+          className={`${perigo ? "border-danger text-danger" : "border-primary text-primary"} rounded-md border px-3 py-1 text-xs font-medium disabled:opacity-60`}
+        >
+          {enviando ? t("botao.aguarde") : rotulo}
+        </button>
+      )}
       {estado?.erro && (
         <span role="alert" className="text-danger ml-2 text-xs">
           {estado.erro}

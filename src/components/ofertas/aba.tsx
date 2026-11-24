@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { hojeNoBrasil } from "@/config/prazos";
 import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -669,23 +670,19 @@ export function AbaDeOfertas({
                           </button>
                         )}
                         {o.podeEditar && !editando && (
-                          <button type="button" className="text-primary" onClick={() => setEditando(o)}>
-                            {t("editar")}
-                          </button>
+                          <BotaoDeIcone tipo="editar" rotulo={t("editar")} onClick={() => setEditando(o)} />
                         )}
                         {o.podeExcluir && (
-                          <button
-                            type="button"
-                            className="text-danger"
+                          <BotaoDeIcone
+                            tipo="excluir"
+                            rotulo={t("excluir")}
                             onClick={async () => {
                               if (!confirm(t("confirmarExcluir"))) return;
                               const r = await excluirOfertaAcao(o.id);
                               if (r.erro) return setErro(r.erro);
                               atualizar();
                             }}
-                          >
-                            {t("excluir")}
-                          </button>
+                          />
                         )}
                       </span>
                     </td>

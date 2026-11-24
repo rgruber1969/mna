@@ -150,6 +150,7 @@ async function Painel({
                           acao={removerVinculoAcao}
                           campos={{ id: v.id }}
                           rotulo={t("remover")}
+                          icone="excluir"
                           perigo
                         />
                       )}

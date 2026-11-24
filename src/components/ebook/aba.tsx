@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -227,19 +228,17 @@ export function Versao({
           </button>
         )}
         {v.podeExcluir && (
-          <button
-            type="button"
+          <BotaoDeIcone
+            tipo="excluir"
+            rotulo={t("excluir")}
             disabled={pendente}
-            className="text-danger px-1 text-xs font-medium"
             onClick={() =>
               executar(
                 () => excluirVersaoDoEbookAcao(v.id),
                 t("confirmarExcluir", { numero: v.numero, material }),
               )
             }
-          >
-            {t("excluir")}
-          </button>
+          />
         )}
       </div>
       {erro && (

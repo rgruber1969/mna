@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -248,9 +249,7 @@ function LinhaDaEtapa({
             {etapa.situacao === "andamento" && botao("concluida", t("concluir"))}
             {(etapa.situacao === "concluida" || etapa.situacao === "pulada") &&
               botao("andamento", t("reabrir"))}
-            <button type="button" onClick={() => setEditando((x) => !x)} className="text-primary text-xs">
-              {t("editar")}
-            </button>
+            <BotaoDeIcone tipo="editar" rotulo={t("editar")} onClick={() => setEditando((x) => !x)} />
             <BotaoDeAcao
               acao={moverEtapaAcao}
               campos={{ dealId, id: etapa.id, direcao: "subir" }}
@@ -266,6 +265,7 @@ function LinhaDaEtapa({
                 acao={removerEtapaAcao}
                 campos={{ dealId, id: etapa.id }}
                 rotulo={t("remover")}
+                icone="excluir"
                 confirmar={t("confirmarRemover", { nome: etapa.nome })}
                 perigo
               />

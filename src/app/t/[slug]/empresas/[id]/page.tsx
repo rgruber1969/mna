@@ -150,6 +150,7 @@ async function Painel({ id, aba }: { id: Promise<string>; aba: Promise<string | 
                             acao={removerVinculoAcao}
                             campos={{ id: v.id }}
                             rotulo={t("remover")}
+                            icone="excluir"
                             perigo
                           />
                         )}

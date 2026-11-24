@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { Fragment, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -796,16 +797,14 @@ export function DataRoomDoNegocio({
                             </button>
                           )}
                           {d.podeEditar && (
-                            <button
-                              type="button"
+                            <BotaoDeIcone
+                              tipo="editar"
+                              rotulo={t("editar")}
                               onClick={() => {
                                 setAberto(d.id);
                                 setEditandoDoc(d.id);
                               }}
-                              className="text-primary"
-                            >
-                              {t("editar")}
-                            </button>
+                            />
                           )}
                           {d.podeNovaVersao && !envio && (
                             <button type="button" onClick={() => novaVersao(d)} className="text-primary">
@@ -920,6 +919,7 @@ export function DataRoomDoNegocio({
                                       acao={excluirVersaoAcao}
                                       campos={{ id: v.id }}
                                       rotulo={t("excluir")}
+                                      icone="excluir"
                                       confirmar={t("confirmarExcluir", { n: v.numero })}
                                       perigo
                                     />

@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -232,14 +233,12 @@ function ItemDaConta({
           </button>
         )}
         {podeEditar && (
-          <button
-            type="button"
+          <BotaoDeIcone
+            tipo="editar"
+            rotulo={t("editar")}
             disabled={buscando}
             onClick={() => (legiveis ? setEditando(true) : revelar(() => setEditando(true)))}
-            className="text-primary text-xs font-medium"
-          >
-            {t("editar")}
-          </button>
+          />
         )}
         {podeEditar && (
           <BotaoDeAcao

@@ -428,6 +428,7 @@ async function Painel({
                             acao={removerEmpresaDoNegocioAcao}
                             campos={{ dealId: n.id, id: e.id }}
                             rotulo={te("remover")}
+                            icone="excluir"
                             confirmar={te("confirmarRemover", { nome: e.nome, papel: e.papel })}
                             perigo
                           />
@@ -474,6 +475,7 @@ async function Painel({
                             acao={removerParticipanteAcao}
                             campos={{ dealId: n.id, id: p.id }}
                             rotulo={tp("remover")}
+                            icone="excluir"
                             confirmar={tp("confirmarRemover", { nome: p.nome })}
                             perigo
                           />

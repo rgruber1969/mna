@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -186,21 +187,17 @@ export function TabelaDeFontes({
                     <td className={`${estiloTabela.td} text-right`}>
                       <span className="flex flex-wrap justify-end gap-x-3 gap-y-1">
                         {podeEditar && (
-                          <button
-                            type="button"
+                          <BotaoDeIcone
+                            tipo="editar"
+                            rotulo={t("editar")}
                             onClick={() => {
                               setEditando(f.id);
                               setV({ ...f, link: f.link ?? "", observacao: f.observacao ?? "" });
                             }}
-                            className="text-primary text-sm"
-                          >
-                            {t("editar")}
-                          </button>
+                          />
                         )}
                         {podeExcluir && (
-                          <button type="button" onClick={() => excluir(f)} className="text-danger text-sm">
-                            {t("excluir")}
-                          </button>
+                          <BotaoDeIcone tipo="excluir" rotulo={t("excluir")} onClick={() => excluir(f)} />
                         )}
                       </span>
                     </td>

@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -419,19 +420,18 @@ export function TarefasDoNegocio({
                               {t("conversa")}
                             </a>
                             {x.podeEditar && !form && (
-                              <button
-                                type="button"
+                              <BotaoDeIcone
+                                tipo="editar"
+                                rotulo={t("editar")}
                                 onClick={() => setForm({ tarefa: x })}
-                                className="text-primary text-xs"
-                              >
-                                {t("editar")}
-                              </button>
+                              />
                             )}
                             {x.podeExcluir && (
                               <BotaoDeAcao
                                 acao={excluirTarefaAcao}
                                 campos={{ id: x.id }}
                                 rotulo={t("excluir")}
+                                icone="excluir"
                                 confirmar={t("confirmarExcluir", { titulo: x.titulo })}
                                 perigo
                               />

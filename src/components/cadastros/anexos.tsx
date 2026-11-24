@@ -94,6 +94,7 @@ export function AnexosDoCadastro({
                     acao={removerAnexoAcao}
                     campos={{ id: a.id }}
                     rotulo={t("remover")}
+                    icone="excluir"
                     confirmar={t("confirmarRemover", { nome: a.nomeArquivo })}
                     perigo
                   />
