@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -130,17 +131,15 @@ export function ArquivosDoContrato({
                 {x.comentario && <span className="text-muted block text-xs italic">{x.comentario}</span>}
               </span>
               {podeBaixar && x.situacao === "disponivel" && (
-                <button
-                  type="button"
-                  className="text-primary text-xs font-medium"
+                <BotaoDeIcone
+                  tipo="baixar"
+                  rotulo={t("baixar")}
                   onClick={async () => {
                     const r = await linkDoArquivoDoContratoAcao(x.id);
                     if (r.erro || !r.url) return setErro(r.erro ?? td("erros.download"));
                     window.location.assign(r.url);
                   }}
-                >
-                  {t("baixar")}
-                </button>
+                />
               )}
             </li>
           ))}

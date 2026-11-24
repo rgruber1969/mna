@@ -512,7 +512,12 @@ export function FunilDeCompradoras({
                       e.dataTransfer.effectAllowed = "move";
                     }}
                     onDragEnd={() => setArrastado(null)}
-                    className={`${parada ? "bg-warning-soft" : "bg-background"} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-colors ${podeEditar ? "cursor-grab" : ""}`}
+                    // O cartão inteiro abre a gaveta da compradora (menu ⋮ e links seguem com a ação deles).
+                    onClick={(e) =>
+                      !(e.target as HTMLElement).closest("button, a, select, input, textarea, [role=menu]") &&
+                      setGaveta({ tipo: "compradora", id: c.id })
+                    }
+                    className={`${parada ? "bg-warning-soft" : "bg-background"} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-colors ${podeEditar ? "cursor-grab" : "cursor-pointer"}`}
                   >
                     <span
                       className={`absolute inset-y-0 left-0 w-1 ${parada ? "bg-warning-fill" : situacaoDe(c) === "descartada" ? "bg-border" : "bg-success"}`}
@@ -626,7 +631,8 @@ export function FunilDeCompradoras({
         <button
           type="button"
           onClick={() => setTelaCheia(true)}
-          className="border-border text-text hover:border-primary rounded-md border px-2.5 py-1 text-xs font-medium"
+          title={t("telaCheiaDica")}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-cartao inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-semibold"
         >
           ⤢ {t("telaCheia")}
         </button>

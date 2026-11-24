@@ -2,16 +2,19 @@ import type { ComponentProps } from "react";
 
 /**
  * Ícones das ações de linha (listas e tabelas), no lugar do texto: lápis
- * (editar), lixeira (excluir ou remover), seta (baixar). Sempre com dica
+ * (editar), lixeira (excluir ou remover), seta para baixo (baixar), lupa
+ * (visualizar) e seta para cima (nova versão). Sempre com dica
  * (title) e nome acessível (aria-label) iguais ao texto que substituem. Os
  * botões principais dos formulários (Salvar, Criar) continuam com texto.
  */
-export type TipoDeAcao = "editar" | "excluir" | "baixar";
+export type TipoDeAcao = "editar" | "excluir" | "baixar" | "visualizar" | "novaVersao";
 
 const DESENHOS: Record<TipoDeAcao, string> = {
   editar: "M4 20h4l11-11-4-4L4 16zM13 7l4 4",
   excluir: "M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",
   baixar: "M12 4v11M7 10l5 5 5-5M5 20h14",
+  visualizar: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4",
+  novaVersao: "M12 20V9M7 14l5-5 5 5M5 4h14",
 };
 
 export function IconeDeAcao({ tipo }: { tipo: TipoDeAcao }) {

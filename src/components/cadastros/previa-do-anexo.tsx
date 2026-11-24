@@ -1,5 +1,6 @@
 "use client";
 
+import { BotaoDeIcone } from "@/components/ui/icone-de-acao";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
@@ -157,9 +158,7 @@ export function Visualizar({
   const botao = "border-border text-text rounded-md border px-2 py-1 text-xs font-medium";
   return (
     <>
-      <button type="button" onClick={abrir} className="text-primary text-xs font-medium">
-        {t("visualizar")}
-      </button>
+      <BotaoDeIcone tipo="visualizar" rotulo={t("visualizar")} onClick={abrir} />
       <dialog
         ref={janela}
         aria-label={t("visualizando", { nome })}

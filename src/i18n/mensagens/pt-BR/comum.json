@@ -33,6 +33,7 @@
       "titulo": "Demonstração:",
       "padrao": "esta funcionalidade ainda é simulada; os dados e arquivos são de exemplo e nada é gravado de verdade."
     },
-    "gravadoAtualizando": "Gravado. Atualizando a tela…"
+    "gravadoAtualizando": "Gravado. Atualizando a tela…",
+    "carregando": "Carregando…"
   }
 }

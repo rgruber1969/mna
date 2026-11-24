@@ -538,7 +538,8 @@
       "ausente": "Ausente",
       "telaCheia": "Tela cheia",
       "sairDaTelaCheia": "Fechar a tela cheia",
-      "titulo": "Funil de compradoras"
+      "titulo": "Funil de compradoras",
+      "telaCheiaDica": "Abrir o funil num painel do tamanho da tela, com mais espaço para as colunas"
     },
     "inclusaoRapida": {
       "novaEmpresa": "Nova empresa",

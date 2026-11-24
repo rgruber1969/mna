@@ -1,5 +1,6 @@
 "use client";
 
+import { IconeDeAcao } from "@/components/ui/icone-de-acao";
 import { useFormatter, useTranslations } from "next-intl";
 import { enviarAnexoAcao, removerAnexoAcao } from "@/app/acoes/anexos";
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
@@ -79,8 +80,13 @@ export function AnexosDoCadastro({
                       {temPrevia(a.tipoDeConteudo) && (
                         <Visualizar id={a.id} tipo={a.tipoDeConteudo} nome={a.nomeArquivo} />
                       )}
-                      <a href={`/api/anexos/${a.id}`} className="text-primary text-xs font-medium">
-                        {t("baixar")}
+                      <a
+                        href={`/api/anexos/${a.id}`}
+                        title={t("baixar")}
+                        aria-label={t("baixar")}
+                        className="text-muted hover:bg-primary-soft hover:text-primary inline-grid h-7 w-7 place-items-center rounded-md"
+                      >
+                        <IconeDeAcao tipo="baixar" />
                       </a>
                     </>
                   )

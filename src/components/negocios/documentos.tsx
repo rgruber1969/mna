@@ -788,13 +788,11 @@ export function DataRoomDoNegocio({
                             />
                           )}
                           {ultima.podeBaixar && (
-                            <button
-                              type="button"
+                            <BotaoDeIcone
+                              tipo="baixar"
+                              rotulo={t("baixar")}
                               onClick={() => baixar(ultima.id)}
-                              className="text-primary font-medium"
-                            >
-                              {t("baixar")}
-                            </button>
+                            />
                           )}
                           {d.podeEditar && (
                             <BotaoDeIcone
@@ -807,9 +805,11 @@ export function DataRoomDoNegocio({
                             />
                           )}
                           {d.podeNovaVersao && !envio && (
-                            <button type="button" onClick={() => novaVersao(d)} className="text-primary">
-                              {t("novaVersao")}
-                            </button>
+                            <BotaoDeIcone
+                              tipo="novaVersao"
+                              rotulo={t("novaVersao")}
+                              onClick={() => novaVersao(d)}
+                            />
                           )}
                         </span>
                       </td>
@@ -882,13 +882,11 @@ export function DataRoomDoNegocio({
                                     />
                                   )}
                                   {v.podeBaixar && (
-                                    <button
-                                      type="button"
+                                    <BotaoDeIcone
+                                      tipo="baixar"
+                                      rotulo={t("baixar")}
                                       onClick={() => baixar(v.id)}
-                                      className="text-primary"
-                                    >
-                                      {t("baixar")}
-                                    </button>
+                                    />
                                   )}
                                   <a
                                     href={`/negocios/${dealId}?aba=mensagens&conversa=versao:${v.id}`}

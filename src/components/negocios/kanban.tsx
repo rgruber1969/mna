@@ -750,8 +750,14 @@ export function KanbanDeNegocios({
                         e.dataTransfer.effectAllowed = "move";
                       }}
                       onDragEnd={() => setArrastado(null)}
+                      // O cartão inteiro abre o painel (o menu ⋮ e os links continuam com a ação deles).
+                      onClick={(e) =>
+                        !(e.target as HTMLElement).closest(
+                          "button, a, select, input, textarea, [role=menu]",
+                        ) && abrir(c)
+                      }
                       style={{ viewTransitionName: animando === c.id ? "negocio-aberto" : undefined }}
-                      className={`${fundo} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-[border-color,transform] duration-150 hover:-translate-y-px ${c.podeMover ? "cursor-grab active:cursor-grabbing" : ""} ${aberto?.cartao.id === c.id ? "ring-primary ring-2" : ""}`}
+                      className={`${fundo} border-border group hover:border-primary relative overflow-hidden rounded-lg border p-3 pl-4 text-xs transition-[border-color,transform] duration-150 hover:-translate-y-px ${c.podeMover ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} ${aberto?.cartao.id === c.id ? "ring-primary ring-2" : ""}`}
                     >
                       <span
                         className={`absolute inset-y-0 left-0 w-1 ${cor ? cor.faixa : "bg-border"}`}
