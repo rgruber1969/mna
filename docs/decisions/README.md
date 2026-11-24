@@ -66,6 +66,7 @@ projeto e em `docs/projeto/`.
 | Telas de cadastro grandes | Abas por assunto, um único Salvar, aba com erro sinalizada e aberta sozinha, aba no endereço; criação com formulário curto e o restante nas abas | 2026-11-19 |
 | Usuários e acesso | Usuários, Perfis e Auditoria num item só do menu (Administração), com abas no topo das três telas | 2026-11-23 |
 | Tela do negócio | Abas verticais em grupos (Negócio, Trabalho, Comercial), como o painel do kanban; atalho único "Compradoras e ofertas" na etapa de prospecção; Resumo em consulta + Dados gerais; Etapas abre na linha do tempo (ajustes de 2026-11-24) | 2026-11-23 |
+| E-book e OnePager no data room | Cada versão é uma versão de documento (categorias próprias); o fluxo de revisão, aprovação e liberação fica por cima; liberar dá acesso ao comprador no data room | 2026-11-24 |
 | Funil de compradoras | Padrão do kanban de negócios na largura toda; coluna opcional "Preparação" com os teasers; atalhos de materiais e ofertas nos cabeçalhos; gaveta à direita; sem aba E-book | 2026-11-24 |
 | Linhas das listas | Linha destacada ao passar o mouse em todas as tabelas; nas listas principais, a linha inteira abre o registro; seletor "Por página" único (10, 25, 50, 100) | 2026-11-23 |
 | Configurações | Um item de menu "Configurações", com abas **verticais** em dois grupos (Tenant; Cadastros auxiliares), em ordem alfabética dentro de cada grupo (ajuste de 2026-11-23); cadastros auxiliares em tabela, com as ações em colunas e inclusão na última linha ("Adicionar") | 2026-11-19 |

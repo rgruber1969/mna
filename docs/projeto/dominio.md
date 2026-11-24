@@ -471,6 +471,15 @@ opcional).
   e-book **completo** (depois do NDA), **OnePager teaser** e **OnePager
   completo**.
 * **Formato na versão 1:** PDF (outros formatos no backlog).
+* **Arquivos no data room (decisão de 2026-11-24, opção B):** cada versão
+  do e-book ou do OnePager é uma versão de documento do data room, nas
+  categorias padrão "E-book teaser", "E-book completo", "OnePager teaser" e
+  "OnePager completo" (criadas em todos os tenants). Antivírus, busca por
+  conteúdo, lista de acesso e downloads auditados valem para elas. O fluxo de
+  revisão, aprovação e liberação fica por cima, na gaveta do funil; liberar
+  ao comprador dá às pessoas do lado comprador acesso àquela versão no data
+  room (completos só depois do NDA). Sem arquivo enviado (demonstração), a
+  versão recebe um PDF de exemplo.
 * **Conteúdo:** combinação de dados digitados no sistema, puxados do
   cadastro da empresa e do valuation, e arquivos anexados.
 * **Identidade visual:** do tenant, da empresa vendedora (logo enviada no

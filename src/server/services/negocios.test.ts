@@ -2086,9 +2086,15 @@ describe("e-book e OnePager (item 19, simulado: fluxo real)", () => {
       ["ebook_teaser", [1]],
     ]);
     expect(vistoA!.materiais[0].versoes[0].comentarios).toEqual([]);
+    // A versão é um documento do data room (categoria do material): liberar dá acesso ao lado comprador.
     const pdf = await eb.pdfDaVersaoDoEbook(acesso("externo"), v1.id);
     if ("erro" in pdf) throw new Error(pdf.erro);
-    expect(Buffer.from(pdf.conteudo, "base64").subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pdf).toHaveProperty("url");
+    const drExterno = await dataRoomDoNegocio(acesso("externo"), dealId);
+    expect(drExterno!.documentos.map((d) => [d.titulo, d.categoria])).toContainEqual([
+      "E-book teaser",
+      "E-book teaser",
+    ]);
     expect(await eb.pdfDaVersaoDoEbook(acesso("externo"), v2.id)).toMatchObject({
       erro: "ebook.erros.naoEncontrado",
     });

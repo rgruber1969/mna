@@ -102,6 +102,11 @@ export const CATEGORIAS_PADRAO = [
   ["tecnologia", "Tecnologia"],
   ["contencioso", "Contencioso"],
   ["outros", "Outros"],
+  // Materiais de apresentação (e-book e OnePager): cada versão é uma versão de documento destas categorias.
+  ["ebook_teaser", "E-book teaser"],
+  ["ebook_completo", "E-book completo"],
+  ["onepager_teaser", "OnePager teaser"],
+  ["onepager_completo", "OnePager completo"],
 ] as const;
 
 export type Categoria = { id: string; nome: string; emUso: number };

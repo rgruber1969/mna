@@ -1746,6 +1746,10 @@ export const ebookVersao = pgTable(
     aprovadoEm: timestamp("aprovado_em", { withTimezone: true }),
     liberadoPor: uuid("liberado_por").references(() => usuario.id, { onDelete: "set null" }),
     liberadoEm: timestamp("liberado_em", { withTimezone: true }),
+    /** Arquivo da versão no data room (categoria do material); vazio = versões antigas de demonstração. */
+    documentoVersaoId: uuid("documento_versao_id").references(() => documentoVersao.id, {
+      onDelete: "set null",
+    }),
   },
   (t) => [uniqueIndex("ebook_versao_numero_uq").on(t.tenantId, t.dealId, t.material, t.numero), isolamento()],
 ).enableRLS();

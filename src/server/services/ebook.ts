@@ -5,7 +5,11 @@ import { estaLigada } from "@/config/funcionalidades";
 import { pdfDeTexto } from "@/server/arquivos/pdf-simples";
 import { resultadoDoValuation, VALUATION_DE_EXEMPLO } from "@/config/valuation";
 import { comTenant } from "@/server/db/cliente";
+import { chaveDoArquivo, gravarArquivo } from "@/server/arquivos/armazenamento";
 import {
+  categoriaDocumento,
+  documento,
+  versaoAcesso,
   deal,
   ebookComentario,
   ebookVersao,
@@ -28,15 +32,21 @@ import {
   type EmpresaNoNegocio,
 } from "./negocios";
 import { notificar } from "./notificacoes";
+import { concluirEnvio, dataRoomDoNegocio, excluirVersao, iniciarEnvio, linkDeDownload } from "./documentos";
+import { AcessoNegado } from "./acesso";
 import type { Acao } from "./permissoes/catalogo";
 import { pode } from "./permissoes/verificador";
 
 /**
- * E-book e OnePager (item 19; dominio.md, "E-book e OnePager"), **simulado**:
- * o fluxo de situações é real (versões numeradas por material, comentários,
- * aprovação e liberação ao comprador, com permissões, auditoria e aviso no
- * sino), mas o PDF é um exemplo montado na hora, sem geração automática do
- * conteúdo, e o e-mail ao comprador não é enviado.
+ * E-book e OnePager (item 19; dominio.md, "E-book e OnePager"): o fluxo de
+ * situações é real (versões numeradas por material, comentários, aprovação e
+ * liberação ao comprador, com permissões, auditoria e aviso no sino). Cada
+ * versão é uma **versão de documento do data room** (decisão de 2026-11-24),
+ * na categoria do material ("E-book teaser" etc.): antivírus, busca, lista de
+ * acesso e downloads auditados valem para ela. Sem arquivo enviado
+ * (demonstração), a versão recebe um PDF de exemplo montado na hora. Liberar
+ * ao comprador dá às pessoas do lado comprador acesso àquela versão no data
+ * room; o e-mail ao comprador ainda não é enviado.
  *
  * - Quatro materiais por negócio: e-book teaser e completo, OnePager teaser
  *   e completo.
@@ -217,15 +227,44 @@ const DadosVersao = z.object({
     .default("tenant"),
   incluiValuation: z.boolean().default(false),
   observacoes: z.string().trim().max(2000, "ebook.erros.observacoesLongas").default(""),
+  /** Arquivo que o navegador vai enviar (PDF); sem ele, a versão recebe o PDF de exemplo. */
+  arquivo: z
+    .object({ nomeArquivo: z.string().trim().min(1).max(200), tamanho: z.number().int().positive() })
+    .optional(),
 });
 export type DadosVersaoDoEbook = z.input<typeof DadosVersao>;
 
-/** Nova versão de um material (lado vendedor, "E-book × criar"): número seguinte, em revisão. */
+/** Documento do material no negócio (o primeiro da categoria), para a nova versão entrar nele. */
+async function documentoDoMaterial(a: AcessoTenant, dealId: string, material: MaterialDoEbook) {
+  return comTenant(a.tenant.id, async (tx) => {
+    const [cat] = await tx
+      .select({ id: categoriaDocumento.id })
+      .from(categoriaDocumento)
+      .where(eq(categoriaDocumento.padrao, material));
+    const [doc] = cat
+      ? await tx
+          .select({ id: documento.id })
+          .from(documento)
+          .where(and(eq(documento.dealId, dealId), eq(documento.categoriaId, cat.id)))
+          .orderBy(asc(documento.criadoEm))
+          .limit(1)
+      : [];
+    return { categoriaId: cat?.id ?? null, documentoId: doc?.id ?? null };
+  });
+}
+
+/**
+ * Nova versão de um material (lado vendedor, "E-book × criar"): número
+ * seguinte, em revisão, gravada como nova versão do documento do material no
+ * data room (lista de acesso: o lado de quem cria). Com `arquivo`, devolve o
+ * link para o navegador enviar o PDF (depois, `concluirVersaoDoEbook`); sem
+ * ele, grava o PDF de exemplo e já conclui.
+ */
 export async function criarVersaoDoEbook(
   acesso: Acesso | null,
   dealId: string,
   dados: DadosVersaoDoEbook,
-): Promise<{ id: string; numero: number } | ErroDeServico> {
+): Promise<{ id: string; numero: number; url?: string } | ErroDeServico> {
   const a = exigirTenant(acesso);
   if (!estaLigada("ebook")) return desligada;
   const ctx = await contexto(a, dealId);
@@ -235,28 +274,84 @@ export async function criarVersaoDoEbook(
   const p = DadosVersao.safeParse(dados);
   if (!p.success) return { erro: p.error.issues[0].message };
   const d = p.data;
-  const criada = await comTenant(a.tenant.id, async (tx) => {
-    const [{ ultimo }] = await tx
+  if (d.arquivo && !d.arquivo.nomeArquivo.toLowerCase().endsWith(".pdf"))
+    return { erro: "ebook.erros.soPdf" };
+  const [{ ultimo }] = await comTenant(a.tenant.id, (tx) =>
+    tx
       .select({ ultimo: max(ebookVersao.numero) })
       .from(ebookVersao)
-      .where(and(eq(ebookVersao.dealId, dealId), eq(ebookVersao.material, d.material)));
+      .where(and(eq(ebookVersao.dealId, dealId), eq(ebookVersao.material, d.material))),
+  );
+  const numero = (ultimo ?? 0) + 1;
+  const tr = await tradutor();
+  const { categoriaId, documentoId } = await documentoDoMaterial(a, dealId, d.material);
+  const exemplo = d.arquivo ? null : await montarPdfDeExemplo(a, { ...d, numero, dealId });
+  const dr = await dataRoomDoNegocio(a, dealId).catch(() => null);
+  let envio;
+  try {
+    envio = await iniciarEnvio(a, dealId, {
+      documentoId: documentoId ?? undefined,
+      titulo: tr(`ebook.materiais.${d.material}`),
+      categoriaId: categoriaId ?? undefined,
+      nomeArquivo: d.arquivo?.nomeArquivo ?? exemplo!.nome,
+      tamanho: d.arquivo?.tamanho ?? exemplo!.conteudo.length,
+      comentario: [tr("ebook.versao", { numero }), d.observacoes].filter(Boolean).join(" · "),
+      usuarios: dr?.meuLado ?? [],
+    });
+  } catch (e) {
+    if (e instanceof AcessoNegado) return { erro: "ebook.erros.semPermissaoDocumentos" };
+    throw e;
+  }
+  if ("erro" in envio) return envio;
+  const criada = await comTenant(a.tenant.id, async (tx) => {
     const [v] = await tx
       .insert(ebookVersao)
       .values({
         tenantId: a.tenant.id,
         dealId,
         material: d.material,
-        numero: (ultimo ?? 0) + 1,
+        numero,
         identidade: d.identidade,
         incluiValuation: d.incluiValuation,
         observacoes: d.observacoes || null,
         criadoPor: a.usuario.id,
+        documentoVersaoId: envio.versaoId,
       })
       .returning({ id: ebookVersao.id, numero: ebookVersao.numero });
     return v;
   });
+  if (exemplo) {
+    // Demonstração: o servidor grava o PDF de exemplo e conclui o envio (antivírus, texto para a busca).
+    await gravarArquivo(
+      chaveDoArquivo(a.tenant.id, "documentos", dealId, envio.versaoId),
+      exemplo.conteudo,
+      "application/pdf",
+    );
+    const r = await concluirEnvio(a, envio.versaoId);
+    if ("erro" in r) {
+      await comTenant(a.tenant.id, (tx) => tx.delete(ebookVersao).where(eq(ebookVersao.id, criada.id)));
+      return r;
+    }
+  }
   await auditar(a, "ebook.versao_criada", "deal", dealId, { material: d.material, numero: criada.numero });
-  return criada;
+  return exemplo ? criada : { ...criada, url: envio.url };
+}
+
+/** Depois que o navegador enviou o arquivo: conclui a versão de documento (ou desfaz a versão do e-book). */
+export async function concluirVersaoDoEbook(acesso: Acesso | null, versaoId: string): Promise<Resultado> {
+  const a = exigirTenant(acesso);
+  if (!uuidValido(versaoId)) return { erro: "ebook.erros.naoEncontrado" };
+  const [v] = await comTenant(a.tenant.id, (tx) =>
+    tx.select().from(ebookVersao).where(eq(ebookVersao.id, versaoId)),
+  );
+  if (!v || v.criadoPor !== a.usuario.id || !v.documentoVersaoId)
+    return { erro: "ebook.erros.naoEncontrado" };
+  const r = await concluirEnvio(a, v.documentoVersaoId);
+  if ("erro" in r) {
+    await comTenant(a.tenant.id, (tx) => tx.delete(ebookVersao).where(eq(ebookVersao.id, versaoId)));
+    return r;
+  }
+  return { ok: true };
 }
 
 /** Carrega a versão e o contexto do negócio dela (null se a pessoa não a vê). */
@@ -369,6 +464,24 @@ export async function liberarVersaoDoEbook(
       if (completo && !compradorPassouDoNda(empresas, new Set(compradora ? [compradora] : []))) continue;
       usuarios.add(p.usuarioId);
     }
+    // A versão no data room passa a ser vista por essas pessoas do lado comprador.
+    if (v.documentoVersaoId && usuarios.size) {
+      const ja = new Set(
+        (
+          await tx
+            .select({ usuarioId: versaoAcesso.usuarioId })
+            .from(versaoAcesso)
+            .where(eq(versaoAcesso.versaoId, v.documentoVersaoId))
+        ).map((x) => x.usuarioId),
+      );
+      const novos = [...usuarios].filter((u) => !ja.has(u));
+      if (novos.length)
+        await tx
+          .insert(versaoAcesso)
+          .values(
+            novos.map((usuarioId) => ({ tenantId: a.tenant.id, versaoId: v.documentoVersaoId!, usuarioId })),
+          );
+    }
     for (const u of usuarios)
       await notificar(
         tx,
@@ -379,7 +492,7 @@ export async function liberarVersaoDoEbook(
           negocio: n ? nomeVisivel(n.numero, n.codinome) : "",
           material: tr(`ebook.materiais.${v.material}`),
         },
-        `/negocios/${v.dealId}?aba=ebook`,
+        `/negocios/${v.dealId}?aba=compradoras`,
       );
     return usuarios.size;
   });
@@ -392,6 +505,7 @@ export async function excluirVersaoDoEbook(acesso: Acesso | null, versaoId: stri
   const a = exigirTenant(acesso);
   const r = await exigirVersao(a, versaoId, "excluir", "em_revisao");
   if ("erro" in r) return r;
+  if (r.v.documentoVersaoId) await excluirVersao(a, r.v.documentoVersaoId).catch(() => null);
   await comTenant(a.tenant.id, (tx) => tx.delete(ebookVersao).where(eq(ebookVersao.id, versaoId)));
   await auditar(a, "ebook.excluido", "deal", r.v.dealId, { material: r.v.material, numero: r.v.numero });
   return { ok: true };
@@ -427,7 +541,7 @@ const SECOES = [
 export async function pdfDaVersaoDoEbook(
   acesso: Acesso | null,
   versaoId: string,
-): Promise<{ nome: string; conteudo: string } | ErroDeServico> {
+): Promise<{ nome: string; conteudo: string } | { url: string } | ErroDeServico> {
   const a = exigirTenant(acesso);
   if (!estaLigada("ebook")) return desligada;
   const r = await versaoVisivel(a, versaoId);
@@ -436,6 +550,38 @@ export async function pdfDaVersaoDoEbook(
   if (r.ctx.vendedor && !a.administrador && !(await pode(a, "ebook", "baixar", { dealId: r.v.dealId })))
     return { erro: "ebook.erros.semPermissao" };
   const { v } = r;
+  // Versão no data room: link temporário do arquivo (download auditado pelo data room).
+  if (v.documentoVersaoId) {
+    try {
+      const link = await linkDeDownload(a, v.documentoVersaoId);
+      if ("url" in link)
+        await auditar(a, "ebook.baixado", "deal", v.dealId, { material: v.material, numero: v.numero });
+      return link;
+    } catch (e) {
+      if (e instanceof AcessoNegado) return { erro: "ebook.erros.semPermissaoDocumentos" };
+      throw e;
+    }
+  }
+  const pdf = await montarPdfDeExemplo(a, v);
+  await auditar(a, "ebook.baixado", "deal", v.dealId, {
+    material: v.material,
+    numero: v.numero,
+    simulada: true,
+  });
+  return { nome: pdf.nome, conteudo: Buffer.from(pdf.conteudo).toString("base64") };
+}
+
+/** PDF de exemplo (estrutura do material com textos de demonstração e, se marcado, a faixa do valuation). */
+async function montarPdfDeExemplo(
+  a: AcessoTenant,
+  v: {
+    dealId: string;
+    material: MaterialDoEbook;
+    numero: number;
+    identidade: IdentidadeDoEbook;
+    incluiValuation: boolean;
+  },
+): Promise<{ nome: string; conteudo: Uint8Array }> {
   const [n] = await comTenant(a.tenant.id, (tx) =>
     tx.select({ codinome: deal.codinome }).from(deal).where(eq(deal.id, v.dealId)),
   );
@@ -474,12 +620,6 @@ export async function pdfDaVersaoDoEbook(
   const linhas = [...cabecalho, ...corpo];
   const paginas: string[][] = [];
   for (let i = 0; i < linhas.length; i += 48) paginas.push(linhas.slice(i, i + 48));
-  const pdf = pdfDeTexto(paginas);
-  await auditar(a, "ebook.baixado", "deal", v.dealId, {
-    material: v.material,
-    numero: v.numero,
-    simulada: true,
-  });
   const nome = `${v.material.replace("_", "-")}-v${v.numero}-${(n?.codinome ?? "projeto").replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase()}-demonstracao.pdf`;
-  return { nome, conteudo: Buffer.from(pdf).toString("base64") };
+  return { nome, conteudo: pdfDeTexto(paginas) };
 }

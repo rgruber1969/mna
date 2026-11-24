@@ -102,7 +102,12 @@
       "identidadeInvalida": "Escolha a identidade visual.",
       "observacoesLongas": "As observações passaram de 2.000 caracteres.",
       "comentarioVazio": "Escreva o comentário.",
-      "comentarioLongo": "O comentário passou de 4.000 caracteres."
-    }
+      "comentarioLongo": "O comentário passou de 4.000 caracteres.",
+      "soPdf": "Envie o material em PDF.",
+      "semPermissaoDocumentos": "Para gravar ou abrir o material, é preciso também a permissão de Documentos neste negócio."
+    },
+    "arquivo": "Arquivo (PDF)",
+    "arquivoAjuda": "A versão fica no data room, na categoria do material. Sem arquivo (demonstração), entra um PDF de exemplo.",
+    "erroEnvio": "Não foi possível enviar o arquivo. Tente de novo."
   }
 }

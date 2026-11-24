@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import {
   aprovarVersaoDoEbookAcao,
   comentarVersaoDoEbookAcao,
+  concluirVersaoDoEbookAcao,
   criarVersaoDoEbookAcao,
   excluirVersaoDoEbookAcao,
   liberarVersaoDoEbookAcao,
@@ -76,13 +77,23 @@ export function NovaVersao({
       action={(f) =>
         iniciar(async () => {
           setErro(null);
+          const arquivo = f.get("arquivo");
+          const comArquivo = arquivo instanceof File && arquivo.size > 0 ? arquivo : null;
           const r = await criarVersaoDoEbookAcao(dealId, {
             material: String(f.get("material")) as (typeof MATERIAIS)[number],
             identidade: String(f.get("identidade")) as (typeof IDENTIDADES)[number],
             incluiValuation: f.get("incluiValuation") === "on",
             observacoes: String(f.get("observacoes") ?? ""),
+            arquivo: comArquivo ? { nomeArquivo: comArquivo.name, tamanho: comArquivo.size } : undefined,
           });
           if (r.erro) return setErro(r.erro);
+          // Com arquivo: o navegador envia direto ao armazenamento e o servidor confere (antivírus).
+          if (comArquivo && r.url && r.id) {
+            const envio = await fetch(r.url, { method: "PUT", body: comArquivo });
+            if (!envio.ok) return setErro(t("erroEnvio"));
+            const c = await concluirVersaoDoEbookAcao(r.id);
+            if (c.erro) return setErro(c.erro);
+          }
           setGravado(true);
           iniciarAtualizacao(() => aoCriar());
         })
@@ -113,6 +124,11 @@ export function NovaVersao({
       <label className="text-text flex items-start gap-2 text-sm">
         <input type="checkbox" name="incluiValuation" className="mt-1" />
         <span>{t("incluiValuation")}</span>
+      </label>
+      <label className="block text-sm">
+        <span className="text-text mb-1 block font-medium">{t("arquivo")}</span>
+        <input type="file" name="arquivo" accept="application/pdf,.pdf" className="text-sm" />
+        <span className="text-muted mt-1 block text-xs">{t("arquivoAjuda")}</span>
       </label>
       <label className="block text-sm">
         <span className="text-text mb-1 block font-medium">{t("observacoes")}</span>
@@ -164,7 +180,9 @@ export function Versao({
     iniciar(async () => {
       setErro(null);
       const r = await pdfDaVersaoDoEbookAcao(v.id);
-      if (r.erro || !r.conteudo || !r.nome) return setErro(r.erro ?? "");
+      if (r.erro) return setErro(r.erro);
+      if (r.url) return void window.open(r.url, "_blank", "noopener");
+      if (!r.conteudo || !r.nome) return setErro("");
       baixarBase64(r.conteudo, r.nome, "application/pdf");
     });
   return (

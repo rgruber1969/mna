@@ -138,6 +138,21 @@ export async function completarCadastrosPadrao(tenantId: string): Promise<void> 
       await tx
         .insert(categoriaDocumento)
         .values(CATEGORIAS_PADRAO.map(([padrao, nome]) => ({ tenantId, nome, padrao })));
+    else {
+      // Categorias que o e-book e o OnePager usam: entram também nos tenants que já tinham categorias.
+      const existentes = new Set(
+        (await tx.select({ padrao: categoriaDocumento.padrao }).from(categoriaDocumento)).map(
+          (c) => c.padrao,
+        ),
+      );
+      const faltam = CATEGORIAS_PADRAO.filter(
+        ([padrao]) => padrao.startsWith("ebook_") || padrao.startsWith("onepager_"),
+      ).filter(([padrao]) => !existentes.has(padrao));
+      if (faltam.length)
+        await tx
+          .insert(categoriaDocumento)
+          .values(faltam.map(([padrao, nome]) => ({ tenantId, nome, padrao })));
+    }
     const [doContratante] = await tx
       .select({ id: empresa.id })
       .from(empresa)

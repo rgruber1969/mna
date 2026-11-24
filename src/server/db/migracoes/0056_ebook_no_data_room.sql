@@ -1,0 +1,2 @@
+ALTER TABLE "ebook_versao" ADD COLUMN "documento_versao_id" uuid;--> statement-breakpoint
+ALTER TABLE "ebook_versao" ADD CONSTRAINT "ebook_versao_documento_versao_id_documento_versao_id_fk" FOREIGN KEY ("documento_versao_id") REFERENCES "public"."documento_versao"("id") ON DELETE set null ON UPDATE no action;
