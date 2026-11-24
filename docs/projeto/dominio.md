@@ -555,6 +555,15 @@ Regras construídas (itens 9 e 10, respostas E1–E7, 2026-11-19):
   cópias próprias e não mudam.
 * **Linha do tempo** (item 10): barras pelas datas, só leitura; a edição
   gráfica (arrastar e ligar dependências) aparece como demonstração.
+* **Diagrama** (item 10, simulado, construído em 2026-11-23): terceira
+  forma de ver a aba Etapas (Lista · Linha do tempo · Diagrama), com as
+  etapas reais do negócio em colunas: quem depende de outra fica na coluna
+  seguinte, com seta; quem não tem dependência fica na coluna da anterior
+  (em paralelo); subetapas dentro da etapa-mãe; cor pela situação. Clicar
+  (ou Tab e Enter) mostra os detalhes da etapa (datas, dependência,
+  subetapas) com os links para documentos e tarefas dela; zoom de 50% a
+  160%. "Editar no diagrama" deixa arrastar as caixas, mas **nada é
+  gravado** (aviso de demonstração); a edição real continua na lista.
 
 Etapas padrão:
 

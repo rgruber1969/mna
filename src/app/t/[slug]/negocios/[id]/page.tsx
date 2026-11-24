@@ -22,7 +22,7 @@ import { formatarCnpj } from "@/config/documentos";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { ExportarNegocio } from "@/components/negocios/exportar";
-import { estaLigada } from "@/config/funcionalidades";
+import { estaLigada, modoDa } from "@/config/funcionalidades";
 import {
   FormDadosDoNegocio,
   FormIncluirEmpresa,
@@ -356,6 +356,7 @@ async function Painel({
                   hoje={hoje}
                   documentosPorEtapa={documentosPorEtapa}
                   tarefasPorEtapa={tarefasPorEtapa}
+                  diagrama={modoDa("diagramaDeEtapas")}
                 />
               </PainelDeAba>
             )}

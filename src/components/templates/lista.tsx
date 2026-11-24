@@ -30,7 +30,7 @@ function LinhaDoTemplate({ template, opcoes }: { template: Template; opcoes: Opc
   const base = `modelos.${template.codigo}`;
   return (
     <tr className={estiloTabela.linha}>
-      <td className={estiloTabela.td}>
+      <td className={`${estiloTabela.td} min-w-56`}>
         <span className="text-text block font-medium">{t(`${base}.nome`)}</span>
         <span className="text-muted block text-xs">{t(`${base}.descricao`)}</span>
       </td>
