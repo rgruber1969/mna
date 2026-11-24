@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funil e materiais</title>
+<style>
+  :root {
+    --fundo: #f4f3ee; --superficie: #ffffff; --texto: #1f2418; --suave: #6b7060; --borda: #dcdcd2;
+    --primaria: #4f5a2e; --primaria-suave: #e9ecdc; --cta: #c05600; --ok: #2f7d4f; --ok-suave: #e3f1e8;
+    --alerta: #9a6a00; --alerta-suave: #fbf1d6; --perigo: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--texto); font: 14px/1.5 Lato, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 21px; margin: 40px 0 8px; padding-top: 16px; border-top: 1px solid var(--borda); }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  p, li { max-width: 78ch; }
+  .sub { color: var(--suave); margin: 0 0 16px; }
+  .rec { background: var(--primaria-suave); border-left: 4px solid var(--primaria); padding: 10px 14px; border-radius: 8px; max-width: 90ch; }
+  .regra { color: var(--suave); font-size: 12px; }
+  table.cmp { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  table.cmp th, table.cmp td { border-bottom: 1px solid var(--borda); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.cmp th { background: var(--primaria-suave); color: var(--primaria); }
+  .quadro { background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; padding: 16px; margin: 12px 0; overflow: hidden; }
+  .legenda { font-size: 12px; color: var(--suave); margin-top: 6px; }
+  .lado { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .lado { grid-template-columns: 1fr; } }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--borda); color: var(--suave); }
+  .tag.atual { border-color: var(--suave); }
+  .tag.prop { border-color: var(--primaria); color: var(--primaria); }
+
+  /* Kanban (padrão do kanban de negócios) */
+  .kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .col { background: #f7f7f2; border: 1px solid var(--borda); border-radius: 10px; padding: 8px; min-height: 230px; }
+  .col.opcional { border-style: dashed; background: #fbfbf8; }
+  .col h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; display: flex; align-items: center; gap: 6px; }
+  .col h4 .n { margin-left: auto; background: var(--primaria-suave); color: var(--primaria); border-radius: 999px; padding: 0 7px; font-size: 11px; }
+  .ic { width: 16px; height: 16px; stroke: var(--primaria); fill: none; stroke-width: 1.8; }
+  .atalhos { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; }
+  .atalho { font-size: 11px; font-weight: 600; color: var(--primaria); background: var(--superficie); border: 1px solid var(--primaria); border-radius: 6px; padding: 2px 7px; }
+  .atalho.cta { background: var(--cta); border-color: var(--cta); color: #fff; }
+  .card { background: var(--superficie); border: 1px solid var(--borda); border-left: 4px solid var(--ok); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; }
+  .card.amarelo { border-left-color: var(--alerta); }
+  .card b { display: block; font-size: 13px; }
+  .card .meta { color: var(--suave); }
+  .card .linha { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .mais { border: 1px solid var(--borda); border-radius: 6px; padding: 0 6px; color: var(--suave); }
+  .mat { background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; }
+  .mat .sit { font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; }
+  .sit.rev { background: var(--alerta-suave); color: var(--alerta); }
+  .sit.ok { background: var(--ok-suave); color: var(--ok); }
+  .sit.apr { background: var(--primaria-suave); color: var(--primaria); }
+
+  /* Funil atual (espremido) */
+  .apertado { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-width: 760px; }
+  .apertado .col { min-height: 150px; padding: 6px; }
+  .apertado .card { border-left-width: 1px; }
+
+  /* Linha das etapas */
+  .trilha { display: flex; justify-content: space-between; position: relative; padding: 8px 6px 0; }
+  .trilha::before { content: ""; position: absolute; left: 30px; right: 30px; top: 21px; height: 2px; background: var(--borda); }
+  .passo { position: relative; text-align: center; font-size: 11px; color: var(--suave); width: 12%; }
+  .passo .bola { width: 26px; height: 26px; margin: 0 auto 4px; border-radius: 50%; border: 2px solid var(--borda); background: var(--superficie); display: grid; place-items: center; font-weight: 700; color: var(--texto); }
+  .passo.feito .bola { border-color: var(--ok); color: var(--ok); }
+  .passo.agora .bola { border-color: var(--primaria); background: var(--primaria); color: #fff; }
+  .passo .atalho { display: inline-block; margin-top: 4px; }
+
+  /* Diagrama no estilo da trilha */
+  .diag { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; align-items: start; }
+  .no { text-align: center; font-size: 11px; color: var(--suave); padding: 4px; }
+  .no .bola { width: 30px; height: 30px; margin: 0 auto 4px; border-radius: 50%; border: 2px solid var(--borda); background: var(--superficie); display: grid; place-items: center; font-weight: 700; color: var(--texto); }
+  .no.feito .bola { border-color: var(--ok); color: var(--ok); }
+  .no.agora .bola { border-color: var(--primaria); background: var(--primaria); color: #fff; }
+  .subs { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; align-items: center; }
+  .subs span { font-size: 10px; border: 1px solid var(--borda); border-radius: 999px; padding: 0 6px; background: var(--superficie); }
+
+  /* Gaveta */
+  .gaveta { display: grid; grid-template-columns: 1fr 360px; gap: 0; border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; background: var(--superficie); }
+  .gaveta .fundo { background: #e9e8e0; padding: 16px; color: var(--suave); font-size: 12px; }
+  .gaveta aside { padding: 16px; border-left: 1px solid var(--borda); font-size: 12px; }
+  .gaveta aside h4 { margin: 0 0 8px; font-size: 15px; }
+  ol.q li { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Funil de compradoras, materiais e ofertas</h1>
+  <p class="sub">Proposta v1 · 23/11/2026 · para decisão do responsável. Todos os nomes e números são fictícios.</p>
+
+  <p class="rec"><b>Já feito nesta rodada:</b> Templates saiu do menu e virou a aba <b>Templates</b> em Configurações › Cadastros auxiliares. O restante abaixo é proposta e ainda não foi implementado.</p>
+
+  <!-- 1 -->
+  <h2>1. Diagrama das etapas × linha das etapas do negócio</h2>
+  <p>Você tem razão: os dois ficaram diferentes. A <b>linha das etapas</b> do cabeçalho do negócio, que também aparece quando ele é aberto pelo kanban, usa círculos numerados, datas e a situação ("em dia"). O <b>diagrama</b> usa caixas retangulares com setas. As duas linguagens visuais mostram a mesma coisa de jeitos diferentes.</p>
+  <div class="lado">
+    <div class="quadro">
+      <span class="tag atual">Hoje: linha das etapas (cabeçalho)</span>
+      <div class="trilha" style="margin-top:10px">
+        <div class="passo feito"><div class="bola">1</div>Prospecção</div>
+        <div class="passo feito"><div class="bola">2</div>Negociação</div>
+        <div class="passo feito"><div class="bola">3</div>Term Sheet</div>
+        <div class="passo agora"><div class="bola">4</div>Diligência</div>
+        <div class="passo"><div class="bola">5</div>QPA</div>
+        <div class="passo"><div class="bola">6</div>Closing</div>
+      </div>
+    </div>
+    <div class="quadro">
+      <span class="tag prop">Proposta D2: diagrama na mesma linguagem</span>
+      <div class="diag" style="margin-top:10px">
+        <div class="no feito"><div class="bola">1</div>Prospecção</div>
+        <div class="no feito"><div class="bola">2</div>Negociação</div>
+        <div class="no feito"><div class="bola">3</div>Term Sheet</div>
+        <div class="no agora"><div class="bola">4</div>Diligência
+          <div class="subs"><span>jurídica</span><span>contábil</span><span>fiscal</span></div></div>
+        <div class="no"><div class="bola">5</div>QPA</div>
+        <div class="no"><div class="bola">6</div>Closing</div>
+      </div>
+      <p class="legenda">As etapas em paralelo ficam empilhadas na mesma coluna e as subetapas aparecem como pílulas abaixo da etapa-mãe. A seta só aparece quando a dependência pula colunas.</p>
+    </div>
+  </div>
+  <table class="cmp">
+    <tr><th>Opção</th><th>Prós</th><th>Contras</th></tr>
+    <tr><td><b>D1</b> Manter as caixas</td><td>Cabe mais texto (datas e subetapas)</td><td>Fica fora do padrão do cabeçalho, e a pessoa aprende duas linguagens</td></tr>
+    <tr><td><b>D2</b> Círculos como a linha das etapas (recomendada)</td><td>Um padrão só. Mantém zoom, clique para detalhes e paralelismo</td><td>Menos texto em cada nó (os detalhes vão para o painel ao clicar)</td></tr>
+  </table>
+
+  <!-- 2 -->
+  <h2>2. Materiais e ofertas como atalhos das etapas</h2>
+  <p>Pedido: os teasers (e-book e OnePager) ficam dentro da <b>Prospecção</b>, com uma etapa opcional (que pode ser pulada) antes de "Prospectada" no funil e um atalho especial para eles. Os <b>completos</b> e as <b>ofertas</b> ganham atalhos a partir de "NDA assinado". Os atalhos servem para consultar e editar.</p>
+
+  <div class="quadro">
+    <span class="tag prop">Proposta A: coluna opcional "Preparação" e atalhos no cabeçalho das colunas</span>
+    <div class="kanban" style="margin-top:10px">
+      <div class="col opcional">
+        <h4><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h12l4 4v12H4z M8 12h8 M8 16h5"/></svg>Preparação<span class="n">opcional</span></h4>
+        <div class="mat"><b>E-book teaser</b> v2 <span class="sit ok">Disponível</span><div class="linha"><span class="atalho">Abrir</span><span class="atalho">Nova versão</span></div></div>
+        <div class="mat"><b>OnePager teaser</b> v1 <span class="sit rev">Em revisão</span><div class="linha"><span class="atalho">Abrir</span><span class="atalho">Comentar</span></div></div>
+        <p class="legenda">Coluna do negócio, não de uma compradora. Some quando a pessoa a recolhe ("pular").</p>
+      </div>
+      <div class="col">
+        <h4><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>Prospectada<span class="n">2</span></h4>
+        <div class="atalhos"><span class="atalho">Teasers (2)</span></div>
+        <div class="card"><b>Compradora Alfa S.A.</b><span class="meta">desde 02/10 · 2 pessoas</span><div class="linha"><span>AL · BM</span><span class="mais">⋮</span></div></div>
+        <div class="card amarelo"><b>Grupo Beta</b><span class="meta">desde 15/09 · sem contato há 20 dias</span><div class="linha"><span>CR</span><span class="mais">⋮</span></div></div>
+      </div>
+      <div class="col">
+        <h4><svg class="ic" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-6z"/></svg>Teaser enviado<span class="n">1</span></h4>
+        <div class="card"><b>Gama Investimentos</b><span class="meta">teaser v2 em 10/11</span><div class="linha"><span>DS</span><span class="mais">⋮</span></div></div>
+      </div>
+      <div class="col">
+        <h4><svg class="ic" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z M9 14l2 2 4-4"/></svg>NDA assinado<span class="n">1</span></h4>
+        <div class="atalhos"><span class="atalho">Completos (2)</span><span class="atalho cta">Registrar oferta</span></div>
+        <div class="card"><b>Delta Participações</b><span class="meta">NDA em 18/11 · e-book completo v1</span><div class="linha"><span>EF · GH</span><span class="mais">⋮</span></div></div>
+      </div>
+      <div class="col">
+        <h4><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16v10H4z M4 7l8 6 8-6"/></svg>Proposta recebida<span class="n">1</span></h4>
+        <div class="card"><b>Épsilon Holding</b><span class="meta">2 ofertas · última R$ 71,0 mi</span><div class="linha"><span class="atalho">Ofertas (2)</span><span class="mais">⋮</span></div></div>
+      </div>
+      <div class="col">
+        <h4><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Escolhida<span class="n">0</span></h4>
+      </div>
+      <div class="col">
+        <h4><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12 M18 6L6 18"/></svg>Descartada<span class="n">0</span></h4>
+      </div>
+    </div>
+    <p class="legenda">Os atalhos abrem uma gaveta à direita (seção 3) com as versões, os comentários, a aprovação, a liberação e o PDF. Na linha das etapas do cabeçalho, a Prospecção ganha o atalho "Teasers →", ao lado do "Compradoras e ofertas →" que já existe.</p>
+  </div>
+
+  <table class="cmp">
+    <tr><th>Opção</th><th>Prós</th><th>Contras</th></tr>
+    <tr><td><b>A</b> Coluna opcional "Preparação" e atalhos nos cabeçalhos (recomendada)</td><td>Segue o seu pedido: o preparo do material aparece antes de prospectar. Os atalhos ficam onde a ação acontece (teaser antes de prospectar, completo depois do NDA). A aba "E-book" deixa de existir.</td><td>A coluna tem cartões de outro tipo (materiais, e não compradoras). Isso precisa ficar claro na tela: borda tracejada, sem arrastar.</td></tr>
+    <tr><td><b>B</b> Só atalhos, sem coluna nova</td><td>O funil continua só com compradoras e fica mais simples</td><td>O preparo dos teasers fica escondido até alguém abrir o atalho</td></tr>
+    <tr><td><b>C</b> Manter a aba "E-book" e acrescentar os atalhos</td><td>Dois caminhos</td><td>Duplica a navegação (você pediu para tirar a aba)</td></tr>
+  </table>
+  <p class="regra">Regras de origem: hover nunca é o único caminho para uma ação, e os atalhos são botões visíveis (desktop-app-ui, regra 5). A ação mais comum fica fixa e visível, e "Registrar oferta" usa a cor de destaque, como um CTA (desktop-app-ui, regra 1; botão laranja decidido na v3).</p>
+
+  <!-- 3 -->
+  <h2>3. Gaveta para consultar e editar os materiais e as ofertas</h2>
+  <div class="gaveta">
+    <div class="fundo">Funil de compradoras continua visível ao fundo…</div>
+    <aside>
+      <h4>Teasers</h4>
+      <p><b>E-book teaser</b> · v2 <span class="sit ok mat" style="border:0;padding:1px 7px">Disponível ao comprador</span><br><span class="legenda">liberado por Advisor Exemplo em 10/11</span></p>
+      <p><span class="atalho">Abrir PDF</span> <span class="atalho">Nova versão</span></p>
+      <p><b>OnePager teaser</b> · v1 <span class="sit rev">Em revisão</span></p>
+      <p class="legenda">"Ajustar os números do sumário" — Vendedora Exemplo, 21/11</p>
+      <p><span class="atalho">Comentar</span> <span class="atalho">Aprovar</span></p>
+    </aside>
+  </div>
+  <p class="regra">Regra de origem: painel lateral de detalhe à direita, com 320 a 400 px; o Esc fecha (desktop-app-ui, regras 1 e 6). A gaveta é a mesma para Teasers, Completos e Ofertas.</p>
+
+  <!-- 4 -->
+  <h2>4. Funil num painel maior, no padrão do kanban de negócios</h2>
+  <p>Hoje o funil fica dentro da página do negócio (limite de cerca de 1.150 px). As 6 colunas ficam com uns 180 px cada, e os nomes longos quebram em 4 linhas. Comparado com o kanban de negócios, o funil não tem: rolagem horizontal com coluna mínima de 200 px, ícone e contador nas colunas, cor do prazo nos cartões, fotos da equipe, menu ⋮ com "Mover para", "Desfazer" depois de arrastar e painel ao clicar.</p>
+  <div class="lado">
+    <div class="quadro">
+      <span class="tag atual">Hoje: embutido</span>
+      <div class="apertado" style="margin-top:10px">
+        <div class="col"><h4>Prosp.<span class="n">0</span></h4></div>
+        <div class="col"><h4>Teaser<span class="n">0</span></h4></div>
+        <div class="col"><h4>NDA<span class="n">0</span></h4></div>
+        <div class="col"><h4>Proposta<span class="n">1</span></h4><div class="card"><b>Épsilon Holding Participações Ltda.</b><span class="meta">Mover para…</span></div></div>
+        <div class="col"><h4>Escolhida<span class="n">0</span></h4></div>
+        <div class="col"><h4>Descart.<span class="n">0</span></h4></div>
+      </div>
+    </div>
+    <div class="quadro">
+      <span class="tag prop">Proposta F3: largura total, mesmo padrão do kanban</span>
+      <p class="legenda" style="margin-top:10px">Veja o quadro da seção 2: colunas com ícone e contador, cartões com cor e fotos, menu ⋮, rolagem horizontal só dentro do quadro e a página inteira na largura da tela quando a aba "Compradoras e ofertas" está aberta.</p>
+    </div>
+  </div>
+  <table class="cmp">
+    <tr><th>Opção</th><th>Prós</th><th>Contras</th></tr>
+    <tr><td><b>F1</b> Manter embutido, só com o visual do kanban</td><td>Menor mudança</td><td>Continua apertado; com a coluna "Preparação" seriam 7 colunas em 1.150 px</td></tr>
+    <tr><td><b>F2</b> Abrir num painel central grande (como o do kanban)</td><td>Bastante espaço</td><td>Um painel sobre a página do negócio, que muitas vezes já foi aberta pelo painel do kanban: ficaria um painel sobre outro</td></tr>
+    <tr><td><b>F3</b> A aba "Compradoras e ofertas" usa a largura toda e os componentes do kanban de negócios (recomendada)</td><td>Mesmo padrão visual e de uso (arrastar com "Desfazer", menu ⋮, teclado, cores). Cabem as 7 colunas, e a rolagem horizontal fica só dentro do quadro.</td><td>Precisa extrair do kanban de negócios as peças comuns (coluna, cartão, menu, Desfazer). Mexe na página do negócio, que está com a sessão principal.</td></tr>
+  </table>
+  <p class="regra">Regras de origem: em 1.280 px e acima, nada de rolagem horizontal na página, só dentro do quadro (desktop-app-ui, regra 2 e checklist). Arrastar sempre com alternativa por menu ou teclado e com Desfazer (regra 7). Motion só funcional (regra 9).</p>
+
+  <!-- 5 -->
+  <h2>5. Perguntas para decidir</h2>
+  <ol class="q">
+    <li><b>Diagrama:</b> D2 (círculos como a linha das etapas)?</li>
+    <li><b>Etapa opcional antes de "Prospectada":</b> é uma coluna do <i>funil de compradoras</i> (opção A) ou uma <i>etapa do negócio</i> antes da Prospecção? Que nome usar: "Preparação", "Material de apresentação" ou outro?</li>
+    <li><b>Ofertas:</b> o atalho "Registrar oferta" fica só em "NDA assinado" ou também em "Proposta recebida", que é para onde a compradora vai quando a oferta é registrada (regra O1)?</li>
+    <li><b>Aba "E-book":</b> pode sair, ficando só os atalhos e a gaveta (opção A)?</li>
+    <li><b>Funil:</b> F3 (largura total com os componentes do kanban)? Como mexe na página do negócio, prefiro combinar a ordem com a sessão principal, que está nesses arquivos.</li>
+  </ol>
+</main>
+</body>
+</html>
