@@ -58,13 +58,6 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M14 17.5l1.2 1.2 2.3-2.4" />
     </>
   ),
-  // Folha com chaves {} (templates com campos a preencher).
-  modelo: (
-    <>
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-      <path d="M14 3v5h5M10 12c-1 0-1 .8-1 1.5S8.5 15 8 15c.5 0 1 .3 1 1.5s0 1.5 1 1.5M14 12c1 0 1 .8 1 1.5s.5 1.5 1 1.5c-.5 0-1 .3-1 1.5s0 1.5-1 1.5" />
-    </>
-  ),
   // Barras com linha de tendência (valuation).
   grafico: <path d="M4 20h16M7 16v-4M11 16V9M15 16v-6M19 16V6M6 9l5-4 4 3 5-4" />,
   engrenagem: (

@@ -670,8 +670,9 @@ Etapas padrão:
   **preenchimento de campos** (o sistema gera o DOCX preenchido; a edição
   acontece no Word).
 * **Templates na demonstração** (item 13, simulado, construído em
-  2026-11-23; modelos da resposta D7): menu **Templates** (quem vê
-  negócios), com lista fixa de modelos: para o **negócio**, NDA, Term Sheet
+  2026-11-23; modelos da resposta D7): aba **Templates** em Configurações
+  › Cadastros auxiliares (quem vê os cadastros gerais; antes era item do
+  menu, mudado a pedido em 2026-11-23), com lista fixa de modelos: para o **negócio**, NDA, Term Sheet
   e Procuração (negócio, tipo, vendedoras com CNPJ, compradoras, valor
   estimado, previsão de fechamento, escritório, data); para o
   **contrato**, mandato de venda e carta de honorários (partes, objeto,
