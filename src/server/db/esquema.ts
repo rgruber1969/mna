@@ -1712,3 +1712,54 @@ export const condicoesDoNegocio = pgTable(
   },
   (t) => [uniqueIndex("condicoes_do_negocio_deal_uq").on(t.tenantId, t.dealId), isolamento()],
 ).enableRLS();
+
+// --- E-book e OnePager (item 19, simulado: fluxo real, PDF de exemplo) -----------------------
+
+export type MaterialDoEbook = "ebook_teaser" | "ebook_completo" | "onepager_teaser" | "onepager_completo";
+export type SituacaoDoEbook = "em_revisao" | "aprovada" | "disponivel";
+export type IdentidadeDoEbook = "tenant" | "vendedora" | "advisor" | "combinada";
+
+/**
+ * Versão de um material de apresentação do negócio: o advisor monta, a
+ * vendedora comenta e aprova, e quem tem "liberar" a deixa disponível ao
+ * lado comprador (dominio.md, "E-book e OnePager").
+ */
+export const ebookVersao = pgTable(
+  "ebook_versao",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    material: text("material").$type<MaterialDoEbook>().notNull(),
+    numero: integer("numero").notNull(),
+    situacao: text("situacao").$type<SituacaoDoEbook>().notNull().default("em_revisao"),
+    identidade: text("identidade").$type<IdentidadeDoEbook>().notNull().default("tenant"),
+    incluiValuation: boolean("inclui_valuation").notNull().default(false),
+    observacoes: text("observacoes"),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    aprovadoPor: uuid("aprovado_por").references(() => usuario.id, { onDelete: "set null" }),
+    aprovadoEm: timestamp("aprovado_em", { withTimezone: true }),
+    liberadoPor: uuid("liberado_por").references(() => usuario.id, { onDelete: "set null" }),
+    liberadoEm: timestamp("liberado_em", { withTimezone: true }),
+  },
+  (t) => [uniqueIndex("ebook_versao_numero_uq").on(t.tenantId, t.dealId, t.material, t.numero), isolamento()],
+).enableRLS();
+
+/** Comentários de uma versão (em geral da vendedora, antes da próxima versão). */
+export const ebookComentario = pgTable(
+  "ebook_comentario",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    versaoId: uuid("versao_id")
+      .notNull()
+      .references(() => ebookVersao.id, { onDelete: "cascade" }),
+    autorId: uuid("autor_id").references(() => usuario.id, { onDelete: "set null" }),
+    texto: text("texto").notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("ebook_comentario_versao_idx").on(t.tenantId, t.versaoId), isolamento()],
+).enableRLS();

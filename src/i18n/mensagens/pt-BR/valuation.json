@@ -1,0 +1,134 @@
+{
+  "valuation": {
+    "titulo": "Valuations",
+    "ajuda": "Avaliações de empresas, com ou sem negócio: premissas, 5 métodos, ponderação, cenários, sensibilidade, tese do setor, faixa de valor esperada e comparação com as ofertas recebidas. Cada valuation é visto só por quem o criador escolher.",
+    "aviso": "há um único valuation fictício, com números de exemplo. A criação, as versões, a aprovação e a visibilidade definida pelo criador chegam na versão real.",
+    "avisoComparacao": "os números do valuation são fictícios; as ofertas são as reais do negócio escolhido (só as que você vê).",
+    "novo": "Novo valuation",
+    "novoEmBreve": "Na demonstração não é possível criar valuations.",
+    "colValuation": "Valuation",
+    "colEmpresa": "Empresa avaliada",
+    "colDataBase": "Data-base",
+    "colValor": "Valor ponderado",
+    "colFaixa": "Faixa mínimo–máximo",
+    "voltar": "← Valuations",
+    "sobre": "Valuation",
+    "versaoSituacao": "Versão {versao} · data-base {data} · {empresa}",
+    "abas": {
+      "painel": "Painel",
+      "premissas": "Premissas",
+      "metodos": "Métodos e ponderação",
+      "cenarios": "Cenários e sensibilidade",
+      "rateio": "Rateio entre vendedoras",
+      "tese": "Tese do setor",
+      "comparacao": "Comparação com ofertas"
+    },
+    "metodos": {
+      "dcf": "Fluxo de caixa descontado",
+      "multiplos": "Múltiplos de mercado",
+      "transacoes": "Transações comparáveis",
+      "patrimonial": "Patrimonial ajustado",
+      "regraDeBolso": "Regra de bolso do setor"
+    },
+    "basesDeCalculo": {
+      "dcf": "Projeção de 5 anos, WACC {wacc}% e perpetuidade de {g}%",
+      "multiplos": "Média de EV/EBITDA {ebitda}x, EV/Receita {receita}x e EV/ARR {arr}x",
+      "transacoes": "Mediana de {n} transações: {mediana}x o EBITDA",
+      "patrimonial": "Patrimônio líquido ajustado",
+      "regraDeBolso": "{multiplo}x a receita recorrente anual"
+    },
+    "cenarios": {
+      "pessimista": "Pessimista",
+      "base": "Base",
+      "otimista": "Otimista"
+    },
+    "painel": {
+      "ponderado": "Valor ponderado (equity)",
+      "ponderadoCurto": "ponderado",
+      "faixa": "Faixa esperada",
+      "faixaValor": "{minimo} a {maximo}",
+      "faixaExplicacao": "Mínimo: abaixo disso a vendedora não vende. Máximo: preço pedido (ancoragem).",
+      "cenarios": "Cenários",
+      "cenariosValor": "{pessimista} a {otimista}",
+      "grafico": "Valor por método, faixa esperada e ofertas",
+      "graficoDescricao": "Barras: valor do equity por método. Faixa sombreada: mínimo a máximo esperados. Linha tracejada: valor ponderado. Losangos: ofertas do negócio escolhido na aba Comparação.",
+      "ofertas": "Ofertas",
+      "eixo": "R$ milhões",
+      "minimo": "mín.",
+      "maximo": "máx.",
+      "semOfertas": "Escolha um negócio na aba Comparação com ofertas para ver as ofertas aqui."
+    },
+    "premissas": {
+      "dre": "DRE (histórico de 3 anos)",
+      "ano": "Ano",
+      "receita": "Receita líquida",
+      "ebitda": "EBITDA",
+      "margem": "Margem EBITDA",
+      "lucro": "Lucro líquido",
+      "projecao": "Projeção (cenário base)",
+      "crescimento": "Crescimento da receita",
+      "outras": "Outras premissas",
+      "wacc": "Taxa de desconto (WACC)",
+      "perpetuidade": "Crescimento na perpetuidade",
+      "conversao": "Conversão do EBITDA em caixa livre",
+      "dividaLiquida": "Dívida líquida",
+      "contingencias": "Contingências",
+      "regime": "Regime tributário",
+      "arr": "Receita recorrente anual (ARR)",
+      "pl": "Patrimônio líquido ajustado",
+      "transacoes": "Transações comparáveis",
+      "alvo": "Transação",
+      "multiplo": "EV/EBITDA"
+    },
+    "tabela": {
+      "metodo": "Método",
+      "base": "Base de cálculo",
+      "valor": "Valor (equity)",
+      "peso": "Peso",
+      "contribuicao": "Contribuição",
+      "total": "Valor ponderado",
+      "explicacao": "Valor do equity = valor da firma menos dívida líquida e contingências (o patrimonial já é o patrimônio ajustado). Os pesos somam 100%."
+    },
+    "sensibilidade": {
+      "titulo": "Sensibilidade do fluxo de caixa descontado",
+      "explicacao": "Valor do equity pelo fluxo de caixa descontado conforme a taxa de desconto (linhas) e o crescimento na perpetuidade (colunas). Em destaque, as premissas usadas.",
+      "wacc": "WACC",
+      "crescimento": "Perpetuidade",
+      "cenariosTitulo": "Cenários",
+      "cenariosExplicacao": "Pessimista: crescimento {pc} p.p. e margem {pm} p.p. Otimista: crescimento +{oc} p.p. e margem +{om} p.p. (sobre o base, no fluxo de caixa descontado).",
+      "cenario": "Cenário"
+    },
+    "rateio": {
+      "explicacao": "Valuation único do conjunto das vendedoras; o valor ponderado é rateado pelo percentual de cada empresa.",
+      "criterio": "Critério: {criterio}.",
+      "vendedora": "Vendedora",
+      "percentual": "Percentual",
+      "valor": "Valor"
+    },
+    "tese": {
+      "setor": "Setor",
+      "ebitda": "Múltiplos de EBITDA do setor",
+      "faturamento": "Múltiplos de faturamento do setor",
+      "fontes": "Fontes"
+    },
+    "comparacao": {
+      "negocio": "Negócio para comparar",
+      "escolha": "Escolha um negócio",
+      "comparar": "Comparar",
+      "semNegocio": "Escolha um negócio para comparar as ofertas recebidas com o valuation.",
+      "semOfertas": "Nenhuma oferta que você veja neste negócio.",
+      "compradora": "Compradora",
+      "rodada": "Rodada",
+      "data": "Data",
+      "total": "Total da oferta",
+      "sobrePonderado": "Sobre o ponderado",
+      "naFaixa": "Na faixa",
+      "abaixo": "Abaixo do mínimo",
+      "dentro": "Dentro da faixa",
+      "acima": "Acima do máximo"
+    },
+    "erros": {
+      "funcionalidadeDesligada": "O valuation não está disponível neste ambiente."
+    }
+  }
+}

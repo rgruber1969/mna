@@ -107,7 +107,10 @@ determinam o acesso**, inclusive para advogados do próprio contratante.
     empresa de cada um no negócio); quem cria ajusta.
   * **Liberar o e-book ao comprador** é incluir os participantes do lado
     comprador na lista daquela versão (com aviso por e-mail). Aprovar uma
-    versão só vale antes de ela ser liberada.
+    versão só vale antes de ela ser liberada. Na demonstração (item 19,
+    2026-11-23), liberar deixa a versão visível a todo o lado comprador com
+    "E-book × ver" (completos só a compradoras depois do NDA), com aviso no
+    sino em vez de e-mail.
 * **Lista de acesso por versão de documento** (áreas restritas):
   * Quem envia uma versão escolhe, por **perfil e/ou usuário**, quem pode
     **ver e baixar** aquela versão.

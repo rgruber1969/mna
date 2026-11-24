@@ -1,0 +1,108 @@
+{
+  "ebook": {
+    "aba": "E-book",
+    "titulo": "E-book e OnePager",
+    "aviso": "o fluxo de versões, comentários, aprovação e liberação ao comprador funciona de verdade, mas o PDF é um exemplo (sem geração automática do conteúdo) e o e-mail ao comprador ainda não é enviado; quem recebe o material é avisado no sino.",
+    "explicacaoVendedor": "O advisor cria cada versão; a vendedora comenta e aprova; quem pode liberar deixa a versão aprovada disponível ao comprador (os materiais completos só para compradoras que já assinaram o NDA).",
+    "explicacaoComprador": "Materiais de apresentação liberados para você pela vendedora.",
+    "nenhumaVersao": "Nenhuma versão ainda.",
+    "nadaLiberado": "Nenhum material foi liberado para você ainda.",
+    "novaVersao": "Nova versão",
+    "criarVersao": "Criar versão",
+    "criando": "Criando…",
+    "material": "Material",
+    "identidade": "Identidade visual",
+    "incluiValuation": "Incluir os números do valuation (opcional: a vendedora costuma não expô-los antes das ofertas)",
+    "observacoes": "Observações para a revisão",
+    "versao": "Versão {numero}",
+    "criadaPor": "criada por {nome} em {data}",
+    "aprovadaPor": "aprovada por {nome} em {data}",
+    "liberadaPor": "liberada ao comprador por {nome} em {data}",
+    "comValuation": "com números do valuation",
+    "abrirPdf": "Abrir PDF",
+    "abrindo": "Abrindo…",
+    "comentarios": "Comentários da revisão",
+    "semComentarios": "Sem comentários.",
+    "comentar": "Comentar",
+    "comentario": "Comentário",
+    "aprovar": "Aprovar",
+    "confirmarAprovar": "Aprovar a versão {numero} de \"{material}\"?",
+    "liberar": "Liberar ao comprador",
+    "confirmarLiberar": "Liberar a versão {numero} de \"{material}\" ao lado comprador? Quem pode vê-la é avisado no sino.",
+    "liberada": "{n, plural, =0 {Liberada; nenhuma pessoa do lado comprador recebe este material ainda.} one {Liberada; # pessoa do lado comprador foi avisada.} other {Liberada; # pessoas do lado comprador foram avisadas.}}",
+    "excluir": "Excluir",
+    "confirmarExcluir": "Excluir a versão {numero} de \"{material}\"?",
+    "materiais": {
+      "ebook_teaser": "E-book teaser",
+      "ebook_completo": "E-book completo",
+      "onepager_teaser": "OnePager teaser",
+      "onepager_completo": "OnePager completo"
+    },
+    "descricoes": {
+      "ebook_teaser": "Anônimo, antes do NDA: números em faixas, sem nomes.",
+      "ebook_completo": "Depois do NDA: apresentação completa da empresa.",
+      "onepager_teaser": "Uma página anônima com destaques e tese.",
+      "onepager_completo": "Uma página com destaques, grandes números e tese."
+    },
+    "situacoes": {
+      "em_revisao": "Em revisão",
+      "aprovada": "Aprovada",
+      "disponivel": "Disponível ao comprador"
+    },
+    "identidades": {
+      "tenant": "Do escritório",
+      "vendedora": "Da vendedora",
+      "advisor": "Do advisor da vendedora",
+      "combinada": "Combinada"
+    },
+    "secoes": {
+      "capa": "Capa com codinome do projeto",
+      "avisoLegal": "Aviso legal",
+      "agenda": "Agenda",
+      "sumario": "Sumário executivo e grandes números",
+      "historico": "Histórico e marcos",
+      "produtos": "Produtos e serviços",
+      "mercado": "Mercado, ecossistema e concorrência",
+      "clientes": "Clientes: perfil, concentração e casos",
+      "operacao": "Operação, equipe, sócios e organograma",
+      "parcerias": "Parcerias",
+      "societaria": "Estrutura societária",
+      "plano": "Plano de negócios e prioridades",
+      "financeiro": "Dados financeiros (histórico e projeções)",
+      "tese": "Tese de investimento",
+      "transacao": "Estrutura da transação proposta",
+      "proximos": "Próximos passos e contatos do advisor"
+    },
+    "pdf": {
+      "demonstracao": "DOCUMENTO DE DEMONSTRAÇÃO: conteúdo de exemplo, sem dados reais da empresa.",
+      "projeto": "Projeto {codinome}",
+      "versao": "Versão {numero} · identidade visual: {identidade}",
+      "exemplo": "Texto de exemplo desta seção. Na versão real, o conteúdo vem dos dados do negócio, do cadastro da empresa e dos arquivos anexados.",
+      "valuation": "Valuation (demonstração): valor ponderado {ponderado}; faixa esperada de {minimo} a {maximo}.",
+      "teaser": {
+        "sumario": "Grandes números em faixas (ex.: receita entre R$ 50 e 80 milhões).",
+        "historico": "Marcos sem nomes nem datas identificáveis.",
+        "produtos": "Descrição genérica dos produtos e serviços.",
+        "clientes": "Perfil e concentração, sem clientes nomeados.",
+        "operacao": "Estrutura da equipe, sem nomes.",
+        "parcerias": "Parcerias descritas de forma genérica.",
+        "plano": "Plano de negócios resumido.",
+        "financeiro": "Dados financeiros em faixas.",
+        "transacao": "Estrutura da transação resumida.",
+        "proximos": "Contato só do advisor."
+      }
+    },
+    "erros": {
+      "funcionalidadeDesligada": "O e-book não está disponível neste ambiente.",
+      "naoEncontrado": "Versão não encontrada ou sem acesso.",
+      "semPermissao": "Você não tem permissão para esta ação no e-book.",
+      "negocioFechado": "O negócio está concluído ou encerrado: o e-book fica só para consulta.",
+      "situacaoNaoPermite": "A situação atual da versão não permite esta ação.",
+      "materialInvalido": "Escolha o material.",
+      "identidadeInvalida": "Escolha a identidade visual.",
+      "observacoesLongas": "As observações passaram de 2.000 caracteres.",
+      "comentarioVazio": "Escreva o comentário.",
+      "comentarioLongo": "O comentário passou de 4.000 caracteres."
+    }
+  }
+}

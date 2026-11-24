@@ -33,6 +33,18 @@ import {
   salvarItem,
 } from "@/server/services/pedidos";
 import { SITUACOES_DO_ITEM } from "@/config/pedidos";
+import { gerarDocumentoDoTemplate, telaDeTemplates } from "@/server/services/templates";
+import { telaDoValuation } from "@/server/services/valuation";
+import {
+  aprovarVersaoDoEbook,
+  comentarVersaoDoEbook,
+  criarVersaoDoEbook,
+  ebookDoNegocio,
+  IDENTIDADES,
+  liberarVersaoDoEbook,
+  MATERIAIS,
+  pdfDaVersaoDoEbook,
+} from "@/server/services/ebook";
 
 /**
  * API REST v1 (itens 25 e 26; ADR-0004, ADR-0013). Autenticação por chave de
@@ -78,6 +90,7 @@ async function comAcesso(c: Context, fn: (a: Acesso) => Promise<unknown>) {
 }
 
 export function registrarRotasV1(api: OpenAPIHono) {
+  registrarRotasDasSimuladas(api);
   api.openAPIRegistry.registerComponent("securitySchemes", "chaveDeApi", {
     type: "http",
     scheme: "bearer",
@@ -709,5 +722,158 @@ export function registrarRotasV1(api: OpenAPIHono) {
         const { periodo, situacao } = c.req.valid("json");
         return definirSituacaoDoItem(a, c.req.valid("param").id, periodo, situacao);
       }) as never,
+  );
+}
+
+/**
+ * Funcionalidades simuladas (itens 13, 18 e 19): as mesmas operações das
+ * telas, com o mesmo aviso de demonstração no retorno.
+ */
+function registrarRotasDasSimuladas(api: OpenAPIHono) {
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/templates",
+      tags: ["Templates (demonstração)"],
+      summary: "Templates DOCX e os negócios e contratos que a chave pode usar para preenchê-los",
+      security: seguranca,
+      responses: respostas("Templates"),
+    }),
+    (c) => comAcesso(c, (a) => telaDeTemplates(a)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/templates/{codigo}/gerar",
+      tags: ["Templates (demonstração)"],
+      summary: "Gera o DOCX de exemplo preenchido com o negócio ou o contrato (conteúdo em base64)",
+      security: seguranca,
+      request: {
+        params: z.object({
+          codigo: z
+            .string()
+            .max(40)
+            .openapi({ param: { name: "codigo", in: "path" } }),
+        }),
+        body: { content: { "application/json": { schema: z.object({ alvoId: z.uuid() }) } } },
+      },
+      responses: respostas("Arquivo DOCX em base64"),
+    }),
+    (c) =>
+      comAcesso(c, (a) =>
+        gerarDocumentoDoTemplate(a, c.req.valid("param").codigo, c.req.valid("json").alvoId),
+      ) as never,
+  );
+
+  // --- Valuation (fictício; comparação com as ofertas reais) ---------------------------------
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/valuations/demonstracao",
+      tags: ["Valuation (demonstração)"],
+      summary: "Valuation fictício completo e, com ?negocio=, as ofertas reais desse negócio para comparar",
+      security: seguranca,
+      request: { query: z.object({ negocio: z.uuid().optional() }) },
+      responses: respostas("Valuation"),
+    }),
+    (c) => comAcesso(c, (a) => telaDoValuation(a, c.req.valid("query").negocio)) as never,
+  );
+
+  // --- E-book e OnePager (fluxo real, PDF de exemplo) ---------------------------------------
+  const tag = ["E-book e OnePager (demonstração)"];
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/negocios/{id}/ebook",
+      tags: tag,
+      summary: "Versões do e-book e do OnePager que a chave vê (lado comprador: só as liberadas)",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Materiais e versões"),
+    }),
+    (c) => comAcesso(c, (a) => ebookDoNegocio(a, c.req.valid("param").id)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/negocios/{id}/ebook",
+      tags: tag,
+      summary: "Cria a próxima versão de um material (em revisão)",
+      security: seguranca,
+      request: {
+        params: Id,
+        body: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                material: z.enum(MATERIAIS as [string, ...string[]]),
+                identidade: z.enum(IDENTIDADES as [string, ...string[]]).optional(),
+                incluiValuation: z.boolean().optional(),
+                observacoes: z.string().max(2000).optional(),
+              }),
+            },
+          },
+        },
+      },
+      responses: respostas("Versão criada"),
+    }),
+    (c) =>
+      comAcesso(c, (a) =>
+        criarVersaoDoEbook(a, c.req.valid("param").id, c.req.valid("json") as never),
+      ) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/ebook/{id}/comentarios",
+      tags: tag,
+      summary: "Comenta uma versão em revisão",
+      security: seguranca,
+      request: {
+        params: Id,
+        body: { content: { "application/json": { schema: z.object({ texto: z.string().max(4000) }) } } },
+      },
+      responses: respostas("Comentário registrado"),
+    }),
+    (c) =>
+      comAcesso(c, (a) =>
+        comentarVersaoDoEbook(a, c.req.valid("param").id, c.req.valid("json").texto),
+      ) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/ebook/{id}/aprovar",
+      tags: tag,
+      summary: "Aprova uma versão em revisão",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Versão aprovada"),
+    }),
+    (c) => comAcesso(c, (a) => aprovarVersaoDoEbook(a, c.req.valid("param").id)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "post",
+      path: "/v1/ebook/{id}/liberar",
+      tags: tag,
+      summary: "Libera a versão aprovada ao lado comprador (aviso no sino)",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("Versão liberada"),
+    }),
+    (c) => comAcesso(c, (a) => liberarVersaoDoEbook(a, c.req.valid("param").id)) as never,
+  );
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/v1/ebook/{id}/pdf",
+      tags: tag,
+      summary: "PDF de exemplo da versão (base64), auditado",
+      security: seguranca,
+      request: { params: Id },
+      responses: respostas("PDF em base64"),
+    }),
+    (c) => comAcesso(c, (a) => pdfDaVersaoDoEbook(a, c.req.valid("param").id)) as never,
   );
 }

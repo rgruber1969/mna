@@ -376,6 +376,32 @@ principalmente pelo advisor.
   puxa números dos valuations que pode ver.
 * **Saída na V1:** tela com resumo e gráficos.
 
+Demonstração (item 18, **simulado**, construído em 2026-11-23):
+
+* Menu **Valuations** (quem tem "Valuations × ver") com **um valuation
+  fictício completo** (empresa, DRE e transações fictícias): abas Painel,
+  Premissas, Métodos e ponderação, Cenários e sensibilidade, Rateio entre
+  vendedoras, Tese do setor e Comparação com ofertas.
+* **Contas reais sobre números fictícios** (`src/config/valuation.ts`, as
+  mesmas que a versão real vai usar): fluxo de caixa descontado (5 anos,
+  WACC e perpetuidade), múltiplos (média de EV/EBITDA, EV/Receita e
+  EV/ARR), transações comparáveis (mediana), patrimonial ajustado e regra
+  de bolso; valor do equity = valor da firma menos dívida líquida e
+  contingências; ponderado pelos pesos (100%); cenários pessimista, base e
+  otimista; tabela de sensibilidade WACC × perpetuidade; rateio do
+  ponderado entre as vendedoras pelo percentual e critério registrados.
+* **Painel:** um eixo em R$ milhões com uma barra por método, a faixa
+  mínimo–máximo sombreada, o ponderado tracejado e as ofertas como
+  losangos.
+* **Comparação com ofertas reais:** a pessoa escolhe um negócio que vê, e
+  entram as ofertas dele que ela vê (total da oferta, percentual sobre o
+  ponderado e posição na faixa), com aviso de que o valuation é fictício.
+* Consulta auditada (`valuation.visualizado`); API `GET
+  /v1/valuations/demonstracao?negocio=`. O e-book, com a opção marcada,
+  mostra o ponderado e a faixa deste valuation.
+* Ainda não: criar e editar valuations, versões, aprovação, visibilidade
+  definida pelo criador, ligação ao negócio e importação da planilha.
+
 ### Ofertas
 
 * Registro das **ofertas recebidas** de compradores, na negociação informal
@@ -416,7 +442,9 @@ Regras construídas (item 32, respostas O1–O4, 2026-11-22):
 * **Comparação (O3):** total (à vista + parcelas + earnout estimado) e
   valor presente no closing pela taxa anual informada na tela (o earnout
   entra sem desconto); só para quem vê todas as ofertas. A faixa do
-  valuation entra quando o valuation existir (item 18).
+  valuation entra quando o valuation existir (item 18); na demonstração, a
+  comparação com o valuation fictício fica na tela do valuation (aba
+  Comparação com ofertas).
 * **Rateio (O4, ajuste de 2026-11-23):** faz parte da oferta (aba Rateio
   do cadastro da oferta), com percentuais das vendedoras somando 100% e o
   critério; não há mais rateio solto no negócio (o percentual antigo do
@@ -479,6 +507,34 @@ pelo responsável):
 
 **OnePager:** uma página com destaques, grandes números e tese (versões
 teaser e completa).
+
+Regras construídas (item 19, **simulado**: fluxo real e PDF de exemplo,
+2026-11-23):
+
+* **Aba "E-book" no negócio**, com os quatro materiais; cada um tem
+  versões numeradas (1, 2, 3…), identidade visual escolhida (escritório,
+  vendedora, advisor ou combinada), observações e a opção de incluir os
+  números do valuation.
+* **Situações:** em revisão → aprovada → disponível ao comprador. Cria
+  quem tem "E-book × criar" (advisor, coordenador); comenta e aprova quem
+  tem "comentar" e "aprovar" (em geral a vendedora), enquanto a versão está
+  em revisão; libera quem tem "liberar", só depois de aprovada. Excluir só
+  em revisão. Tudo isso só do lado vendedor (e administradores).
+* **Lado comprador:** vê só as versões disponíveis; os materiais
+  **completos só para compradoras que já passaram do NDA** no funil (NDA,
+  proposta ou escolhida). Não vê os comentários da revisão. Ao liberar, quem
+  passa a ver recebe aviso no sino (o e-mail com link fica para a versão
+  real).
+* **PDF de exemplo:** "Abrir PDF" monta na hora um PDF com a estrutura
+  aprovada (teaser com as seções resumidas e sem estrutura societária;
+  OnePager só com sumário, tese e próximos passos) e textos de
+  demonstração; com o valuation marcado, entra a faixa de valor do
+  valuation. Lado vendedor precisa de "baixar"; o comprador abre o que foi
+  liberado a ele. Tudo auditado (`ebook.*`).
+* **API:** `GET/POST /v1/negocios/{id}/ebook`, `POST /v1/ebook/{id}/comentarios`,
+  `/aprovar`, `/liberar` e `GET /v1/ebook/{id}/pdf`.
+* Ainda não: geração automática do conteúdo, upload do PDF final e logo da
+  vendedora no negócio, e-mail ao comprador.
 
 ### Contrato de serviço
 
@@ -569,6 +625,15 @@ Regras construídas (itens 9 e 10, respostas E1–E7, 2026-11-19):
   cópias próprias e não mudam.
 * **Linha do tempo** (item 10): barras pelas datas, só leitura; a edição
   gráfica (arrastar e ligar dependências) aparece como demonstração.
+* **Diagrama** (item 10, simulado, construído em 2026-11-23): terceira
+  forma de ver a aba Etapas (Lista · Linha do tempo · Diagrama), com as
+  etapas reais do negócio em colunas: quem depende de outra fica na coluna
+  seguinte, com seta; quem não tem dependência fica na coluna da anterior
+  (em paralelo); subetapas dentro da etapa-mãe; cor pela situação. Clicar
+  (ou Tab e Enter) mostra os detalhes da etapa (datas, dependência,
+  subetapas) com os links para documentos e tarefas dela; zoom de 50% a
+  160%. "Editar no diagrama" deixa arrastar as caixas, mas **nada é
+  gravado** (aviso de demonstração); a edição real continua na lista.
 
 Etapas padrão:
 
@@ -604,6 +669,19 @@ Etapas padrão:
   podem ser atrelados aos documentos padrão. Na versão 1, por
   **preenchimento de campos** (o sistema gera o DOCX preenchido; a edição
   acontece no Word).
+* **Templates na demonstração** (item 13, simulado, construído em
+  2026-11-23; modelos da resposta D7): aba **Templates** em Configurações
+  › Cadastros auxiliares (quem vê os cadastros gerais; antes era item do
+  menu, mudado a pedido em 2026-11-23), com lista fixa de modelos: para o **negócio**, NDA, Term Sheet
+  e Procuração (negócio, tipo, vendedoras com CNPJ, compradoras, valor
+  estimado, previsão de fechamento, escritório, data); para o
+  **contrato**, mandato de venda e carta de honorários (partes, objeto,
+  vigência, honorário fixo, success fee, data). "Gerar DOCX" devolve um
+  Word de demonstração preenchido só com o que a pessoa vê no negócio ou
+  no contrato escolhido; geração auditada (`template.gerado`). API:
+  `GET /v1/templates` e `POST /v1/templates/{codigo}/gerar`. Ainda não:
+  envio dos modelos do escritório com campos marcados no Word, ligação
+  com os documentos padrão das etapas e endereços das partes.
 * **Lista de acesso por versão:** quem envia uma versão escolhe, por perfil
   e/ou usuário, quem pode **ver e baixar** aquela versão (regras em
   `perfis-e-permissoes.md`). Quem quiser alterar baixa, edita (ex.:

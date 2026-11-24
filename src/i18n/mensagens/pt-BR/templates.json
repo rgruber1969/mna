@@ -1,0 +1,104 @@
+{
+  "templates": {
+    "titulo": "Templates",
+    "ajuda": "Modelos de documentos em Word (DOCX) preenchidos com os campos de um negócio ou de um contrato. Escolha o template, o negócio ou contrato e clique em Gerar: o arquivo sai com os dados que você pode ver.",
+    "aviso": "os templates são exemplos fixos e o DOCX gerado é um modelo de demonstração. O envio dos modelos do escritório (com os campos marcados no Word) chega na versão real.",
+    "colTemplate": "Template",
+    "colCampos": "Campos preenchidos",
+    "colPreencherCom": "Preencher com",
+    "escolhaNegocio": "Escolha o negócio",
+    "escolhaContrato": "Escolha o contrato",
+    "semNegocios": "Nenhum negócio visível para você.",
+    "semContratos": "Nenhum contrato visível para você.",
+    "gerar": "Gerar DOCX",
+    "gerando": "Gerando…",
+    "alvos": {
+      "negocio": "Negócio",
+      "contrato": "Contrato"
+    },
+    "campos": {
+      "negocio": "Negócio",
+      "tipo": "Tipo de operação",
+      "vendedoras": "Vendedoras",
+      "compradoras": "Compradoras",
+      "valorEstimado": "Valor estimado",
+      "previsaoFechamento": "Previsão de fechamento",
+      "tenant": "Escritório",
+      "data": "Data de hoje",
+      "contratantes": "Contratantes",
+      "contratadas": "Contratadas",
+      "objeto": "Objeto",
+      "vigencia": "Vigência",
+      "honorarioFixo": "Honorário fixo",
+      "successFee": "Success fee"
+    },
+    "docx": {
+      "demonstracao": "DOCUMENTO DE DEMONSTRAÇÃO: gerado a partir de um template de exemplo; não usar como documento real.",
+      "camposPreenchidos": "Campos preenchidos automaticamente"
+    },
+    "modelos": {
+      "nda": {
+        "nome": "Acordo de confidencialidade (NDA)",
+        "descricao": "NDA entre as vendedoras e as compradoras do negócio.",
+        "p1": "Pelo presente instrumento, de um lado {vendedoras} (as \"Reveladoras\") e, de outro, {compradoras} (as \"Receptoras\"), acordam as condições de confidencialidade relativas ao projeto {negocio}.",
+        "p2": "1. Informações confidenciais",
+        "p3": "São confidenciais todas as informações relativas ao projeto {negocio} fornecidas pelas Reveladoras, por qualquer meio, inclusive pelo data room conduzido por {tenant}.",
+        "p4": "2. Obrigações",
+        "p5": "As Receptoras usarão as informações exclusivamente para avaliar a operação e não as divulgarão a terceiros sem autorização prévia e por escrito.",
+        "p6": "3. Prazo",
+        "p7": "As obrigações deste acordo valem por 2 (dois) anos a contar de {data}.",
+        "p8": "Local e data: ____________________, {data}."
+      },
+      "term-sheet": {
+        "nome": "Term Sheet (minuta)",
+        "descricao": "Minuta não vinculante com os termos principais da operação.",
+        "p1": "Projeto {negocio}: Term Sheet não vinculante",
+        "p2": "1. Partes",
+        "p3": "Vendedoras: {vendedoras}. Compradoras: {compradoras}.",
+        "p4": "2. Operação",
+        "p5": "Tipo de operação: {tipo}. Valor de referência: {valorEstimado}, sujeito à diligência e aos ajustes usuais de dívida líquida e capital de giro.",
+        "p6": "3. Cronograma",
+        "p7": "Assinatura do QPA prevista para {previsaoFechamento}.",
+        "p8": "4. Natureza",
+        "p9": "Este documento não é vinculante, exceto quanto à confidencialidade e à exclusividade, se houver. Emitido em {data}."
+      },
+      "procuracao": {
+        "nome": "Procuração",
+        "descricao": "Procuração das vendedoras ao escritório para atos do negócio.",
+        "p1": "Outorgantes: {vendedoras}.",
+        "p2": "Outorgado: {tenant}.",
+        "p3": "1. Poderes",
+        "p4": "Pelo presente instrumento, as outorgantes nomeiam o outorgado seu procurador para representá-las nas negociações, na diligência e na assinatura de documentos preparatórios relativos ao projeto {negocio}, vedado o substabelecimento sem reserva.",
+        "p5": "2. Validade",
+        "p6": "Esta procuração vale por 12 (doze) meses a contar de {data}.",
+        "p7": "Local e data: ____________________, {data}."
+      },
+      "mandato": {
+        "nome": "Contrato de mandato de venda",
+        "descricao": "Mandato do advisor para conduzir a venda.",
+        "p1": "Contratantes: {contratantes}. Contratadas: {contratadas}.",
+        "p2": "1. Objeto",
+        "p3": "{objeto}",
+        "p4": "2. Vigência",
+        "p5": "Este mandato vigora em {vigencia}.",
+        "p6": "3. Remuneração",
+        "p7": "Honorário fixo (retainer): {honorarioFixo}. Success fee: {successFee}.",
+        "p8": "Local e data: ____________________, {data}."
+      },
+      "honorarios": {
+        "nome": "Carta de honorários advocatícios",
+        "descricao": "Proposta de honorários para assessoria jurídica na operação.",
+        "p1": "Às contratantes {contratantes}.",
+        "p2": "Apresentamos, em nome de {contratadas}, a proposta de honorários para o seguinte objeto: {objeto}.",
+        "p3": "Honorários fixos: {honorarioFixo}. Honorários de êxito: {successFee}.",
+        "p4": "Esta proposta vale por 30 dias a contar de {data}."
+      }
+    },
+    "erros": {
+      "funcionalidadeDesligada": "Os templates não estão disponíveis neste ambiente.",
+      "templateInexistente": "Template não encontrado.",
+      "negocioObrigatorio": "Escolha um negócio que você possa ver.",
+      "contratoObrigatorio": "Escolha um contrato que você possa ver."
+    }
+  }
+}

@@ -58,6 +58,8 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M14 17.5l1.2 1.2 2.3-2.4" />
     </>
   ),
+  // Barras com linha de tendência (valuation).
+  grafico: <path d="M4 20h16M7 16v-4M11 16V9M15 16v-6M19 16V6M6 9l5-4 4 3 5-4" />,
   engrenagem: (
     <>
       <circle cx="12" cy="12" r="3" />

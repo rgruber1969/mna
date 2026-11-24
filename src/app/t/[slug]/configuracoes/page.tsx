@@ -19,7 +19,10 @@ import {
 } from "@/server/services/negocios-andamento";
 import { FormPainelPrincipal } from "@/components/cadastros/painel-principal";
 import { GatilhosDeTarefas } from "@/components/cadastros/gatilhos";
-import { estaLigada } from "@/config/funcionalidades";
+import { estaLigada, estaSimulada } from "@/config/funcionalidades";
+import { telaDeTemplates } from "@/server/services/templates";
+import { ListaDeTemplates } from "@/components/templates/lista";
+import { AvisoDeSimulacao } from "@/components/ui/aviso-de-simulacao";
 import { pode } from "@/server/services/permissoes/verificador";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
@@ -62,6 +65,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     diasPrazo,
     fontes,
     prioridades,
+    templates,
   ] = await Promise.all([
     acesso.administrador ? obterDiasDeAviso(acesso) : null,
     verCadastros ? listarPapeis(acesso) : [],
@@ -75,7 +79,10 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
     acesso.administrador ? obterDiasDeAvisoDoPrazo(acesso) : 7,
     verCadastros ? listarFontes(acesso) : [],
     verCadastros ? obterPrioridades(acesso) : [],
+    verCadastros && estaLigada("templatesDocx") ? telaDeTemplates(acesso) : null,
   ]);
+  const tt = await getTranslations("templates");
+  const comTemplates = templates && !("erro" in templates) ? templates : null;
   // Abas verticais em dois grupos (assunto), em ordem alfabética dentro de cada grupo.
   const porNome = (x: { rotulo: string }, y: { rotulo: string }) => x.rotulo.localeCompare(y.rotulo, "pt-BR");
   const doTenant = acesso.administrador
@@ -96,6 +103,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
         { id: "categorias", rotulo: t("abaCategorias") },
         { id: "fontes", rotulo: t("abaFontes") },
         { id: "prioridades", rotulo: t("abaPrioridades") },
+        ...(comTemplates ? [{ id: "templates", rotulo: tt("titulo") }] : []),
       ].sort(porNome)
     : [];
   const abas = [
@@ -143,6 +151,17 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                 <PainelDeAba id="prioridades">
                   <FormPrioridades prioridades={prioridades} podeEditar={podeEditar} />
                 </PainelDeAba>
+                {comTemplates && (
+                  <PainelDeAba id="templates">
+                    <p className="text-muted mb-3 text-sm">{tt("ajuda")}</p>
+                    {estaSimulada("templatesDocx") && <AvisoDeSimulacao texto={tt("aviso")} />}
+                    <ListaDeTemplates
+                      templates={comTemplates.templates}
+                      negocios={comTemplates.negocios}
+                      contratos={comTemplates.contratos}
+                    />
+                  </PainelDeAba>
+                )}
                 <PainelDeAba id="categorias">
                   <TabelaDeTipos
                     tipos={categorias.map((c) => ({ ...c, comPercentual: false }))}

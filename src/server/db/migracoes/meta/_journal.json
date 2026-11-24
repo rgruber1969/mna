@@ -372,6 +372,20 @@
       "when": 1795481722867,
       "tag": "0052_oferta_aceita_e_condicoes",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1795484594431,
+      "tag": "0053_ebook",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1795484608493,
+      "tag": "0054_permissoes_ebook",
+      "breakpoints": true
     }
   ]
 }

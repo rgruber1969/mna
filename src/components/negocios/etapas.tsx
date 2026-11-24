@@ -15,6 +15,7 @@ import {
 import { BotaoDeAcao, useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { Aviso } from "@/components/ui/basicos";
 import { AlcaDeArrastar, useOrdenacao } from "@/components/ui/ordenacao";
+import { DiagramaDeEtapas } from "./diagrama-de-etapas";
 
 /** Aba Etapas do negócio: lista editável e linha do tempo (itens 9 e 10). */
 
@@ -566,11 +567,14 @@ export function EtapasDoNegocio({
   documentosPorEtapa,
   tarefasPorEtapa,
   soLinhaDoTempo = false,
+  diagrama = "desligada",
 }: {
   dealId: string;
   etapas: Etapa[];
   /** Painel do kanban: só a linha do tempo, sem a lista (que edita as etapas). */
   soLinhaDoTempo?: boolean;
+  /** Diagrama das etapas (item 10): modo da funcionalidade (`modoDa("diagramaDeEtapas")`). */
+  diagrama?: "real" | "simulada" | "desligada";
   podeIncluir: boolean;
   podeExcluir: boolean;
   hoje: string;
@@ -580,12 +584,14 @@ export function EtapasDoNegocio({
   tarefasPorEtapa?: Record<string, number>;
 }) {
   const t = useTranslations("etapas");
-  const [vista, setVista] = useState<"lista" | "tempo">("lista");
+  const [vista, setVista] = useState<"lista" | "tempo" | "diagrama">("lista");
+  const vistas =
+    diagrama === "desligada" ? (["lista", "tempo"] as const) : (["lista", "tempo", "diagrama"] as const);
   if (soLinhaDoTempo) return <LinhaDoTempo etapas={etapas} hoje={hoje} />;
   return (
     <div>
       <div className="mb-3 flex gap-2" role="group" aria-label={t("vista")}>
-        {(["lista", "tempo"] as const).map((v) => (
+        {vistas.map((v) => (
           <button
             key={v}
             type="button"
@@ -593,11 +599,18 @@ export function EtapasDoNegocio({
             onClick={() => setVista(v)}
             className={`rounded-full border px-3 py-1 text-xs font-medium ${vista === v ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted"}`}
           >
-            {t(v === "lista" ? "vistaLista" : "vistaTempo")}
+            {t(v === "lista" ? "vistaLista" : v === "tempo" ? "vistaTempo" : "vistaDiagrama")}
           </button>
         ))}
       </div>
-      {vista === "tempo" ? (
+      {vista === "diagrama" ? (
+        <DiagramaDeEtapas
+          etapas={etapas}
+          simulado={diagrama === "simulada"}
+          documentos={documentosPorEtapa}
+          tarefas={tarefasPorEtapa}
+        />
+      ) : vista === "tempo" ? (
         <LinhaDoTempo etapas={etapas} hoje={hoje} />
       ) : (
         <ul className="divide-border divide-y">

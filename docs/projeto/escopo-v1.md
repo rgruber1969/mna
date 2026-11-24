@@ -62,10 +62,10 @@ Como cada item simulado aparece na demonstração:
 | # | Simulação |
 |---|---|
 | 3 | Botões "Entrar com Google" e "Entrar com Microsoft" na tela de entrada, com aviso de demonstração; ao clicar, explicam que a função chega numa próxima versão (decidido em 2026-11-18) |
-| 10 | Diagrama visual das etapas do deal de exemplo, navegável, sem edição gráfica (a edição em lista é real) |
-| 13 | Lista de templates e botão "gerar" que devolve um DOCX de exemplo |
-| 18 | Telas com um valuation fictício completo (premissas, métodos, ponderação, rateio entre vendedoras, painel); a comparação com ofertas reais usa esses números, com aviso |
-| 19 | Fluxo real de status (versões, comentários, liberação ao comprador) com PDFs de exemplo, sem geração automática |
+| 10 | Vista "Diagrama" na aba Etapas de cada negócio, com as etapas reais em colunas, setas de dependência, paralelas e subetapas, navegável e com zoom; arrastar caixas é só demonstração, nada é gravado (a edição em lista é real; construído em 2026-11-23) |
+| 13 | Aba Templates em Configurações › Cadastros auxiliares, com NDA, Term Sheet e Procuração (negócio) e mandato e carta de honorários (contrato); "Gerar DOCX" devolve um Word de exemplo preenchido com os campos do negócio ou do contrato escolhido (construído em 2026-11-23) |
+| 18 | Menu Valuations com um valuation fictício completo (premissas, 5 métodos, ponderação, cenários, sensibilidade, rateio entre vendedoras, tese do setor, painel com faixa mínimo–máximo); a comparação com as ofertas reais de um negócio usa esses números, com aviso (construído em 2026-11-23) |
+| 19 | Aba "E-book" no negócio com fluxo real de situações (versões, comentários, aprovação, liberação ao comprador com aviso no sino; completos só depois do NDA) e PDF de exemplo, sem geração automática (construído em 2026-11-23) |
 | 21, 22 | Telas com botão de exportação que devolve PDF/XLSX de exemplo |
 | 28, 29 | Tela de configuração de gatilhos com exemplos; tarefas de exemplo marcadas como "geradas automaticamente" |
 | 33 | Em DOCX e PDF: a pergunta "substituir os nomes dos clientes pelos códigos?" aparece e devolve um documento de exemplo já anonimizado (em planilhas, a substituição é real) |

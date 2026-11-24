@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { estaLigada, type Funcionalidade } from "@/config/funcionalidades";
 import { comTenant } from "@/server/db/cliente";
 import { preferenciaMenu } from "@/server/db/esquema";
 import { exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
@@ -29,6 +30,8 @@ type Definicao = ItemDoMenu & {
   ouAdministrador?: boolean;
   /** Endereço para quem não é administrador (só vê parte das abas). */
   hrefSemAdministrador?: string;
+  /** Funcionalidade simulada ou ainda não real: o item some quando ela está desligada. */
+  funcionalidade?: Funcionalidade;
 };
 
 const GRUPOS: { chave: string; itens: Definicao[] }[] = [
@@ -38,6 +41,13 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
     itens: [
       { id: "negocios", href: "/negocios", icone: "maleta", recurso: "deals" },
       { id: "contratos", href: "/contratos", icone: "contrato", recurso: "deals" },
+      {
+        id: "valuations",
+        href: "/valuations",
+        icone: "grafico",
+        recurso: "valuations",
+        funcionalidade: "valuation",
+      },
     ],
   },
   {
@@ -74,6 +84,7 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
 const IDS = new Set(GRUPOS.flatMap((g) => g.itens.map((i) => i.id)));
 
 async function visivel(a: AcessoTenant, item: Definicao): Promise<boolean> {
+  if (item.funcionalidade && !estaLigada(item.funcionalidade)) return false;
   if (item.soAdministrador) return a.administrador;
   if (item.ouAdministrador && a.administrador) return true;
   return item.recurso ? pode(a, item.recurso, "ver") : true;

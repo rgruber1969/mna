@@ -22,7 +22,9 @@ import { formatarCnpj } from "@/config/documentos";
 import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { ExportarNegocio } from "@/components/negocios/exportar";
-import { estaLigada } from "@/config/funcionalidades";
+import { estaLigada, estaSimulada, modoDa } from "@/config/funcionalidades";
+import { ebookDoNegocio } from "@/server/services/ebook";
+import { AbaDoEbook } from "@/components/ebook/aba";
 import {
   FormDadosDoNegocio,
   FormIncluirEmpresa,
@@ -125,7 +127,7 @@ async function Painel({
     [tipos, opcoesEmp, opcoesPart, andamento],
     [funil, totalMsg, contratos, opcoesContrato, tc],
     [ofertas, opcoesOferta, to, pedidos, pedidoAberto, tpd, condicoes, diasDeAviso],
-    [etapas, alcances, dataRoom, tarefas],
+    [etapas, alcances, dataRoom, tarefas, ebook, tb],
   ] = await Promise.all([
     Promise.all([
       listarTiposDeOperacao(acesso),
@@ -155,6 +157,8 @@ async function Painel({
       n.podeGerirParticipantes ? opcoesDeAlcance(acesso, n.id) : [],
       dataRoomDoNegocio(acesso, n.id),
       tarefasDoNegocio(acesso, n.id),
+      ebookDoNegocio(acesso, n.id),
+      getTranslations("ebook"),
     ]),
   ]);
   const mostraContratos = contratos.length > 0 || opcoesContrato.podeCriar;
@@ -277,6 +281,7 @@ async function Painel({
                     },
                   ]
                 : []),
+              ...(ebook ? [{ id: "ebook", rotulo: tb("aba"), grupo: t("grupoComercial") }] : []),
               ...(condicoes
                 ? [{ id: "condicoes", rotulo: to("condicoesDaOferta.aba"), grupo: t("grupoComercial") }]
                 : []),
@@ -442,6 +447,11 @@ async function Painel({
                 </div>
               </PainelDeAba>
             )}
+            {ebook && (
+              <PainelDeAba id="ebook">
+                <AbaDoEbook dealId={n.id} dados={ebook} simulado={estaSimulada("ebook")} />
+              </PainelDeAba>
+            )}
             {condicoes && (
               <PainelDeAba id="condicoes">
                 <CondicoesDaOfertaEscolhida dealId={n.id} dados={condicoes} />
@@ -457,6 +467,7 @@ async function Painel({
                   hoje={hoje}
                   documentosPorEtapa={documentosPorEtapa}
                   tarefasPorEtapa={tarefasPorEtapa}
+                  diagrama={modoDa("diagramaDeEtapas")}
                 />
               </PainelDeAba>
             )}
