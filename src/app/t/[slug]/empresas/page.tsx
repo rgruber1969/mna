@@ -116,9 +116,12 @@ async function Painel({ busca }: { busca: Promise<Record<string, string | string
                   </thead>
                   <tbody>
                     {pagina.itens.map((e) => (
-                      <tr key={e.id} className={estiloTabela.linha}>
+                      <tr key={e.id} className={`${estiloTabela.linha} ${estiloTabela.linhaClicavel}`}>
                         <td className={estiloTabela.td}>
-                          <Link href={`/empresas/${e.id}`} className="text-text font-semibold">
+                          <Link
+                            href={`/empresas/${e.id}`}
+                            className={`text-text font-semibold ${estiloTabela.linkDaLinha}`}
+                          >
                             {e.razaoSocial}
                           </Link>
                           {e.doContratante && (

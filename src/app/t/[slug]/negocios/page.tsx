@@ -190,9 +190,12 @@ async function Conteudo({ acesso, parametros }: { acesso: AcessoTenant; parametr
                 </thead>
                 <tbody>
                   {pagina.itens.map((n) => (
-                    <tr key={n.id} className={estiloTabela.linha}>
+                    <tr key={n.id} className={`${estiloTabela.linha} ${estiloTabela.linhaClicavel}`}>
                       <td className={estiloTabela.td}>
-                        <Link href={`/negocios/${n.id}`} className="text-text font-semibold">
+                        <Link
+                          href={`/negocios/${n.id}`}
+                          className={`text-text font-semibold ${estiloTabela.linkDaLinha}`}
+                        >
                           {n.nome}
                         </Link>
                         {n.nomeInterno && <span className="text-muted block text-xs">{n.nomeInterno}</span>}

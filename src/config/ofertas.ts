@@ -8,9 +8,27 @@ export type ValoresDaOferta = {
   enterpriseValue: string | null;
   equityValue: string | null;
   parcelaVista: string | null;
-  parcelas: { valor: string; data: string }[];
+  /** Parcela em data fixa (`data`) ou em meses após o closing (`meses`). */
+  parcelas: { valor: string; data: string; meses?: number | null }[];
   earnoutValor: string | null;
 };
+
+/** "AAAA-MM-DD" somado de meses (o dia fica no último dia do mês, se precisar). */
+export function somarMeses(data: string, meses: number): string {
+  const [a, m, d] = data.split("-").map(Number);
+  const alvo = new Date(Date.UTC(a, m - 1 + meses, 1));
+  const ultimo = new Date(Date.UTC(alvo.getUTCFullYear(), alvo.getUTCMonth() + 1, 0)).getUTCDate();
+  alvo.setUTCDate(Math.min(d, ultimo));
+  return alvo.toISOString().slice(0, 10);
+}
+
+/**
+ * Vencimento da parcela: a data fixa ou o closing + meses. Sem closing
+ * informado, vale a previsão de fechamento (ou a data da oferta).
+ */
+export function vencimento(p: { data: string; meses?: number | null }, closing: string): string {
+  return p.meses ? somarMeses(closing, p.meses) : p.data;
+}
 
 const n = (v: string | null | undefined) => (v ? Number(v) : 0);
 const centavos = (v: number) => Math.round(v * 100) / 100;
@@ -25,17 +43,20 @@ export function totalNominal(o: ValoresDaOferta): number {
 }
 
 /**
- * Valor presente na data da oferta: parcelas trazidas pela taxa anual
- * informada (% a.a., juros compostos por dias corridos / 365). O earnout
- * entra pelo valor estimado, sem desconto (não tem data certa).
+ * Valor presente no closing (a parcela à vista é paga nele): parcelas
+ * trazidas pela taxa anual informada (% a.a., juros compostos por dias
+ * corridos / 365). `closing` é a data do closing ou a previsão de fechamento
+ * do negócio; sem ela, a data da oferta. O earnout entra pelo valor
+ * estimado, sem desconto (não tem data certa).
  */
-export function valorPresente(o: ValoresDaOferta, taxaAnual: number): number {
+export function valorPresente(o: ValoresDaOferta, taxaAnual: number, closing?: string | null): number {
   const estrutura = n(o.parcelaVista) + o.parcelas.reduce((s, p) => s + n(p.valor), 0) + n(o.earnoutValor);
   if (estrutura === 0) return totalNominal(o);
-  const base = Date.parse(o.data);
+  const dataBase = closing || o.data;
+  const base = Date.parse(dataBase);
   const fator = 1 + taxaAnual / 100;
   const parcelas = o.parcelas.reduce((s, p) => {
-    const dias = Math.max(0, (Date.parse(p.data) - base) / 86_400_000);
+    const dias = Math.max(0, (Date.parse(vencimento(p, dataBase)) - base) / 86_400_000);
     return s + n(p.valor) / Math.pow(fator, dias / 365);
   }, 0);
   return centavos(n(o.parcelaVista) + parcelas + n(o.earnoutValor));

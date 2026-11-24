@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+import { AbasDeAcesso } from "@/components/acesso/abas-de-acesso";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -93,6 +94,7 @@ async function Conteudo({ parametros, administrador }: { parametros: Parametros;
   const campo = "border-border bg-background text-text rounded-md border px-3 py-2 text-sm";
   return (
     <main className="entra-em-cascata flex flex-1 flex-col items-start gap-4 px-3 py-4 sm:px-6">
+      <AbasDeAcesso atual="auditoria" administrador={administrador} />
       <Cartao largura="max-w-6xl">
         <Titulo sobre={t("sobre")} ajuda={t("ajuda")}>
           {t("titulo")}

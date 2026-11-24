@@ -1,5 +1,6 @@
 "use client";
 
+import { hojeNoBrasil } from "@/config/prazos";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -76,11 +77,7 @@ export function AbaDePedidos({
             </thead>
             <tbody>
               {dados.pedidos.map((p) => (
-                <tr
-                  key={p.id}
-                  className={`${estiloTabela.linha} hover:bg-surface cursor-pointer`}
-                  onClick={() => abrir(p.id)}
-                >
+                <tr key={p.id} className={`${estiloTabela.linha} cursor-pointer`} onClick={() => abrir(p.id)}>
                   <td className={`${estiloTabela.td} text-muted text-xs tabular-nums`}>{p.numero}</td>
                   <td className={estiloTabela.td}>
                     <button
@@ -136,7 +133,7 @@ export function FormularioDoPedido({
   const t = useTranslations("pedidos.formulario");
   const router = useRouter();
   const abrir = useNavegacaoDePedidos();
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeNoBrasil();
   const [v, setV] = useState({
     origemId: "",
     titulo: pedido?.titulo ?? "",

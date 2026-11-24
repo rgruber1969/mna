@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { hojeNoBrasil } from "@/config/prazos";
+import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -9,9 +10,18 @@ import {
   iniciarArquivoDaOfertaAcao,
   linkDoArquivoDaOfertaAcao,
   salvarOfertaAcao,
-  salvarRateioAcao,
+  aceitarOfertaAcao,
 } from "@/app/acoes/ofertas";
 import { lerNumero, ratear, totalNominal, valorPresente } from "@/config/ofertas";
+import { Abas, PainelDeAba, useAbas } from "@/components/ui/abas";
+import {
+  EditorDeParcelas,
+  EditorDeRateio,
+  parcelaParaEnvio,
+  parcelaParaFormulario,
+  rateioInicial,
+  type ParcelaNoFormulario,
+} from "./campos";
 import { Ajuda, Aviso, estiloTabela } from "@/components/ui/basicos";
 import type { OfertaNaTela, OfertasDoNegocio, OpcoesDaOferta } from "@/server/services/ofertas";
 
@@ -29,7 +39,7 @@ type Valores = {
   enterpriseValue: string;
   equityValue: string;
   parcelaVista: string;
-  parcelas: { valor: string; data: string }[];
+  parcelas: ParcelaNoFormulario[];
   earnout: string;
   earnoutValor: string;
   retencao: string;
@@ -49,16 +59,8 @@ type Valores = {
   usuarios: string[];
 };
 
-const TEXTOS_LONGOS = [
-  "condicoesPrecedentes",
-  "garantiasCompradora",
-  "garantiasVendedora",
-  "condicoesTransicao",
-  "correcaoParcelas",
-] as const;
-
 function valoresDe(o: OfertaNaTela | null, opcoes: OpcoesDaOferta): Valores {
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeNoBrasil();
   if (!o)
     return {
       compradoraId: opcoes.compradoras.length === 1 ? opcoes.compradoras[0].id : "",
@@ -82,7 +84,7 @@ function valoresDe(o: OfertaNaTela | null, opcoes: OpcoesDaOferta): Valores {
       exclusividade: "",
       naoConcorrencia: "",
       observacoes: "",
-      rateio: [],
+      rateio: rateioInicial(opcoes.vendedoras, []),
       criterioRateio: "",
       perfis: [],
       usuarios: opcoes.meuLado,
@@ -95,7 +97,7 @@ function valoresDe(o: OfertaNaTela | null, opcoes: OpcoesDaOferta): Valores {
     enterpriseValue: paraCampo(o.enterpriseValue),
     equityValue: paraCampo(o.equityValue),
     parcelaVista: paraCampo(o.parcelaVista),
-    parcelas: o.parcelas.map((p) => ({ valor: paraCampo(p.valor), data: p.data })),
+    parcelas: o.parcelas.map(parcelaParaFormulario),
     earnout: o.earnout ?? "",
     earnoutValor: paraCampo(o.earnoutValor),
     retencao: o.retencao ?? "",
@@ -109,10 +111,8 @@ function valoresDe(o: OfertaNaTela | null, opcoes: OpcoesDaOferta): Valores {
     exclusividade: o.exclusividade ?? "",
     naoConcorrencia: o.naoConcorrencia ?? "",
     observacoes: o.observacoes ?? "",
-    rateio: o.rateioProprio
-      ? o.rateio.map((r) => ({ empresaId: r.empresaId, percentual: paraCampo(r.percentual) }))
-      : [],
-    criterioRateio: o.rateioProprio ? (o.criterioRateio ?? "") : "",
+    rateio: rateioInicial(opcoes.vendedoras, o.rateio),
+    criterioRateio: o.criterioRateio ?? "",
     perfis: o.acessoIds.perfis,
     usuarios: o.acessoIds.usuarios,
   };
@@ -151,25 +151,26 @@ function Marcas({
   );
 }
 
-/** Cadastro e edição da oferta (O1, O2, O4). */
+/** Cadastro e edição da oferta (O1, O2, O4), em abas. */
 function FormOferta({
   dealId,
   oferta,
   opcoes,
   ofertas,
+  previsao,
   fechar,
 }: {
   dealId: string;
   oferta: OfertaNaTela | null;
   opcoes: OpcoesDaOferta;
   ofertas: OfertaNaTela[];
+  previsao: string | null;
   fechar: (salvou: boolean) => void;
 }) {
   const t = useTranslations("ofertas");
   const [v, setV] = useState<Valores>(() => valoresDe(oferta, opcoes));
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<{ texto: string; campo?: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
-  const [rateioProprio, setRateioProprio] = useState(Boolean(oferta?.rateioProprio));
   const mudar = <K extends keyof Valores>(k: K, valor: Valores[K]) => setV((x) => ({ ...x, [k]: valor }));
   const anteriores = ofertas.filter((o) => o.compradoraId === v.compradoraId && o.id !== oferta?.id);
   const texto = (k: keyof Valores, longo = false) => (
@@ -199,6 +200,15 @@ function FormOferta({
       />
     </label>
   );
+  const comRateio = opcoes.vendedoras.length > 1;
+  const comAcesso = opcoes.perfis.length > 0 || opcoes.usuarios.length > 0;
+  const abas = [
+    { id: "valores", rotulo: t("abas.valores") },
+    { id: "condicoes", rotulo: t("abas.condicoes") },
+    { id: "garantias", rotulo: t("abas.garantias") },
+    ...(comRateio ? [{ id: "rateio", rotulo: t("abas.rateio") }] : []),
+    ...(comAcesso ? [{ id: "acesso", rotulo: t("abas.acesso") }] : []),
+  ];
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
@@ -206,19 +216,20 @@ function FormOferta({
     setErro(null);
     const r = await salvarOfertaAcao(dealId, oferta?.id ?? null, {
       ...v,
-      rateio: rateioProprio ? v.rateio : [],
-      criterioRateio: rateioProprio ? v.criterioRateio : "",
+      parcelas: v.parcelas.map(parcelaParaEnvio),
+      rateio: comRateio ? v.rateio : [],
+      criterioRateio: comRateio ? v.criterioRateio : "",
     });
     setSalvando(false);
-    if (r.erro) return setErro(r.erro);
+    if (r.erro) return setErro({ texto: r.erro, campo: r.campo });
     fechar(true);
   }
 
   return (
     <form onSubmit={salvar} className="border-border bg-background mb-4 space-y-4 rounded-md border p-4">
-      {erro && <Aviso>{erro}</Aviso>}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label>
+      {erro && <Aviso>{erro.texto}</Aviso>}
+      <div className="grid gap-4 sm:grid-cols-4">
+        <label className="sm:col-span-2">
           <span className={rotulo}>{t("compradora")}</span>
           <select
             value={v.compradoraId}
@@ -234,7 +245,7 @@ function FormOferta({
             ))}
           </select>
         </label>
-        <label>
+        <label className="sm:col-span-2">
           <span className={rotulo}>{t("anterior")}</span>
           <select
             value={v.anteriorId}
@@ -273,76 +284,6 @@ function FormOferta({
             ))}
           </select>
         </label>
-      </div>
-      <fieldset className="border-border grid gap-4 rounded-md border p-3 sm:grid-cols-2">
-        <legend className="text-text px-1 text-sm font-medium">{t("valores")}</legend>
-        {valor("enterpriseValue")}
-        {valor("equityValue")}
-        {valor("parcelaVista")}
-        <div className="sm:col-span-2">
-          <span className={rotulo}>{t("parcelas")}</span>
-          {v.parcelas.map((p, i) => (
-            <div key={i} className="mb-2 flex flex-wrap items-end gap-2">
-              <label className="w-44">
-                <span className="text-muted block text-xs">{t("parcela", { n: i + 1 })}</span>
-                <input
-                  inputMode="decimal"
-                  value={p.valor}
-                  aria-label={`${t("parcela", { n: i + 1 })}: ${t("valor")}`}
-                  onChange={(e) =>
-                    mudar(
-                      "parcelas",
-                      v.parcelas.map((x, j) => (j === i ? { ...x, valor: e.target.value } : x)),
-                    )
-                  }
-                  className={campo}
-                />
-              </label>
-              <label className="w-44">
-                <span className="text-muted block text-xs">{t("vencimento")}</span>
-                <input
-                  type="date"
-                  value={p.data}
-                  aria-label={`${t("parcela", { n: i + 1 })}: ${t("vencimento")}`}
-                  onChange={(e) =>
-                    mudar(
-                      "parcelas",
-                      v.parcelas.map((x, j) => (j === i ? { ...x, data: e.target.value } : x)),
-                    )
-                  }
-                  className={campo}
-                />
-              </label>
-              <button
-                type="button"
-                aria-label={t("tirarParcela", { n: i + 1 })}
-                onClick={() =>
-                  mudar(
-                    "parcelas",
-                    v.parcelas.filter((_, j) => j !== i),
-                  )
-                }
-                className="text-danger px-2 py-2 text-sm"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => mudar("parcelas", [...v.parcelas, { valor: "", data: "" }])}
-            className="text-primary text-sm font-medium"
-          >
-            {t("incluirParcela")}
-          </button>
-        </div>
-        {texto("earnout")}
-        {valor("earnoutValor")}
-        {texto("retencao")}
-        {valor("retencaoValor")}
-      </fieldset>
-      <fieldset className="border-border grid gap-4 rounded-md border p-3 sm:grid-cols-2">
-        <legend className="text-text px-1 text-sm font-medium">{t("condicoes")}</legend>
         <label>
           <span className={rotulo}>{t("validade")}</span>
           <input
@@ -352,64 +293,75 @@ function FormOferta({
             className={campo}
           />
         </label>
-        {texto("exclusividade")}
-        {texto("naoConcorrencia")}
-        {TEXTOS_LONGOS.map((k) => texto(k, true))}
-        {texto("observacoes", true)}
-      </fieldset>
-      {opcoes.vendedoras.length > 1 && (
-        <fieldset className="border-border space-y-2 rounded-md border p-3">
-          <legend className="text-text px-1 text-sm font-medium">{t("rateio")}</legend>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={rateioProprio}
-              onChange={(e) => setRateioProprio(e.target.checked)}
+      </div>
+      <Abas parametro="secao" abas={abas}>
+        <AbrirAbaDaOferta campo={erro?.campo} />
+        <PainelDeAba id="valores">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {valor("enterpriseValue")}
+            {valor("equityValue")}
+            {valor("parcelaVista")}
+            <div className="sm:col-span-3">
+              <EditorDeParcelas
+                parcelas={v.parcelas}
+                mudar={(p) => mudar("parcelas", p)}
+                previsao={previsao}
+              />
+            </div>
+            {texto("earnout")}
+            {valor("earnoutValor")}
+            <span className="hidden sm:block" />
+            {texto("retencao")}
+            {valor("retencaoValor")}
+          </div>
+        </PainelDeAba>
+        <PainelDeAba id="condicoes">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {texto("condicoesPrecedentes", true)}
+            {texto("correcaoParcelas", true)}
+            {texto("condicoesTransicao", true)}
+            {texto("observacoes", true)}
+          </div>
+        </PainelDeAba>
+        <PainelDeAba id="garantias">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {texto("garantiasCompradora", true)}
+            {texto("garantiasVendedora", true)}
+            {texto("exclusividade")}
+            {texto("naoConcorrencia")}
+          </div>
+        </PainelDeAba>
+        {comRateio && (
+          <PainelDeAba id="rateio">
+            <EditorDeRateio
+              vendedoras={opcoes.vendedoras}
+              rateio={v.rateio}
+              criterio={v.criterioRateio}
+              mudarRateio={(r) => mudar("rateio", r)}
+              mudarCriterio={(c) => mudar("criterioRateio", c)}
             />
-            {t("rateioProprio")}
-          </label>
-          {rateioProprio && (
-            <>
-              {opcoes.vendedoras.map((vd) => (
-                <label key={vd.id} className="flex items-center gap-2 text-sm">
-                  <span className="w-64">{vd.nome}</span>
-                  <input
-                    inputMode="decimal"
-                    aria-label={`${vd.nome} ${t("percentual")}`}
-                    value={v.rateio.find((r) => r.empresaId === vd.id)?.percentual ?? ""}
-                    onChange={(e) =>
-                      mudar("rateio", [
-                        ...v.rateio.filter((r) => r.empresaId !== vd.id),
-                        { empresaId: vd.id, percentual: e.target.value },
-                      ])
-                    }
-                    className={`${campo} w-24`}
-                  />
-                  %
-                </label>
-              ))}
-              {texto("criterioRateio")}
-            </>
-          )}
-        </fieldset>
-      )}
-      {(opcoes.perfis.length > 0 || opcoes.usuarios.length > 0) && (
-        <fieldset className="border-border space-y-3 rounded-md border p-3">
-          <legend className="text-text px-1 text-sm font-medium">{t("quemVe")}</legend>
-          <Marcas
-            titulo={t("perfis")}
-            opcoes={opcoes.perfis}
-            escolhidas={v.perfis}
-            mudar={(x) => mudar("perfis", x)}
-          />
-          <Marcas
-            titulo={t("usuarios")}
-            opcoes={opcoes.usuarios}
-            escolhidas={v.usuarios}
-            mudar={(x) => mudar("usuarios", x)}
-          />
-        </fieldset>
-      )}
+          </PainelDeAba>
+        )}
+        {comAcesso && (
+          <PainelDeAba id="acesso">
+            <div className="space-y-3">
+              <p className="text-muted text-xs">{t("quemVe")}</p>
+              <Marcas
+                titulo={t("perfis")}
+                opcoes={opcoes.perfis}
+                escolhidas={v.perfis}
+                mudar={(x) => mudar("perfis", x)}
+              />
+              <Marcas
+                titulo={t("usuarios")}
+                opcoes={opcoes.usuarios}
+                escolhidas={v.usuarios}
+                mudar={(x) => mudar("usuarios", x)}
+              />
+            </div>
+          </PainelDeAba>
+        )}
+      </Abas>
       <div className="flex gap-3">
         <button
           type="submit"
@@ -426,78 +378,27 @@ function FormOferta({
   );
 }
 
-/** Rateio do negócio entre as vendedoras (O4). */
-function RateioDoNegocio({ dealId, dados }: { dealId: string; dados: OfertasDoNegocio }) {
-  const t = useTranslations("ofertas");
-  const router = useRouter();
-  const lista = dados.rateioDoNegocio ?? [];
-  const [valores, setValores] = useState<Record<string, string>>(
-    Object.fromEntries(lista.map((v) => [v.empresaId, paraCampo(v.percentual)])),
-  );
-  const [criterio, setCriterio] = useState(dados.criterioDoNegocio ?? "");
-  const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null);
-  if (lista.length < 2) return null;
-  if (!dados.podeEditarRateio)
-    return (
-      <p className="text-muted mb-3 text-sm">
-        {t("rateioDoNegocio")}:{" "}
-        {lista.some((v) => v.percentual)
-          ? lista.map((v) => `${v.nome} ${paraCampo(v.percentual)}%`).join(" · ")
-          : t("semRateio")}
-        {dados.criterioDoNegocio && ` (${dados.criterioDoNegocio})`}
-      </p>
-    );
-  return (
-    <details className="border-border mb-4 rounded-md border p-3">
-      <summary className="text-text cursor-pointer text-sm font-medium">{t("rateioDoNegocio")}</summary>
-      {aviso && <Aviso tipo={aviso.ok ? "ok" : "erro"}>{aviso.texto}</Aviso>}
-      <div className="mt-2 space-y-2">
-        {lista.map((vd) => (
-          <label key={vd.empresaId} className="flex items-center gap-2 text-sm">
-            <span className="w-64">{vd.nome}</span>
-            <input
-              inputMode="decimal"
-              aria-label={`${vd.nome} ${t("percentual")}`}
-              value={valores[vd.empresaId] ?? ""}
-              onChange={(e) => setValores((x) => ({ ...x, [vd.empresaId]: e.target.value }))}
-              className={`${campo} w-24`}
-            />
-            %
-          </label>
-        ))}
-        <label className="block">
-          <span className={rotulo}>{t("criterio")}</span>
-          <input
-            value={criterio}
-            onChange={(e) => setCriterio(e.target.value)}
-            placeholder={t("criterioDica")}
-            className={campo}
-          />
-        </label>
-        <button
-          type="button"
-          className="border-primary text-primary rounded-md border px-3 py-1.5 text-sm font-medium"
-          onClick={async () => {
-            const r = await salvarRateioAcao(dealId, {
-              percentuais: lista.map((vd) => ({
-                empresaId: vd.empresaId,
-                percentual: valores[vd.empresaId] ?? "",
-              })),
-              criterio,
-            });
-            setAviso(r.erro ? { ok: false, texto: r.erro } : { ok: true, texto: t("rateioSalvo") });
-            if (!r.erro) router.refresh();
-          }}
-        >
-          {t("salvarRateio")}
-        </button>
-      </div>
-    </details>
-  );
+/** Erro num campo de outra aba: abre a aba dele. */
+const ABA_DO_CAMPO: Record<string, string> = {
+  enterpriseValue: "valores",
+  equityValue: "valores",
+  parcelaVista: "valores",
+  parcelas: "valores",
+  earnoutValor: "valores",
+  retencaoValor: "valores",
+  rateio: "rateio",
+};
+function AbrirAbaDaOferta({ campo }: { campo?: string }) {
+  const abas = useAbas();
+  useEffect(() => {
+    if (campo && ABA_DO_CAMPO[campo]) abas?.ativar(ABA_DO_CAMPO[campo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só quando o erro muda
+  }, [campo]);
+  return null;
 }
 
 /** Comparação lado a lado (O3): total, valor presente pela taxa e parte de cada vendedora. */
-function Comparacao({ ofertas }: { ofertas: OfertaNaTela[] }) {
+function Comparacao({ ofertas, previsao }: { ofertas: OfertaNaTela[]; previsao: string | null }) {
   const t = useTranslations("ofertas");
   const [taxa, setTaxa] = useState("12");
   const taxaNum = Number(lerNumero(taxa) ?? "0") || 0;
@@ -529,7 +430,7 @@ function Comparacao({ ofertas }: { ofertas: OfertaNaTela[] }) {
           </thead>
           <tbody>
             {ofertas.map((o) => {
-              const vp = valorPresente(o, taxaNum);
+              const vp = valorPresente(o, taxaNum, previsao);
               return (
                 <tr key={o.id} className={estiloTabela.linha}>
                   <td className={estiloTabela.td}>
@@ -683,6 +584,7 @@ export function AbaDeOfertas({
           oferta={editando === "nova" ? null : editando}
           opcoes={opcoes}
           ofertas={dados.ofertas}
+          previsao={dados.previsaoFechamento}
           fechar={(salvou) => {
             setEditando(null);
             if (salvou) {
@@ -692,8 +594,9 @@ export function AbaDeOfertas({
           }}
         />
       )}
-      <RateioDoNegocio dealId={dealId} dados={dados} />
-      {dados.completa && dados.ofertas.length > 1 && <Comparacao ofertas={dados.ofertas} />}
+      {dados.completa && dados.ofertas.length > 1 && (
+        <Comparacao ofertas={dados.ofertas} previsao={dados.previsaoFechamento} />
+      )}
       {dados.ofertas.length === 0 ? (
         <p className="text-muted text-sm">{t("nenhuma")}</p>
       ) : (
@@ -721,13 +624,41 @@ export function AbaDeOfertas({
                       >
                         {aberta === o.id ? "▾" : "▸"} {o.compradora}
                       </button>
-                      <span className="text-muted block text-xs">{t("rodada", { n: o.rodada })}</span>
+                      <span className="text-muted block text-xs">
+                        {t("rodada", { n: o.rodada })}
+                        {o.aceita && (
+                          <span className="text-success ml-2 font-semibold">{t("escolhida")}</span>
+                        )}
+                      </span>
                     </td>
                     <td className={`${estiloTabela.td} text-xs whitespace-nowrap`}>{br(o.data)}</td>
                     <td className={`${estiloTabela.td} text-xs`}>{t(`instrumentos.${o.instrumento}`)}</td>
                     <td className={`${estiloTabela.td} whitespace-nowrap`}>{moeda(totalNominal(o))}</td>
                     <td className={`${estiloTabela.td} whitespace-nowrap`}>
                       <span className="flex gap-3 text-xs">
+                        {dados.podeAceitar && !o.aceita && (
+                          <button
+                            type="button"
+                            className="text-primary font-semibold"
+                            onClick={async () => {
+                              const jaHa = dados.ofertas.some((x) => x.aceita);
+                              if (
+                                !confirm(
+                                  t(jaHa ? "confirmarTrocarEscolha" : "confirmarEscolher", {
+                                    compradora: o.compradora,
+                                  }),
+                                )
+                              )
+                                return;
+                              const r = await aceitarOfertaAcao(o.id);
+                              if (r.erro) return setErro(r.erro);
+                              setOk(t(r.funil ? "escolhidaComFunil" : "escolhidaSemFunil"));
+                              atualizar();
+                            }}
+                          >
+                            {t("escolher")}
+                          </button>
+                        )}
                         {o.podeEditar && !editando && (
                           <button type="button" className="text-primary" onClick={() => setEditando(o)}>
                             {t("editar")}
@@ -770,7 +701,12 @@ export function AbaDeOfertas({
                             rotuloTexto={t("parcelas")}
                             valor={
                               o.parcelas.length
-                                ? o.parcelas.map((p) => `${br(p.data)}: ${moeda(Number(p.valor))}`).join("\n")
+                                ? o.parcelas
+                                    .map(
+                                      (p) =>
+                                        `${p.meses ? t("mesesAposClosingCurto", { n: p.meses }) : br(p.data)}: ${moeda(Number(p.valor))}`,
+                                    )
+                                    .join("\n")
                                 : null
                             }
                           />

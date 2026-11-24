@@ -1,15 +1,55 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { TAMANHOS_DE_PAGINA, TAMANHO_PADRAO } from "@/config/paginacao";
 
 /**
  * Paginação de listas que já estão na tela (abas do negócio e painel do
- * kanban): 20 por página, com "x–y de total" e anterior/próxima.
+ * kanban): 25 por página, com "x–y de total", anterior/próxima e o mesmo
+ * seletor "Por página" das listas do servidor.
  */
-export const OPCOES_POR_PAGINA = [10, 20, 50, 100];
+export const OPCOES_POR_PAGINA: readonly number[] = TAMANHOS_DE_PAGINA;
 
-export function usePaginacao<T>(itens: T[], inicial = 20) {
+/**
+ * Seletor "Por página" único de todas as listas: muda na hora (listas na
+ * tela, `aoMudar`) ou navega para o endereço do tamanho (listas do servidor, `enderecos`).
+ */
+export function SeletorPorPagina({
+  valor,
+  aoMudar,
+  enderecos,
+}: {
+  valor: number;
+  aoMudar?: (n: number) => void;
+  enderecos?: Record<number, string>;
+}) {
+  const t = useTranslations("comum.lista");
+  const router = useRouter();
+  return (
+    <label className="text-muted flex items-center gap-1.5 text-xs">
+      {t("porPagina")}
+      <select
+        value={valor}
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          if (aoMudar) aoMudar(n);
+          else if (enderecos?.[n]) router.push(enderecos[n]);
+        }}
+        className="border-border bg-background text-text rounded-md border px-1.5 py-0.5 text-xs"
+      >
+        {OPCOES_POR_PAGINA.map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+export function usePaginacao<T>(itens: T[], inicial = TAMANHO_PADRAO) {
   const [pedida, setPagina] = useState(1);
   const [porPagina, setPorPagina] = useState(inicial);
   const paginas = Math.max(1, Math.ceil(itens.length / porPagina));
@@ -60,22 +100,7 @@ export function Paginacao({
         })}
       </span>
       <span className="flex items-center gap-3">
-        {mudarPorPagina && (
-          <label className="flex items-center gap-1">
-            {t("porPagina")}
-            <select
-              value={porPagina}
-              onChange={(e) => mudarPorPagina(Number(e.target.value))}
-              className="border-border bg-background text-text rounded border px-1 py-0.5"
-            >
-              {OPCOES_POR_PAGINA.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        {mudarPorPagina && <SeletorPorPagina valor={porPagina} aoMudar={mudarPorPagina} />}
         {paginas > 1 && (
           <>
             <button
@@ -102,11 +127,11 @@ export function Paginacao({
   );
 }
 
-/** Lista já montada (ex.: no servidor) mostrada 20 por vez. */
+/** Lista já montada (ex.: no servidor) mostrada 25 por vez. */
 export function ListaPaginada({
   itens,
   className,
-  porPagina = 20,
+  porPagina = TAMANHO_PADRAO,
 }: {
   itens: ReactNode[];
   className?: string;

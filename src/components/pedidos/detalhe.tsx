@@ -1,5 +1,6 @@
 "use client";
 
+import { hojeNoBrasil } from "@/config/prazos";
 import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -13,6 +14,7 @@ import { emAberto, SITUACOES_DO_ITEM, situacoesPorPeriodo, type SituacaoDoItem }
 import { Ajuda, Aviso, estiloTabela } from "@/components/ui/basicos";
 import { EstadoVazio } from "@/components/ui/estado-vazio";
 import { Janela } from "@/components/ui/janela";
+import { usePaginacao } from "@/components/ui/paginacao-local";
 import type { ItemNaTela, PedidoDetalhe, PedidosDoNegocio } from "@/server/services/pedidos";
 import {
   botaoPrincipal,
@@ -110,7 +112,8 @@ export function DetalheDoPedido({ detalhe: d, dados }: { detalhe: PedidoDetalhe;
             .some((x) => x!.toLowerCase().includes(termo))),
     );
   }, [d.itens, filtro]);
-  const porAssunto = Map.groupBy(filtrados, (i) => i.assunto);
+  const { atual: paginaDeItens, controles } = usePaginacao(filtrados, 50);
+  const porAssunto = Map.groupBy(paginaDeItens, (i) => i.assunto);
   const filtrado = Object.values(filtro).some(Boolean);
 
   async function exportar() {
@@ -339,7 +342,7 @@ export function DetalheDoPedido({ detalhe: d, dados }: { detalhe: PedidoDetalhe;
                       {itens.map((i) => (
                         <tr
                           key={i.id}
-                          className={`${estiloTabela.linha} hover:bg-surface cursor-pointer`}
+                          className={`${estiloTabela.linha} cursor-pointer`}
                           onClick={() => setItemAberto(i.id)}
                         >
                           <td className={`${estiloTabela.td} text-muted font-mono text-xs whitespace-nowrap`}>
@@ -407,6 +410,7 @@ export function DetalheDoPedido({ detalhe: d, dados }: { detalhe: PedidoDetalhe;
                   ))}
                 </tbody>
               </table>
+              {controles}
             </div>
           )}
         </>
@@ -434,7 +438,7 @@ function NovaRodada({ pedidoId, fechar }: { pedidoId: string; fechar: () => void
   const t = useTranslations("pedidos.detalhe");
   const router = useRouter();
   const [nome, setNome] = useState("");
-  const [data, setData] = useState(new Date().toISOString().slice(0, 10));
+  const [data, setData] = useState(hojeNoBrasil());
   const [erro, setErro] = useState<string | null>(null);
   async function criar(e: React.FormEvent) {
     e.preventDefault();

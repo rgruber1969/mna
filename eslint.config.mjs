@@ -43,7 +43,14 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   prettier,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/server/db/migracoes/**"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "src/server/db/migracoes/**",
+    ".claude/worktrees/**",
+  ]),
 
   // Regra geral: SDKs restritos e banco fora das telas/API.
   {

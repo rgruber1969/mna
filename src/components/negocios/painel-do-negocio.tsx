@@ -53,9 +53,27 @@ function Chip({ nivel, children }: { nivel: NivelDoPrazo | null; children: React
 }
 
 /** Linha do tempo das etapas principais: verde/vermelho nas passadas, semáforo na atual, data estimada nas próximas. */
-function LinhaDasEtapas({ painel, hoje, dias }: { painel: NonNullable<Painel>; hoje: string; dias: number }) {
+type EtapaDaLinha = NonNullable<NonNullable<Painel>["etapas"]>["etapas"][number];
+
+/**
+ * Linha das etapas principais (painel do kanban e tela do negócio). `atalho`
+ * aparece embaixo da etapa de prospecção: Funil de compradoras e Ofertas são
+ * o mesmo assunto (as ofertas são das compradoras), então é um atalho só.
+ */
+export function LinhaDasEtapas({
+  etapas,
+  hoje,
+  dias,
+  atalho,
+}: {
+  etapas: EtapaDaLinha[];
+  hoje: string;
+  dias: number;
+  atalho?: { href: string; rotulo: string } | null;
+}) {
   const t = useTranslations("negocios.kanban.painel");
-  const etapas = painel.etapas?.etapas ?? [];
+  // Etapa da prospecção: a de nome "Prospecção" (ou a primeira, na falta dela).
+  const daProspeccao = etapas.find((e) => /prospec/i.test(e.nome))?.id ?? etapas[0]?.id;
   if (etapas.length === 0) return null;
   return (
     <ol className="flex items-start" aria-label={t("linhaDoTempo")}>
@@ -128,6 +146,14 @@ function LinhaDasEtapas({ painel, hoje, dias }: { painel: NonNullable<Painel>; h
               </span>
             )}
             <span className="font-normal">{detalhe}</span>
+            {atalho && e.id === daProspeccao && (
+              <Link
+                href={atalho.href}
+                className="border-primary/40 text-primary hover:bg-primary-soft mt-0.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
+              >
+                {atalho.rotulo} →
+              </Link>
+            )}
           </li>
         );
       })}
@@ -341,11 +367,11 @@ export function PainelDoNegocio({
           </button>
           {c0.funil && (
             <Link
-              href={`/negocios/${c0.id}?aba=funil`}
+              href={`/negocios/${c0.id}?aba=compradoras`}
               title={t("painel.funilDica")}
               className="border-border text-text hover:border-primary rounded-full border px-3 py-1.5 text-sm font-medium"
             >
-              {t("painel.funil")}
+              {t("painel.compradoras")}
             </Link>
           )}
           <Link
@@ -374,7 +400,16 @@ export function PainelDoNegocio({
           <p className="text-muted text-sm">{t("semAcesso")}</p>
         ) : (
           <>
-            <LinhaDasEtapas painel={p} hoje={hoje} dias={dias} />
+            <LinhaDasEtapas
+              etapas={p.etapas?.etapas ?? []}
+              hoje={hoje}
+              dias={dias}
+              atalho={
+                c0.funil
+                  ? { href: `/negocios/${c0.id}?aba=compradoras`, rotulo: t("painel.compradoras") }
+                  : null
+              }
+            />
             <div
               ref={listaDeAbas}
               role="tablist"
@@ -434,7 +469,7 @@ export function PainelDoNegocio({
                             <p className="flex items-center justify-between gap-2 pt-2 text-xs">
                               <span className="text-text font-semibold">{t("resumo.funil")}</span>
                               <Link
-                                href={`/negocios/${c0.id}?aba=funil`}
+                                href={`/negocios/${c0.id}?aba=compradoras`}
                                 className="text-primary font-semibold"
                               >
                                 {t("painel.abrirFunil")} →

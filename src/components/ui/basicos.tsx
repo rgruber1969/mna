@@ -309,6 +309,14 @@ export const estiloTabela = {
   tabela: "w-full text-left text-sm",
   cabecalho: "bg-primary-soft text-primary",
   th: "px-4 py-3 font-semibold first:rounded-l-md last:rounded-r-md",
-  linha: "border-border border-b last:border-0",
+  /** Linha com destaque ao passar o mouse (padrão de todas as tabelas, 2026-11-23). */
+  linha: "border-border border-b last:border-0 transition-colors hover:bg-surface",
+  /**
+   * Linha inteira clicável: use com `linkDaLinha` no link principal (que cobre a
+   * linha) e `acimaDaLinha` em outros links ou botões da mesma linha.
+   */
+  linhaClicavel: "relative cursor-pointer",
+  linkDaLinha: "after:absolute after:inset-0 after:content-['']",
+  acimaDaLinha: "relative z-10",
   td: "px-4 py-3 align-middle",
 };

@@ -290,9 +290,12 @@ export function TabelaDeContratos({
         </thead>
         <tbody>
           {contratos.map((c) => (
-            <tr key={c.id} className={estiloTabela.linha}>
+            <tr key={c.id} className={`${estiloTabela.linha} ${estiloTabela.linhaClicavel}`}>
               <td className={estiloTabela.td}>
-                <a href={`/contratos/${c.id}`} className="text-primary font-medium">
+                <a
+                  href={`/contratos/${c.id}`}
+                  className={`text-primary font-medium ${estiloTabela.linkDaLinha}`}
+                >
                   {c.titulo}
                 </a>
                 <span className="text-muted block text-xs">{t(`tipos.${c.tipo}`)}</span>

@@ -1,6 +1,6 @@
 {
-  "id": "7ff6565d-667c-42ae-8f72-63361de40c4b",
-  "prevId": "f1336dbf-1c5e-474d-8fef-19f8378531d3",
+  "id": "2f4c44e3-c502-4688-99dd-c3cc32bedf57",
+  "prevId": "8be4534d-8efe-48e5-a1be-315357bdb9e2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -108,9 +108,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "anexo_cadastro_pessoa_idx": {
           "name": "anexo_cadastro_pessoa_idx",
@@ -129,63 +129,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "anexo_cadastro_tenant_id_tenant_id_fk": {
           "name": "anexo_cadastro_tenant_id_tenant_id_fk",
           "tableFrom": "anexo_cadastro",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "anexo_cadastro_empresa_id_empresa_id_fk": {
           "name": "anexo_cadastro_empresa_id_empresa_id_fk",
           "tableFrom": "anexo_cadastro",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "anexo_cadastro_pessoa_id_pessoa_id_fk": {
           "name": "anexo_cadastro_pessoa_id_pessoa_id_fk",
           "tableFrom": "anexo_cadastro",
+          "tableTo": "pessoa",
           "columnsFrom": [
             "pessoa_id"
           ],
-          "tableTo": "pessoa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "anexo_cadastro_enviado_por_usuario_id_fk": {
           "name": "anexo_cadastro_enviado_por_usuario_id_fk",
           "tableFrom": "anexo_cadastro",
+          "tableTo": "usuario",
           "columnsFrom": [
             "enviado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -265,24 +265,24 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "categoria_documento_tenant_id_tenant_id_fk": {
           "name": "categoria_documento_tenant_id_tenant_id_fk",
           "tableFrom": "categoria_documento",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -387,9 +387,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "chave_api_tenant_idx": {
           "name": "chave_api_tenant_idx",
@@ -402,50 +402,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "chave_api_tenant_id_tenant_id_fk": {
           "name": "chave_api_tenant_id_tenant_id_fk",
           "tableFrom": "chave_api",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "chave_api_usuario_id_usuario_id_fk": {
           "name": "chave_api_usuario_id_usuario_id_fk",
           "tableFrom": "chave_api",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "chave_api_criado_por_usuario_id_fk": {
           "name": "chave_api_criado_por_usuario_id_fk",
           "tableFrom": "chave_api",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -550,9 +550,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "chave_de_acesso_credencial_idx": {
           "name": "chave_de_acesso_credencial_idx",
@@ -565,24 +565,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "chave_de_acesso_usuario_id_usuario_id_fk": {
           "name": "chave_de_acesso_usuario_id_usuario_id_fk",
           "tableFrom": "chave_de_acesso",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -639,24 +639,199 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "chave_tenant_tenant_id_tenant_id_fk": {
           "name": "chave_tenant_tenant_id_tenant_id_fk",
           "tableFrom": "chave_tenant",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "mna_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.condicoes_do_negocio": {
+      "name": "condicoes_do_negocio",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deal_id": {
+          "name": "deal_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oferta_id": {
+          "name": "oferta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "condicoes": {
+          "name": "condicoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original": {
+          "name": "original",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "escolhida_por": {
+          "name": "escolhida_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "escolhida_em": {
+          "name": "escolhida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "atualizado_por": {
+          "name": "atualizado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "condicoes_do_negocio_deal_uq": {
+          "name": "condicoes_do_negocio_deal_uq",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "deal_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "condicoes_do_negocio_tenant_id_tenant_id_fk": {
+          "name": "condicoes_do_negocio_tenant_id_tenant_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_deal_id_deal_id_fk": {
+          "name": "condicoes_do_negocio_deal_id_deal_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "deal",
+          "columnsFrom": [
+            "deal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_oferta_id_oferta_id_fk": {
+          "name": "condicoes_do_negocio_oferta_id_oferta_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "oferta",
+          "columnsFrom": [
+            "oferta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_escolhida_por_usuario_id_fk": {
+          "name": "condicoes_do_negocio_escolhida_por_usuario_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "escolhida_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_atualizado_por_usuario_id_fk": {
+          "name": "condicoes_do_negocio_atualizado_por_usuario_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "atualizado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -774,24 +949,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "conta_usuario_id_usuario_id_fk": {
           "name": "conta_usuario_id_usuario_id_fk",
           "tableFrom": "conta",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -911,9 +1086,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "conta_bancaria_pessoa_idx": {
           "name": "conta_bancaria_pessoa_idx",
@@ -932,50 +1107,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "conta_bancaria_tenant_id_tenant_id_fk": {
           "name": "conta_bancaria_tenant_id_tenant_id_fk",
           "tableFrom": "conta_bancaria",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "conta_bancaria_empresa_id_empresa_id_fk": {
           "name": "conta_bancaria_empresa_id_empresa_id_fk",
           "tableFrom": "conta_bancaria",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "conta_bancaria_pessoa_id_pessoa_id_fk": {
           "name": "conta_bancaria_pessoa_id_pessoa_id_fk",
           "tableFrom": "conta_bancaria",
+          "tableTo": "pessoa",
           "columnsFrom": [
             "pessoa_id"
           ],
-          "tableTo": "pessoa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1216,63 +1391,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "contrato_tenant_id_tenant_id_fk": {
           "name": "contrato_tenant_id_tenant_id_fk",
           "tableFrom": "contrato",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_deal_id_deal_id_fk": {
           "name": "contrato_deal_id_deal_id_fk",
           "tableFrom": "contrato",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "contrato_conta_bancaria_id_conta_bancaria_id_fk": {
           "name": "contrato_conta_bancaria_id_conta_bancaria_id_fk",
           "tableFrom": "contrato",
+          "tableTo": "conta_bancaria",
           "columnsFrom": [
             "conta_bancaria_id"
           ],
-          "tableTo": "conta_bancaria",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "contrato_criado_por_usuario_id_fk": {
           "name": "contrato_criado_por_usuario_id_fk",
           "tableFrom": "contrato",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1346,63 +1521,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "contrato_acesso_tenant_id_tenant_id_fk": {
           "name": "contrato_acesso_tenant_id_tenant_id_fk",
           "tableFrom": "contrato_acesso",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_acesso_contrato_id_contrato_id_fk": {
           "name": "contrato_acesso_contrato_id_contrato_id_fk",
           "tableFrom": "contrato_acesso",
+          "tableTo": "contrato",
           "columnsFrom": [
             "contrato_id"
           ],
-          "tableTo": "contrato",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_acesso_perfil_id_perfil_id_fk": {
           "name": "contrato_acesso_perfil_id_perfil_id_fk",
           "tableFrom": "contrato_acesso",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_acesso_usuario_id_usuario_id_fk": {
           "name": "contrato_acesso_usuario_id_usuario_id_fk",
           "tableFrom": "contrato_acesso",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1531,50 +1706,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "contrato_arquivo_tenant_id_tenant_id_fk": {
           "name": "contrato_arquivo_tenant_id_tenant_id_fk",
           "tableFrom": "contrato_arquivo",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_arquivo_contrato_id_contrato_id_fk": {
           "name": "contrato_arquivo_contrato_id_contrato_id_fk",
           "tableFrom": "contrato_arquivo",
+          "tableTo": "contrato",
           "columnsFrom": [
             "contrato_id"
           ],
-          "tableTo": "contrato",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_arquivo_enviado_por_usuario_id_fk": {
           "name": "contrato_arquivo_enviado_por_usuario_id_fk",
           "tableFrom": "contrato_arquivo",
+          "tableTo": "usuario",
           "columnsFrom": [
             "enviado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1660,50 +1835,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "contrato_parte_tenant_id_tenant_id_fk": {
           "name": "contrato_parte_tenant_id_tenant_id_fk",
           "tableFrom": "contrato_parte",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_parte_contrato_id_contrato_id_fk": {
           "name": "contrato_parte_contrato_id_contrato_id_fk",
           "tableFrom": "contrato_parte",
+          "tableTo": "contrato",
           "columnsFrom": [
             "contrato_id"
           ],
-          "tableTo": "contrato",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "contrato_parte_empresa_id_empresa_id_fk": {
           "name": "contrato_parte_empresa_id_empresa_id_fk",
           "tableFrom": "contrato_parte",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1817,34 +1992,34 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "convite_tenant_id_tenant_id_fk": {
           "name": "convite_tenant_id_tenant_id_fk",
           "tableFrom": "convite",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "convite_token_hash_unique": {
           "name": "convite_token_hash_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token_hash"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {
@@ -1917,10 +2092,10 @@
       "uniqueConstraints": {
         "convite_plataforma_token_hash_unique": {
           "name": "convite_plataforma_token_hash_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token_hash"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -2100,76 +2275,76 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "deal_tenant_id_tenant_id_fk": {
           "name": "deal_tenant_id_tenant_id_fk",
           "tableFrom": "deal",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "deal_tipo_operacao_id_tipo_operacao_id_fk": {
           "name": "deal_tipo_operacao_id_tipo_operacao_id_fk",
           "tableFrom": "deal",
+          "tableTo": "tipo_operacao",
           "columnsFrom": [
             "tipo_operacao_id"
           ],
-          "tableTo": "tipo_operacao",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deal_grupo_id_grupo_economico_id_fk": {
           "name": "deal_grupo_id_grupo_economico_id_fk",
           "tableFrom": "deal",
+          "tableTo": "grupo_economico",
           "columnsFrom": [
             "grupo_id"
           ],
-          "tableTo": "grupo_economico",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "deal_exclusividade_empresa_id_empresa_id_fk": {
           "name": "deal_exclusividade_empresa_id_empresa_id_fk",
           "tableFrom": "deal",
+          "tableTo": "empresa",
           "columnsFrom": [
             "exclusividade_empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deal_criado_por_usuario_id_fk": {
           "name": "deal_criado_por_usuario_id_fk",
           "tableFrom": "deal",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2286,9 +2461,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "deal_empresa_empresa_idx": {
           "name": "deal_empresa_empresa_idx",
@@ -2307,76 +2482,76 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "deal_empresa_tenant_id_tenant_id_fk": {
           "name": "deal_empresa_tenant_id_tenant_id_fk",
           "tableFrom": "deal_empresa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "deal_empresa_deal_id_deal_id_fk": {
           "name": "deal_empresa_deal_id_deal_id_fk",
           "tableFrom": "deal_empresa",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "deal_empresa_empresa_id_empresa_id_fk": {
           "name": "deal_empresa_empresa_id_empresa_id_fk",
           "tableFrom": "deal_empresa",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deal_empresa_papel_id_papel_empresa_id_fk": {
           "name": "deal_empresa_papel_id_papel_empresa_id_fk",
           "tableFrom": "deal_empresa",
+          "tableTo": "papel_empresa",
           "columnsFrom": [
             "papel_id"
           ],
-          "tableTo": "papel_empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "deal_empresa_atua_para_id_empresa_id_fk": {
           "name": "deal_empresa_atua_para_id_empresa_id_fk",
           "tableFrom": "deal_empresa",
+          "tableTo": "empresa",
           "columnsFrom": [
             "atua_para_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2545,37 +2720,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "deal_etapa_tenant_id_tenant_id_fk": {
           "name": "deal_etapa_tenant_id_tenant_id_fk",
           "tableFrom": "deal_etapa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "deal_etapa_deal_id_deal_id_fk": {
           "name": "deal_etapa_deal_id_deal_id_fk",
           "tableFrom": "deal_etapa",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2681,76 +2856,76 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "documento_tenant_id_tenant_id_fk": {
           "name": "documento_tenant_id_tenant_id_fk",
           "tableFrom": "documento",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "documento_deal_id_deal_id_fk": {
           "name": "documento_deal_id_deal_id_fk",
           "tableFrom": "documento",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "documento_etapa_id_deal_etapa_id_fk": {
           "name": "documento_etapa_id_deal_etapa_id_fk",
           "tableFrom": "documento",
+          "tableTo": "deal_etapa",
           "columnsFrom": [
             "etapa_id"
           ],
-          "tableTo": "deal_etapa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "documento_categoria_id_categoria_documento_id_fk": {
           "name": "documento_categoria_id_categoria_documento_id_fk",
           "tableFrom": "documento",
+          "tableTo": "categoria_documento",
           "columnsFrom": [
             "categoria_id"
           ],
-          "tableTo": "categoria_documento",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "documento_criado_por_usuario_id_fk": {
           "name": "documento_criado_por_usuario_id_fk",
           "tableFrom": "documento",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2831,9 +3006,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "documento_texto_busca_idx": {
           "name": "documento_texto_busca_idx",
@@ -2846,37 +3021,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "documento_texto_tenant_id_tenant_id_fk": {
           "name": "documento_texto_tenant_id_tenant_id_fk",
           "tableFrom": "documento_texto",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "documento_texto_versao_id_documento_versao_id_fk": {
           "name": "documento_texto_versao_id_documento_versao_id_fk",
           "tableFrom": "documento_texto",
+          "tableTo": "documento_versao",
           "columnsFrom": [
             "versao_id"
           ],
-          "tableTo": "documento_versao",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3014,50 +3189,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "documento_versao_tenant_id_tenant_id_fk": {
           "name": "documento_versao_tenant_id_tenant_id_fk",
           "tableFrom": "documento_versao",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "documento_versao_documento_id_documento_id_fk": {
           "name": "documento_versao_documento_id_documento_id_fk",
           "tableFrom": "documento_versao",
+          "tableTo": "documento",
           "columnsFrom": [
             "documento_id"
           ],
-          "tableTo": "documento",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "documento_versao_enviado_por_usuario_id_fk": {
           "name": "documento_versao_enviado_por_usuario_id_fk",
           "tableFrom": "documento_versao",
+          "tableTo": "usuario",
           "columnsFrom": [
             "enviado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3139,9 +3314,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "dois_fatores_segredo_idx": {
           "name": "dois_fatores_segredo_idx",
@@ -3154,24 +3329,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "dois_fatores_usuario_id_usuario_id_fk": {
           "name": "dois_fatores_usuario_id_usuario_id_fk",
           "tableFrom": "dois_fatores",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3241,50 +3416,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "ebook_comentario_tenant_id_tenant_id_fk": {
           "name": "ebook_comentario_tenant_id_tenant_id_fk",
           "tableFrom": "ebook_comentario",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "ebook_comentario_versao_id_ebook_versao_id_fk": {
           "name": "ebook_comentario_versao_id_ebook_versao_id_fk",
           "tableFrom": "ebook_comentario",
+          "tableTo": "ebook_versao",
           "columnsFrom": [
             "versao_id"
           ],
-          "tableTo": "ebook_versao",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "ebook_comentario_autor_id_usuario_id_fk": {
           "name": "ebook_comentario_autor_id_usuario_id_fk",
           "tableFrom": "ebook_comentario",
+          "tableTo": "usuario",
           "columnsFrom": [
             "autor_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3434,76 +3609,76 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "ebook_versao_tenant_id_tenant_id_fk": {
           "name": "ebook_versao_tenant_id_tenant_id_fk",
           "tableFrom": "ebook_versao",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "ebook_versao_deal_id_deal_id_fk": {
           "name": "ebook_versao_deal_id_deal_id_fk",
           "tableFrom": "ebook_versao",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "ebook_versao_criado_por_usuario_id_fk": {
           "name": "ebook_versao_criado_por_usuario_id_fk",
           "tableFrom": "ebook_versao",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "ebook_versao_aprovado_por_usuario_id_fk": {
           "name": "ebook_versao_aprovado_por_usuario_id_fk",
           "tableFrom": "ebook_versao",
+          "tableTo": "usuario",
           "columnsFrom": [
             "aprovado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "ebook_versao_liberado_por_usuario_id_fk": {
           "name": "ebook_versao_liberado_por_usuario_id_fk",
           "tableFrom": "ebook_versao",
+          "tableTo": "usuario",
           "columnsFrom": [
             "liberado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3701,38 +3876,38 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "cnpj is not null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "empresa_tenant_id_tenant_id_fk": {
           "name": "empresa_tenant_id_tenant_id_fk",
           "tableFrom": "empresa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "empresa_grupo_id_grupo_economico_id_fk": {
           "name": "empresa_grupo_id_grupo_economico_id_fk",
           "tableFrom": "empresa",
+          "tableTo": "grupo_economico",
           "columnsFrom": [
             "grupo_id"
           ],
-          "tableTo": "grupo_economico",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3839,24 +4014,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "etapa_padrao_tenant_id_tenant_id_fk": {
           "name": "etapa_padrao_tenant_id_tenant_id_fk",
           "tableFrom": "etapa_padrao",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3949,24 +4124,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "evento_auditoria_tenant_id_tenant_id_fk": {
           "name": "evento_auditoria_tenant_id_tenant_id_fk",
           "tableFrom": "evento_auditoria",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4047,9 +4222,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -4139,24 +4314,24 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "fonte_de_documento_tenant_id_tenant_id_fk": {
           "name": "fonte_de_documento_tenant_id_tenant_id_fk",
           "tableFrom": "fonte_de_documento",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4225,24 +4400,24 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "grupo_economico_tenant_id_tenant_id_fk": {
           "name": "grupo_economico_tenant_id_tenant_id_fk",
           "tableFrom": "grupo_economico",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4298,10 +4473,10 @@
       "uniqueConstraints": {
         "limite_tentativas_chave_unique": {
           "name": "limite_tentativas_chave_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "chave"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -4383,50 +4558,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "matriz_usuario_tenant_id_tenant_id_fk": {
           "name": "matriz_usuario_tenant_id_tenant_id_fk",
           "tableFrom": "matriz_usuario",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "matriz_usuario_usuario_id_usuario_id_fk": {
           "name": "matriz_usuario_usuario_id_usuario_id_fk",
           "tableFrom": "matriz_usuario",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "matriz_usuario_perfil_id_perfil_id_fk": {
           "name": "matriz_usuario_perfil_id_perfil_id_fk",
           "tableFrom": "matriz_usuario",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4562,9 +4737,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "mensagem_recentes_idx": {
           "name": "mensagem_recentes_idx",
@@ -4583,63 +4758,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "mensagem_tenant_id_tenant_id_fk": {
           "name": "mensagem_tenant_id_tenant_id_fk",
           "tableFrom": "mensagem",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_deal_id_deal_id_fk": {
           "name": "mensagem_deal_id_deal_id_fk",
           "tableFrom": "mensagem",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_autor_id_usuario_id_fk": {
           "name": "mensagem_autor_id_usuario_id_fk",
           "tableFrom": "mensagem",
+          "tableTo": "usuario",
           "columnsFrom": [
             "autor_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "mensagem_tarefa_id_tarefa_id_fk": {
           "name": "mensagem_tarefa_id_tarefa_id_fk",
           "tableFrom": "mensagem",
+          "tableTo": "tarefa",
           "columnsFrom": [
             "tarefa_id"
           ],
-          "tableTo": "tarefa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4751,63 +4926,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "mensagem_anexo_tenant_id_tenant_id_fk": {
           "name": "mensagem_anexo_tenant_id_tenant_id_fk",
           "tableFrom": "mensagem_anexo",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_anexo_deal_id_deal_id_fk": {
           "name": "mensagem_anexo_deal_id_deal_id_fk",
           "tableFrom": "mensagem_anexo",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_anexo_mensagem_id_mensagem_id_fk": {
           "name": "mensagem_anexo_mensagem_id_mensagem_id_fk",
           "tableFrom": "mensagem_anexo",
+          "tableTo": "mensagem",
           "columnsFrom": [
             "mensagem_id"
           ],
-          "tableTo": "mensagem",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_anexo_enviado_por_usuario_id_fk": {
           "name": "mensagem_anexo_enviado_por_usuario_id_fk",
           "tableFrom": "mensagem_anexo",
+          "tableTo": "usuario",
           "columnsFrom": [
             "enviado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4894,50 +5069,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "mensagem_leitura_tenant_id_tenant_id_fk": {
           "name": "mensagem_leitura_tenant_id_tenant_id_fk",
           "tableFrom": "mensagem_leitura",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_leitura_usuario_id_usuario_id_fk": {
           "name": "mensagem_leitura_usuario_id_usuario_id_fk",
           "tableFrom": "mensagem_leitura",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "mensagem_leitura_deal_id_deal_id_fk": {
           "name": "mensagem_leitura_deal_id_deal_id_fk",
           "tableFrom": "mensagem_leitura",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5037,37 +5212,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "notificacao_tenant_id_tenant_id_fk": {
           "name": "notificacao_tenant_id_tenant_id_fk",
           "tableFrom": "notificacao",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "notificacao_usuario_id_usuario_id_fk": {
           "name": "notificacao_usuario_id_usuario_id_fk",
           "tableFrom": "notificacao",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5257,6 +5432,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "aceita_em": {
+          "name": "aceita_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aceita_por": {
+          "name": "aceita_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "criado_por": {
           "name": "criado_por",
           "type": "uuid",
@@ -5302,76 +5489,89 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "oferta_tenant_id_tenant_id_fk": {
           "name": "oferta_tenant_id_tenant_id_fk",
           "tableFrom": "oferta",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_deal_id_deal_id_fk": {
           "name": "oferta_deal_id_deal_id_fk",
           "tableFrom": "oferta",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_compradora_id_empresa_id_fk": {
           "name": "oferta_compradora_id_empresa_id_fk",
           "tableFrom": "oferta",
+          "tableTo": "empresa",
           "columnsFrom": [
             "compradora_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "oferta_anterior_id_oferta_id_fk": {
           "name": "oferta_anterior_id_oferta_id_fk",
           "tableFrom": "oferta",
+          "tableTo": "oferta",
           "columnsFrom": [
             "anterior_id"
           ],
-          "tableTo": "oferta",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "oferta_aceita_por_usuario_id_fk": {
+          "name": "oferta_aceita_por_usuario_id_fk",
+          "tableFrom": "oferta",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "aceita_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "oferta_criado_por_usuario_id_fk": {
           "name": "oferta_criado_por_usuario_id_fk",
           "tableFrom": "oferta",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5445,63 +5645,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "oferta_acesso_tenant_id_tenant_id_fk": {
           "name": "oferta_acesso_tenant_id_tenant_id_fk",
           "tableFrom": "oferta_acesso",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_acesso_oferta_id_oferta_id_fk": {
           "name": "oferta_acesso_oferta_id_oferta_id_fk",
           "tableFrom": "oferta_acesso",
+          "tableTo": "oferta",
           "columnsFrom": [
             "oferta_id"
           ],
-          "tableTo": "oferta",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_acesso_perfil_id_perfil_id_fk": {
           "name": "oferta_acesso_perfil_id_perfil_id_fk",
           "tableFrom": "oferta_acesso",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_acesso_usuario_id_usuario_id_fk": {
           "name": "oferta_acesso_usuario_id_usuario_id_fk",
           "tableFrom": "oferta_acesso",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5612,50 +5812,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "oferta_arquivo_tenant_id_tenant_id_fk": {
           "name": "oferta_arquivo_tenant_id_tenant_id_fk",
           "tableFrom": "oferta_arquivo",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_arquivo_oferta_id_oferta_id_fk": {
           "name": "oferta_arquivo_oferta_id_oferta_id_fk",
           "tableFrom": "oferta_arquivo",
+          "tableTo": "oferta",
           "columnsFrom": [
             "oferta_id"
           ],
-          "tableTo": "oferta",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "oferta_arquivo_enviado_por_usuario_id_fk": {
           "name": "oferta_arquivo_enviado_por_usuario_id_fk",
           "tableFrom": "oferta_arquivo",
+          "tableTo": "usuario",
           "columnsFrom": [
             "enviado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5742,37 +5942,37 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "papel_empresa_tenant_id_tenant_id_fk": {
           "name": "papel_empresa_tenant_id_tenant_id_fk",
           "tableFrom": "papel_empresa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "papel_empresa_perfil_sugerido_id_perfil_id_fk": {
           "name": "papel_empresa_perfil_sugerido_id_perfil_id_fk",
           "tableFrom": "papel_empresa",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_sugerido_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -5916,9 +6116,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "participacao_deal_pessoa_idx": {
           "name": "participacao_deal_pessoa_idx",
@@ -5937,89 +6137,89 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "participacao_deal_tenant_id_tenant_id_fk": {
           "name": "participacao_deal_tenant_id_tenant_id_fk",
           "tableFrom": "participacao_deal",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "participacao_deal_deal_id_deal_id_fk": {
           "name": "participacao_deal_deal_id_deal_id_fk",
           "tableFrom": "participacao_deal",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "participacao_deal_pessoa_id_pessoa_id_fk": {
           "name": "participacao_deal_pessoa_id_pessoa_id_fk",
           "tableFrom": "participacao_deal",
+          "tableTo": "pessoa",
           "columnsFrom": [
             "pessoa_id"
           ],
-          "tableTo": "pessoa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "participacao_deal_empresa_id_empresa_id_fk": {
           "name": "participacao_deal_empresa_id_empresa_id_fk",
           "tableFrom": "participacao_deal",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "participacao_deal_perfil_id_perfil_id_fk": {
           "name": "participacao_deal_perfil_id_perfil_id_fk",
           "tableFrom": "participacao_deal",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "participacao_deal_criado_por_usuario_id_fk": {
           "name": "participacao_deal_criado_por_usuario_id_fk",
           "tableFrom": "participacao_deal",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6112,9 +6312,9 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "participacao_empresa_socia_idx": {
           "name": "participacao_empresa_socia_idx",
@@ -6133,50 +6333,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "participacao_empresa_tenant_id_tenant_id_fk": {
           "name": "participacao_empresa_tenant_id_tenant_id_fk",
           "tableFrom": "participacao_empresa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "participacao_empresa_empresa_id_empresa_id_fk": {
           "name": "participacao_empresa_empresa_id_empresa_id_fk",
           "tableFrom": "participacao_empresa",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "participacao_empresa_socia_id_empresa_id_fk": {
           "name": "participacao_empresa_socia_id_empresa_id_fk",
           "tableFrom": "participacao_empresa",
+          "tableTo": "empresa",
           "columnsFrom": [
             "socia_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6343,89 +6543,89 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "pedido_documentos_tenant_id_tenant_id_fk": {
           "name": "pedido_documentos_tenant_id_tenant_id_fk",
           "tableFrom": "pedido_documentos",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_documentos_deal_id_deal_id_fk": {
           "name": "pedido_documentos_deal_id_deal_id_fk",
           "tableFrom": "pedido_documentos",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_documentos_compradora_id_empresa_id_fk": {
           "name": "pedido_documentos_compradora_id_empresa_id_fk",
           "tableFrom": "pedido_documentos",
+          "tableTo": "empresa",
           "columnsFrom": [
             "compradora_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "pedido_documentos_solicitante_id_empresa_id_fk": {
           "name": "pedido_documentos_solicitante_id_empresa_id_fk",
           "tableFrom": "pedido_documentos",
+          "tableTo": "empresa",
           "columnsFrom": [
             "solicitante_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "pedido_documentos_origem_id_pedido_documentos_id_fk": {
           "name": "pedido_documentos_origem_id_pedido_documentos_id_fk",
           "tableFrom": "pedido_documentos",
+          "tableTo": "pedido_documentos",
           "columnsFrom": [
             "origem_id"
           ],
-          "tableTo": "pedido_documentos",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "pedido_documentos_criado_por_usuario_id_fk": {
           "name": "pedido_documentos_criado_por_usuario_id_fk",
           "tableFrom": "pedido_documentos",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6644,76 +6844,76 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "pedido_item_tenant_id_tenant_id_fk": {
           "name": "pedido_item_tenant_id_tenant_id_fk",
           "tableFrom": "pedido_item",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_item_pedido_id_pedido_documentos_id_fk": {
           "name": "pedido_item_pedido_id_pedido_documentos_id_fk",
           "tableFrom": "pedido_item",
+          "tableTo": "pedido_documentos",
           "columnsFrom": [
             "pedido_id"
           ],
-          "tableTo": "pedido_documentos",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_item_rodada_id_pedido_rodada_id_fk": {
           "name": "pedido_item_rodada_id_pedido_rodada_id_fk",
           "tableFrom": "pedido_item",
+          "tableTo": "pedido_rodada",
           "columnsFrom": [
             "rodada_id"
           ],
-          "tableTo": "pedido_rodada",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_item_responsavel_id_usuario_id_fk": {
           "name": "pedido_item_responsavel_id_usuario_id_fk",
           "tableFrom": "pedido_item",
+          "tableTo": "usuario",
           "columnsFrom": [
             "responsavel_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "pedido_item_fonte_id_fonte_de_documento_id_fk": {
           "name": "pedido_item_fonte_id_fonte_de_documento_id_fk",
           "tableFrom": "pedido_item",
+          "tableTo": "fonte_de_documento",
           "columnsFrom": [
             "fonte_id"
           ],
-          "tableTo": "fonte_de_documento",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6794,50 +6994,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "pedido_item_documento_tenant_id_tenant_id_fk": {
           "name": "pedido_item_documento_tenant_id_tenant_id_fk",
           "tableFrom": "pedido_item_documento",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_item_documento_item_id_pedido_item_id_fk": {
           "name": "pedido_item_documento_item_id_pedido_item_id_fk",
           "tableFrom": "pedido_item_documento",
+          "tableTo": "pedido_item",
           "columnsFrom": [
             "item_id"
           ],
-          "tableTo": "pedido_item",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_item_documento_documento_id_documento_id_fk": {
           "name": "pedido_item_documento_documento_id_documento_id_fk",
           "tableFrom": "pedido_item_documento",
+          "tableTo": "documento",
           "columnsFrom": [
             "documento_id"
           ],
-          "tableTo": "documento",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -6930,37 +7130,37 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "pedido_rodada_tenant_id_tenant_id_fk": {
           "name": "pedido_rodada_tenant_id_tenant_id_fk",
           "tableFrom": "pedido_rodada",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pedido_rodada_pedido_id_pedido_documentos_id_fk": {
           "name": "pedido_rodada_pedido_id_pedido_documentos_id_fk",
           "tableFrom": "pedido_rodada",
+          "tableTo": "pedido_documentos",
           "columnsFrom": [
             "pedido_id"
           ],
-          "tableTo": "pedido_documentos",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7075,24 +7275,24 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "perfil_tenant_id_tenant_id_fk": {
           "name": "perfil_tenant_id_tenant_id_fk",
           "tableFrom": "perfil",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7167,50 +7367,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "perfil_usuario_tenant_id_tenant_id_fk": {
           "name": "perfil_usuario_tenant_id_tenant_id_fk",
           "tableFrom": "perfil_usuario",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "perfil_usuario_usuario_id_usuario_id_fk": {
           "name": "perfil_usuario_usuario_id_usuario_id_fk",
           "tableFrom": "perfil_usuario",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "perfil_usuario_perfil_id_perfil_id_fk": {
           "name": "perfil_usuario_perfil_id_perfil_id_fk",
           "tableFrom": "perfil_usuario",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7449,10 +7649,10 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "cpf_indice is not null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "pessoa_email_uq": {
           "name": "pessoa_email_uq",
@@ -7471,10 +7671,10 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "email is not null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
         "pessoa_usuario_uq": {
           "name": "pessoa_usuario_uq",
@@ -7493,38 +7693,38 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "usuario_id is not null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "pessoa_tenant_id_tenant_id_fk": {
           "name": "pessoa_tenant_id_tenant_id_fk",
           "tableFrom": "pessoa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "pessoa_usuario_id_usuario_id_fk": {
           "name": "pessoa_usuario_id_usuario_id_fk",
           "tableFrom": "pessoa",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7600,37 +7800,37 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "preferencia_menu_tenant_id_tenant_id_fk": {
           "name": "preferencia_menu_tenant_id_tenant_id_fk",
           "tableFrom": "preferencia_menu",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "preferencia_menu_usuario_id_usuario_id_fk": {
           "name": "preferencia_menu_usuario_id_usuario_id_fk",
           "tableFrom": "preferencia_menu",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7723,50 +7923,50 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "prorrogacao_exclusividade_tenant_id_tenant_id_fk": {
           "name": "prorrogacao_exclusividade_tenant_id_tenant_id_fk",
           "tableFrom": "prorrogacao_exclusividade",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "prorrogacao_exclusividade_deal_id_deal_id_fk": {
           "name": "prorrogacao_exclusividade_deal_id_deal_id_fk",
           "tableFrom": "prorrogacao_exclusividade",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "prorrogacao_exclusividade_criado_por_usuario_id_fk": {
           "name": "prorrogacao_exclusividade_criado_por_usuario_id_fk",
           "tableFrom": "prorrogacao_exclusividade",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7873,34 +8073,34 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "sessao_usuario_id_usuario_id_fk": {
           "name": "sessao_usuario_id_usuario_id_fk",
           "tableFrom": "sessao",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "sessao_token_unique": {
           "name": "sessao_token_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -8051,89 +8251,89 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "tarefa_tenant_id_tenant_id_fk": {
           "name": "tarefa_tenant_id_tenant_id_fk",
           "tableFrom": "tarefa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_deal_id_deal_id_fk": {
           "name": "tarefa_deal_id_deal_id_fk",
           "tableFrom": "tarefa",
+          "tableTo": "deal",
           "columnsFrom": [
             "deal_id"
           ],
-          "tableTo": "deal",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_etapa_id_deal_etapa_id_fk": {
           "name": "tarefa_etapa_id_deal_etapa_id_fk",
           "tableFrom": "tarefa",
+          "tableTo": "deal_etapa",
           "columnsFrom": [
             "etapa_id"
           ],
-          "tableTo": "deal_etapa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "tarefa_compradora_id_empresa_id_fk": {
           "name": "tarefa_compradora_id_empresa_id_fk",
           "tableFrom": "tarefa",
+          "tableTo": "empresa",
           "columnsFrom": [
             "compradora_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "tarefa_concluida_por_usuario_id_fk": {
           "name": "tarefa_concluida_por_usuario_id_fk",
           "tableFrom": "tarefa",
+          "tableTo": "usuario",
           "columnsFrom": [
             "concluida_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         },
         "tarefa_criado_por_usuario_id_fk": {
           "name": "tarefa_criado_por_usuario_id_fk",
           "tableFrom": "tarefa",
+          "tableTo": "usuario",
           "columnsFrom": [
             "criado_por"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "set null"
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8207,50 +8407,50 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "tarefa_documento_tenant_id_tenant_id_fk": {
           "name": "tarefa_documento_tenant_id_tenant_id_fk",
           "tableFrom": "tarefa_documento",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_documento_tarefa_id_tarefa_id_fk": {
           "name": "tarefa_documento_tarefa_id_tarefa_id_fk",
           "tableFrom": "tarefa_documento",
+          "tableTo": "tarefa",
           "columnsFrom": [
             "tarefa_id"
           ],
-          "tableTo": "tarefa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_documento_documento_id_documento_id_fk": {
           "name": "tarefa_documento_documento_id_documento_id_fk",
           "tableFrom": "tarefa_documento",
+          "tableTo": "documento",
           "columnsFrom": [
             "documento_id"
           ],
-          "tableTo": "documento",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8331,37 +8531,37 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "tarefa_item_tenant_id_tenant_id_fk": {
           "name": "tarefa_item_tenant_id_tenant_id_fk",
           "tableFrom": "tarefa_item",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_item_tarefa_id_tarefa_id_fk": {
           "name": "tarefa_item_tarefa_id_tarefa_id_fk",
           "tableFrom": "tarefa_item",
+          "tableTo": "tarefa",
           "columnsFrom": [
             "tarefa_id"
           ],
-          "tableTo": "tarefa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8435,63 +8635,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "tarefa_responsavel_tenant_id_tenant_id_fk": {
           "name": "tarefa_responsavel_tenant_id_tenant_id_fk",
           "tableFrom": "tarefa_responsavel",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_responsavel_tarefa_id_tarefa_id_fk": {
           "name": "tarefa_responsavel_tarefa_id_tarefa_id_fk",
           "tableFrom": "tarefa_responsavel",
+          "tableTo": "tarefa",
           "columnsFrom": [
             "tarefa_id"
           ],
-          "tableTo": "tarefa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_responsavel_usuario_id_usuario_id_fk": {
           "name": "tarefa_responsavel_usuario_id_usuario_id_fk",
           "tableFrom": "tarefa_responsavel",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "tarefa_responsavel_perfil_id_perfil_id_fk": {
           "name": "tarefa_responsavel_perfil_id_perfil_id_fk",
           "tableFrom": "tarefa_responsavel",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8669,10 +8869,10 @@
       "uniqueConstraints": {
         "tenant_slug_unique": {
           "name": "tenant_slug_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -8741,24 +8941,24 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "tipo_operacao_tenant_id_tenant_id_fk": {
           "name": "tipo_operacao_tenant_id_tenant_id_fk",
           "tableFrom": "tipo_operacao",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8840,24 +9040,24 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "tipo_vinculo_tenant_id_tenant_id_fk": {
           "name": "tipo_vinculo_tenant_id_tenant_id_fk",
           "tableFrom": "tipo_vinculo",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -8961,10 +9161,10 @@
       "uniqueConstraints": {
         "usuario_email_unique": {
           "name": "usuario_email_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -9027,9 +9227,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -9093,63 +9293,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "versao_acesso_tenant_id_tenant_id_fk": {
           "name": "versao_acesso_tenant_id_tenant_id_fk",
           "tableFrom": "versao_acesso",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "versao_acesso_versao_id_documento_versao_id_fk": {
           "name": "versao_acesso_versao_id_documento_versao_id_fk",
           "tableFrom": "versao_acesso",
+          "tableTo": "documento_versao",
           "columnsFrom": [
             "versao_id"
           ],
-          "tableTo": "documento_versao",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "versao_acesso_perfil_id_perfil_id_fk": {
           "name": "versao_acesso_perfil_id_perfil_id_fk",
           "tableFrom": "versao_acesso",
+          "tableTo": "perfil",
           "columnsFrom": [
             "perfil_id"
           ],
-          "tableTo": "perfil",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "versao_acesso_usuario_id_usuario_id_fk": {
           "name": "versao_acesso_usuario_id_usuario_id_fk",
           "tableFrom": "versao_acesso",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9247,63 +9447,63 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "vinculo_pessoa_empresa_tenant_id_tenant_id_fk": {
           "name": "vinculo_pessoa_empresa_tenant_id_tenant_id_fk",
           "tableFrom": "vinculo_pessoa_empresa",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "vinculo_pessoa_empresa_pessoa_id_pessoa_id_fk": {
           "name": "vinculo_pessoa_empresa_pessoa_id_pessoa_id_fk",
           "tableFrom": "vinculo_pessoa_empresa",
+          "tableTo": "pessoa",
           "columnsFrom": [
             "pessoa_id"
           ],
-          "tableTo": "pessoa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "vinculo_pessoa_empresa_empresa_id_empresa_id_fk": {
           "name": "vinculo_pessoa_empresa_empresa_id_empresa_id_fk",
           "tableFrom": "vinculo_pessoa_empresa",
+          "tableTo": "empresa",
           "columnsFrom": [
             "empresa_id"
           ],
-          "tableTo": "empresa",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "vinculo_pessoa_empresa_tipo_id_tipo_vinculo_id_fk": {
           "name": "vinculo_pessoa_empresa_tipo_id_tipo_vinculo_id_fk",
           "tableFrom": "vinculo_pessoa_empresa",
+          "tableTo": "tipo_vinculo",
           "columnsFrom": [
             "tipo_id"
           ],
-          "tableTo": "tipo_vinculo",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9412,37 +9612,37 @@
             }
           ],
           "isUnique": true,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "vinculo_tenant_tenant_id_tenant_id_fk": {
           "name": "vinculo_tenant_tenant_id_tenant_id_fk",
           "tableFrom": "vinculo_tenant",
+          "tableTo": "tenant",
           "columnsFrom": [
             "tenant_id"
           ],
-          "tableTo": "tenant",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "vinculo_tenant_usuario_id_usuario_id_fk": {
           "name": "vinculo_tenant_usuario_id_usuario_id_fk",
           "tableFrom": "vinculo_tenant",
+          "tableTo": "usuario",
           "columnsFrom": [
             "usuario_id"
           ],
-          "tableTo": "usuario",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -9465,10 +9665,10 @@
   },
   "enums": {},
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

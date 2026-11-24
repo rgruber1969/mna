@@ -1,5 +1,6 @@
 "use client";
 
+import { hojeNoBrasil } from "@/config/prazos";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -33,7 +34,7 @@ export function JanelaDoItem({
   const ts = useTranslations("pedidos.situacoes");
   const tt = useTranslations("pedidos.tipos");
   const router = useRouter();
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeNoBrasil();
   const [v, setV] = useState({
     rodadaId: item?.rodadaId ?? d.rodadas[d.rodadas.length - 1]?.id ?? "",
     assunto: item?.assunto ?? assuntoInicial ?? d.painel.assuntos[0] ?? "",

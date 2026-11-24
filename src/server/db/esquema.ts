@@ -1425,7 +1425,11 @@ export const contratoArquivo = pgTable(
 // --- Ofertas recebidas (item 32; dominio.md, "Ofertas"; O1–O4) ---
 
 /** Parcela a prazo de uma oferta. */
-export type ParcelaDaOferta = { valor: string; data: string };
+/**
+ * Parcela a prazo: vencimento em data fixa (`data`) ou em meses após o
+ * closing (`meses`, com `data` vazia), o mais comum (pedido de 2026-11-23).
+ */
+export type ParcelaDaOferta = { valor: string; data: string; meses?: number | null };
 /** Percentual de cada vendedora no rateio de uma oferta (O4). */
 export type RateioDaOferta = { empresaId: string; percentual: string };
 
@@ -1469,6 +1473,9 @@ export const oferta = pgTable(
     /** Rateio próprio desta oferta (vazio: o do negócio), com o critério. */
     rateio: jsonb("rateio").$type<RateioDaOferta[]>().notNull().default([]),
     criterioRateio: text("criterio_rateio"),
+    /** Oferta escolhida pelo lado vendedor (uma por negócio): vira as Condições da oferta do negócio. */
+    aceitaEm: timestamp("aceita_em", { withTimezone: true }),
+    aceitaPor: uuid("aceita_por").references(() => usuario.id, { onDelete: "set null" }),
     criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
     criadoEm: criadoEm(),
     atualizadoEm: atualizadoEm(),
@@ -1652,6 +1659,58 @@ export const pedidoItemDocumento = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [uniqueIndex("pedido_item_documento_uq").on(t.tenantId, t.itemId, t.documentoId), isolamento()],
+).enableRLS();
+
+// --- Condições da oferta escolhida (pedido de 2026-11-23) --------------------------------------
+
+/** Atributos da oferta levados ao negócio quando ela é escolhida. */
+export type CondicoesDaOferta = {
+  compradoraId: string;
+  compradora: string;
+  instrumento: string;
+  data: string;
+  enterpriseValue: string | null;
+  equityValue: string | null;
+  parcelaVista: string | null;
+  parcelas: ParcelaDaOferta[];
+  earnout: string | null;
+  earnoutValor: string | null;
+  retencao: string | null;
+  retencaoValor: string | null;
+  condicoesPrecedentes: string | null;
+  garantiasCompradora: string | null;
+  garantiasVendedora: string | null;
+  correcaoParcelas: string | null;
+  condicoesTransicao: string | null;
+  exclusividade: string | null;
+  naoConcorrencia: string | null;
+  observacoes: string | null;
+  rateio: RateioDaOferta[];
+  criterioRateio: string | null;
+};
+
+/**
+ * Condições do negócio a partir da oferta escolhida: `condicoes` é a cópia
+ * que quem tem permissão ajusta; `original` fica congelada como estava no
+ * momento da escolha ("Oferta original", só consulta).
+ */
+export const condicoesDoNegocio = pgTable(
+  "condicoes_do_negocio",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deal.id, { onDelete: "cascade" }),
+    ofertaId: uuid("oferta_id").references(() => oferta.id, { onDelete: "set null" }),
+    condicoes: jsonb("condicoes").$type<CondicoesDaOferta>().notNull(),
+    original: jsonb("original").$type<CondicoesDaOferta>().notNull(),
+    escolhidaPor: uuid("escolhida_por").references(() => usuario.id, { onDelete: "set null" }),
+    escolhidaEm: timestamp("escolhida_em", { withTimezone: true }).notNull().defaultNow(),
+    atualizadoPor: uuid("atualizado_por").references(() => usuario.id, { onDelete: "set null" }),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [uniqueIndex("condicoes_do_negocio_deal_uq").on(t.tenantId, t.dealId), isolamento()],
 ).enableRLS();
 
 // --- E-book e OnePager (item 19, simulado: fluxo real, PDF de exemplo) -----------------------

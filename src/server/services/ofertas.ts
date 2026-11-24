@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { lerNumero } from "@/config/ofertas";
 import type { ErroDeServico } from "@/i18n/servidor";
@@ -21,6 +21,8 @@ import {
   perfil,
   usuario,
   type ParcelaDaOferta,
+  type CondicoesDaOferta,
+  condicoesDoNegocio,
   type RateioDaOferta,
 } from "@/server/db/esquema";
 import { exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
@@ -32,7 +34,8 @@ import {
   tipoDoDocumento,
 } from "./documentos";
 import { auditar } from "./empresas";
-import { negocioFechado, visaoDoNegocio } from "./negocios";
+import { negocioFechado, visaoDoNegocio, empresasDoNegocio } from "./negocios";
+import { alterarSituacaoNoFunil } from "./negocios-andamento";
 import type { Acao } from "./permissoes/catalogo";
 import { pode } from "./permissoes/verificador";
 
@@ -147,6 +150,8 @@ export type OfertaNaTela = {
   criadoEm: string;
   podeEditar: boolean;
   podeExcluir: boolean;
+  /** Oferta escolhida pelo lado vendedor (vira as Condições da oferta do negócio). */
+  aceita: boolean;
 };
 
 export type OfertasDoNegocio = {
@@ -157,6 +162,10 @@ export type OfertasDoNegocio = {
   podeEditarRateio: boolean;
   rateioDoNegocio: { empresaId: string; nome: string; percentual: string | null }[] | null;
   criterioDoNegocio: string | null;
+  /** Previsão de fechamento do negócio: base das parcelas em "meses após o closing". */
+  previsaoFechamento: string | null;
+  /** Lado vendedor com "Ofertas × editar": pode escolher a oferta. */
+  podeAceitar: boolean;
 };
 
 export async function ofertasDoNegocio(
@@ -210,7 +219,10 @@ export async function ofertasDoNegocio(
       : [],
     vendedorasDoNegocio(a, dealId),
     comTenant(a.tenant.id, (tx) =>
-      tx.select({ criterio: deal.criterioRateio }).from(deal).where(eq(deal.id, dealId)),
+      tx
+        .select({ criterio: deal.criterioRateio, previsao: deal.previsaoFechamento })
+        .from(deal)
+        .where(eq(deal.id, dealId)),
     ),
   ]);
   const nomeVendedora = new Map(vendedoras.map((v) => [v.empresaId, v.nome]));
@@ -273,6 +285,7 @@ export async function ofertasDoNegocio(
       criadoEm: o.criadoEm.toISOString(),
       podeEditar: !ctx.fechado && (dono || ctx.pode("editar")),
       podeExcluir: !ctx.fechado && (dono || ctx.pode("excluir")),
+      aceita: o.aceitaEm !== null,
     };
   });
   return {
@@ -284,6 +297,8 @@ export async function ofertasDoNegocio(
       ? vendedoras.map((v) => ({ empresaId: v.empresaId, nome: v.nome, percentual: v.percentual }))
       : null,
     criterioDoNegocio: ctx.podeVerVendedora ? (d?.criterio ?? null) : null,
+    previsaoFechamento: d?.previsao ?? null,
+    podeAceitar: !ctx.fechado && ctx.vendedor && ctx.pode("editar"),
   };
 }
 
@@ -351,7 +366,20 @@ const DadosOferta = z.object({
   equityValue: valor(),
   parcelaVista: valor(),
   parcelas: z
-    .array(z.object({ valor: decimal(1e15, "ofertas.erros.valorInvalido"), data: data }))
+    .array(
+      z.object({
+        valor: decimal(1e15, "ofertas.erros.valorInvalido"),
+        data: data.prefault(""),
+        /** Meses após o closing (no lugar da data fixa). */
+        meses: z.coerce
+          .number()
+          .int("ofertas.erros.mesesInvalidos")
+          .min(1, "ofertas.erros.mesesInvalidos")
+          .max(600, "ofertas.erros.mesesInvalidos")
+          .nullable()
+          .optional(),
+      }),
+    )
     .max(120)
     .default([]),
   earnout: texto(),
@@ -402,7 +430,7 @@ async function validar(
   if (!opcoes) return { erro: "erros.acessoNegado" };
   if (!opcoes.compradoras.some((c) => c.id === d.compradoraId))
     return { erro: "ofertas.erros.compradoraInvalida", campo: "compradoraId" };
-  if (d.parcelas.some((p) => !p.valor || !p.data))
+  if (d.parcelas.some((p) => !p.valor || (!p.data && !p.meses)))
     return { erro: "ofertas.erros.parcelaIncompleta", campo: "parcelas" };
   const rateio = d.rateio.filter((x) => x.percentual !== null);
   if (rateio.length) {
@@ -440,7 +468,9 @@ const colunas = (d: Validado, rodada: number) => ({
   enterpriseValue: d.enterpriseValue,
   equityValue: d.equityValue,
   parcelaVista: d.parcelaVista,
-  parcelas: d.parcelas.map((p) => ({ valor: p.valor!, data: p.data! })),
+  parcelas: d.parcelas.map((p) =>
+    p.meses ? { valor: p.valor!, data: "", meses: p.meses } : { valor: p.valor!, data: p.data! },
+  ),
   earnout: d.earnout || null,
   earnoutValor: d.earnoutValor,
   retencao: d.retencao || null,
@@ -676,3 +706,221 @@ export async function linkDoArquivoDaOferta(
   await auditar(a, "oferta.arquivo_baixado", "deal", v.o.dealId, { ofertaId: x.ofertaId, arquivoId });
   return { url: await gerarLinkDeDownload(x.chave, x.nomeArquivo) };
 }
+
+// --- Oferta escolhida e Condições da oferta (pedido de 2026-11-23) ------------------------------
+
+const paraCondicoes = (t: OfertaNaTela, rateio: RateioDaOferta[]): CondicoesDaOferta => ({
+  compradoraId: t.compradoraId,
+  compradora: t.compradora,
+  instrumento: t.instrumento,
+  data: t.data,
+  enterpriseValue: t.enterpriseValue,
+  equityValue: t.equityValue,
+  parcelaVista: t.parcelaVista,
+  parcelas: t.parcelas,
+  earnout: t.earnout,
+  earnoutValor: t.earnoutValor,
+  retencao: t.retencao,
+  retencaoValor: t.retencaoValor,
+  condicoesPrecedentes: t.condicoesPrecedentes,
+  garantiasCompradora: t.garantiasCompradora,
+  garantiasVendedora: t.garantiasVendedora,
+  correcaoParcelas: t.correcaoParcelas,
+  condicoesTransicao: t.condicoesTransicao,
+  exclusividade: t.exclusividade,
+  naoConcorrencia: t.naoConcorrencia,
+  observacoes: t.observacoes,
+  rateio,
+  criterioRateio: t.criterioRateio,
+});
+
+/**
+ * Escolhe a oferta (lado vendedor com "Ofertas × editar"): ela fica marcada
+ * como aceita (só uma por negócio), os atributos dela viram as Condições da
+ * oferta do negócio (uma cópia ajustável e a original congelada) e a
+ * compradora vai a "Escolhida" no funil, se a pessoa puder mexer no funil.
+ * Escolher outra oferta troca as condições (a original passa a ser a nova).
+ */
+export async function aceitarOferta(
+  acesso: Acesso | null,
+  id: string,
+): Promise<{ ok: true; funil: boolean } | ErroDeServico> {
+  const a = exigirTenant(acesso);
+  const v = await linhaVisivel(a, id);
+  if (!v) return { erro: "ofertas.erros.naoEncontrada" };
+  const lista = await ofertasDoNegocio(a, v.o.dealId);
+  if (!lista?.podeAceitar) return { erro: "erros.acessoNegado" };
+  const rateio: RateioDaOferta[] = v.tela.rateio.map((r) => ({
+    empresaId: r.empresaId,
+    percentual: r.percentual,
+  }));
+  const condicoes = paraCondicoes(v.tela, rateio);
+  await comTenant(a.tenant.id, async (tx) => {
+    await tx
+      .update(oferta)
+      .set({ aceitaEm: null, aceitaPor: null })
+      .where(and(eq(oferta.dealId, v.o.dealId), sql`${oferta.aceitaEm} is not null`));
+    await tx.update(oferta).set({ aceitaEm: new Date(), aceitaPor: a.usuario.id }).where(eq(oferta.id, id));
+    await tx
+      .insert(condicoesDoNegocio)
+      .values({
+        tenantId: a.tenant.id,
+        dealId: v.o.dealId,
+        ofertaId: id,
+        condicoes,
+        original: condicoes,
+        escolhidaPor: a.usuario.id,
+      })
+      .onConflictDoUpdate({
+        target: [condicoesDoNegocio.tenantId, condicoesDoNegocio.dealId],
+        set: {
+          ofertaId: id,
+          condicoes,
+          original: condicoes,
+          escolhidaPor: a.usuario.id,
+          escolhidaEm: new Date(),
+          atualizadoPor: null,
+          atualizadoEm: new Date(),
+        },
+      });
+  });
+  await auditar(a, "oferta.aceita", "deal", v.o.dealId, { ofertaId: id, rodada: v.tela.rodada });
+  // Funil: a compradora passa a "Escolhida" (sem descartar as outras: isso é decisão à parte).
+  const empresas = await empresasDoNegocio(a, v.o.dealId);
+  const linha = empresas.find((e) => e.compradora && e.empresaId === v.o.compradoraId);
+  let funil = false;
+  if (linha && linha.situacaoFunil !== "escolhida") {
+    try {
+      const r = await alterarSituacaoNoFunil(a, v.o.dealId, {
+        dealEmpresaId: linha.id,
+        situacao: "escolhida",
+      });
+      funil = "ok" in r;
+    } catch {
+      funil = false;
+    }
+  }
+  return { ok: true, funil };
+}
+
+export type CondicoesNaTela = {
+  ofertaId: string | null;
+  /** "Compradora · rodada · data", para o título. */
+  origem: string;
+  condicoes: CondicoesDaOferta;
+  original: CondicoesDaOferta;
+  escolhidaEm: string;
+  escolhidaPor: string | null;
+  atualizadoEm: string;
+  alterada: boolean;
+  podeEditar: boolean;
+  vendedoras: { id: string; nome: string }[];
+  previsaoFechamento: string | null;
+};
+
+/** Condições da oferta escolhida, para quem vê aquela oferta (null se não há ou não vê). */
+export async function condicoesDaOferta(
+  acesso: Acesso | null,
+  dealId: string,
+): Promise<CondicoesNaTela | null> {
+  const a = exigirTenant(acesso);
+  if (!uuidValido(dealId)) return null;
+  const [c] = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .select({ c: condicoesDoNegocio, quem: usuario.name })
+      .from(condicoesDoNegocio)
+      .leftJoin(usuario, eq(usuario.id, condicoesDoNegocio.escolhidaPor))
+      .where(eq(condicoesDoNegocio.dealId, dealId)),
+  );
+  if (!c) return null;
+  const lista = await ofertasDoNegocio(a, dealId);
+  if (!lista) return null;
+  const oferta = c.c.ofertaId ? lista.ofertas.find((o) => o.id === c.c.ofertaId) : null;
+  // Quem não vê a oferta escolhida não vê as condições (sigilo entre compradoras).
+  if (!oferta && !a.administrador) return null;
+  const opcoes = await opcoesDaOferta(a, dealId);
+  const br = (d: string) => d.split("-").reverse().join("/");
+  return {
+    ofertaId: c.c.ofertaId,
+    origem: `${c.c.original.compradora} · ${oferta ? `R${oferta.rodada} · ` : ""}${br(c.c.original.data)}`,
+    condicoes: { ...c.c.condicoes, rateio: lista.rateioDoNegocio ? c.c.condicoes.rateio : [] },
+    original: { ...c.c.original, rateio: lista.rateioDoNegocio ? c.c.original.rateio : [] },
+    escolhidaEm: c.c.escolhidaEm.toISOString(),
+    escolhidaPor: c.quem,
+    atualizadoEm: c.c.atualizadoEm.toISOString(),
+    alterada: JSON.stringify(c.c.condicoes) !== JSON.stringify(c.c.original),
+    podeEditar: lista.podeAceitar,
+    vendedoras: opcoes?.vendedoras ?? [],
+    previsaoFechamento: lista.previsaoFechamento,
+  };
+}
+
+const DadosDasCondicoes = DadosOferta.omit({
+  compradoraId: true,
+  anteriorId: true,
+  data: true,
+  validade: true,
+  perfis: true,
+  usuarios: true,
+});
+export type DadosDasCondicoes = z.input<typeof DadosDasCondicoes>;
+
+/** Ajusta as Condições da oferta (a original continua como estava na escolha). */
+export async function salvarCondicoesDaOferta(
+  acesso: Acesso | null,
+  dealId: string,
+  entrada: DadosDasCondicoes,
+): Promise<Resultado> {
+  const a = exigirTenant(acesso);
+  const atual = await condicoesDaOferta(a, dealId);
+  if (!atual) return { erro: "ofertas.erros.naoEncontrada" };
+  if (!atual.podeEditar) return { erro: "erros.acessoNegado" };
+  const r = DadosDasCondicoes.safeParse(entrada);
+  if (!r.success) {
+    const i = r.error.issues[0];
+    return {
+      erro: i.message.startsWith("ofertas.") ? i.message : "ofertas.erros.dadosInvalidos",
+      campo: String(i.path[0] ?? ""),
+    };
+  }
+  const d = r.data;
+  if (d.parcelas.some((p) => !p.valor || (!p.data && !p.meses)))
+    return { erro: "ofertas.erros.parcelaIncompleta", campo: "parcelas" };
+  const rateio = d.rateio.filter((x) => x.percentual !== null) as RateioDaOferta[];
+  const vendedoras = new Set(atual.vendedoras.map((v) => v.id));
+  if (rateio.length && (!rateio.every((x) => vendedoras.has(x.empresaId)) || !somaCem(rateio)))
+    return { erro: "ofertas.erros.rateioInvalido", campo: "rateio" };
+  const condicoes: CondicoesDaOferta = {
+    ...atual.condicoes,
+    instrumento: d.instrumento,
+    enterpriseValue: d.enterpriseValue,
+    equityValue: d.equityValue,
+    parcelaVista: d.parcelaVista,
+    parcelas: d.parcelas.map((p) =>
+      p.meses ? { valor: p.valor!, data: "", meses: p.meses } : { valor: p.valor!, data: p.data! },
+    ),
+    earnout: d.earnout || null,
+    earnoutValor: d.earnoutValor,
+    retencao: d.retencao || null,
+    retencaoValor: d.retencaoValor,
+    condicoesPrecedentes: d.condicoesPrecedentes || null,
+    garantiasCompradora: d.garantiasCompradora || null,
+    garantiasVendedora: d.garantiasVendedora || null,
+    correcaoParcelas: d.correcaoParcelas || null,
+    condicoesTransicao: d.condicoesTransicao || null,
+    exclusividade: d.exclusividade || null,
+    naoConcorrencia: d.naoConcorrencia || null,
+    observacoes: d.observacoes || null,
+    rateio,
+    criterioRateio: rateio.length ? d.criterioRateio || null : null,
+  };
+  await comTenant(a.tenant.id, (tx) =>
+    tx
+      .update(condicoesDoNegocio)
+      .set({ condicoes, atualizadoPor: a.usuario.id, atualizadoEm: new Date() })
+      .where(eq(condicoesDoNegocio.dealId, dealId)),
+  );
+  await auditar(a, "negocio.condicoes_editadas", "deal", dealId);
+  return { ok: true };
+}
+export type { CondicoesDaOferta } from "@/server/db/esquema";

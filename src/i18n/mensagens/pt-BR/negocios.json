@@ -101,7 +101,13 @@
       "etapaAtual": "Etapa: {etapa}",
       "etapaComParalelas": "Etapa: {etapa} (+{n} em paralelo)",
       "abaDocumentos": "Documentos",
-      "abaTarefas": "Tarefas"
+      "abaTarefas": "Tarefas",
+      "abaPessoas": "Pessoas",
+      "abaAtividade": "Atividade",
+      "abaCompradoras": "Compradoras e ofertas",
+      "grupoNegocio": "Negócio",
+      "grupoTrabalho": "Trabalho",
+      "grupoComercial": "Comercial"
     },
     "empresas": {
       "contratante": "contratante",
@@ -450,9 +456,10 @@
         "semPrevisao": "sem previsão",
         "linhaDoTempo": "Linha do tempo das etapas",
         "valorBase": "Previsão de fechamento: {data}",
-        "abrirFunil": "Abrir o funil",
+        "abrirFunil": "Abrir compradoras e ofertas",
         "funil": "Funil",
-        "funilDica": "Funil de compradoras: prospectadas, teaser, NDA, proposta e escolhida (lado vendedor)"
+        "funilDica": "Funil de compradoras e as ofertas de cada uma (lado vendedor)",
+        "compradoras": "Compradoras e ofertas"
       },
       "abaComNovas": "{rotulo} · {n} novas",
       "atividade": {

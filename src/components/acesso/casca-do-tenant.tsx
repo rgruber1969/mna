@@ -19,7 +19,7 @@ import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
 import { aplicarMenuInvertido, aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
 
-type Item = { id: string; href: string; icone: string };
+type Item = { id: string; href: string; icone: string; tambem?: string[] };
 type Grupo = { chave: string; itens: Item[] };
 type Notificacao = {
   id: string;
@@ -792,7 +792,7 @@ export function CascaDoTenant({
           href={item.href}
           onClick={() => setAberto(false)}
           title={compacto ? nome : undefined}
-          aria-current={ativo(item.href) ? "page" : undefined}
+          aria-current={[item.href, ...(item.tambem ?? [])].some(ativo) ? "page" : undefined}
           className={`${ativo(item.href) ? `${pilulaPronta ? "" : "bg-primary-soft"} text-primary font-semibold` : "text-text hover:bg-surface"} relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${compacto ? "justify-center" : "pr-9"}`}
         >
           <Icone nome={item.icone} />

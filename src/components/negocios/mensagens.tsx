@@ -431,10 +431,10 @@ ${t("regras")}`}
   );
 }
 
-/** Só carrega (e marca como lido) quando a aba Mensagens está aberta. */
+/** Só carrega (e marca como lido) quando a aba Mensagens (ou Atividade, que a reúne às tarefas) está aberta. */
 export function AbaDeMensagens(props: Parameters<typeof MensagensDoNegocio>[0]) {
   const abas = useAbas();
-  if (abas && abas.ativa !== "mensagens") return null;
+  if (abas && abas.ativa !== "mensagens" && abas.ativa !== "atividade") return null;
   return <MensagensDoNegocio {...props} />;
 }
 

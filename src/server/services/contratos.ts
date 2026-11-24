@@ -1,3 +1,4 @@
+import { hojeNoBrasil } from "@/config/prazos";
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNull, max } from "drizzle-orm";
 import { z } from "zod";
@@ -227,7 +228,7 @@ export type ContratoDetalhe = ContratoResumo & {
   podeBaixar: boolean;
 };
 
-const hoje = () => new Date().toISOString().slice(0, 10);
+const hoje = () => hojeNoBrasil();
 const vigente = (c: { inicio: string | null; fim: string | null }) =>
   (!c.inicio || c.inicio <= hoje()) && (!c.fim || c.fim >= hoje());
 

@@ -33,3 +33,6 @@ export const CORES_DO_NIVEL: Record<NivelDoPrazo, { texto: string; fundo: string
   proximo: { texto: "text-warning", fundo: "bg-warning-soft", faixa: "bg-warning-fill" },
   emDia: { texto: "text-success", fundo: "bg-success-soft", faixa: "bg-success" },
 };
+
+/** Hoje ("AAAA-MM-DD") no fuso de São Paulo, no servidor ou no navegador (toISOString usaria UTC). */
+export const hojeNoBrasil = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });

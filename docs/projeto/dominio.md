@@ -435,15 +435,29 @@ Regras construídas (item 32, respostas O1–O4, 2026-11-22):
 * **Quem vê:** matriz "Ofertas" e lista de acesso de quem registra (já com
   o próprio lado); por perfil, só no grupo de quem registrou. A equipe de
   uma compradora nunca vê a oferta de outra, mesmo que incluída na lista.
+* **Parcelas (ajuste de 2026-11-23):** cada parcela a prazo vence numa
+  **data fixa** ou em **meses após o closing** (o mais comum: +12, +24,
+  +60…). Enquanto o closing não acontece, os vencimentos e o valor presente
+  usam a previsão de fechamento do negócio (sem ela, a data da oferta).
 * **Comparação (O3):** total (à vista + parcelas + earnout estimado) e
-  valor presente pela taxa anual informada na tela (o earnout entra sem
-  desconto); só para quem vê todas as ofertas. A faixa do valuation entra
-  quando o valuation existir (item 18); na demonstração, a comparação com
-  o valuation fictício fica na tela do valuation (aba Comparação com
-  ofertas).
-* **Rateio (O4):** percentuais das vendedoras e critério no negócio (lado
-  vendedor com "Ofertas × editar"), somando 100%; uma oferta pode ter
-  rateio próprio. Só aparece para quem vê as vendedoras.
+  valor presente no closing pela taxa anual informada na tela (o earnout
+  entra sem desconto); só para quem vê todas as ofertas. A faixa do
+  valuation entra quando o valuation existir (item 18); na demonstração, a
+  comparação com o valuation fictício fica na tela do valuation (aba
+  Comparação com ofertas).
+* **Rateio (O4, ajuste de 2026-11-23):** faz parte da oferta (aba Rateio
+  do cadastro da oferta), com percentuais das vendedoras somando 100% e o
+  critério; não há mais rateio solto no negócio (o percentual antigo do
+  negócio só serve de sugestão). Só aparece para quem vê as vendedoras.
+* **Oferta escolhida e Condições da oferta (2026-11-23):** o lado vendedor
+  com "Ofertas × editar" escolhe uma oferta ("Escolher esta oferta"; só uma
+  por negócio, trocar é permitido). A compradora vai a "Escolhida" no funil
+  (sem descartar as outras) e **todos os atributos da oferta** (valores,
+  parcelas, earnout, retenção, condições, garantias, prazos e rateio) vão
+  para a aba **Condições da oferta** do negócio, como sugestão: quem pode
+  editar ofertas ajusta o que mudar na negociação; o botão **Oferta
+  original** mostra, só para consulta, as condições como estavam na
+  escolha. Quem não vê a oferta escolhida não vê as condições.
 * **API:** listar e registrar ofertas; listar, ver e criar contratos;
   links de download dos arquivos (auditados).
 
@@ -701,6 +715,18 @@ Etapas padrão:
   mostra e liga facilmente os documentos daquela etapa; uma tela lista
   todos os documentos do negócio com a etapa a que cada um está ligado
   (ou "geral", quando vale para o negócio todo).
+
+### Tela do negócio (ajuste de 2026-11-23)
+
+Mesmo agrupamento do painel do kanban, com **abas verticais em grupos**:
+**Negócio** (Resumo, Etapas, Pessoas = empresas e participantes,
+Exclusividade, Histórico), **Trabalho** (Atividade = tarefas e mensagens,
+Documentos, Pedidos) e **Comercial** (Compradoras e ofertas, Condições da
+oferta, Contratos). No topo, a linha das etapas, com um atalho só,
+**Compradoras e ofertas**, embaixo da etapa de prospecção (as ofertas são
+das compradoras: funil e ofertas ficam na mesma aba). Endereços antigos
+(`?aba=tarefas`, `mensagens`, `empresas`, `participantes`, `funil`,
+`ofertas`) continuam abrindo a aba nova que os reúne.
 
 ### Kanban de deals
 

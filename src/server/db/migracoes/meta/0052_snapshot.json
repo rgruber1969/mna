@@ -1,5 +1,5 @@
 {
-  "id": "f1336dbf-1c5e-474d-8fef-19f8378531d3",
+  "id": "8be4534d-8efe-48e5-a1be-315357bdb9e2",
   "prevId": "4d301bec-10d9-44ff-add2-ef89a497d7fb",
   "version": "7",
   "dialect": "postgresql",
@@ -656,6 +656,181 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "isolamento_tenant": {
+          "name": "isolamento_tenant",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "mna_app"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.condicoes_do_negocio": {
+      "name": "condicoes_do_negocio",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deal_id": {
+          "name": "deal_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oferta_id": {
+          "name": "oferta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "condicoes": {
+          "name": "condicoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original": {
+          "name": "original",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "escolhida_por": {
+          "name": "escolhida_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "escolhida_em": {
+          "name": "escolhida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "atualizado_por": {
+          "name": "atualizado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "condicoes_do_negocio_deal_uq": {
+          "name": "condicoes_do_negocio_deal_uq",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "deal_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "condicoes_do_negocio_tenant_id_tenant_id_fk": {
+          "name": "condicoes_do_negocio_tenant_id_tenant_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_deal_id_deal_id_fk": {
+          "name": "condicoes_do_negocio_deal_id_deal_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "deal",
+          "columnsFrom": [
+            "deal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_oferta_id_oferta_id_fk": {
+          "name": "condicoes_do_negocio_oferta_id_oferta_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "oferta",
+          "columnsFrom": [
+            "oferta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_escolhida_por_usuario_id_fk": {
+          "name": "condicoes_do_negocio_escolhida_por_usuario_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "escolhida_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "condicoes_do_negocio_atualizado_por_usuario_id_fk": {
+          "name": "condicoes_do_negocio_atualizado_por_usuario_id_fk",
+          "tableFrom": "condicoes_do_negocio",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "atualizado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -3180,349 +3355,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.ebook_comentario": {
-      "name": "ebook_comentario",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "tenant_id": {
-          "name": "tenant_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "versao_id": {
-          "name": "versao_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "autor_id": {
-          "name": "autor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "texto": {
-          "name": "texto",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "criado_em": {
-          "name": "criado_em",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "ebook_comentario_versao_idx": {
-          "name": "ebook_comentario_versao_idx",
-          "columns": [
-            {
-              "expression": "tenant_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "versao_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "ebook_comentario_tenant_id_tenant_id_fk": {
-          "name": "ebook_comentario_tenant_id_tenant_id_fk",
-          "tableFrom": "ebook_comentario",
-          "tableTo": "tenant",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "ebook_comentario_versao_id_ebook_versao_id_fk": {
-          "name": "ebook_comentario_versao_id_ebook_versao_id_fk",
-          "tableFrom": "ebook_comentario",
-          "tableTo": "ebook_versao",
-          "columnsFrom": [
-            "versao_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "ebook_comentario_autor_id_usuario_id_fk": {
-          "name": "ebook_comentario_autor_id_usuario_id_fk",
-          "tableFrom": "ebook_comentario",
-          "tableTo": "usuario",
-          "columnsFrom": [
-            "autor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {
-        "isolamento_tenant": {
-          "name": "isolamento_tenant",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "mna_app"
-          ],
-          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
-          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": true
-    },
-    "public.ebook_versao": {
-      "name": "ebook_versao",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "tenant_id": {
-          "name": "tenant_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "deal_id": {
-          "name": "deal_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "material": {
-          "name": "material",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "numero": {
-          "name": "numero",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "situacao": {
-          "name": "situacao",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'em_revisao'"
-        },
-        "identidade": {
-          "name": "identidade",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'tenant'"
-        },
-        "inclui_valuation": {
-          "name": "inclui_valuation",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "observacoes": {
-          "name": "observacoes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "criado_por": {
-          "name": "criado_por",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "criado_em": {
-          "name": "criado_em",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "aprovado_por": {
-          "name": "aprovado_por",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aprovado_em": {
-          "name": "aprovado_em",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "liberado_por": {
-          "name": "liberado_por",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "liberado_em": {
-          "name": "liberado_em",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "ebook_versao_numero_uq": {
-          "name": "ebook_versao_numero_uq",
-          "columns": [
-            {
-              "expression": "tenant_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "deal_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "material",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "numero",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "ebook_versao_tenant_id_tenant_id_fk": {
-          "name": "ebook_versao_tenant_id_tenant_id_fk",
-          "tableFrom": "ebook_versao",
-          "tableTo": "tenant",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "ebook_versao_deal_id_deal_id_fk": {
-          "name": "ebook_versao_deal_id_deal_id_fk",
-          "tableFrom": "ebook_versao",
-          "tableTo": "deal",
-          "columnsFrom": [
-            "deal_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "ebook_versao_criado_por_usuario_id_fk": {
-          "name": "ebook_versao_criado_por_usuario_id_fk",
-          "tableFrom": "ebook_versao",
-          "tableTo": "usuario",
-          "columnsFrom": [
-            "criado_por"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "ebook_versao_aprovado_por_usuario_id_fk": {
-          "name": "ebook_versao_aprovado_por_usuario_id_fk",
-          "tableFrom": "ebook_versao",
-          "tableTo": "usuario",
-          "columnsFrom": [
-            "aprovado_por"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "ebook_versao_liberado_por_usuario_id_fk": {
-          "name": "ebook_versao_liberado_por_usuario_id_fk",
-          "tableFrom": "ebook_versao",
-          "tableTo": "usuario",
-          "columnsFrom": [
-            "liberado_por"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {
-        "isolamento_tenant": {
-          "name": "isolamento_tenant",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "mna_app"
-          ],
-          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
-          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": true
-    },
     "public.empresa": {
       "name": "empresa",
       "schema": "",
@@ -5257,6 +5089,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "aceita_em": {
+          "name": "aceita_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aceita_por": {
+          "name": "aceita_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "criado_por": {
           "name": "criado_por",
           "type": "uuid",
@@ -5353,6 +5197,19 @@
           "tableTo": "oferta",
           "columnsFrom": [
             "anterior_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "oferta_aceita_por_usuario_id_fk": {
+          "name": "oferta_aceita_por_usuario_id_fk",
+          "tableFrom": "oferta",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "aceita_por"
           ],
           "columnsTo": [
             "id"

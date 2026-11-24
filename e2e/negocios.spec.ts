@@ -88,15 +88,18 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(page.getByRole("heading", { name: "N-0001 Projeto Teste" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Venda da Vendedora de Teste · Aquisição total · Em andamento")).toBeVisible();
 
-  await page.getByRole("tab", { name: /Empresas/ }).click();
+  await page.getByRole("tab", { name: /^Pessoas/ }).click();
   await expect(page.getByText("Vendedora · lado vendedor", { exact: true })).toBeVisible();
   await page.locator("select[name=empresaId]").selectOption({ label: "Compradora de Teste S.A." });
   await page.locator("select[name=papelId]").selectOption({ label: "Compradora" });
-  await page.getByRole("button", { name: "Incluir", exact: true }).click();
+  await page
+    .getByRole("region", { name: "Empresas" })
+    .getByRole("button", { name: "Incluir", exact: true })
+    .click();
   await expect(page.getByText("Compradora · lado comprador · Prospectada", { exact: true })).toBeVisible();
 
-  // Funil (kanban): mover a compradora para Escolhida → aparece a aba Exclusividade.
-  await page.getByRole("tab", { name: /Funil de compradoras/ }).click();
+  // Compradoras e ofertas (funil): mover a compradora para Escolhida → aparece a aba Exclusividade.
+  await page.getByRole("tab", { name: /^Compradoras e ofertas/ }).click();
   await page.getByLabel("Mover Compradora de Teste S.A. para").selectOption("escolhida");
   await expect(
     page.getByRole("region", { name: "Escolhida" }).getByText("Compradora de Teste S.A."),
@@ -138,14 +141,15 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(janela.locator("canvas").first()).toBeVisible({ timeout: 30_000 });
   await janela.getByRole("button", { name: "Fechar" }).click();
 
-  // Tarefas: criar uma tarefa e vê-la na lista de abertas.
-  await page.getByRole("tab", { name: /^Tarefas/ }).click();
+  // Atividade › Tarefas: criar uma tarefa e vê-la na lista de abertas.
+  await page.getByRole("tab", { name: /^Atividade/ }).click();
+  await page.getByRole("button", { name: /^Tarefas/ }).click();
   await page.getByRole("button", { name: "Nova tarefa" }).click();
   await page.getByLabel("Título").and(page.locator(":enabled")).fill("Revisar minuta");
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
   await expect(page.getByRole("button", { name: /Revisar minuta/ })).toBeVisible({ timeout: 30_000 });
   // Mensagens: conversa geral do negócio, no canal da equipe do lado vendedor.
-  await page.getByRole("tab", { name: "Mensagens" }).click();
+  await page.getByRole("button", { name: /^Mensagens/ }).click();
   await expect(page.getByRole("tab", { name: "Equipe do lado vendedor" })).toBeVisible({ timeout: 30_000 });
   await page.getByLabel("Mensagem", { exact: true }).fill("Primeira mensagem do negócio");
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
@@ -154,7 +158,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(page.getByRole("link", { name: "Virou tarefa ›" })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByText("Negócio criado")).toBeVisible();
-  await page.getByRole("tab", { name: /Participantes/ }).click();
+  await page.getByRole("tab", { name: /^Pessoas/ }).click();
   await expect(
     page.getByText(/Coordenador do negócio · representando Escritório de Teste · lado vendedor/),
   ).toBeVisible();
@@ -253,12 +257,14 @@ test("contratos: cria no negócio, envia arquivo, simula o success fee e lista",
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Contrato salvo.")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "Mandato de venda" })).toBeVisible();
+  await page.getByRole("tab", { name: "Honorários" }).click();
   await expect(page.getByText("R$ 20.000,00")).toBeVisible();
   await expect(page.getByText("Horas trabalhadas × R$ 850,00 por hora")).toBeVisible();
   // Simulação: 2% de 10 milhões = 200 mil (acima do mínimo).
   await page.getByLabel("Simular success fee sobre o valor (R$)").fill("10.000.000");
   await expect(page.getByText("Success fee estimado: R$ 200.000,00")).toBeVisible();
   // Arquivo (versão 1), conferido pelo antivírus.
+  await page.getByRole("tab", { name: /^Arquivos/ }).click();
   await page.getByLabel("Enviar arquivo (nova versão)").setInputFiles({
     name: "mandato.pdf",
     mimeType: "application/pdf",
@@ -283,12 +289,13 @@ test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
   await page.goto(`http://${slug}.${dominio}/negocios`);
   await page.getByRole("link", { name: "N-0001 Projeto Teste" }).click();
-  await page.getByRole("tab", { name: /^Ofertas/ }).click();
+  await page.getByRole("tab", { name: /^Compradoras e ofertas/ }).click();
   await page.getByRole("button", { name: "Registrar oferta" }).click();
   await page.getByLabel("Instrumento").selectOption("loi");
   await page.getByLabel("Parcela à vista, R$").fill("10.000.000");
   await page.getByRole("button", { name: "+ Parcela" }).click();
   await page.getByLabel("Parcela 1: Valor, R$").fill("5.000.000");
+  await page.getByLabel("Parcela 1: Vence em").selectOption("data");
   await page.getByLabel("Parcela 1: Vencimento").fill("2027-12-31");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Oferta salva.")).toBeVisible({ timeout: 30_000 });
