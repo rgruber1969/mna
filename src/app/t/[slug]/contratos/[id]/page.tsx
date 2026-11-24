@@ -1,3 +1,4 @@
+import { Abas, PainelDeAba } from "@/components/ui/abas";
 import { EsqueletoDeTela } from "@/components/ui/esqueletos";
 import { connection } from "next/server";
 import Link from "next/link";
@@ -150,52 +151,81 @@ async function Painel({
                 podeExcluir={c.podeExcluir}
                 voltar={voltar}
               />
-              <h2 className="text-text mt-6 mb-2 text-base font-semibold">{t("partes")}</h2>
-              <dl>
-                <Linha rotulo={t("contratantes")}>{c.contratantes.join("\n")}</Linha>
-                <Linha rotulo={t("contratadas")}>{c.contratadas.join("\n")}</Linha>
-                <Linha rotulo={t("objeto")}>{c.objeto}</Linha>
-                <Linha rotulo={t("dataAssinatura")}>{br(c.dataAssinatura)}</Linha>
-                <Linha rotulo={t("vigencia")}>
-                  {c.inicio || c.fim ? `${br(c.inicio) ?? "…"} – ${br(c.fim) ?? "…"}` : null}
-                </Linha>
-                <Linha rotulo={t("exclusividadeAte")}>
-                  {c.exclusivo ? (br(c.exclusividadeAte) ?? t("exclusivo")) : null}
-                </Linha>
-              </dl>
-              <h2 className="text-text mt-6 mb-2 text-base font-semibold">{t("condicoes")}</h2>
-              <dl>
-                <Linha rotulo={t("honorarioFixo")}>{fixo}</Linha>
-                <Linha rotulo={t("honorarioVariavelRotulo")}>{variavel}</Linha>
-                <Linha rotulo={t("successFeePercentual")}>
-                  {c.successFeePercentual
-                    ? `${Number(c.successFeePercentual).toLocaleString("pt-BR")}%`
-                    : null}
-                </Linha>
-                <Linha rotulo={t("successFeeMinimo")}>{moeda(c.successFeeMinimo)}</Linha>
-                <Linha rotulo={t("formaPagamento")}>{c.formaPagamento}</Linha>
-                <Linha rotulo={t("recebimento")}>
-                  {c.conta ? `${t(`meios.${c.meioRecebimento}`)}: ${c.conta}` : null}
-                </Linha>
-                <Linha rotulo={t("observacoes")}>{c.observacoes}</Linha>
-                <Linha rotulo={t("quemVe")}>{c.acesso.length ? c.acesso.join(", ") : null}</Linha>
-                <Linha rotulo={t("criadoPor")}>{c.criadoPor}</Linha>
-                <Linha rotulo={t("enviarFinanceiro")}>
-                  {c.financeiroAvisadoEm
-                    ? t("financeiroAvisadoEm", { data: quando(c.financeiroAvisadoEm) })
-                    : null}
-                </Linha>
-              </dl>
-              <div className="mt-3">
-                <SimulacaoDeSuccessFee contrato={c} />
+              <div className="mt-4">
+                <Abas
+                  abas={[
+                    { id: "partes", rotulo: t("abas.partes") },
+                    { id: "vigencia", rotulo: t("abas.vigencia") },
+                    { id: "honorarios", rotulo: t("abas.honorarios") },
+                    { id: "pagamento", rotulo: t("abas.pagamento") },
+                    { id: "acesso", rotulo: t("abas.acesso") },
+                    { id: "arquivos", rotulo: `${t("abas.arquivos")} (${c.arquivosLista.length})` },
+                  ]}
+                >
+                  <PainelDeAba id="partes">
+                    <dl>
+                      <Linha rotulo={t("vinculo")}>{c.negocio ?? t("avulso")}</Linha>
+                      <Linha rotulo={t("contratantes")}>{c.contratantes.join("\n")}</Linha>
+                      <Linha rotulo={t("contratadas")}>{c.contratadas.join("\n")}</Linha>
+                      <Linha rotulo={t("objeto")}>{c.objeto}</Linha>
+                    </dl>
+                  </PainelDeAba>
+                  <PainelDeAba id="vigencia">
+                    <dl>
+                      <Linha rotulo={t("dataAssinatura")}>{br(c.dataAssinatura)}</Linha>
+                      <Linha rotulo={t("vigencia")}>
+                        {c.inicio || c.fim ? `${br(c.inicio) ?? "…"} – ${br(c.fim) ?? "…"}` : null}
+                      </Linha>
+                      <Linha rotulo={t("exclusividadeAte")}>
+                        {c.exclusivo ? (br(c.exclusividadeAte) ?? t("exclusivo")) : null}
+                      </Linha>
+                    </dl>
+                  </PainelDeAba>
+                  <PainelDeAba id="honorarios">
+                    <dl>
+                      <Linha rotulo={t("honorarioFixo")}>{fixo}</Linha>
+                      <Linha rotulo={t("honorarioVariavelRotulo")}>{variavel}</Linha>
+                      <Linha rotulo={t("successFeePercentual")}>
+                        {c.successFeePercentual
+                          ? `${Number(c.successFeePercentual).toLocaleString("pt-BR")}%`
+                          : null}
+                      </Linha>
+                      <Linha rotulo={t("successFeeMinimo")}>{moeda(c.successFeeMinimo)}</Linha>
+                    </dl>
+                    <div className="mt-3">
+                      <SimulacaoDeSuccessFee contrato={c} />
+                    </div>
+                  </PainelDeAba>
+                  <PainelDeAba id="pagamento">
+                    <dl>
+                      <Linha rotulo={t("formaPagamento")}>{c.formaPagamento}</Linha>
+                      <Linha rotulo={t("recebimento")}>
+                        {c.conta ? `${t(`meios.${c.meioRecebimento}`)}: ${c.conta}` : null}
+                      </Linha>
+                      <Linha rotulo={t("enviarFinanceiro")}>
+                        {c.financeiroAvisadoEm
+                          ? t("financeiroAvisadoEm", { data: quando(c.financeiroAvisadoEm) })
+                          : null}
+                      </Linha>
+                    </dl>
+                  </PainelDeAba>
+                  <PainelDeAba id="acesso">
+                    <dl>
+                      <Linha rotulo={t("quemVe")}>{c.acesso.length ? c.acesso.join(", ") : null}</Linha>
+                      <Linha rotulo={t("criadoPor")}>{c.criadoPor}</Linha>
+                      <Linha rotulo={t("observacoes")}>{c.observacoes}</Linha>
+                    </dl>
+                  </PainelDeAba>
+                  <PainelDeAba id="arquivos">
+                    <ArquivosDoContrato
+                      contratoId={c.id}
+                      arquivos={c.arquivosLista}
+                      podeEnviar={c.podeEditar}
+                      podeBaixar={c.podeBaixar}
+                    />
+                  </PainelDeAba>
+                </Abas>
               </div>
-              <h2 className="text-text mt-6 mb-2 text-base font-semibold">{t("arquivos")}</h2>
-              <ArquivosDoContrato
-                contratoId={c.id}
-                arquivos={c.arquivosLista}
-                podeEnviar={c.podeEditar}
-                podeBaixar={c.podeBaixar}
-              />
             </>
           )}
         </Cartao>

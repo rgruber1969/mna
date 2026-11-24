@@ -174,6 +174,7 @@ export function FormContrato({
   const contasDoMeio = v.meioRecebimento === "pix" ? contas.filter((c) => c.pix) : contas;
   // Ao ligar a um negócio, as opções de perfis e pessoas passam a ser as do negócio (depois de salvar).
   const ligando = !inicial.dealId && v.dealId;
+  const [ligar, setLigar] = useState(false);
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
@@ -204,22 +205,50 @@ export function FormContrato({
         {erro && <Aviso>{erro.texto}</Aviso>}
         <PainelDeAba id="partes">
           <div className="space-y-5">
-            {!inicial.dealId && negocios.length > 0 && (
-              <label className="block">
-                <span className={rotulo}>{id ? t("ligarAoNegocio") : t("negocio")}</span>
-                <select
-                  value={v.dealId ?? ""}
-                  onChange={(e) => mudar("dealId", e.target.value || null)}
-                  className={campo}
-                >
-                  <option value="">{t("semNegocio")}</option>
-                  {negocios.map((n) => (
-                    <option key={n.id} value={n.id}>
-                      {n.nome}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            {!inicial.dealId && (
+              <fieldset className="border-border rounded-lg border p-3">
+                <legend className={`${rotulo} px-1`}>{t("vinculo")}</legend>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="vinculo"
+                      checked={v.dealId === null}
+                      onChange={() => {
+                        setLigar(false);
+                        mudar("dealId", null);
+                      }}
+                    />
+                    {t("vinculoAvulso")}
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="vinculo"
+                      checked={v.dealId !== null || ligar}
+                      disabled={negocios.length === 0}
+                      onChange={() => setLigar(true)}
+                    />
+                    {t("vinculoNegocio")}
+                  </label>
+                </div>
+                {(ligar || v.dealId !== null) && (
+                  <select
+                    value={v.dealId ?? ""}
+                    onChange={(e) => mudar("dealId", e.target.value || null)}
+                    aria-label={t("negocio")}
+                    className={`${campo} mt-2`}
+                  >
+                    <option value="">{t("escolhaONegocio")}</option>
+                    {negocios.map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.nome}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-muted mt-2 text-xs">{t("vinculoAjuda")}</p>
+              </fieldset>
             )}
             <div className="grid gap-4 sm:grid-cols-[1fr_2fr]">
               <label>

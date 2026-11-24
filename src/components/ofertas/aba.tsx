@@ -1,5 +1,6 @@
 "use client";
 
+import { hojeNoBrasil } from "@/config/prazos";
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -58,7 +59,7 @@ const TEXTOS_LONGOS = [
 ] as const;
 
 function valoresDe(o: OfertaNaTela | null, opcoes: OpcoesDaOferta): Valores {
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeNoBrasil();
   if (!o)
     return {
       compradoraId: opcoes.compradoras.length === 1 ? opcoes.compradoras[0].id : "",

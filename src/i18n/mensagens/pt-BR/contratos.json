@@ -134,8 +134,15 @@
       "vigencia": "Vigência",
       "honorarios": "Honorários",
       "pagamento": "Pagamento",
-      "acesso": "Acesso e observações"
+      "acesso": "Acesso e observações",
+      "arquivos": "Arquivos"
     },
-    "formaPagamentoDica": "Ex.: nota fiscal até o dia 5; vencimento em 15 dias; 30% na assinatura e 70% no closing"
+    "formaPagamentoDica": "Ex.: nota fiscal até o dia 5; vencimento em 15 dias; 30% na assinatura e 70% no closing",
+    "vinculo": "Vínculo do contrato",
+    "vinculoAvulso": "Avulso (sem negócio)",
+    "vinculoNegocio": "Ligado a um negócio",
+    "escolhaONegocio": "Escolha o negócio…",
+    "vinculoAjuda": "Um contrato avulso pode ser ligado a um negócio depois; uma vez ligado, não muda de negócio.",
+    "vinculoFixo": "Ligado ao negócio {negocio} (não muda)."
   }
 }

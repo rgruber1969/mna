@@ -3,3 +3,4 @@ src/server/db/migracoes/
 docs/
 *.md
 .next/
+.claude/worktrees/

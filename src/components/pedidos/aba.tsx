@@ -1,5 +1,6 @@
 "use client";
 
+import { hojeNoBrasil } from "@/config/prazos";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -136,7 +137,7 @@ export function FormularioDoPedido({
   const t = useTranslations("pedidos.formulario");
   const router = useRouter();
   const abrir = useNavegacaoDePedidos();
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeNoBrasil();
   const [v, setV] = useState({
     origemId: "",
     titulo: pedido?.titulo ?? "",

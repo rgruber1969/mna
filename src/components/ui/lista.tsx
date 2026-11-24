@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SeletorPorPagina } from "./paginacao-local";
 import { getTranslations } from "next-intl/server";
 import {
   enderecoDaLista,
@@ -119,24 +120,15 @@ export async function Paginacao({
           )}
         </span>
       )}
-      <span className="text-muted flex items-center gap-1">
-        {t("porPagina")}
-        {TAMANHOS_DE_PAGINA.map((n) =>
-          n === porPagina ? (
-            <span key={n} className="text-text font-semibold">
-              {n}
-            </span>
-          ) : (
-            <Link
-              key={n}
-              href={enderecoDaLista(caminho, parametros, { porPagina: n, pagina: null })}
-              className="text-primary"
-            >
-              {n}
-            </Link>
-          ),
+      <SeletorPorPagina
+        valor={porPagina}
+        enderecos={Object.fromEntries(
+          TAMANHOS_DE_PAGINA.map((n) => [
+            n,
+            enderecoDaLista(caminho, parametros, { porPagina: n, pagina: null }),
+          ]),
         )}
-      </span>
+      />
     </nav>
   );
 }
