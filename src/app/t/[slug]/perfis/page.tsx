@@ -13,7 +13,7 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { FormNovoPerfil } from "@/components/perfis/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { Cartao, Titulo } from "@/components/ui/basicos";
+import { Avatar, Cartao, Titulo } from "@/components/ui/basicos";
 
 /** Perfis do tenant e de deal, e o modo de permissões (só administradores). */
 async function Painel() {
@@ -42,7 +42,23 @@ async function Painel() {
               {p.descricao && <span className="text-muted block text-xs">{p.descricao}</span>}
             </span>
             {camada === "tenant" && (
-              <span className="text-muted shrink-0 text-xs">{t("usuariosEmUso", { n: p.emUso })}</span>
+              <span className="flex shrink-0 items-center gap-2">
+                {p.pessoas.length > 0 && (
+                  <span className="flex -space-x-2" title={p.pessoas.map((x) => x.nome).join(", ")}>
+                    {p.pessoas.slice(0, 5).map((x) => (
+                      <span key={x.id} className="ring-background rounded-full ring-2">
+                        <Avatar nome={x.nome} foto={x.foto} tamanho={24} />
+                      </span>
+                    ))}
+                    {p.pessoas.length > 5 && (
+                      <span className="bg-surface text-muted ring-background grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold ring-2">
+                        +{p.pessoas.length - 5}
+                      </span>
+                    )}
+                  </span>
+                )}
+                <span className="text-muted text-xs">{t("usuariosEmUso", { n: p.emUso })}</span>
+              </span>
             )}
           </li>
         ))}

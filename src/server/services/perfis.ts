@@ -16,6 +16,7 @@ import { exigirAdministrador, type Acesso, type AcessoTenant } from "./acesso";
 import { normalizarMatriz, type Camada, type Matriz } from "./permissoes/catalogo";
 import { PERFIS_PADRAO } from "./permissoes/perfis-padrao";
 import { matrizDoUsuarioNoTenant } from "./permissoes/verificador";
+import { enderecoDaFoto } from "./foto-da-conta";
 
 /**
  * Perfis e permissões do tenant, administrados pelos administradores do
@@ -120,6 +121,8 @@ export type PerfilResumo = {
   exigeDoisFatores: boolean;
   /** Usuários com este perfil no tenant (perfis de deal: participações, na 2ª entrega). */
   emUso: number;
+  /** Quem tem o perfil (perfis do tenant), com a foto, para mostrar ao lado da quantidade. */
+  pessoas: { id: string; nome: string; foto: string | null }[];
 };
 
 export type PainelDePerfis = { modo: "perfil" | "usuario"; perfis: PerfilResumo[] };
@@ -142,12 +145,26 @@ export async function listarPerfis(acesso: Acesso | null): Promise<PainelDePerfi
       .from(perfilUsuario)
       .groupBy(perfilUsuario.perfilId);
     const usoDe = new Map(usos.map((u) => [u.perfilId, u.n]));
-    return lista.map((p) => ({ ...p, emUso: usoDe.get(p.id) ?? 0 }));
+    const quem = await tx
+      .select({ perfilId: perfilUsuario.perfilId, id: usuario.id, nome: usuario.name, imagem: usuario.image })
+      .from(perfilUsuario)
+      .innerJoin(usuario, eq(usuario.id, perfilUsuario.usuarioId))
+      .orderBy(asc(usuario.name));
+    const pessoasDe = Map.groupBy(quem, (q) => q.perfilId);
+    return lista.map((p) => ({
+      ...p,
+      emUso: usoDe.get(p.id) ?? 0,
+      pessoas: (pessoasDe.get(p.id) ?? []).map((q) => ({
+        id: q.id,
+        nome: q.nome,
+        foto: enderecoDaFoto(q.id, q.imagem),
+      })),
+    }));
   });
   return { modo: a.tenant.modoPermissoes, perfis };
 }
 
-export type DetalheDoPerfil = PerfilResumo & { matriz: Matriz; usuarios: { id: string; nome: string }[] };
+export type DetalheDoPerfil = Omit<PerfilResumo, "pessoas"> & { matriz: Matriz; usuarios: { id: string; nome: string }[] };
 
 async function perfilDoTenant(tx: Transacao, perfilId: string) {
   if (!uuidValido(perfilId)) return null;
