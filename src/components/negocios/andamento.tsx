@@ -35,12 +35,12 @@ type Cartao = {
   nome: string;
   situacao: string;
   equipe: string[];
-  historico: { de: string; para: string; quando: Date; ator: string | null }[];
+  historico: { de: string; para: string; quando: Date | string; ator: string | null }[];
   observacoes: string | null;
 };
 
 /** Observações do cartão: texto livre, editado ali mesmo. */
-function ObservacoesDoCartao({
+export function ObservacoesDoCartao({
   dealId,
   cartao,
   podeEditar,

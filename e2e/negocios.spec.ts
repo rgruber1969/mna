@@ -100,11 +100,14 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
 
   // Compradoras e ofertas (funil): mover a compradora para Escolhida → aparece a aba Exclusividade.
   await page.getByRole("tab", { name: /^Compradoras e ofertas/ }).click();
-  await page.getByLabel("Mover Compradora de Teste S.A. para").selectOption("escolhida");
+  // Clicar no cartão abre a gaveta da compradora, com "Mover para".
+  await page.getByRole("button", { name: "Compradora de Teste S.A.", exact: true }).click();
+  await page.getByRole("dialog").getByLabel("Mover para").selectOption("escolhida");
+  await page.getByRole("dialog").getByRole("button", { name: "Fechar" }).last().click();
   await expect(
     page.getByRole("region", { name: "Escolhida" }).getByText("Compradora de Teste S.A."),
   ).toBeVisible({ timeout: 30_000 });
-  await page.getByRole("tab", { name: "Exclusividade" }).click();
+  await page.getByRole("tab", { name: "Exclusividade" }).click({ timeout: 30_000 });
   await page.getByLabel("Duração (dias)").fill("30");
   await page.getByRole("button", { name: "Definir exclusividade" }).click();
   await expect(page.getByText(/^Exclusividade de /)).toBeVisible();
@@ -292,8 +295,10 @@ test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
   await page.goto(`http://${slug}.${dominio}/negocios`);
   await page.getByRole("link", { name: "N-0001 Projeto Teste" }).click();
   await page.getByRole("tab", { name: /^Compradoras e ofertas/ }).click();
-  await page.getByRole("button", { name: "Registrar oferta" }).click();
-  await page.getByLabel("Instrumento").selectOption("loi");
+  // Atalho "Registrar oferta" no cabeçalho do funil: a gaveta de ofertas abre com o formulário.
+  await page.getByRole("button", { name: "Registrar oferta" }).first().click();
+  const gaveta = page.getByRole("dialog");
+  await gaveta.getByLabel("Instrumento").selectOption("loi");
   await page.getByLabel("Parcela à vista, R$").fill("10.000.000");
   await page.getByRole("button", { name: "+ Parcela" }).click();
   await page.getByLabel("Parcela 1: Valor, R$").fill("5.000.000");
@@ -303,7 +308,7 @@ test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
   await expect(page.getByText("Oferta salva.")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("R$ 15.000.000,00")).toBeVisible();
   // Contraproposta (rodada 2): a comparação aparece com duas ofertas.
-  await page.getByRole("button", { name: "Registrar oferta" }).click();
+  await gaveta.getByRole("button", { name: "Registrar oferta" }).click();
   await page.getByLabel("Contraproposta de (oferta anterior)").selectOption({ index: 1 });
   await page.getByLabel("Parcela à vista, R$").fill("16.000.000");
   await page.getByRole("button", { name: "Salvar" }).click();

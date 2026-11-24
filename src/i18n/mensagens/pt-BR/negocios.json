@@ -497,6 +497,39 @@
           "pulada": "pulada"
         }
       }
+    },
+    "funilQuadro": {
+      "preparacao": "Preparação",
+      "opcional": "opcional",
+      "preparacaoDica": "Materiais de apresentação do negócio (não são compradoras). Clique para ver, revisar e liberar.",
+      "recolherPreparacao": "Recolher a Preparação (pular)",
+      "mostrarPreparacao": "Mostrar a Preparação",
+      "teasers": "Teasers ({n})",
+      "completos": "Completos ({n})",
+      "ofertas": "Ofertas ({n})",
+      "registrarOferta": "Registrar oferta",
+      "desde": "desde {data}",
+      "paradaDesde": "parada desde {data}",
+      "equipe": "{n, plural, one {# na equipe} other {# na equipe}}",
+      "ofertasDaCompradora": "{n, plural, one {# oferta} other {# ofertas}} · última {valor}",
+      "maisAcoes": "Mais ações para {nome}",
+      "detalhes": "Detalhes",
+      "verOfertas": "Ver ofertas",
+      "moverPara": "Mover para",
+      "movido": "{nome} foi para {coluna}",
+      "fechar": "Fechar",
+      "gavetaTeasers": "Teasers",
+      "gavetaTeasersDica": "E-book e OnePager teaser: versões, comentários, aprovação e liberação.",
+      "gavetaCompletos": "Completos",
+      "gavetaCompletosDica": "E-book e OnePager completos: só para compradoras depois do NDA.",
+      "gavetaOfertas": "Ofertas",
+      "gavetaOfertasDe": "Ofertas de {nome}",
+      "observacoes": "Observações",
+      "ofertasTitulo": "Ofertas",
+      "rodada": "Rodada {n}",
+      "escolhidaOferta": "escolhida",
+      "abrirOfertas": "Abrir as ofertas",
+      "historico": "Histórico no funil"
     }
   },
   "painel": {

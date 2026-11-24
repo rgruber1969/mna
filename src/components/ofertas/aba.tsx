@@ -545,18 +545,27 @@ export function AbaDeOfertas({
   dealId,
   dados,
   opcoes,
+  novaAoAbrir = false,
+  compradoraId,
 }: {
   dealId: string;
   dados: OfertasDoNegocio;
   opcoes: OpcoesDaOferta | null;
+  /** Já abre o formulário de nova oferta (atalho "Registrar oferta" do funil). */
+  novaAoAbrir?: boolean;
+  /** Só as ofertas desta compradora (detalhe da compradora no funil). */
+  compradoraId?: string;
 }) {
   const t = useTranslations("ofertas");
   const router = useRouter();
-  const [editando, setEditando] = useState<OfertaNaTela | "nova" | null>(null);
+  const [editando, setEditando] = useState<OfertaNaTela | "nova" | null>(
+    novaAoAbrir && dados.podeCriar ? "nova" : null,
+  );
   const [aberta, setAberta] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const atualizar = () => router.refresh();
+  const lista = compradoraId ? dados.ofertas.filter((o) => o.compradoraId === compradoraId) : dados.ofertas;
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -594,10 +603,10 @@ export function AbaDeOfertas({
           }}
         />
       )}
-      {dados.completa && dados.ofertas.length > 1 && (
+      {!compradoraId && dados.completa && dados.ofertas.length > 1 && (
         <Comparacao ofertas={dados.ofertas} previsao={dados.previsaoFechamento} />
       )}
-      {dados.ofertas.length === 0 ? (
+      {lista.length === 0 ? (
         <p className="text-muted text-sm">{t("nenhuma")}</p>
       ) : (
         <div className="overflow-x-auto">
@@ -612,7 +621,7 @@ export function AbaDeOfertas({
               </tr>
             </thead>
             <tbody>
-              {dados.ofertas.map((o) => (
+              {lista.map((o) => (
                 <Fragment key={o.id}>
                   <tr className={estiloTabela.linha}>
                     <td className={estiloTabela.td}>

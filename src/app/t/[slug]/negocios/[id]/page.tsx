@@ -31,7 +31,8 @@ import {
   FormIncluirParticipante,
 } from "@/components/negocios/formularios";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
-import { KanbanDoFunil, PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
+import { PainelExclusividade, PainelSituacao } from "@/components/negocios/andamento";
+import { FunilDeCompradoras } from "@/components/negocios/funil-de-compradoras";
 import { etapasDoNegocio, opcoesDeAlcance } from "@/server/services/etapas";
 import { EtapasDoNegocio } from "@/components/negocios/etapas";
 import { DataRoomDoNegocio } from "@/components/negocios/documentos";
@@ -68,6 +69,7 @@ const ABA_ANTIGA: Record<string, string> = {
   participantes: "pessoas",
   funil: "compradoras",
   ofertas: "compradoras",
+  ebook: "compradoras",
 };
 
 /** Traduz códigos dos parâmetros do histórico (situações, funil, datas). */
@@ -211,7 +213,7 @@ async function Painel({
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
-        <Cartao largura="max-w-6xl">
+        <Cartao largura="max-w-[1600px]">
           <Link href="/negocios" className="text-primary text-sm">
             {t("voltar")}
           </Link>
@@ -244,7 +246,7 @@ async function Painel({
                 hoje={hoje}
                 dias={diasDeAviso}
                 atalho={
-                  funil || ofertas
+                  funil || ofertas || ebook
                     ? { href: `/negocios/${n.id}?aba=compradoras`, rotulo: t("abaCompradoras") }
                     : null
                 }
@@ -294,7 +296,7 @@ async function Painel({
                     },
                   ]
                 : []),
-              ...(funil || ofertas
+              ...(funil || ofertas || ebook
                 ? [
                     {
                       id: "compradoras",
@@ -303,7 +305,6 @@ async function Painel({
                     },
                   ]
                 : []),
-              ...(ebook ? [{ id: "ebook", rotulo: tb("aba"), grupo: t("grupoComercial") }] : []),
               ...(condicoes
                 ? [{ id: "condicoes", rotulo: to("condicoesDaOferta.aba"), grupo: t("grupoComercial") }]
                 : []),
@@ -465,7 +466,7 @@ async function Painel({
                 </section>
               </div>
             </PainelDeAba>
-            {(funil || ofertas) && (
+            {(funil || ofertas || ebook) && (
               <PainelDeAba id="compradoras">
                 <div className="space-y-8">
                   {funil && (
@@ -473,10 +474,24 @@ async function Painel({
                       <h3 className="text-text mb-3 text-base font-semibold">
                         {`${t("abaFunil")} (${funil.cartoes.length})`}
                       </h3>
-                      <KanbanDoFunil dealId={n.id} cartoes={funil.cartoes} podeEditar={funil.podeEditar} />
+                      <FunilDeCompradoras
+                        dealId={n.id}
+                        cartoes={funil.cartoes}
+                        podeEditar={funil.podeEditar}
+                        ebook={ebook}
+                        ofertas={ofertas}
+                        opcoesOferta={opcoesOferta}
+                      />
                     </section>
                   )}
-                  {ofertas && (
+                  {/* Sem o funil (lado comprador): os materiais liberados e as ofertas, direto na aba. */}
+                  {!funil && ebook && (
+                    <section>
+                      <h3 className="text-text mb-3 text-base font-semibold">{tb("aba")}</h3>
+                      <AbaDoEbook dealId={n.id} dados={ebook} simulado={estaSimulada("ebook")} />
+                    </section>
+                  )}
+                  {!funil && ofertas && (
                     <section className={funil ? "border-border border-t pt-6" : ""}>
                       <h3 className="text-text mb-3 text-base font-semibold">
                         {`${to("titulo")} (${ofertas.ofertas.length})`}
@@ -485,11 +500,6 @@ async function Painel({
                     </section>
                   )}
                 </div>
-              </PainelDeAba>
-            )}
-            {ebook && (
-              <PainelDeAba id="ebook">
-                <AbaDoEbook dealId={n.id} dados={ebook} simulado={estaSimulada("ebook")} />
               </PainelDeAba>
             )}
             {condicoes && (

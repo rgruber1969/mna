@@ -215,6 +215,18 @@ input[type="file"]::file-selector-button:hover {
   }
 }
 
+/* Gaveta lateral (detalhes à direita): entra deslizando da borda. */
+@keyframes entrada-lateral {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
 /* Fundo escurecido do painel do negócio e dos diálogos: aparece suave. */
 @keyframes aparecer {
   from {

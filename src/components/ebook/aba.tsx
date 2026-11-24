@@ -18,7 +18,9 @@ import type { EbookDoNegocio, VersaoDoEbook } from "@/server/services/ebook";
 
 /** Aba "E-book" do negócio (item 19): versões dos quatro materiais, revisão e liberação. */
 
-const MATERIAIS = ["ebook_teaser", "ebook_completo", "onepager_teaser", "onepager_completo"] as const;
+export const MATERIAIS = ["ebook_teaser", "ebook_completo", "onepager_teaser", "onepager_completo"] as const;
+export const TEASERS = ["ebook_teaser", "onepager_teaser"] as const;
+export const COMPLETOS = ["ebook_completo", "onepager_completo"] as const;
 const IDENTIDADES = ["tenant", "vendedora", "advisor", "combinada"] as const;
 const estiloCampo =
   "border-border bg-background text-text focus:border-primary w-full rounded-md border px-2 py-1.5 text-sm outline-none";
@@ -36,7 +38,16 @@ const quando = (iso: string) =>
     timeStyle: "short",
   });
 
-function NovaVersao({ dealId, aoCriar }: { dealId: string; aoCriar: () => void }) {
+export function NovaVersao({
+  dealId,
+  aoCriar,
+  materiais = MATERIAIS,
+}: {
+  dealId: string;
+  aoCriar: () => void;
+  /** Materiais que podem ser escolhidos (ex.: só os teasers, na gaveta de Teasers). */
+  materiais?: readonly (typeof MATERIAIS)[number][];
+}) {
   const t = useTranslations("ebook");
   const [aberto, setAberto] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -73,7 +84,7 @@ function NovaVersao({ dealId, aoCriar }: { dealId: string; aoCriar: () => void }
         <label className="block text-sm">
           <span className="text-text mb-1 block font-medium">{t("material")}</span>
           <select name="material" className={estiloCampo}>
-            {MATERIAIS.map((m) => (
+            {materiais.map((m) => (
               <option key={m} value={m}>
                 {t(`materiais.${m}`)}
               </option>
@@ -116,7 +127,15 @@ function NovaVersao({ dealId, aoCriar }: { dealId: string; aoCriar: () => void }
   );
 }
 
-function Versao({ v, vendedor, aoMudar }: { v: VersaoDoEbook; vendedor: boolean; aoMudar: () => void }) {
+export function Versao({
+  v,
+  vendedor,
+  aoMudar,
+}: {
+  v: VersaoDoEbook;
+  vendedor: boolean;
+  aoMudar: () => void;
+}) {
   const t = useTranslations("ebook");
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
