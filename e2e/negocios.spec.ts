@@ -88,7 +88,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(page.getByRole("heading", { name: "N-0001 Projeto Teste" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Venda da Vendedora de Teste · Aquisição total · Em andamento")).toBeVisible();
 
-  await page.getByRole("tab", { name: /^Pessoas/ }).click();
+  await page.getByRole("tab", { name: /^Empresas e pessoas/ }).click();
   await expect(page.getByText("Vendedora · lado vendedor", { exact: true })).toBeVisible();
   await page.locator("select[name=empresaId]").selectOption({ label: "Compradora de Teste S.A." });
   await page.locator("select[name=papelId]").selectOption({ label: "Compradora" });
@@ -163,7 +163,7 @@ test("cria o negócio, mostra as abas e inclui uma compradora", async ({ page })
   await expect(page.getByRole("link", { name: "Virou tarefa ›" })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("tab", { name: "Histórico" }).click();
   await expect(page.getByText("Negócio criado")).toBeVisible();
-  await page.getByRole("tab", { name: /^Pessoas/ }).click();
+  await page.getByRole("tab", { name: /^Empresas e pessoas/ }).click();
   await expect(
     page.getByText(/Coordenador do negócio · representando Escritório de Teste · lado vendedor/),
   ).toBeVisible();
