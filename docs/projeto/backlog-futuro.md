@@ -138,10 +138,6 @@ versão 1" é anotado aqui.
 * **Grade de 8 em todas as telas:** as telas novas (painel, kanban, painel
   do negócio) já usam espaçamentos de 8/16/24; as demais ainda têm 6 e 12 px
   e passam para a grade quando forem revisitadas.
-* **Tela cheia do negócio com as abas juntadas:** o painel central do kanban
-  já junta Empresas + Participantes ("Pessoas e empresas") e Tarefas +
-  Mensagens ("Atividade"); a tela `/negocios/[id]` ainda mantém as abas
-  separadas.
 * **Bordas de campos no tema escuro com 3:1:** as bordas ficaram mais
   visíveis, mas os campos de formulário ainda não chegam a 3:1 sobre o
   fundo dos cartões.
@@ -155,3 +151,13 @@ versão 1" é anotado aqui.
   limite mensal) e avisar o financeiro. Hoje o contrato guarda só as regras.
 * **Máscara de valor nas demais telas** (ofertas, valor estimado do
   negócio): hoje só nos contratos.
+
+## Materiais e comunicação externa (pedido de 2026-11-24)
+
+* **Criação estruturada do e-book e do OnePager:** montar os materiais no
+  sistema a partir dos dados do negócio, do valuation e de seções editáveis
+  (hoje, na demonstração, a versão é só um registro com PDF de exemplo).
+* **Envio para fora do sistema:** mandar documentos, pedidos de documentos,
+  e-book e OnePager por e-mail a quem não usa o sistema, com fluxo de
+  aprovação antes do envio, registro do que foi enviado e a quem, e
+  auditoria.
