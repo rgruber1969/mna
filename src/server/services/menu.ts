@@ -13,11 +13,23 @@ import { pode } from "./permissoes/verificador";
  */
 
 /** Texto de cada item e grupo: `menu.itens.<id>` e `menu.grupos.<chave>` nas mensagens. */
-export type ItemDoMenu = { id: string; href: string; icone: string };
+export type ItemDoMenu = {
+  id: string;
+  href: string;
+  icone: string;
+  /** Outros endereços que marcam o item como atual (ex.: as abas de "Usuários e acesso"). */
+  tambem?: string[];
+};
 export type GrupoDoMenu = { chave: string; itens: ItemDoMenu[] };
 export type Menu = { grupos: GrupoDoMenu[]; favoritos: string[]; recolhido: boolean };
 
-type Definicao = ItemDoMenu & { recurso?: Recurso; soAdministrador?: boolean; ouAdministrador?: boolean };
+type Definicao = ItemDoMenu & {
+  recurso?: Recurso;
+  soAdministrador?: boolean;
+  ouAdministrador?: boolean;
+  /** Endereço para quem não é administrador (só vê parte das abas). */
+  hrefSemAdministrador?: string;
+};
 
 const GRUPOS: { chave: string; itens: Definicao[] }[] = [
   { chave: "inicio", itens: [{ id: "painel", href: "/", icone: "casa" }] },
@@ -38,14 +50,15 @@ const GRUPOS: { chave: string; itens: Definicao[] }[] = [
   {
     chave: "administracao",
     itens: [
-      { id: "usuarios", href: "/usuarios", icone: "usuario", soAdministrador: true },
-      { id: "perfis", href: "/perfis", icone: "escudo", soAdministrador: true },
+      // Usuários, Perfis e Auditoria num item só, com abas (pedido de 2026-11-23).
       {
-        id: "auditoria",
-        href: "/auditoria",
-        icone: "historico",
+        id: "acesso",
+        href: "/usuarios",
+        tambem: ["/perfis", "/auditoria"],
+        icone: "usuario",
         recurso: "auditoria",
         ouAdministrador: true,
+        hrefSemAdministrador: "/auditoria",
       },
       {
         id: "configuracoes",
@@ -81,7 +94,14 @@ export async function menuDoUsuario(acesso: Acesso | null): Promise<Menu> {
   const grupos: GrupoDoMenu[] = [];
   for (const g of GRUPOS) {
     const vis = await Promise.all(g.itens.map((i) => visivel(a, i)));
-    const itens = g.itens.filter((_, n) => vis[n]).map(({ id, href, icone }) => ({ id, href, icone }));
+    const itens = g.itens
+      .filter((_, n) => vis[n])
+      .map(({ id, href, icone, tambem, hrefSemAdministrador }) => ({
+        id,
+        href: !a.administrador && hrefSemAdministrador ? hrefSemAdministrador : href,
+        icone,
+        ...(tambem ? { tambem } : {}),
+      }));
     if (itens.length) grupos.push({ chave: g.chave, itens });
   }
   const p = await preferencias(a);

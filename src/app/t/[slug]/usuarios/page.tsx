@@ -1,4 +1,5 @@
 import { EsqueletoDeTela } from "@/components/ui/esqueletos";
+import { AbasDeAcesso } from "@/components/acesso/abas-de-acesso";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import Link from "next/link";
@@ -44,6 +45,7 @@ async function Painel({ consulta }: { consulta: Promise<Record<string, string | 
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 flex-wrap items-start justify-start gap-6 px-3 py-6 sm:px-6">
+        <AbasDeAcesso atual="usuarios" administrador={true} />
         <div className="flex w-full max-w-3xl flex-col gap-6">
           <Cartao largura="max-w-3xl">
             <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
