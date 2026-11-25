@@ -85,7 +85,20 @@ versão 1" é anotado aqui.
 
 ## Integrações
 
-- [ ] Servidor MCP (arquitetura já preparada)
+- [ ] **Servidor MCP** (pedido de 2026-11-25; a arquitetura já está
+      preparada, mas o servidor não existe): primeiro só ferramentas de
+      leitura (negócios, etapas, tarefas, documentos, pedidos, ofertas)
+      chamando os mesmos serviços das telas, com autenticação por chave de
+      API do usuário, as mesmas permissões e auditoria. Assim dá para
+      perguntar ao sistema pelo Claude (Desktop ou Code). Estimativa: 6% a
+      10% do limite semanal de uso.
+- [ ] **"Pergunte ao sistema" com IA de verdade** (pedido de 2026-11-25;
+      na V1 o bloco da tela principal é simulado, por palavras-chave): o
+      bloco manda a pergunta à API da Anthropic, que responde usando as
+      ferramentas do MCP. Antes de construir: ADR sobre envio de dados de
+      negócios a uma IA externa (LGPD, contrato com o provedor, o que pode
+      sair do servidor e o que fica) e uma chave paga da API. Estimativa:
+      10% a 15% depois do MCP.
 - [ ] Sistemas externos consumindo a API (a identificar)
 - [ ] Anonimização: importar planilhas fora do modelo (e até PDF ou DOCX), interpretando colunas e formatos diferentes (resposta X3, 2026-11-19)
 
