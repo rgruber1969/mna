@@ -128,6 +128,26 @@ versão 1" é anotado aqui.
   manualmente.
 
 
+## Tela "Sobre" (pedido de 2026-11-25)
+
+* **Tela "Sobre" com informações gerais, em abas**, aberta pelo menu do
+  usuário ou pelo rodapé:
+  * **Versão:** número e data da versão, novidades da versão (notas de
+    lançamento), ambiente (demonstração ou produção), o copyright do
+    rodapé repetido e os contatos de suporte. O nome do produto continua
+    vindo de `PRODUCT_NAME`.
+  * **Segurança:** como os dados são protegidos, em linguagem simples:
+    conformidade com a LGPD (bases legais, direitos do titular e como
+    pedir), quais dados pessoais são guardados e quais tabelas e campos
+    são criptografados (CPF, RG, cônjuge, salário e anexos de cadastro,
+    tirados do inventário `dados-pessoais.md`), isolamento por tenant,
+    2FA, auditoria, antivírus nos envios e onde os dados ficam (região).
+    Sem nenhum detalhe que ajude um ataque, como chaves, nomes de
+    servidores ou configurações.
+  * **Outras abas a definir:** por exemplo, Termos de uso e Política de
+    privacidade, Componentes de código aberto e licenças, e Status das
+    funcionalidades (reais e simuladas).
+
 ## Autenticação (pedido em 2026-11-22)
 
 * **Reconhecimento facial:** entrar ou confirmar operações sensíveis pelo
