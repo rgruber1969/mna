@@ -28,6 +28,13 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       demonstração): contas OAuth nos consoles do Google e da Microsoft,
       só para e-mails já convidados (cadastro continua só por convite).
       Depende de o responsável criar as contas de desenvolvedor.
+- [ ] [Acesso] **"Esqueci minha senha"** (pedido de 2026-11-25): link na
+      tela de login que manda por e-mail um link de uso único e curta
+      duração para criar uma senha nova (recurso pronto no Better Auth). A
+      resposta é sempre a mesma, exista ou não a conta; a 2FA continua
+      exigida depois da troca; as outras sessões da pessoa são encerradas;
+      aviso por e-mail de que a senha mudou; auditoria; e limite de
+      tentativas.
 - [ ] [Sobre] **Tela "Sobre" com informações gerais, em abas** (pedido de
       2026-11-25), aberta pelo menu do usuário ou pelo rodapé:
   - **Versão:** número e data da versão, novidades da versão (notas de
