@@ -69,6 +69,7 @@ projeto e em `docs/projeto/`.
 | E-book e OnePager no data room | Cada versão é uma versão de documento (categorias próprias); o fluxo de revisão, aprovação e liberação fica por cima; liberar dá acesso ao comprador no data room | 2026-11-24 |
 | Funil de compradoras | Padrão do kanban de negócios na largura toda; coluna opcional "Preparação" com os teasers; atalhos de materiais e ofertas nos cabeçalhos; gaveta à direita; sem aba E-book | 2026-11-24 |
 | Linhas das listas | Linha destacada ao passar o mouse em todas as tabelas; nas listas principais, a linha inteira abre o registro; seletor "Por página" único (10, 25, 50, 100) | 2026-11-23 |
+| Pergunte ao sistema (V1) | Simulado sem IA: entende a pergunta por palavras-chave e responde com os serviços e as permissões de sempre; nada sai do servidor; IA real (via MCP) fica para a V2, depois de decidir o envio de dados a IA externa | 2026-11-25 |
 | Configurações | Um item de menu "Configurações", com abas **verticais** em dois grupos (Tenant; Cadastros auxiliares), em ordem alfabética dentro de cada grupo (ajuste de 2026-11-23); cadastros auxiliares em tabela, com as ações em colunas e inclusão na última linha ("Adicionar") | 2026-11-19 |
 
 ## Substituídas

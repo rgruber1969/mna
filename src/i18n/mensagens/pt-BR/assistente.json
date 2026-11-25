@@ -1,0 +1,54 @@
+{
+  "assistente": {
+    "titulo": "Pergunte ao sistema",
+    "subtitulo": "Pergunte sobre os seus negócios, tarefas, prazos, documentos, pedidos e ofertas. A resposta usa só o que você já pode ver.",
+    "aviso": "as respostas são montadas por palavras-chave, sem inteligência artificial, com os seus dados reais. A versão com IA vem depois.",
+    "exemplo": "Ex.: quais negócios estão atrasados?",
+    "perguntar": "Perguntar",
+    "pensando": "Procurando nos seus dados…",
+    "sugestoesRotulo": "Perguntas sugeridas",
+    "sugestoes": {
+      "atrasados": "Quais negócios estão atrasados?",
+      "tarefas": "Quais são as minhas tarefas?",
+      "pedidos": "Há pedidos de documentos pendentes?",
+      "carteira": "Qual o valor da carteira?",
+      "documentos": "Documentos sobre receita"
+    },
+    "respostas": {
+      "atrasados": "{atrasados, plural, =0 {Nenhum negócio atrasado} one {# negócio atrasado} other {# negócios atrasados}} e {proximos, plural, =0 {nenhum perto do prazo} one {# perto do prazo} other {# perto do prazo}}:",
+      "semAtrasados": "Nenhum negócio em aberto está atrasado ou perto do prazo. Tudo em dia.",
+      "semEtapa": "sem etapa em andamento",
+      "venceu": "venceu em {data}",
+      "vence": "vence em {data}",
+      "semPrazo": "sem prazo",
+      "tarefas": "Você tem {n, plural, one {# tarefa aberta} other {# tarefas abertas}}{atrasadas, plural, =0 {} one {, # atrasada} other {, # atrasadas}}. As primeiras:",
+      "semTarefas": "Você não tem tarefas abertas.",
+      "documentosSemTermo": "Diga o que procurar, por exemplo: \"documentos sobre receita\" ou \"documentos sobre receita no Jatobá\".",
+      "documentos": "{n, plural, one {# documento cita} other {# documentos citam}} \"{termo}\" em {onde}:",
+      "semDocumentos": "Nenhum documento que você vê cita \"{termo}\".",
+      "todosOsNegocios": "todos os seus negócios",
+      "pedidos": "{abertos, plural, one {# item em aberto} other {# itens em aberto}} em {pedidos, plural, one {# pedido} other {# pedidos}}:",
+      "pedidoAbertos": "{abertos} em aberto de {itens} itens",
+      "semPedidos": "Nenhum pedido de documentos com itens em aberto nos seus negócios.",
+      "qualNegocio": "De qual negócio? Cite o codinome ou o número (ex.: \"ofertas do Jatobá\" ou \"closing do N-0009\").",
+      "citeONegocio": "cite este nome na pergunta",
+      "ofertas": "{negocio}: {n, plural, one {# oferta} other {# ofertas}}; a maior soma {maior}.",
+      "semOfertas": "{negocio} ainda não tem ofertas que você possa ver.",
+      "rodada": "rodada {n}",
+      "escolhida": "escolhida",
+      "situacaoDoNegocio": "{negocio} está em {etapa}.",
+      "previsao": "Previsão de fechamento: {data}.",
+      "semPrevisao": "Ainda sem previsão de fechamento.",
+      "fimDaEtapa": "A etapa atual termina em {data}.",
+      "valor": "Valor estimado: {valor}.",
+      "progresso": "{feitas} de {total} etapas concluídas.",
+      "abrirNegocio": "Abrir {negocio}",
+      "carteira": "{n, plural, one {# negócio em aberto} other {# negócios em aberto}}; carteira de {total} ({comValor} com valor estimado). Os maiores:",
+      "ajuda": "Na demonstração, sei responder sobre: negócios atrasados ou perto do prazo, as suas tarefas, documentos que citam um termo, pedidos de documentos pendentes, ofertas de um negócio, previsão de closing e situação de um negócio, e o valor da carteira. Tente uma das sugestões:"
+    },
+    "erros": {
+      "desligado": "O assistente não está disponível.",
+      "curta": "Escreva a pergunta com pelo menos 3 letras."
+    }
+  }
+}

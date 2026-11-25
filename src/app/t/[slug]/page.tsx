@@ -11,6 +11,8 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { EstadoVazio } from "@/components/ui/estado-vazio";
 import { PrecisaDeVoce } from "@/components/painel/precisa-de-voce";
+import { PergunteAoSistema } from "@/components/painel/assistente";
+import { estaLigada, estaSimulada } from "@/config/funcionalidades";
 import { EsqueletoDoPainel, EsqueletoDoPainelConteudo } from "@/components/ui/esqueletos";
 import { CORES_DO_NIVEL, diasAte, type NivelDoPrazo } from "@/config/prazos";
 
@@ -268,6 +270,7 @@ async function Conteudo({ acesso }: { acesso: AcessoTenant }) {
           <PrecisaDeVoce hoje={p.hoje} semana={p.semana} prazos={p.prazos} mensagens={novas} />
         </Bloco>
       </div>
+      {estaLigada("assistente") && <PergunteAoSistema simulado={estaSimulada("assistente")} />}
     </main>
   );
 }

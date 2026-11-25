@@ -28,6 +28,8 @@ export const FUNCIONALIDADES = {
   exportacaoDoNegocio: { item: 22, real: false },
   /** Itens 28 e 29: tarefas automáticas e gatilhos configuráveis. */
   gatilhosDeTarefas: { item: 28, real: false },
+  /** "Pergunte ao sistema" na tela principal (pedido de 2026-11-25): sem IA, por palavras-chave. */
+  assistente: { item: 37, real: false },
 } as const;
 
 export type Funcionalidade = keyof typeof FUNCIONALIDADES;
