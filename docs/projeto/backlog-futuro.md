@@ -4,8 +4,8 @@ Checklist do que ficou fora da versão 1. Todo item declarado "fora da
 versão 1" é anotado aqui.
 
 Classificação do responsável (2026-11-25): **V2** entra na próxima
-versão; **V3** fica para depois; **V?** precisa de esclarecimento antes
-de decidir. Dentro de cada grupo, os itens estão em ordem de esforço
+versão; **V3** fica para depois (os itens que estavam em dúvida, V?,
+foram classificados em 2026-11-25). Dentro de cada grupo, os itens estão em ordem de esforço
 estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
 (médio) e **G** (grande). Entre colchetes, o assunto.
 
@@ -45,6 +45,15 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
   - **Outras abas a definir:** por exemplo, Termos de uso e Política de
     privacidade, Componentes de código aberto e licenças, e Status das
     funcionalidades (reais e simuladas).
+- [ ] [Autenticação] **Reconhecimento facial** pelo próprio aparelho
+      (decisão de 2026-11-25): Face ID, Windows Hello ou a biometria do
+      celular, por meio das chaves de acesso (passkeys) que já existem na
+      V1. O rosto nunca sai do aparelho e o sistema não guarda biometria,
+      então não há dado pessoal sensível novo. Falta: deixar isso claro
+      nas telas (ex.: "Entrar com o rosto ou a digital") e pedir a chave de
+      acesso também para confirmar operações sensíveis (ex.: excluir,
+      baixar dados sensíveis, trocar permissões). Serviço de biometria
+      facial próprio foi descartado.
 
 ### Esforço M
 
@@ -64,13 +73,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       do menu.
 - [ ] [Documentos] Áreas restritas dentro de um negócio (ex.: notas
       internas dos assessores).
-- [ ] [Autenticação] **Reconhecimento facial** para entrar ou confirmar
-      operações sensíveis. Antes de construir: decidir entre o
-      reconhecimento do próprio aparelho (passkey com Face ID / Windows
-      Hello, que já funciona com as chaves de acesso da V1, sem guardar o
-      rosto; nesse caso o trabalho é pequeno) e um serviço de biometria
-      facial (dado pessoal sensível pela LGPD: base legal, consentimento,
-      guarda e descarte, inventário em `dados-pessoais.md`). Exige ADR.
 - [ ] [Integrações] **Servidor MCP** (pedido de 2026-11-25; a arquitetura
       já está preparada, mas o servidor não existe): primeiro só
       ferramentas de leitura (negócios, etapas, tarefas, documentos,
@@ -138,7 +140,7 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       de seções editáveis (hoje, na demonstração, a versão é só um registro
       com PDF de exemplo).
 
-## V3 e V?
+## V3
 
 ### V3: esforço P
 
@@ -175,23 +177,20 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       revisar com pessoa fluente.
 - [ ] [Materiais] E-book e OnePager em outros formatos além de PDF:
       apresentação (PPTX) e página web com link privado.
+- [ ] [White label] Domínio próprio do cliente (ex.: `mna.cliente.com.br`).
+      Hoje cada tenant usa um subdomínio do nosso domínio (`bt.<domínio>`);
+      seria o próprio endereço do escritório, com o certificado e o DNS do
+      lado dele.
+- [ ] [LGPD] Anonimização a pedido do titular (escopo-v1.md, item 23; saiu
+      da V1 em 2026-11-20). É diferente da "anonimização de clientes"
+      (item 33), que troca os nomes dos clientes por códigos nos
+      documentos, por sigilo: esta atende ao direito do titular pela LGPD.
+      Quando uma pessoa pede, apagar ou tornar irreconhecíveis os dados
+      pessoais dela em todo o sistema (respeitando o que a lei manda
+      guardar), com registro do pedido. Até lá, os pedidos são atendidos
+      manualmente.
 
 ### V3: esforço G
 
 - [ ] [Documentos] Integração com plataformas de assinatura digital ou
       eletrônica.
-
-### V?: a esclarecer
-
-- [ ] [White label] Domínio próprio do cliente (ex.: `mna.cliente.com.br`).
-      **Não existe hoje:** cada tenant usa um subdomínio do nosso domínio
-      (`bt.<domínio>`). Seria o próprio endereço do escritório, com o
-      certificado e o DNS do lado dele. Esforço M.
-- [ ] [LGPD] Anonimização a pedido do titular (escopo-v1.md, item 23; saiu
-      da V1 em 2026-11-20). **Não existe hoje e é diferente da
-      "anonimização de clientes"** (item 33), que troca os nomes dos
-      clientes por códigos nos documentos, por sigilo. Esta atende ao
-      direito do titular pela LGPD: quando uma pessoa pede, apagar ou
-      tornar irreconhecíveis os dados pessoais dela em todo o sistema
-      (respeitando o que a lei manda guardar), com registro do pedido.
-      Enquanto isso, os pedidos são atendidos manualmente. Esforço M.
