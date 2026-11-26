@@ -9,6 +9,8 @@ import {
   opcoesCriarPasskeyAcao,
   opcoesEntrarComPasskeyAcao,
   pedirLinkAcao,
+  pedirRedefinicaoDeSenhaAcao,
+  redefinirSenhaAcao,
   salvarPasskeyAcao,
   type Estado,
 } from "@/app/acoes/acesso";
@@ -130,6 +132,58 @@ export function FormPedirLink() {
  * Uso do link: um botão, e não login automático ao abrir, porque antivírus de
  * e-mail abrem os links sozinhos e gastariam o link de uso único.
  */
+/** "Esqueci minha senha": pede o link (resposta sempre a mesma). */
+export function FormEsqueciSenha() {
+  const t = useTranslations("acesso.senha");
+  const tGeral = useTranslations("acesso.geral");
+  const [estado, acao, enviando] = useActionState(pedirRedefinicaoDeSenhaAcao, undefined);
+  if (estado?.ok) return <Aviso tipo="ok">{estado.ok}</Aviso>;
+  return (
+    <form action={acao}>
+      <Campo rotulo={t("rotuloEmail")} name="email" type="email" autoComplete="username" required />
+      <Botao disabled={enviando}>{enviando ? tGeral("enviando") : t("enviar")}</Botao>
+    </form>
+  );
+}
+
+/** Senha nova a partir do link do e-mail. */
+export function FormRedefinirSenha({ token }: { token: string }) {
+  const t = useTranslations("acesso.senha");
+  const [estado, acao, enviando] = useActionState(redefinirSenhaAcao, undefined);
+  if (estado?.ok)
+    return (
+      <>
+        <Aviso tipo="ok">{estado.ok}</Aviso>
+        <a href="/entrar" className="text-primary text-sm font-medium hover:underline">
+          {t("irParaEntrada")}
+        </a>
+      </>
+    );
+  return (
+    <form action={acao}>
+      {estado?.erro && <Aviso>{estado.erro}</Aviso>}
+      <input type="hidden" name="token" value={token} />
+      <Campo
+        rotulo={t("nova")}
+        name="senha"
+        type="password"
+        autoComplete="new-password"
+        minLength={12}
+        required
+      />
+      <Campo
+        rotulo={t("repita")}
+        name="confirmacao"
+        type="password"
+        autoComplete="new-password"
+        minLength={12}
+        required
+      />
+      <Botao disabled={enviando}>{enviando ? t("salvando") : t("salvar")}</Botao>
+    </form>
+  );
+}
+
 export function FormUsarLink({ token }: { token: string }) {
   const t = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useActionState(

@@ -59,6 +59,7 @@
       "tenant_identidade_alterada": "Identidade visual alterada",
       "documentos_busca": "Busca de documentos",
       "sessao_entrada": "Entrada no sistema",
+      "senha_redefinida": "Senha redefinida pelo link de \"Esqueci minha senha\"",
       "acesso_negado": "Acesso negado",
       "chave_api_criada": "Chave de API criada",
       "chave_api_revogada": "Chave de API revogada",

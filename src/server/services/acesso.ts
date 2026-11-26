@@ -310,18 +310,24 @@ export type ResultadoLogin =
   | { erro: string; parametros?: Record<string, string | number> };
 
 export async function registrarEntrada(headers: Headers, usuarioId: string, metodo: string): Promise<void> {
+  await registrarEventoDeAcesso(headers, usuarioId, "sessao.entrada", { metodo });
+}
+
+/** Evento de acesso na auditoria do endereço (console ou tenant). */
+export async function registrarEventoDeAcesso(
+  headers: Headers,
+  usuarioId: string,
+  tipo: string,
+  detalhes: Record<string, string | number | boolean | null>,
+): Promise<void> {
   const area = resolverArea(headers.get("host"));
   if (area.tipo === "console") {
-    await banco()
-      .insert(eventoPlataforma)
-      .values({ tipo: "sessao.entrada", atorId: usuarioId, detalhes: { metodo } });
+    await banco().insert(eventoPlataforma).values({ tipo, atorId: usuarioId, detalhes });
   } else if (area.tipo === "tenant") {
     const t = await tenantPorSlug(area.slug);
     if (t)
       await comTenant(t.id, (tx) =>
-        tx
-          .insert(eventoAuditoria)
-          .values({ tenantId: t.id, tipo: "sessao.entrada", atorId: usuarioId, detalhes: { metodo } }),
+        tx.insert(eventoAuditoria).values({ tenantId: t.id, tipo, atorId: usuarioId, detalhes }),
       );
   }
 }

@@ -84,6 +84,17 @@
       "pagamento": "Forma de pagamento: {texto}",
       "conta": "Conta para pagamento: {conta}",
       "botao": "Abrir o contrato"
+    },
+    "redefinirSenha": {
+      "assunto": "Criar senha nova no {produto}",
+      "paragrafo": "Recebemos um pedido para criar uma senha nova na sua conta. Use o link abaixo; ele vale por 15 minutos e só uma vez:",
+      "botao": "Criar senha nova",
+      "rodape": "Se não foi você que pediu, ignore este e-mail: sua senha atual continua valendo."
+    },
+    "senhaAlterada": {
+      "assunto": "Sua senha no {produto} foi alterada",
+      "paragrafo": "A senha da sua conta acabou de ser alterada pelo link de \"Esqueci minha senha\". As sessões abertas foram encerradas.",
+      "rodape": "Se não foi você, avise o administrador imediatamente."
     }
   }
 }

@@ -128,7 +128,9 @@
       "passkeyCadastrada": "Passkey cadastrada.",
       "conviteEnviado": "Convite enviado. Ele vale por 3 dias.",
       "fotoAtualizada": "Foto atualizada.",
-      "fotoRemovida": "Foto removida."
+      "fotoRemovida": "Foto removida.",
+      "linkDeSenhaEnviado": "Se este e-mail tiver acesso a este endereço, enviamos um link para criar uma senha nova. Ele vale por 15 minutos e só uma vez.",
+      "senhaRedefinida": "Senha alterada. As sessões abertas foram encerradas; entre com a senha nova."
     },
     "erros": {
       "loginInvalido": "E-mail ou senha inválidos, ou acesso não permitido neste endereço.",
@@ -149,7 +151,8 @@
       "emailInvalido": "E-mail inválido.",
       "dadosInvalidos": "Dados inválidos.",
       "temaEntreDeNovo": "Entre de novo para mudar o tema.",
-      "temaInvalido": "Tema inválido."
+      "temaInvalido": "Tema inválido.",
+      "linkDeSenhaInvalido": "Link inválido, expirado ou já utilizado. Peça um novo em \"Esqueci minha senha\", na tela de entrada."
     },
     "loginSocial": {
       "google": "Entrar com Google",
@@ -159,6 +162,19 @@
         "microsoft": "Microsoft"
       },
       "emBreve": "a entrada com {provedor} chega numa próxima versão. Por enquanto, use e-mail e senha, passkey ou o link por e-mail."
+    },
+    "senha": {
+      "esqueci": "Esqueci minha senha",
+      "rotuloEmail": "E-mail da sua conta",
+      "enviar": "Receber link para criar senha nova",
+      "sobre": "Esqueci minha senha",
+      "titulo": "Criar senha nova",
+      "texto": "Escolha uma senha nova com pelo menos 12 caracteres. Se você usa verificação em duas etapas, ela continua sendo pedida ao entrar.",
+      "nova": "Senha nova",
+      "repita": "Repita a senha nova",
+      "salvar": "Salvar senha nova",
+      "salvando": "Salvando…",
+      "irParaEntrada": "Ir para a tela de entrada"
     }
   }
 }

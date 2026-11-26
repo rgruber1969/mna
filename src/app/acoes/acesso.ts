@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { pedirRedefinicaoDeSenha, redefinirSenha } from "@/server/services/senha";
 import { getTranslations } from "next-intl/server";
 import { traduzirErro } from "@/i18n/servidor";
 import {
@@ -102,6 +103,21 @@ export async function confirmarAutenticadorAcao(_: Estado, f: FormData): Promise
 export async function pedirLinkAcao(_: Estado, f: FormData): Promise<Estado> {
   await pedirLinkMagico(texto(f, "email"), await cabecalhos());
   return { ok: (await getTranslations("acesso.sucesso"))("linkEnviado") };
+}
+
+export async function pedirRedefinicaoDeSenhaAcao(_: Estado, f: FormData): Promise<Estado> {
+  await pedirRedefinicaoDeSenha(texto(f, "email"), await cabecalhos());
+  return { ok: (await getTranslations("acesso.sucesso"))("linkDeSenhaEnviado") };
+}
+
+export async function redefinirSenhaAcao(_: Estado, f: FormData): Promise<Estado> {
+  const r = await redefinirSenha(
+    texto(f, "token"),
+    { senha: texto(f, "senha"), confirmacao: texto(f, "confirmacao") },
+    await cabecalhos(),
+  );
+  if ("erro" in r) return { erro: await traduzirErro(r) };
+  return { ok: (await getTranslations("acesso.sucesso"))("senhaRedefinida") };
 }
 
 export async function entrarComLinkAcao(_: Estado, f: FormData): Promise<Estado> {

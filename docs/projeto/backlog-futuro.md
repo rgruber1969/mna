@@ -28,13 +28,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       demonstração): contas OAuth nos consoles do Google e da Microsoft,
       só para e-mails já convidados (cadastro continua só por convite).
       Depende de o responsável criar as contas de desenvolvedor.
-- [ ] [Acesso] **"Esqueci minha senha"** (pedido de 2026-11-25): link na
-      tela de login que manda por e-mail um link de uso único e curta
-      duração para criar uma senha nova (recurso pronto no Better Auth). A
-      resposta é sempre a mesma, exista ou não a conta; a 2FA continua
-      exigida depois da troca; as outras sessões da pessoa são encerradas;
-      aviso por e-mail de que a senha mudou; auditoria; e limite de
-      tentativas.
 - [ ] [Sobre] **Tela "Sobre" com informações gerais, em abas** (pedido de
       2026-11-25), aberta pelo menu do usuário ou pelo rodapé:
   - **Versão:** número e data da versão, novidades da versão (notas de
@@ -78,6 +71,12 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
 - [ ] [Busca] Busca do cabeçalho também em registros (empresas, pessoas,
       negócios), respeitando as permissões; na V1 ela procura só as opções
       do menu.
+- [ ] [Pedidos] **Pedidos de documentos antes da Diligência e por
+      qualquer comprador** (pedido de 2026-11-26): hoje os pedidos ficam
+      na fase de Diligência. Devem poder ser feitos bem antes, por
+      qualquer compradora do funil, inclusive sem NDA assinado, para
+      pedidos simples. A definir: o que pode ser pedido e liberado sem NDA
+      (ex.: só material público ou do teaser) e quem aprova.
 - [ ] [Documentos] Áreas restritas dentro de um negócio (ex.: notas
       internas dos assessores).
 - [ ] [Integrações] **Servidor MCP** (pedido de 2026-11-25; a arquitetura

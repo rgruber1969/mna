@@ -45,6 +45,17 @@ Todas as gratuitas, para todos os usuários:
   (NIST 800-63B); limite de tentativas ativo.
 * Mensagem de erro única no login, sem revelar se o e-mail tem conta.
 
+### Esqueci minha senha (2026-11-26)
+
+* Opção na tela de entrada: a pessoa informa o e-mail e recebe um link
+  para criar senha nova, que vale **15 minutos** e **uma vez**.
+* Só é enviado se a conta tem acesso ao endereço do pedido, e o link só
+  funciona nesse endereço; a resposta na tela é sempre a mesma.
+* No máximo um link por minuto para a mesma conta.
+* Trocar a senha encerra todas as sessões abertas, envia um aviso por
+  e-mail ("sua senha foi alterada") e registra o evento na auditoria. O
+  2FA continua exigido no próximo login.
+
 ## Segundo fator (2FA)
 
 * **Métodos:** passkey **ou** aplicativo autenticador (ex.: Google ou

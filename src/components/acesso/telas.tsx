@@ -15,7 +15,14 @@ import { FormFoto } from "@/components/conta/formulario-foto";
 import { AvisoDaEntrada } from "./aviso-da-entrada";
 import { FormAutenticador, FormSair } from "./formularios";
 import { BotoesDeLoginSocial } from "./login-social";
-import { BotaoEntrarComPasskey, FormCriarPasskey, FormPedirLink, FormUsarLink } from "./passkey-e-link";
+import {
+  BotaoEntrarComPasskey,
+  FormCriarPasskey,
+  FormEsqueciSenha,
+  FormPedirLink,
+  FormRedefinirSenha,
+  FormUsarLink,
+} from "./passkey-e-link";
 import { FormConvite, FormEntrar, FormEntrarSoComEmail, FormSegundoFator } from "./formularios";
 
 /** Telas de acesso compartilhadas pelo console e pelos tenants. */
@@ -59,6 +66,7 @@ export function TelaEntrar({
   loginSocial?: boolean;
 }) {
   const t = useTranslations("acesso.entrada");
+  const tSenha = useTranslations("acesso.senha");
   return (
     <Moldura
       destaque={Boolean(marca) || linhas}
@@ -75,6 +83,12 @@ export function TelaEntrar({
           <AvisoDaEntrada />
         </Suspense>
         <FormEntrar />
+        <details className="-mt-2 mb-2">
+          <summary className="text-primary cursor-pointer text-sm font-medium">{tSenha("esqueci")}</summary>
+          <div className="mt-4">
+            <FormEsqueciSenha />
+          </div>
+        </details>
         <div className="border-border my-6 border-t" />
         <BotaoEntrarComPasskey />
         {loginSocial && <BotoesDeLoginSocial />}
@@ -149,6 +163,26 @@ export function TelaLink({ token }: { token: Promise<string> }) {
       </Cartao>
     </Moldura>
   );
+}
+
+/** Tela do link de "Esqueci minha senha" (vale 15 min, uma vez, só neste endereço). */
+export function TelaRedefinirSenha({ token }: { token: Promise<string> }) {
+  const t = useTranslations("acesso.senha");
+  return (
+    <Moldura>
+      <Cartao>
+        <Titulo sobre={t("sobre")}>{t("titulo")}</Titulo>
+        <p className="text-muted mb-6 text-sm">{t("texto")}</p>
+        <Suspense fallback={<Carregando />}>
+          <TokenDaSenha token={token} />
+        </Suspense>
+      </Cartao>
+    </Moldura>
+  );
+}
+
+async function TokenDaSenha({ token }: { token: Promise<string> }) {
+  return <FormRedefinirSenha token={decodeURIComponent(await token)} />;
 }
 
 async function TokenDoLink({ token }: { token: Promise<string> }) {
