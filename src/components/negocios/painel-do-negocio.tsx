@@ -1,6 +1,10 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+
+import { mudarSituacaoDaTarefaAcao } from "@/app/acoes/tarefas";
+
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import { TracoDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 import { pedirAba, useAbas } from "@/components/ui/abas";
 import { Avatar } from "@/components/ui/basicos";
@@ -175,6 +179,7 @@ export function ResumoDoNegocio({
   hoje,
   dias,
   irPara,
+  aoConcluir,
 }: {
   painel: Pick<NonNullable<Painel>, "tarefas" | "resumo"> & {
     participantes?: { id: string; nome: string; foto?: string | null; perfil?: string | null }[];
@@ -183,6 +188,8 @@ export function ResumoDoNegocio({
   hoje: string;
   dias: number;
   irPara?: (aba: string) => void;
+  /** Depois de concluir a tarefa do próximo passo (sem isto, recarrega a tela). */
+  aoConcluir?: () => void;
 }) {
   const t = useTranslations("negocios.kanban");
   const ts = useTranslations("negocios.situacoes");
@@ -194,7 +201,14 @@ export function ResumoDoNegocio({
   const totalFunil = chegaram(0);
   return (
     <div className="space-y-4">
-      <ProximoPasso painel={p} cartao={c0} hoje={hoje} dias={dias} irPara={mudarAba} />
+      <ProximoPasso
+        painel={p}
+        cartao={c0}
+        hoje={hoje}
+        dias={dias}
+        irPara={mudarAba}
+        aoConcluir={aoConcluir}
+      />
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
           {p.resumo?.nomeInterno && <Campo rotulo={t("resumo.nomeInterno")}>{p.resumo.nomeInterno}</Campo>}
@@ -284,14 +298,19 @@ function ProximoPasso({
   hoje,
   dias,
   irPara,
+  aoConcluir,
 }: {
   painel: Pick<NonNullable<Painel>, "tarefas">;
   cartao: CartaoDoPainel;
   hoje: string;
   dias: number;
   irPara: (aba: string) => void;
+  aoConcluir?: () => void;
 }) {
   const t = useTranslations("negocios.kanban.painel");
+  const router = useRouter();
+  const [concluindo, iniciar] = useTransition();
+  const [erro, setErro] = useState<string | null>(null);
   const abertas = (painel.tarefas?.tarefas ?? [])
     .filter((x) => x.situacao !== "concluida" && x.situacao !== "cancelada")
     .sort((x, y) => (x.prazo ?? "9999").localeCompare(y.prazo ?? "9999"));
@@ -328,6 +347,24 @@ function ProximoPasso({
           </p>
         )}
       </div>
+      {usarTarefa && (
+        <button
+          type="button"
+          disabled={concluindo}
+          onClick={() =>
+            iniciar(async () => {
+              const r = await mudarSituacaoDaTarefaAcao(tarefa.id, "concluida");
+              if (r.erro) return setErro(r.erro);
+              setErro(null);
+              if (aoConcluir) aoConcluir();
+              else router.refresh();
+            })
+          }
+          className="bg-primary text-primary-foreground rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
+        >
+          {concluindo ? t("concluindo") : t("concluir")}
+        </button>
+      )}
       <button
         type="button"
         onClick={() => irPara(usarTarefa ? "atividade" : "etapas")}
@@ -335,6 +372,7 @@ function ProximoPasso({
       >
         {usarTarefa ? t("abrirTarefa") : t("verEtapas")}
       </button>
+      {erro && <p className="text-danger w-full text-xs">{erro}</p>}
     </div>
   );
 }
@@ -545,7 +583,14 @@ export function PainelDoNegocio({
             </div>
             <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
               {aba === "resumo" && (
-                <ResumoDoNegocio painel={p} cartao={c0} hoje={hoje} dias={dias} irPara={mudarAba} />
+                <ResumoDoNegocio
+                  painel={p}
+                  cartao={c0}
+                  hoje={hoje}
+                  dias={dias}
+                  irPara={mudarAba}
+                  aoConcluir={() => recarregar("resumo")}
+                />
               )}
               {aba === "etapas" && p.etapas && (
                 <EtapasDoNegocio

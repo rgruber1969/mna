@@ -448,6 +448,8 @@
         "vence": "vence {data}",
         "semData": "sem prazo",
         "abrirTarefa": "Abrir tarefa",
+        "concluir": "Concluir",
+        "concluindo": "Concluindo…",
         "verEtapas": "Ver etapas",
         "fimDaEtapa": "Fim da etapa {etapa}",
         "responsaveis": "Responsáveis: {nomes}",

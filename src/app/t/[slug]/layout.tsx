@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import type { Metadata } from "next";
+import { produto } from "@/config/produto";
 import { marcaPorSlug } from "@/server/services/marca";
 
 /**
@@ -18,6 +20,12 @@ async function TemaDoTenant({ slug }: { slug: Promise<string> }) {
       {marca.icone && <link rel="icon" href={marca.icone} type="image/png" />}
     </>
   );
+}
+
+/** Título da aba do navegador com o nome de exibição do tenant (white label). */
+export async function generateMetadata({ params }: LayoutProps<"/t/[slug]">): Promise<Metadata> {
+  const marca = await marcaPorSlug((await params).slug);
+  return marca ? { title: `${marca.nome} · ${produto.nome}` } : {};
 }
 
 export default function Layout({ children, params }: LayoutProps<"/t/[slug]">) {

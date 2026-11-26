@@ -69,6 +69,7 @@
   --text: #e6e9f0;
   --text-muted: #aeb7c8;
   --border: #4a5a7a;
+  --border-campo: #6b7d9e; /* campos: 3,4:1 sobre o cartão */
   --danger: #fb7185;
   --success: #4ade80;
   --warning: #facc15;
@@ -264,4 +265,14 @@ input[type="file"]::file-selector-button:hover {
   ::view-transition-new(*) {
     animation-duration: 120ms !important;
   }
+}
+
+/*
+ * Bordas dos campos no tema escuro com contraste de 3:1 sobre o fundo dos
+ * cartões (WCAG 1.4.11, item do backlog de 2026-11-23): os campos usam a
+ * classe de borda comum; aqui, só no escuro, ela fica mais clara nos campos.
+ * Token --border-campo (3,4:1 sobre o cartão). As demais bordas não mudam.
+ */
+:root[data-tema="escuro"] :is(input:not([type="checkbox"], [type="radio"]), select, textarea).border-border {
+  border-color: var(--border-campo);
 }

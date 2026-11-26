@@ -3,6 +3,10 @@
 Checklist do que ficou fora da versão 1. Todo item declarado "fora da
 versão 1" é anotado aqui.
 
+Feitos em 2026-11-26 e retirados daqui: "Esqueci minha senha", tela
+"Sobre", título da aba com o nome do tenant, "Concluir" no "Próximo
+passo" e bordas dos campos com 3:1 no tema escuro.
+
 Classificação do responsável (2026-11-25): **V2** entra na próxima
 versão; **V3** fica para depois (os itens que estavam em dúvida, V?,
 foram classificados em 2026-11-25). Dentro de cada grupo, os itens estão em ordem de esforço
@@ -13,17 +17,11 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
 
 ### Esforço P
 
-- [ ] [White label] Título da aba do navegador com o nome de exibição do
-      tenant (na V1 só o ícone da aba muda).
 - [ ] [Antivírus] Foto da conta pelo fluxo de antivírus (ADR-0016). Hoje o
       servidor recusa o que não é imagem real e grava uma imagem nova, sem
       guardar o original.
 - [ ] [Antivírus] Imagens da marca do tenant (logos) pelo fluxo de
       antivírus (ADR-0016).
-- [ ] [Layout] "Concluir" direto no "Próximo passo" (hoje o botão abre a
-      tarefa na aba Atividade).
-- [ ] [Layout] Bordas dos campos no tema escuro com contraste de 3:1 sobre
-      o fundo dos cartões (hoje mais visíveis, mas ainda abaixo disso).
 - [ ] [Acesso] Login com Google e Microsoft (item 3 da V1, simulado na
       demonstração): contas OAuth nos consoles do Google e da Microsoft,
       só para e-mails já convidados (cadastro continua só por convite).
