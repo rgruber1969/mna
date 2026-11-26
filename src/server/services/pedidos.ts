@@ -34,15 +34,20 @@ import {
   pedidoItem,
   pedidoItemDocumento,
   pedidoRodada,
+  perfil,
   pessoa,
   tenant,
   usuario,
+  categoriaDocumento,
+  documentoVersao,
+  versaoAcesso,
 } from "@/server/db/esquema";
 import { exigirTenant, type Acesso, type AcessoTenant } from "./acesso";
 import { dataRoomDoNegocio } from "./documentos";
 import { auditar } from "./empresas";
 import { hojeEmSaoPaulo } from "./negocios-andamento";
 import {
+  compradoraDaEmpresa,
   empresasDoNegocio,
   ladoDaParticipacao,
   negocioFechado,
@@ -351,7 +356,7 @@ export type ItemNaTela = {
   fonteId: string | null;
   situacoes: Record<string, SituacaoDoItem>;
   situacao: SituacaoDoItem;
-  documentos: { id: string; titulo: string }[];
+  documentos: { id: string; titulo: string; aguardandoAprovacao?: boolean }[];
 };
 
 export type PedidoDetalhe = {
@@ -383,6 +388,8 @@ export type PedidoDetalhe = {
   podeExcluir: boolean;
   podeBaixar: boolean;
   vendedor: boolean;
+  /** Coordenador do negócio (ou administrador): aprova envio a compradora sem NDA. */
+  podeAprovarSemNda: boolean;
 };
 
 export async function obterPedido(acesso: Acesso | null, pedidoId: string): Promise<PedidoDetalhe | null> {
@@ -409,7 +416,11 @@ export async function obterPedido(acesso: Acesso | null, pedidoId: string): Prom
       ),
       comTenant(a.tenant.id, (tx) =>
         tx
-          .select({ itemId: pedidoItemDocumento.itemId, documentoId: pedidoItemDocumento.documentoId })
+          .select({
+            itemId: pedidoItemDocumento.itemId,
+            documentoId: pedidoItemDocumento.documentoId,
+            aguardandoAprovacao: pedidoItemDocumento.aguardandoAprovacao,
+          })
           .from(pedidoItemDocumento)
           .innerJoin(pedidoItem, eq(pedidoItem.id, pedidoItemDocumento.itemId))
           .where(eq(pedidoItem.pedidoId, p.id)),
@@ -452,7 +463,8 @@ export async function obterPedido(acesso: Acesso | null, pedidoId: string): Prom
     ]);
   const visiveis = new Map((dataRoom?.documentos ?? []).map((d) => [d.id, d.titulo]));
   const docsDoItem = Map.groupBy(
-    ligacoes.filter((l) => visiveis.has(l.documentoId)),
+    // O lado comprador não vê o envio que ainda espera o Coordenador.
+    ligacoes.filter((l) => visiveis.has(l.documentoId) && (ctx.vendedor || !l.aguardandoAprovacao)),
     (l) => l.itemId,
   );
   const hoje = hojeEmSaoPaulo();
@@ -488,6 +500,7 @@ export async function obterPedido(acesso: Acesso | null, pedidoId: string): Prom
     documentos: (docsDoItem.get(i.id) ?? []).map((d) => ({
       id: d.documentoId,
       titulo: visiveis.get(d.documentoId)!,
+      aguardandoAprovacao: d.aguardandoAprovacao,
     })),
   }));
   return {
@@ -517,6 +530,7 @@ export async function obterPedido(acesso: Acesso | null, pedidoId: string): Prom
     podeExcluir: ctx.pode("excluir"),
     podeBaixar: ctx.pode("baixar"),
     vendedor: ctx.vendedor,
+    podeAprovarSemNda: ctx.vendedor && !ctx.fechado && (await eCoordenador(a, p.dealId)),
   };
 }
 
@@ -916,11 +930,17 @@ export async function ligarDocumentoAoItem(
   const dr = await dataRoomDoNegocio(a, v.p.dealId).catch(() => null);
   const doc = dr?.documentos.find((d) => d.id === documentoId);
   if (!doc) return { erro: "pedidos.erros.documentoInvalido" };
+  // Compradora sem NDA: só categorias "pode ir sem NDA", e o envio espera o Coordenador.
+  let aguardandoAprovacao = false;
+  if (ligar && v.p.compradoraId && !(await compradoraPassouDoNda(a, v.p.dealId, v.p.compradoraId))) {
+    if (!(await categoriaPodeIrSemNda(a, documentoId))) return { erro: "pedidos.erros.categoriaSemNda" };
+    aguardandoAprovacao = true;
+  }
   await comTenant(a.tenant.id, (tx) =>
     ligar
       ? tx
           .insert(pedidoItemDocumento)
-          .values({ tenantId: a.tenant.id, itemId, documentoId })
+          .values({ tenantId: a.tenant.id, itemId, documentoId, aguardandoAprovacao })
           .onConflictDoNothing()
       : tx
           .delete(pedidoItemDocumento)
@@ -930,7 +950,11 @@ export async function ligarDocumentoAoItem(
   );
   await auditar(
     a,
-    ligar ? "negocio.pedido_documento_ligado" : "negocio.pedido_documento_desligado",
+    aguardandoAprovacao
+      ? "negocio.pedido_documento_aguardando_aprovacao"
+      : ligar
+        ? "negocio.pedido_documento_ligado"
+        : "negocio.pedido_documento_desligado",
     "deal",
     v.p.dealId,
     {
@@ -939,6 +963,127 @@ export async function ligarDocumentoAoItem(
       documento: doc.titulo,
     },
   );
+  return { ok: true };
+}
+
+// --- Envio a compradora sem NDA (pedido de 2026-11-26) ---------------------------------------
+
+const DEPOIS_DO_NDA = new Set(["nda", "proposta", "escolhida"]);
+
+async function compradoraPassouDoNda(a: AcessoTenant, dealId: string, compradoraId: string) {
+  const empresas = await empresasDoNegocio(a, dealId);
+  return empresas.some((e) => e.empresaId === compradoraId && DEPOIS_DO_NDA.has(e.situacaoFunil ?? ""));
+}
+
+async function categoriaPodeIrSemNda(a: AcessoTenant, documentoId: string) {
+  const [c] = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .select({ semNda: categoriaDocumento.semNda })
+      .from(documento)
+      .innerJoin(categoriaDocumento, eq(categoriaDocumento.id, documento.categoriaId))
+      .where(eq(documento.id, documentoId)),
+  );
+  return Boolean(c?.semNda);
+}
+
+/** Coordenador do negócio (perfil padrão "coordenador-deal") ou administrador do tenant. */
+async function eCoordenador(a: AcessoTenant, dealId: string) {
+  if (a.administrador) return true;
+  const [c] = await comTenant(a.tenant.id, (tx) =>
+    tx
+      .select({ id: participacaoDeal.id })
+      .from(participacaoDeal)
+      .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
+      .innerJoin(perfil, eq(perfil.id, participacaoDeal.perfilId))
+      .where(
+        and(
+          eq(participacaoDeal.dealId, dealId),
+          eq(pessoa.usuarioId, a.usuario.id),
+          eq(perfil.padrao, "coordenador-deal"),
+        ),
+      )
+      .limit(1),
+  );
+  return Boolean(c);
+}
+
+/**
+ * O Coordenador aprova o envio de um documento a compradora sem NDA: a
+ * ligação fica visível ao lado comprador e as pessoas daquela compradora
+ * passam a ver a versão atual do documento no data room. Auditado.
+ */
+export async function aprovarEnvioSemNda(
+  acesso: Acesso | null,
+  itemId: string,
+  documentoId: string,
+): Promise<Resultado> {
+  const a = exigirTenant(acesso);
+  const v = await itemVisivel(a, itemId);
+  if (!v || !uuidValido(documentoId)) return { erro: "pedidos.erros.naoEncontrado" };
+  if (v.ctx.fechado) return { erro: "negocios.erros.fechado" };
+  if (!v.ctx.vendedor || !(await eCoordenador(a, v.p.dealId))) return { erro: "pedidos.erros.soCoordenador" };
+  const compradoraId = v.p.compradoraId;
+  const empresas = await empresasDoNegocio(a, v.p.dealId);
+  const aprovado = await comTenant(a.tenant.id, async (tx) => {
+    const r = await tx
+      .update(pedidoItemDocumento)
+      .set({ aguardandoAprovacao: false, aprovadoPor: a.usuario.id, aprovadoEm: new Date() })
+      .where(
+        and(
+          eq(pedidoItemDocumento.itemId, itemId),
+          eq(pedidoItemDocumento.documentoId, documentoId),
+          eq(pedidoItemDocumento.aguardandoAprovacao, true),
+        ),
+      )
+      .returning({ id: pedidoItemDocumento.id });
+    if (!r.length) return false;
+    const [atual] = await tx
+      .select({ id: documentoVersao.id })
+      .from(documentoVersao)
+      .where(eq(documentoVersao.documentoId, documentoId))
+      .orderBy(sql`${documentoVersao.numero} desc`)
+      .limit(1);
+    if (atual && compradoraId) {
+      const participantes = await tx
+        .select({
+          usuarioId: pessoa.usuarioId,
+          empresaId: participacaoDeal.empresaId,
+          lado: participacaoDeal.lado,
+        })
+        .from(participacaoDeal)
+        .innerJoin(pessoa, eq(pessoa.id, participacaoDeal.pessoaId))
+        .where(and(eq(participacaoDeal.dealId, v.p.dealId), sql`${pessoa.usuarioId} is not null`));
+      const usuarios = new Set(
+        participantes
+          .filter(
+            (p) =>
+              p.usuarioId &&
+              ladoDaParticipacao(empresas, p) === "comprador" &&
+              compradoraDaEmpresa(empresas, p.empresaId) === compradoraId,
+          )
+          .map((p) => p.usuarioId!),
+      );
+      const ja = new Set(
+        (
+          await tx
+            .select({ usuarioId: versaoAcesso.usuarioId })
+            .from(versaoAcesso)
+            .where(eq(versaoAcesso.versaoId, atual.id))
+        ).map((x) => x.usuarioId),
+      );
+      const novos = [...usuarios].filter((u) => !ja.has(u));
+      if (novos.length)
+        await tx
+          .insert(versaoAcesso)
+          .values(novos.map((usuarioId) => ({ tenantId: a.tenant.id, versaoId: atual.id, usuarioId })));
+    }
+    return true;
+  });
+  if (!aprovado) return { erro: "pedidos.erros.naoEncontrado" };
+  await auditar(a, "negocio.pedido_documento_aprovado_sem_nda", "deal", v.p.dealId, {
+    titulo: v.p.titulo,
+    codigo: v.i.codigo ?? "",
+  });
   return { ok: true };
 }
 

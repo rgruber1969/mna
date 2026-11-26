@@ -243,8 +243,11 @@ function LinhaTipo({
   podeExcluir,
   rotuloNovo,
   semPercentual = false,
+  rotuloMarca,
 }: {
   semPercentual?: boolean;
+  /** Rótulo da caixa de marcar (padrão: "Pede percentual"). */
+  rotuloMarca?: string;
   tipo?: Tipo;
   salvar: Acao;
   excluir: Acao;
@@ -282,7 +285,7 @@ function LinhaTipo({
               value="sim"
               defaultChecked={tipo?.comPercentual}
               disabled={!editavel}
-              aria-label={t("pedePercentual")}
+              aria-label={rotuloMarca ?? t("pedePercentual")}
             />
           </td>
         )}
@@ -333,7 +336,9 @@ export function TabelaDeTipos({
         : [salvarCategoriaAcao, excluirCategoriaAcao];
   const novo =
     qual === "vinculo" ? t("novoVinculo") : qual === "operacao" ? t("novaOperacao") : t("novaCategoria");
-  const semPercentual = qual === "categoria";
+  // Nas categorias, a caixa de marcar é "Pode ir sem NDA" (pedidos de documentos, 2026-11-26).
+  const semPercentual = false;
+  const rotuloMarca = qual === "categoria" ? t("podeIrSemNda") : t("pedePercentual");
   return (
     <div>
       <p className="text-muted mb-3 text-sm">
@@ -347,7 +352,7 @@ export function TabelaDeTipos({
         colunas={
           semPercentual
             ? [t("nome"), t("emUso"), t("acoes")]
-            : [t("nome"), t("pedePercentual"), t("emUso"), t("acoes")]
+            : [t("nome"), rotuloMarca, t("emUso"), t("acoes")]
         }
       >
         {tipos.map((x) => (
@@ -360,6 +365,7 @@ export function TabelaDeTipos({
             podeExcluir={podeExcluir}
             rotuloNovo={novo}
             semPercentual={semPercentual}
+            rotuloMarca={rotuloMarca}
           />
         ))}
         {podeCriar && (
@@ -370,6 +376,7 @@ export function TabelaDeTipos({
             podeExcluir={false}
             rotuloNovo={novo}
             semPercentual={semPercentual}
+            rotuloMarca={rotuloMarca}
           />
         )}
       </Tabela>

@@ -68,6 +68,8 @@ export async function salvarCategoriaAcao(_: Estado, f: FormData): Promise<Estad
   const r = await salvarCategoria(await acesso(), {
     id: texto(f, "id") || undefined,
     nome: texto(f, "nome"),
+    // A tabela de cadastros auxiliares usa a mesma caixa de marcar dos tipos (nome "comPercentual").
+    semNda: texto(f, "comPercentual") === "sim",
   });
   return "erro" in r ? { erro: await traduzirErro(r) } : { ok: t("categoriaSalva") };
 }

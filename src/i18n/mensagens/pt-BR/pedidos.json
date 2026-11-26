@@ -138,7 +138,9 @@
       "salvando": "Salvando…",
       "excluir": "Excluir item",
       "confirmarExcluir": "Excluir este item do pedido?",
-      "conversa": "Conversa"
+      "conversa": "Conversa",
+      "aguardandoAprovacao": "Aguardando aprovação do Coordenador (compradora sem NDA)",
+      "aprovarEnvio": "Aprovar envio"
     },
     "painel": {
       "assunto": "Assunto",
@@ -276,7 +278,9 @@
       "planilhaSemItens": "Nenhum item novo encontrado na planilha.",
       "origemInvalida": "Pedido anterior inválido.",
       "linkInvalido": "Link inválido (use http ou https).",
-      "prioridades": "Informe de 2 a 10 prioridades."
+      "prioridades": "Informe de 2 a 10 prioridades.",
+      "categoriaSemNda": "Esta compradora ainda não assinou o NDA: só documentos de categorias marcadas como \"Pode ir sem NDA\" (Configurações › Categorias de documentos).",
+      "soCoordenador": "Só o Coordenador do negócio (ou um administrador) aprova o envio a compradora sem NDA."
     }
   }
 }

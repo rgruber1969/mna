@@ -172,7 +172,7 @@ async function Painel({ aba }: { aba: Promise<string | undefined> }) {
                 )}
                 <PainelDeAba id="categorias">
                   <TabelaDeTipos
-                    tipos={categorias.map((c) => ({ ...c, comPercentual: false }))}
+                    tipos={categorias.map((c) => ({ ...c, comPercentual: c.semNda }))}
                     qual="categoria"
                     {...permissoes}
                   />

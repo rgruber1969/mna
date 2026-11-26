@@ -1006,6 +1006,8 @@ export const categoriaDocumento = pgTable(
     tenantId: doTenant(),
     nome: text("nome").notNull(),
     padrao: text("padrao"),
+    /** Pode ir a compradora que ainda não assinou o NDA, em pedidos de documentos (2026-11-26). */
+    semNda: boolean("sem_nda").notNull().default(false),
     criadoEm: criadoEm(),
   },
   (t) => [uniqueIndex("categoria_documento_nome_uq").on(t.tenantId, t.nome), isolamento()],
@@ -1658,6 +1660,10 @@ export const pedidoItemDocumento = pgTable(
     documentoId: uuid("documento_id")
       .notNull()
       .references(() => documento.id, { onDelete: "cascade" }),
+    /** Envio a compradora sem NDA aguardando o Coordenador do negócio (null = liberado). */
+    aguardandoAprovacao: boolean("aguardando_aprovacao").notNull().default(false),
+    aprovadoPor: uuid("aprovado_por").references(() => usuario.id, { onDelete: "set null" }),
+    aprovadoEm: timestamp("aprovado_em", { withTimezone: true }),
     criadoEm: criadoEm(),
   },
   (t) => [uniqueIndex("pedido_item_documento_uq").on(t.tenantId, t.itemId, t.documentoId), isolamento()],

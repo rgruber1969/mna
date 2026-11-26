@@ -16,6 +16,7 @@ import {
   excluirPedido,
   exportarPedido,
   importarPlanilhaDoPedido,
+  aprovarEnvioSemNda,
   ligarDocumentoAoItem,
   salvarFonte,
   salvarItem,
@@ -86,6 +87,11 @@ export async function ligarDocumentoAcao(
   ligar: boolean,
 ): Promise<Resposta> {
   const r = await ligarDocumentoAoItem(await acesso(), itemId, documentoId, ligar);
+  return "erro" in r ? erro(r) : {};
+}
+
+export async function aprovarEnvioSemNdaAcao(itemId: string, documentoId: string): Promise<Resposta> {
+  const r = await aprovarEnvioSemNda(await acesso(), itemId, documentoId);
   return "erro" in r ? erro(r) : {};
 }
 

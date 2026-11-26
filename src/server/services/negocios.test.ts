@@ -1954,6 +1954,54 @@ describe("pedidos de documentos", () => {
   });
 });
 
+describe("pedidos: compradora sem NDA (2026-11-26)", () => {
+  it("só categorias liberadas, envio espera o Coordenador e a aprovação dá acesso ao documento", async () => {
+    const { aprovarEnvioSemNda, criarPedido, ligarDocumentoAoItem, obterPedido, salvarItem } =
+      await import("./pedidos");
+    const g = acesso("gestor", true);
+    await dono.query(
+      `update deal_empresa set situacao_funil = 'teaser' where deal_id = $1 and empresa_id = $2`,
+      [negocioId, compradoraB],
+    );
+    const p = await criarPedido(g, negocioId, {
+      titulo: "Pedido inicial",
+      data: "2026-11-26",
+      compradoraId: compradoraB,
+    });
+    if (!("id" in p)) throw new Error(p.erro);
+    const d0 = await obterPedido(g, p.id);
+    const item = await salvarItem(g, p.id, null, {
+      rodadaId: d0!.rodadas[0].id,
+      assunto: "Geral",
+      codigo: "1.1",
+      descricao: "Apresentação institucional",
+      dataPedido: "2026-11-26",
+    });
+    if (!("id" in item)) throw new Error(item.erro);
+    const doc = (await dataRoomDoNegocio(g, negocioId))!.documentos[0];
+    // Categoria comum: recusado para compradora sem NDA.
+    await dono.query(`update documento set categoria_id = null where id = $1`, [doc.id]);
+    expect(await ligarDocumentoAoItem(g, item.id, doc.id, true)).toEqual({
+      erro: "pedidos.erros.categoriaSemNda",
+    });
+    // Categoria "pode ir sem NDA": ligado, mas aguardando o Coordenador; a compradora ainda não vê.
+    const cat = await dono.query<{ id: string }>(
+      `insert into categoria_documento (tenant_id, nome, sem_nda) values ($1, $2, true) returning id`,
+      [tenantId, `Pública ${sufixo}`],
+    );
+    await dono.query(`update documento set categoria_id = $1 where id = $2`, [cat.rows[0].id, doc.id]);
+    expect(await ligarDocumentoAoItem(g, item.id, doc.id, true)).toEqual({ ok: true });
+    expect((await obterPedido(g, p.id))!.itens[0].documentos[0]).toMatchObject({ aguardandoAprovacao: true });
+    expect((await obterPedido(acesso("compb2"), p.id))!.itens[0].documentos).toEqual([]);
+    // Quem não é Coordenador nem administrador não aprova.
+    expect(await aprovarEnvioSemNda(acesso("compb2"), item.id, doc.id)).toHaveProperty("erro");
+    expect(await aprovarEnvioSemNda(g, item.id, doc.id)).toEqual({ ok: true });
+    expect((await obterPedido(acesso("compb2"), p.id))!.itens[0].documentos.map((x) => x.id)).toEqual([
+      doc.id,
+    ]);
+  });
+});
+
 describe("templates DOCX (item 13, simulado)", () => {
   it("gera o DOCX de exemplo com os campos do negócio e do contrato que a pessoa vê, auditado", async () => {
     const { gerarDocumentoDoTemplate, telaDeTemplates } = await import("./templates");

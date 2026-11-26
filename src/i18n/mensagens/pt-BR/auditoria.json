@@ -61,6 +61,8 @@
       "conta_foto_bloqueada": "Foto da conta bloqueada pelo antivírus",
       "documentos_busca": "Busca de documentos",
       "sessao_entrada": "Entrada no sistema",
+      "negocio_pedido_documento_aguardando_aprovacao": "Documento ligado a pedido de compradora sem NDA (aguardando o Coordenador)",
+      "negocio_pedido_documento_aprovado_sem_nda": "Envio a compradora sem NDA aprovado pelo Coordenador",
       "senha_redefinida": "Senha redefinida pelo link de \"Esqueci minha senha\"",
       "acesso_negado": "Acesso negado",
       "chave_api_criada": "Chave de API criada",

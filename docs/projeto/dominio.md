@@ -988,6 +988,15 @@ Aba **Pedidos** no negócio, sem recortes da proposta acima:
   documentos comuns, links oficiais a conferir de vez em quando).
 * API: `/v1/negocios/{id}/pedidos`, `/v1/pedidos/{id}`, inclusão de item e
   mudança de situação.
+* **Antes da Diligência e sem NDA (2026-11-26):** pedidos podem ser feitos
+  em qualquer etapa, por qualquer compradora do negócio. Enquanto a
+  compradora não assinou o NDA (situação no funil antes de "NDA"), só
+  documentos de **categorias marcadas "Pode ir sem NDA"** (Configurações ›
+  Categorias de documentos) podem ser ligados aos itens do pedido dela, e
+  cada ligação fica **aguardando o Coordenador do negócio** (ou um
+  administrador). Antes da aprovação, o lado comprador não vê a ligação; ao
+  aprovar, as pessoas daquela compradora passam a ver a versão atual do
+  documento no data room. Ligar e aprovar ficam na auditoria.
 
 ## Pendências de domínio
 

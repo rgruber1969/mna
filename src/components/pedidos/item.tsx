@@ -4,7 +4,12 @@ import { hojeNoBrasil } from "@/config/prazos";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { excluirItemAcao, ligarDocumentoAcao, salvarItemAcao } from "@/app/acoes/pedidos";
+import {
+  excluirItemAcao,
+  ligarDocumentoAcao,
+  aprovarEnvioSemNdaAcao,
+  salvarItemAcao,
+} from "@/app/acoes/pedidos";
 import {
   ASSUNTOS_PADRAO,
   SEM_PERIODO,
@@ -92,6 +97,12 @@ export function JanelaDoItem({
   async function ligar(documentoId: string, sim: boolean) {
     if (!item || !documentoId) return;
     const r = await ligarDocumentoAcao(item.id, documentoId, sim);
+    if (r.erro) return setErro({ texto: r.erro });
+    router.refresh();
+  }
+  async function aprovar(documentoId: string) {
+    if (!item) return;
+    const r = await aprovarEnvioSemNdaAcao(item.id, documentoId);
     if (r.erro) return setErro({ texto: r.erro });
     router.refresh();
   }
@@ -311,9 +322,23 @@ export function JanelaDoItem({
                 <ul className="divide-border divide-y text-sm">
                   {item.documentos.map((doc) => (
                     <li key={doc.id} className="flex items-center justify-between gap-2 py-1.5">
-                      <a href="?aba=documentos" className="text-primary min-w-0 truncate hover:underline">
-                        {doc.titulo}
-                      </a>
+                      <span className="min-w-0">
+                        <a href="?aba=documentos" className="text-primary block truncate hover:underline">
+                          {doc.titulo}
+                        </a>
+                        {doc.aguardandoAprovacao && (
+                          <span className="text-warning block text-xs">{t("aguardandoAprovacao")}</span>
+                        )}
+                      </span>
+                      {doc.aguardandoAprovacao && d.podeAprovarSemNda && (
+                        <button
+                          type="button"
+                          onClick={() => aprovar(doc.id)}
+                          className="text-primary shrink-0 text-xs font-semibold"
+                        >
+                          {t("aprovarEnvio")}
+                        </button>
+                      )}
                       {d.podeEditar && (
                         <button
                           type="button"

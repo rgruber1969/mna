@@ -18,11 +18,9 @@ sem esperar comando. Se um item depender de resposta do responsável,
 fazer o máximo possível, anotar a dúvida em "Dúvidas pendentes" abaixo e
 seguir para o próximo.
 
-1. **Pedidos antes da Diligência, por qualquer compradora.** Decisões:
-   sem NDA assinado, a compradora só recebe documentos de **categorias
-   marcadas nas Configurações como "pode ir sem NDA"**; liberar para
-   compradora sem NDA exige **aprovação do Coordenador do negócio**, com
-   auditoria.
+1. ~~Pedidos antes da Diligência, por qualquer compradora~~ — **feito em
+   2026-11-26** (categoria "Pode ir sem NDA" + aprovação do Coordenador;
+   regra em `dominio.md`, "Pedidos de documentos").
 2. **Grade de 8 em todas as telas** (espaçamentos 8/16/24; trocar 6 e 12
    px restantes).
 3. **Kanban de tarefas gerais** (fora de negócio): A fazer → Em andamento
@@ -83,12 +81,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
 - [ ] [Busca] Busca do cabeçalho também em registros (empresas, pessoas,
       negócios), respeitando as permissões; na V1 ela procura só as opções
       do menu.
-- [ ] [Pedidos] **Pedidos de documentos antes da Diligência e por
-      qualquer comprador** (pedido de 2026-11-26): hoje os pedidos ficam
-      na fase de Diligência. Devem poder ser feitos bem antes, por
-      qualquer compradora do funil, inclusive sem NDA assinado, para
-      pedidos simples. A definir: o que pode ser pedido e liberado sem NDA
-      (ex.: só material público ou do teaser) e quem aprova.
 - [ ] [Documentos] Áreas restritas dentro de um negócio (ex.: notas
       internas dos assessores).
 - [ ] [Autenticação] **Confirmar operações sensíveis com rosto, digital

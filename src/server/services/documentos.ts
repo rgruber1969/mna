@@ -109,14 +109,14 @@ export const CATEGORIAS_PADRAO = [
   ["onepager_completo", "OnePager completo"],
 ] as const;
 
-export type Categoria = { id: string; nome: string; emUso: number };
+export type Categoria = { id: string; nome: string; emUso: number; semNda: boolean };
 
 export async function listarCategorias(acesso: Acesso | null): Promise<Categoria[]> {
   const recurso = (await pode(acesso, "cadastros", "ver")) ? "cadastros" : "deals";
   const a = await exigirPermissao(acesso, recurso, "ver");
   return comTenant(a.tenant.id, async (tx) => {
     const cats = await tx
-      .select({ id: categoriaDocumento.id, nome: categoriaDocumento.nome })
+      .select({ id: categoriaDocumento.id, nome: categoriaDocumento.nome, semNda: categoriaDocumento.semNda })
       .from(categoriaDocumento)
       .orderBy(asc(categoriaDocumento.nome));
     const uso = await tx
@@ -130,21 +130,22 @@ export async function listarCategorias(acesso: Acesso | null): Promise<Categoria
 
 export async function salvarCategoria(
   acesso: Acesso | null,
-  dados: { id?: string; nome: string },
+  dados: { id?: string; nome: string; semNda?: boolean },
 ): Promise<Resultado> {
   const a = await exigirPermissao(acesso, "cadastros", dados.id ? "editar" : "criar");
+  const semNda = Boolean(dados.semNda);
   const nome = dados.nome.trim();
   if (nome.length < 2 || nome.length > 120) return { erro: "documentos.erros.nomeCategoria" };
   const r = await comTenant(a.tenant.id, (tx) =>
     dados.id && uuidValido(dados.id)
       ? tx
           .update(categoriaDocumento)
-          .set({ nome })
+          .set({ nome, semNda })
           .where(eq(categoriaDocumento.id, dados.id))
           .returning({ id: categoriaDocumento.id })
       : tx
           .insert(categoriaDocumento)
-          .values({ tenantId: a.tenant.id, nome })
+          .values({ tenantId: a.tenant.id, nome, semNda })
           .returning({ id: categoriaDocumento.id }),
   ).catch(() => "duplicada" as const);
   if (r === "duplicada") return { erro: "documentos.erros.categoriaJaExiste" };
@@ -154,7 +155,7 @@ export async function salvarCategoria(
     dados.id ? "categoria_documento.editada" : "categoria_documento.criada",
     "tenant",
     a.tenant.id,
-    { nome },
+    { nome, semNda },
   );
   return { ok: true };
 }
