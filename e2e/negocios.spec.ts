@@ -299,9 +299,9 @@ test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
   await page.getByRole("button", { name: "Registrar oferta" }).first().click();
   const gaveta = page.getByRole("dialog");
   await gaveta.getByLabel("Instrumento").selectOption("loi");
-  await page.getByLabel("Parcela à vista, R$").fill("10.000.000");
+  await page.getByLabel("Parcela à vista, R$").fill("10.000.000,00");
   await page.getByRole("button", { name: "+ Parcela" }).click();
-  await page.getByLabel("Parcela 1: Valor, R$").fill("5.000.000");
+  await page.getByLabel("Parcela 1: Valor, R$").fill("5.000.000,00");
   await page.getByLabel("Parcela 1: Vence em").selectOption("data");
   await page.getByLabel("Parcela 1: Vencimento").fill("2027-12-31");
   await page.getByRole("button", { name: "Salvar" }).click();
@@ -310,7 +310,7 @@ test("ofertas: registra, contraproposta e comparação", async ({ page }) => {
   // Contraproposta (rodada 2): a comparação aparece com duas ofertas.
   await gaveta.getByRole("button", { name: "Registrar oferta" }).click();
   await page.getByLabel("Contraproposta de (oferta anterior)").selectOption({ index: 1 });
-  await page.getByLabel("Parcela à vista, R$").fill("16.000.000");
+  await page.getByLabel("Parcela à vista, R$").fill("16.000.000,00");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Rodada 2").first()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "Comparação" })).toBeVisible();

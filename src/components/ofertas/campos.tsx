@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { lerNumero, vencimento } from "@/config/ofertas";
+import { CampoDeValor } from "@/components/ui/campo-de-valor";
 
 const campo = "border-border bg-background text-text w-full rounded-md border px-3 py-2 text-sm";
 const br = (d: string) => d.split("-").reverse().join("/");
@@ -52,13 +53,11 @@ export function EditorDeParcelas({
           <div key={i} className="mb-2 flex flex-wrap items-end gap-2">
             <label className="w-40">
               <span className="text-muted block text-xs">{t("parcela", { n: i + 1 })}</span>
-              <input
-                inputMode="decimal"
-                value={p.valor}
+              <CampoDeValor
+                valor={p.valor}
                 disabled={somenteLeitura}
                 aria-label={`${t("parcela", { n: i + 1 })}: ${t("valor")}`}
-                onChange={(e) => trocar(i, { valor: e.target.value })}
-                className={campo}
+                mudar={(x) => trocar(i, { valor: x })}
               />
             </label>
             <label className="w-44">

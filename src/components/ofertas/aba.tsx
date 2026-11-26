@@ -15,6 +15,7 @@ import {
 } from "@/app/acoes/ofertas";
 import { lerNumero, ratear, totalNominal, valorPresente } from "@/config/ofertas";
 import { Abas, PainelDeAba, useAbas } from "@/components/ui/abas";
+import { CampoDeValor } from "@/components/ui/campo-de-valor";
 import {
   EditorDeParcelas,
   EditorDeRateio,
@@ -193,12 +194,7 @@ function FormOferta({
   const valor = (k: keyof Valores) => (
     <label key={k}>
       <span className={rotulo}>{t(k as never)}</span>
-      <input
-        inputMode="decimal"
-        value={v[k] as string}
-        onChange={(e) => mudar(k, e.target.value as never)}
-        className={campo}
-      />
+      <CampoDeValor valor={v[k] as string} mudar={(x) => mudar(k, x as never)} />
     </label>
   );
   const comRateio = opcoes.vendedoras.length > 1;

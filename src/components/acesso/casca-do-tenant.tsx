@@ -17,6 +17,7 @@ import { BarraDeNavegacao } from "@/components/ui/barra-de-navegacao";
 import { PilulaDeslizante, useIndicadorDeslizante } from "@/components/ui/indicador";
 import { Avatar, LogoDoTenant } from "@/components/ui/basicos";
 import { FormSair } from "./formularios";
+import { OUTRAS_APLICACOES } from "@/config/aplicacoes";
 import { aplicarMenuInvertido, aplicarTema, resolverTema, type PreferenciaDeTema } from "./tema";
 
 type Item = { id: string; href: string; icone: string; tambem?: string[] };
@@ -141,6 +142,15 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M12 11v5M12 8h.01" />
     </>
   ),
+  grade: (
+    <>
+      <rect x="4" y="4" width="6" height="6" rx="1" />
+      <rect x="14" y="4" width="6" height="6" rx="1" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <rect x="14" y="14" width="6" height="6" rx="1" />
+    </>
+  ),
+  externo: <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />,
 };
 
 function Icone({ nome, className = "h-5 w-5" }: { nome: string; className?: string }) {
@@ -342,6 +352,77 @@ function BuscaNoMenu({ itens }: { itens: { item: Item; rotulo: string }[] }) {
 // --- Mensagens ---------------------------------------------------------------------
 
 /** Ícone de mensagens no topo (item 16): não lidas dos últimos 30 dias, sem travar a página. */
+// --- Lançador de módulos ---------------------------------------------------------------
+
+/**
+ * Lançador de módulos (ícone de grade de quadrados, item do backlog V3
+ * antecipado em 2026-11-26): atalhos para os módulos que a pessoa pode ver
+ * (os mesmos itens do menu lateral) e para outras aplicações da plataforma
+ * (`src/config/aplicacoes.ts`), que abrem em nova aba.
+ */
+function LancadorDeModulos({ itens }: { itens: { item: Item; rotulo: string }[] }) {
+  const t = useTranslations("cabecalho");
+  const ta = useTranslations("cabecalho.aplicacoes");
+  const [aberto, setAberto] = useState(false);
+  const caixa = useRef<HTMLDivElement>(null);
+  useFecharFora(caixa, aberto, () => setAberto(false));
+  const ladrilho =
+    "text-text hover:bg-surface hover:text-primary flex flex-col items-center gap-2 rounded-lg px-2 py-3 text-center text-xs font-medium transition-colors";
+  return (
+    <div ref={caixa} className="relative">
+      <button
+        type="button"
+        onClick={() => setAberto(!aberto)}
+        aria-label={t("modulos")}
+        aria-expanded={aberto}
+        title={t("modulos")}
+        className={botaoRedondo}
+      >
+        <Icone nome="grade" />
+      </button>
+      {aberto && (
+        <div className={`${painelSuspenso} w-80 p-3`}>
+          <p className="text-muted px-1 pb-2 text-xs font-semibold tracking-widest uppercase">
+            {t("modulos")}
+          </p>
+          <ul className="grid grid-cols-3 gap-1">
+            {itens.map(({ item, rotulo }) => (
+              <li key={item.id}>
+                <Link href={item.href} onClick={() => setAberto(false)} className={ladrilho}>
+                  <span className="bg-primary-soft text-primary flex h-10 w-10 items-center justify-center rounded-xl">
+                    <Icone nome={item.icone} />
+                  </span>
+                  {rotulo}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="border-border my-2 border-t" />
+          <p className="text-muted px-1 pb-2 text-xs font-semibold tracking-widest uppercase">
+            {t("outrasAplicacoes")}
+          </p>
+          {OUTRAS_APLICACOES.length === 0 ? (
+            <p className="text-muted px-1 pb-1 text-xs">{t("semOutrasAplicacoes")}</p>
+          ) : (
+            <ul className="grid grid-cols-3 gap-1">
+              {OUTRAS_APLICACOES.map((a) => (
+                <li key={a.id}>
+                  <a href={a.url} target="_blank" rel="noopener noreferrer" className={ladrilho}>
+                    <span className="bg-surface text-text flex h-10 w-10 items-center justify-center rounded-xl">
+                      <Icone nome="externo" />
+                    </span>
+                    {ta(a.id)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function IconeDeMensagens() {
   const t = useTranslations("mensagens");
   const [naoLidas, setNaoLidas] = useState(0);
@@ -972,6 +1053,11 @@ export function CascaDoTenant({
           </button>
           <BuscaNoMenu itens={todos.map((item) => ({ item, rotulo: rotulo(item) }))} />
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
+            <LancadorDeModulos
+              itens={todos
+                .filter((item, i) => todos.findIndex((x) => x.id === item.id) === i)
+                .map((item) => ({ item, rotulo: rotulo(item) }))}
+            />
             <IconeDeMensagens />
             <Sino inicial={notificacoes} />
             {/* Foto no topo, ao lado das notificações (pedido de 2026-11-26); o mesmo menu também fica no rodapé do menu lateral. */}

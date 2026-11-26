@@ -70,7 +70,11 @@
       "novaEmpresa": "Nova empresa",
       "novaPessoa": "Nova pessoa"
     },
-    "contaEPreferencias": "Conta e preferências"
+    "contaEPreferencias": "Conta e preferências",
+    "modulos": "Módulos",
+    "outrasAplicacoes": "Outras aplicações",
+    "semOutrasAplicacoes": "Nenhuma outra aplicação disponível por enquanto.",
+    "aplicacoes": {}
   },
   "notificacoes": {
     "titulo": "Notificações",

@@ -10,6 +10,7 @@ import {
 } from "@/app/acoes/negocios";
 import { useAcaoComAtualizacao } from "@/components/usuarios/formularios";
 import { useAbas } from "@/components/ui/abas";
+import { CampoDeValor } from "@/components/ui/campo-de-valor";
 import { Aviso, Botao } from "@/components/ui/basicos";
 
 /** Formulários dos negócios (dominio.md, "Deal (Negócio)"). */
@@ -294,7 +295,14 @@ export function FormDadosDoNegocio({
         <CampoTipo tipos={tipos} valores={valores} mudar={mudar} desabilitado={!podeSalvar} />
         {campo("dataInicio", t("dataInicio"), { type: "date", required: true })}
         {campo("previsaoFechamento", t("previsaoFechamento"), { type: "date" })}
-        {campo("valorEstimado", t("valorEstimado"), { inputMode: "decimal" })}
+        <Rotulo texto={t("valorEstimado")}>
+          <CampoDeValor
+            name="valorEstimado"
+            disabled={!podeSalvar}
+            valor={valores.valorEstimado ?? ""}
+            mudar={(v) => mudar("valorEstimado", v)}
+          />
+        </Rotulo>
       </div>
       <Rotulo texto={t("descricao")}>
         <textarea

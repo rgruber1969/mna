@@ -71,6 +71,8 @@ projeto e em `docs/projeto/`.
 | Linhas das listas | Linha destacada ao passar o mouse em todas as tabelas; nas listas principais, a linha inteira abre o registro; seletor "Por página" único (10, 25, 50, 100) | 2026-11-23 |
 | Pergunte ao sistema (V1) | Simulado sem IA: entende a pergunta por palavras-chave e responde com os serviços e as permissões de sempre; nada sai do servidor; IA real (via MCP) fica para a V2, depois de decidir o envio de dados a IA externa | 2026-11-25 |
 | Tela "Sobre" e foto no topo | "Sobre" no menu do usuário, com abas Versão (número em `src/config/versao.ts`), Segurança (o que é criptografado, sem detalhes que ajudem ataque) e Funcionalidades (reais e simuladas); foto do usuário também no topo, ao lado das notificações, abrindo o mesmo menu do rodapé lateral | 2026-11-26 |
+| Lançador de módulos | Ícone de grade no cabeçalho com os módulos que a pessoa pode ver (os itens do menu) e "Outras aplicações" configuradas em `src/config/aplicacoes.ts`, abrindo em nova aba | 2026-11-26 |
+| Valores em reais | Campo com máscara único (`CampoDeValor`: digita só números, "R$" à esquerda) em contratos, ofertas e valor estimado do negócio | 2026-11-26 |
 | Configurações | Um item de menu "Configurações", com abas **verticais** em dois grupos (Tenant; Cadastros auxiliares), em ordem alfabética dentro de cada grupo (ajuste de 2026-11-23); cadastros auxiliares em tabela, com as ações em colunas e inclusão na última linha ("Adicionar") | 2026-11-19 |
 
 ## Substituídas

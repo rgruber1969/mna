@@ -6,8 +6,9 @@ versão 1" é anotado aqui.
 Feitos em 2026-11-26 e retirados daqui: "Esqueci minha senha", tela
 "Sobre", título da aba com o nome do tenant, "Concluir" no "Próximo
 passo", bordas dos campos com 3:1 no tema escuro, antivírus na foto da
-conta e nas logos e entrada com rosto, digital ou PIN (passkey) explicada
-nas telas.
+conta e nas logos entrada com rosto, digital ou PIN (passkey) explicada
+nas telas, máscara de valor nas ofertas e no valor estimado do negócio e
+lançador de módulos no cabeçalho (os dois últimos eram da V3).
 
 Classificação do responsável (2026-11-25): **V2** entra na próxima
 versão; **V3** fica para depois (os itens que estavam em dúvida, V?,
@@ -128,8 +129,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
 
 ### V3: esforço P
 
-- [ ] [Contratos] Máscara de valor nas demais telas (ofertas, valor
-      estimado do negócio): hoje só nos contratos.
 - [ ] [Mensagens] Busca no texto das mensagens.
 - [ ] [Mensagens] Mensagens na exportação do negócio.
 - [ ] [Mensagens] Opção "Enviar também por e-mail" na tela da mensagem:
@@ -138,10 +137,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       A decidir: o texto vai no e-mail (sai do sistema) ou só o link.
 - [ ] [White label] Logo em SVG (higienizado: sem scripts, eventos ou
       referências externas); na V1 só PNG, JPG ou WebP.
-- [ ] [Layout] Lançador de módulos no cabeçalho (ícone de grade de
-      quadrados, com atalhos para outros módulos e aplicações); o botão de
-      recolher o menu lateral usa o ícone padrão de três linhas.
-
 ### V3: esforço M
 
 - [ ] [Contratos] Lançamento das apurações mensais dos honorários
