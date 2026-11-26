@@ -6,9 +6,47 @@ versão 1" é anotado aqui.
 Feitos em 2026-11-26 e retirados daqui: "Esqueci minha senha", tela
 "Sobre", título da aba com o nome do tenant, "Concluir" no "Próximo
 passo", bordas dos campos com 3:1 no tema escuro, antivírus na foto da
-conta e nas logos entrada com rosto, digital ou PIN (passkey) explicada
+conta e nas logos, entrada com rosto, digital ou PIN (passkey) explicada
 nas telas, máscara de valor nas ofertas e no valor estimado do negócio e
 lançador de módulos no cabeçalho (os dois últimos eram da V3).
+
+## Plano de execução da V2 (combinado em 2026-11-26)
+
+Ordem definida pelo responsável. Itens 1 e 2 começam em 2026-11-26; do
+item 3 em diante, execução automática a partir de 2026-11-29 (domingo),
+sem esperar comando. Se um item depender de resposta do responsável,
+fazer o máximo possível, anotar a dúvida em "Dúvidas pendentes" abaixo e
+seguir para o próximo.
+
+1. **Pedidos antes da Diligência, por qualquer compradora.** Decisões:
+   sem NDA assinado, a compradora só recebe documentos de **categorias
+   marcadas nas Configurações como "pode ir sem NDA"**; liberar para
+   compradora sem NDA exige **aprovação do Coordenador do negócio**, com
+   auditoria.
+2. **Grade de 8 em todas as telas** (espaçamentos 8/16/24; trocar 6 e 12
+   px restantes).
+3. **Kanban de tarefas gerais** (fora de negócio): A fazer → Em andamento
+   → Aguardando terceiros → Concluído.
+4. **Guia de integração da API** só com exemplos dos endpoints que já
+   existem (sem rotas novas).
+5. **Anonimização** (itens da V2). Decisão para PDF: **tarja + código**
+   (remover de verdade o texto original e escrever o código no lugar,
+   com fundo branco; o layout pode mudar levemente).
+6. **Valuation completo, inclusive WACC**: valuation real (hoje simulado),
+   ponte EV → equity, valor presente das ofertas, campos do comprador,
+   saídas PDF/Excel/gráfico e WACC com dados de mercado buscados
+   automaticamente. A fonte dos dados de mercado é decisão de arquitetura:
+   apresentar alternativas e esperar a escolha (enquanto isso, WACC por
+   componentes digitados). Integração contábil fica fora.
+7. **Criação estruturada do e-book e do OnePager.**
+
+Em suspenso (não fazer por ora): API — pendências (escrita de cadastros,
+webhooks, chave somente leitura, limite por chave); MCP + buscas;
+edição de DOCX no navegador.
+
+### Dúvidas pendentes
+
+(nenhuma por enquanto)
 
 Classificação do responsável (2026-11-25): **V2** entra na próxima
 versão; **V3** fica para depois (os itens que estavam em dúvida, V?,
