@@ -21,7 +21,8 @@ seguir para o próximo.
 1. ~~Pedidos antes da Diligência, por qualquer compradora~~ — **feito em
    2026-11-26** (categoria "Pode ir sem NDA" + aprovação do Coordenador;
    regra em `dominio.md`, "Pedidos de documentos").
-2. **Grade de 8 em todas as telas** (espaçamentos 8/16/24; trocar 6 e 12
+2. **Grade de 8 em todas as telas** (não iniciado em 2026-11-26: fica
+   para a execução de domingo, antes do item 3) (espaçamentos 8/16/24; trocar 6 e 12
    px restantes).
 3. **Kanban de tarefas gerais** (fora de negócio): A fazer → Em andamento
    → Aguardando terceiros → Concluído.
