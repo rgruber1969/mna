@@ -36,6 +36,11 @@ Todas as gratuitas, para todos os usuários:
   digital, rosto ou PIN), sem senha nem código.
 * A sessão registra se foi aberta com dois fatores; áreas que exigem 2FA
   (o console sempre) recusam sessão aberta só com senha ou só com link.
+* **Reconhecimento facial (2026-11-26):** é feito pela passkey, com o
+  Face ID, o Windows Hello ou a biometria do celular. O rosto e a digital
+  nunca saem do aparelho; o sistema não recebe nem guarda biometria (sem
+  dado pessoal sensível novo). As telas dizem "rosto, digital ou PIN
+  (passkey)". Serviço de biometria facial próprio: descartado.
 * No desenvolvimento local, cada passkey fica presa ao subdomínio
   (`*.localhost`); na demonstração e na produção, vale em todo o domínio.
 

@@ -6,6 +6,7 @@ import { apagarArquivo, chaveDaConta, gravarArquivo, lerArquivo } from "@/server
 import { banco, comTenant } from "@/server/db/cliente";
 import { eventoAuditoria, eventoPlataforma, usuario, vinculoTenant } from "@/server/db/esquema";
 import type { Acesso } from "./acesso";
+import { verificarArquivo } from "./antivirus";
 
 /**
  * Foto do usuário (dados-pessoais.md): da conta, vale em todos os tenants e
@@ -74,7 +75,13 @@ export async function enviarFotoDaConta(acesso: Acesso | null, arquivo: File | n
   if (!acesso) return { erro: "administracao.erros.entreDeNovoFoto" };
   if (!arquivo || arquivo.size === 0) return { erro: "administracao.erros.escolhaImagem" };
   if (arquivo.size > FOTO_TAMANHO_MAXIMO) return { erro: "administracao.erros.imagemGrande" };
-  const foto = await processarFoto(new Uint8Array(await arquivo.arrayBuffer()));
+  const original = new Uint8Array(await arquivo.arrayBuffer());
+  // Antivírus no arquivo original, antes de processar (ADR-0016).
+  if ((await verificarArquivo(original)) === "bloqueado") {
+    await auditar(acesso, "conta.foto.bloqueada");
+    return { erro: "administracao.erros.imagemBloqueada" };
+  }
+  const foto = await processarFoto(original);
   if (!foto) return { erro: "administracao.erros.formatoImagem" };
 
   const anterior = await chaveAtual(acesso.usuario.id);

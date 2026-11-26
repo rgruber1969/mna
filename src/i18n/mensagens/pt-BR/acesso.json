@@ -55,7 +55,7 @@
       "exigeConsole": "O console exige verificação em duas etapas.",
       "exigeTenant": "{tenant} exige verificação em duas etapas para o seu acesso.",
       "escolha": "Escolha uma das opções para continuar.",
-      "opcaoPasskey": "Opção 1: passkey (recomendada)",
+      "opcaoPasskey": "Opção 1: rosto, digital ou PIN do aparelho (passkey, recomendada)",
       "opcaoAutenticador": "Opção 2: aplicativo autenticador"
     },
     "exigeSegundoFator": {
@@ -65,7 +65,7 @@
     "seguranca": {
       "minhaConta": "Minha conta",
       "foto": "Foto",
-      "passkey": "Passkey",
+      "passkey": "Rosto, digital ou PIN (passkey)",
       "jaTemPasskey": "Você já tem passkey cadastrada. Recomendamos cadastrar uma segunda, em outro aparelho (por exemplo, celular e notebook): se perder um, entra com o outro sem precisar do administrador.",
       "autenticador": "Aplicativo autenticador",
       "autenticadorAtivo": "Aplicativo autenticador ativo.",
@@ -86,11 +86,11 @@
       "confirmando": "Confirmando..."
     },
     "passkey": {
-      "entrar": "Entrar com passkey",
+      "entrar": "Entrar com rosto, digital ou PIN (passkey)",
       "aguardandoPasskey": "Aguardando a passkey...",
-      "intro": "A passkey fica no seu celular ou computador e é liberada pela digital, pelo rosto ou pelo PIN do aparelho. Ela já vale como verificação em duas etapas.",
+      "intro": "Use o reconhecimento facial (Face ID, Windows Hello), a digital ou o PIN do seu celular ou computador para entrar, sem senha. O rosto e a digital nunca saem do aparelho: o sistema não recebe nem guarda biometria. Já vale como verificação em duas etapas.",
       "rotuloNome": "Nome da passkey (ex.: celular, notebook)",
-      "cadastrar": "Cadastrar passkey",
+      "cadastrar": "Cadastrar rosto, digital ou PIN (passkey)",
       "aguardandoAparelho": "Aguardando o aparelho...",
       "erroDesconhecido": "erro desconhecido",
       "erros": {

@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
+import { verificarArquivo } from "./antivirus";
 import { z } from "zod";
 import type { ErroDeServico } from "@/i18n/servidor";
 import { apagarArquivo, chaveDoArquivo, gravarArquivo } from "@/server/arquivos/armazenamento";
@@ -153,7 +154,13 @@ export async function enviarImagemDaMarca(
   if (!tipoDeImagemValido(tipo)) return { erro: "administracao.erros.tipoImagemInvalido" };
   if (!arquivo || arquivo.size === 0) return { erro: "administracao.erros.escolhaImagem" };
   if (arquivo.size > IMAGEM_TAMANHO_MAXIMO) return { erro: "administracao.erros.imagemGrande" };
-  const png = await processarImagemDaMarca(new Uint8Array(await arquivo.arrayBuffer()), tipo);
+  const original = new Uint8Array(await arquivo.arrayBuffer());
+  // Antivírus no arquivo original, antes de processar (ADR-0016).
+  if ((await verificarArquivo(original)) === "bloqueado") {
+    await auditar(a, "tenant.identidade.imagem_bloqueada", { tipo });
+    return { erro: "administracao.erros.imagemBloqueada" };
+  }
+  const png = await processarImagemDaMarca(original, tipo);
   if (!png) return { erro: "administracao.erros.formatoImagem" };
 
   const anterior = await chaveAtual(a.tenant.id, tipo);

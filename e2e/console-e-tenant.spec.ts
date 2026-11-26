@@ -152,9 +152,9 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await admin.getByRole("button", { name: "Aceitar convite" }).click();
   await expect(admin).toHaveURL(/\/configurar-2fa$/, { timeout: 30_000 });
   await admin.getByLabel("Nome da passkey").fill("Notebook do admin");
-  await admin.getByRole("button", { name: "Cadastrar passkey" }).click();
+  await admin.getByRole("button", { name: "Cadastrar rosto, digital ou PIN (passkey)" }).click();
   await expect(admin).toHaveURL(/\/entrar\?passkey=cadastrada$/);
-  await admin.getByRole("button", { name: "Entrar com passkey" }).click();
+  await admin.getByRole("button", { name: "Entrar com rosto, digital ou PIN (passkey)" }).click();
   await expect(admin.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
   expect(await segundoFatorDaUltimaSessao(emailTenant)).toBe(true);
 
@@ -378,9 +378,9 @@ test("tenant: administrador com 2FA obrigatório, convites, link mágico, exigê
   await usuaria.goto(base);
   await expect(usuaria).toHaveURL(/\/configurar-2fa$/, { timeout: 30_000 });
   await usuaria.getByLabel("Nome da passkey").fill("Celular da usuária");
-  await usuaria.getByRole("button", { name: "Cadastrar passkey" }).click();
+  await usuaria.getByRole("button", { name: "Cadastrar rosto, digital ou PIN (passkey)" }).click();
   await expect(usuaria).toHaveURL(/\/entrar\?passkey=cadastrada$/);
-  await usuaria.getByRole("button", { name: "Entrar com passkey" }).click();
+  await usuaria.getByRole("button", { name: "Entrar com rosto, digital ou PIN (passkey)" }).click();
   await expect(usuaria.getByRole("link", { name: /Negócios em aberto/ })).toBeVisible({ timeout: 30_000 });
 
   // 5. Recuperação: não remove o único fator; a redefinição completa apaga tudo e encerra a sessão.

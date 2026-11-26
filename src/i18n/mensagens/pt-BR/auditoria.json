@@ -57,6 +57,8 @@
       "auditoria_exportada": "Auditoria exportada",
       "tenant_configuracoes_alteradas": "Configurações do tenant alteradas",
       "tenant_identidade_alterada": "Identidade visual alterada",
+      "tenant_identidade_imagem_bloqueada": "Imagem da marca bloqueada pelo antivírus",
+      "conta_foto_bloqueada": "Foto da conta bloqueada pelo antivírus",
       "documentos_busca": "Busca de documentos",
       "sessao_entrada": "Entrada no sistema",
       "senha_redefinida": "Senha redefinida pelo link de \"Esqueci minha senha\"",

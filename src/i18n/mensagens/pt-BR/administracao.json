@@ -30,6 +30,7 @@
       "tipoImagemInvalido": "Tipo de imagem inválido.",
       "escolhaImagem": "Escolha uma imagem.",
       "imagemGrande": "A imagem deve ter até 2 MB.",
+      "imagemBloqueada": "A imagem foi bloqueada pelo antivírus e não foi guardada.",
       "formatoImagem": "Envie uma imagem JPG, PNG ou WebP.",
       "entreDeNovoFoto": "Entre de novo para alterar a foto.",
       "contrastePrimaria": "A cor primária é usada em textos e links sobre fundo branco e ficou com contraste {razao}:1 (mínimo {minimo}:1). Escolha um tom mais escuro.",

@@ -5,7 +5,9 @@ versão 1" é anotado aqui.
 
 Feitos em 2026-11-26 e retirados daqui: "Esqueci minha senha", tela
 "Sobre", título da aba com o nome do tenant, "Concluir" no "Próximo
-passo" e bordas dos campos com 3:1 no tema escuro.
+passo", bordas dos campos com 3:1 no tema escuro, antivírus na foto da
+conta e nas logos e entrada com rosto, digital ou PIN (passkey) explicada
+nas telas.
 
 Classificação do responsável (2026-11-25): **V2** entra na próxima
 versão; **V3** fica para depois (os itens que estavam em dúvida, V?,
@@ -17,11 +19,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
 
 ### Esforço P
 
-- [ ] [Antivírus] Foto da conta pelo fluxo de antivírus (ADR-0016). Hoje o
-      servidor recusa o que não é imagem real e grava uma imagem nova, sem
-      guardar o original.
-- [ ] [Antivírus] Imagens da marca do tenant (logos) pelo fluxo de
-      antivírus (ADR-0016).
 - [ ] [Acesso] Login com Google e Microsoft (item 3 da V1, simulado na
       demonstração): contas OAuth nos consoles do Google e da Microsoft,
       só para e-mails já convidados (cadastro continua só por convite).
@@ -30,15 +27,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       Funcionalidades foi feita em 2026-11-26): Termos de uso e Política de
       privacidade, Componentes de código aberto e licenças; versão também
       no console.
-- [ ] [Autenticação] **Reconhecimento facial** pelo próprio aparelho
-      (decisão de 2026-11-25): Face ID, Windows Hello ou a biometria do
-      celular, por meio das chaves de acesso (passkeys) que já existem na
-      V1. O rosto nunca sai do aparelho e o sistema não guarda biometria,
-      então não há dado pessoal sensível novo. Falta: deixar isso claro
-      nas telas (ex.: "Entrar com o rosto ou a digital") e pedir a chave de
-      acesso também para confirmar operações sensíveis (ex.: excluir,
-      baixar dados sensíveis, trocar permissões). Serviço de biometria
-      facial próprio foi descartado.
 
 ### Esforço M
 
@@ -64,6 +52,11 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       (ex.: só material público ou do teaser) e quem aprova.
 - [ ] [Documentos] Áreas restritas dentro de um negócio (ex.: notas
       internas dos assessores).
+- [ ] [Autenticação] **Confirmar operações sensíveis com rosto, digital
+      ou PIN (passkey)** (resto do item de reconhecimento facial, cuja
+      entrada pelo aparelho foi feita em 2026-11-26): antes de excluir,
+      baixar ou mostrar dados sensíveis e trocar permissões, pedir a passkey
+      de novo (confirmação recente), com auditoria.
 - [ ] [Integrações] **Servidor MCP** (pedido de 2026-11-25; a arquitetura
       já está preparada, mas o servidor não existe): primeiro só
       ferramentas de leitura (negócios, etapas, tarefas, documentos,

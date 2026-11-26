@@ -134,6 +134,17 @@ describe("imagens da marca", () => {
     expect(await processarImagemDaMarca(svg, "logoClaro")).toBeNull();
   });
 
+  it("recusa imagem bloqueada pelo antivírus (arquivo de teste EICAR)", async () => {
+    const eicar = new File(
+      ["X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"],
+      "logo.png",
+      { type: "image/png" },
+    );
+    expect(await enviarImagemDaMarca(acesso(true), "logoClaro", eicar)).toEqual({
+      erro: "administracao.erros.imagemBloqueada",
+    });
+  });
+
   it("envia, serve só o arquivo atual de tenant ativo, embute no e-mail e remove", async () => {
     expect(await enviarImagemDaMarca(acesso(true), "logoClaro", await logo())).toEqual({ ok: true });
     const primeira = (await marcaPorSlug(slug))!.logoClaro!;
