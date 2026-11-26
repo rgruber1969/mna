@@ -28,23 +28,10 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       demonstração): contas OAuth nos consoles do Google e da Microsoft,
       só para e-mails já convidados (cadastro continua só por convite).
       Depende de o responsável criar as contas de desenvolvedor.
-- [ ] [Sobre] **Tela "Sobre" com informações gerais, em abas** (pedido de
-      2026-11-25), aberta pelo menu do usuário ou pelo rodapé:
-  - **Versão:** número e data da versão, novidades da versão (notas de
-    lançamento), ambiente (demonstração ou produção), o copyright do
-    rodapé repetido e os contatos de suporte. O nome do produto continua
-    vindo de `PRODUCT_NAME`.
-  - **Segurança:** como os dados são protegidos, em linguagem simples:
-    conformidade com a LGPD (bases legais, direitos do titular e como
-    pedir), quais dados pessoais são guardados e quais tabelas e campos
-    são criptografados (CPF, RG, cônjuge, salário e anexos de cadastro,
-    tirados do inventário `dados-pessoais.md`), isolamento por tenant,
-    2FA, auditoria, antivírus nos envios e onde os dados ficam (região).
-    Sem nenhum detalhe que ajude um ataque, como chaves, nomes de
-    servidores ou configurações.
-  - **Outras abas a definir:** por exemplo, Termos de uso e Política de
-    privacidade, Componentes de código aberto e licenças, e Status das
-    funcionalidades (reais e simuladas).
+- [ ] [Sobre] Outras abas da tela "Sobre" (a de Versão, Segurança e
+      Funcionalidades foi feita em 2026-11-26): Termos de uso e Política de
+      privacidade, Componentes de código aberto e licenças; versão também
+      no console.
 - [ ] [Autenticação] **Reconhecimento facial** pelo próprio aparelho
       (decisão de 2026-11-25): Face ID, Windows Hello ou a biometria do
       celular, por meio das chaves de acesso (passkeys) que já existem na

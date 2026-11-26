@@ -1,0 +1,107 @@
+{
+  "sobre": {
+    "titulo": "Sobre",
+    "subtitulo": "Versão, segurança dos dados e funcionalidades do {produto}.",
+    "abas": {
+      "versao": "Versão",
+      "seguranca": "Segurança",
+      "funcionalidades": "Funcionalidades"
+    },
+    "versao": {
+      "produto": "Produto",
+      "numero": "Versão",
+      "data": "Data da versão",
+      "ambiente": "Ambiente",
+      "ambientes": {
+        "local": "Desenvolvimento local",
+        "demonstracao": "Demonstração (com funcionalidades simuladas)",
+        "producao": "Produção"
+      },
+      "escritorio": "Escritório",
+      "suporte": "Suporte",
+      "suporteTexto": "Dúvidas e problemas: fale primeiro com o administrador do seu escritório; ele aciona o suporte da plataforma.",
+      "novidadesTitulo": "Novidades desta versão",
+      "novidades": {
+        "a": "Funil de compradoras com preparação, ofertas e condições da oferta.",
+        "b": "E-book e OnePager com revisão, aprovação e liberação no data room.",
+        "c": "Busca de documentos pelo nome e pelo conteúdo.",
+        "d": "\"Pergunte ao sistema\" na tela principal (demonstração).",
+        "e": "\"Esqueci minha senha\" na tela de entrada."
+      },
+      "direitos": "Direitos"
+    },
+    "seguranca": {
+      "intro": "Como os seus dados são protegidos, em linguagem simples.",
+      "lgpdTitulo": "LGPD",
+      "lgpd": "O sistema segue a Lei Geral de Proteção de Dados. Os dados pessoais são usados só para executar os contratos de assessoria (base legal: contrato), cada dado pessoal guardado está registrado num inventário, e nenhum dado pessoal vai para os registros técnicos (logs). Para pedir acesso, correção ou exclusão dos seus dados, fale com o administrador do seu escritório.",
+      "criptografiaTitulo": "Dados criptografados",
+      "criptografia": "Além da criptografia do banco e dos arquivos, os dados mais sensíveis são criptografados um a um, com uma chave própria de cada escritório. Mesmo quem tivesse acesso ao banco não conseguiria lê-los.",
+      "colunaDado": "Dado",
+      "colunaOnde": "Onde",
+      "colunaComo": "Proteção",
+      "itens": {
+        "cpf": {
+          "dado": "CPF, RG e documento estrangeiro",
+          "onde": "Pessoas",
+          "como": "Criptografados; o CPF tem um índice que evita duplicidade sem revelar o número"
+        },
+        "conjuge": {
+          "dado": "CPF, RG e regime de bens do cônjuge",
+          "onde": "Pessoas",
+          "como": "Criptografados"
+        },
+        "banco": {
+          "dado": "Agência, conta e chave Pix",
+          "onde": "Pessoas e empresas",
+          "como": "Criptografados; mascarados nas telas; mostrar registra na auditoria"
+        },
+        "anexos": {
+          "dado": "Anexos do cadastro (RG, CPF, contrato social etc.)",
+          "onde": "Pessoas e empresas",
+          "como": "Arquivo criptografado antes de ser guardado; download só com permissão e auditoria"
+        },
+        "senha": {
+          "dado": "Senha",
+          "onde": "Conta",
+          "como": "Guardada só como resumo irreversível (hash); ninguém consegue lê-la"
+        },
+        "links": {
+          "dado": "Convites e links de acesso",
+          "onde": "Conta",
+          "como": "Uso único, prazo curto e guardados só como resumo (hash)"
+        }
+      },
+      "isolamentoTitulo": "Separação entre escritórios",
+      "isolamento": "Cada escritório só enxerga os próprios dados: a separação é feita pelo próprio banco de dados, em todas as tabelas, e não depende só das telas.",
+      "acessoTitulo": "Acesso e permissões",
+      "acesso": "Entrada com senha, link de uso único ou passkey (rosto, digital ou PIN do aparelho), com verificação em duas etapas quando o escritório exige. Cada pessoa só vê os menus, as ações e os negócios que o perfil e a participação permitem; a API segue as mesmas regras das telas.",
+      "auditoriaTitulo": "Auditoria",
+      "auditoria": "Ações relevantes ficam registradas, inclusive visualização de dados sensíveis e downloads.",
+      "arquivosTitulo": "Arquivos",
+      "arquivos": "Os arquivos enviados passam por verificação de vírus (simulada na demonstração) antes de ficarem disponíveis para download.",
+      "localTitulo": "Onde os dados ficam",
+      "local": "Na produção, banco e arquivos ficam no Brasil (região de São Paulo)."
+    },
+    "funcionalidades": {
+      "intro": "Situação de cada funcionalidade neste ambiente. As simuladas mostram um aviso de demonstração e ainda não gravam nem enviam nada de verdade.",
+      "colunaNome": "Funcionalidade",
+      "colunaSituacao": "Situação",
+      "modos": {
+        "real": "Real",
+        "simulada": "Simulada (demonstração)",
+        "desligada": "Desligada"
+      },
+      "nomes": {
+        "loginSocial": "Entrar com Google e Microsoft",
+        "diagramaDeEtapas": "Diagrama das etapas",
+        "templatesDocx": "Modelos DOCX com preenchimento",
+        "valuation": "Valuation",
+        "ebook": "E-book e OnePager",
+        "limpezaDeAuditoria": "Limpeza da auditoria com exportação",
+        "exportacaoDoNegocio": "Exportação completa do negócio",
+        "gatilhosDeTarefas": "Tarefas automáticas e gatilhos",
+        "assistente": "Pergunte ao sistema"
+      }
+    }
+  }
+}

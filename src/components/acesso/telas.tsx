@@ -83,7 +83,7 @@ export function TelaEntrar({
           <AvisoDaEntrada />
         </Suspense>
         <FormEntrar />
-        <details className="-mt-2 mb-2">
+        <details className="mt-3">
           <summary className="text-primary cursor-pointer text-sm font-medium">{tSenha("esqueci")}</summary>
           <div className="mt-4">
             <FormEsqueciSenha />

@@ -135,6 +135,12 @@ const ICONES: Record<string, ReactNode> = {
       <path d="M4 21a8 8 0 0 1 16 0" />
     </>
   ),
+  info: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </>
+  ),
 };
 
 function Icone({ nome, className = "h-5 w-5" }: { nome: string; className?: string }) {
@@ -631,6 +637,14 @@ function MenuDoUsuario({
             <p className="text-muted px-4 pt-1 pb-2 text-xs">{t("idiomaEmBreve")}</p>
           </div>
           <div className="border-border my-2 border-t" />
+          <Link
+            href="/sobre"
+            onClick={() => setAberto(false)}
+            className="text-text hover:bg-surface flex items-center gap-3 px-4 py-2 text-sm"
+          >
+            <Icone nome="info" className="text-muted h-4 w-4" />
+            {t("sobre")}
+          </Link>
           <div className="px-4 py-1">
             <FormSair />
           </div>
@@ -960,10 +974,8 @@ export function CascaDoTenant({
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
             <IconeDeMensagens />
             <Sino inicial={notificacoes} />
-            {/* No computador, o menu do usuário fica só no rodapé do menu lateral; a foto no topo é para o celular. */}
-            <div className="md:hidden">
-              <MenuDoUsuario usuario={usuario} temaInicial={tema} menuInvertidoInicial={menuInvertido} />
-            </div>
+            {/* Foto no topo, ao lado das notificações (pedido de 2026-11-26); o mesmo menu também fica no rodapé do menu lateral. */}
+            <MenuDoUsuario usuario={usuario} temaInicial={tema} menuInvertidoInicial={menuInvertido} />
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>
