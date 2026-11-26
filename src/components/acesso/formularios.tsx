@@ -54,7 +54,8 @@ export function FormEntrar() {
 }
 
 /** Só no ambiente local, com a entrada de desenvolvimento ligada. */
-export function FormEntrarSoComEmail() {
+/** Entrada de desenvolvimento; `emailPadrao` vem de DEV_EMAIL_PADRAO (.env local, nunca no código). */
+export function FormEntrarSoComEmail({ emailPadrao }: { emailPadrao?: string }) {
   const t = useTranslations("acesso.desenvolvimento");
   const tGeral = useTranslations("acesso.geral");
   const [estado, acao, enviando] = useAcao(entrarSoComEmailAcao);
@@ -62,7 +63,7 @@ export function FormEntrarSoComEmail() {
     <form action={acao} className="border-warning bg-warning-surface mt-6 rounded-md border p-4">
       <p className="text-warning mb-3 text-xs font-semibold tracking-wide uppercase">{t("aviso")}</p>
       {estado?.erro && <Aviso>{estado.erro}</Aviso>}
-      <Campo rotulo={t("rotuloEmail")} name="email" type="email" required />
+      <Campo rotulo={t("rotuloEmail")} name="email" type="email" defaultValue={emailPadrao} required />
       <Botao disabled={enviando}>{enviando ? tGeral("entrando") : t("botao")}</Botao>
     </form>
   );

@@ -98,7 +98,7 @@ export function TelaEntrar({
             <FormPedirLink />
           </div>
         </details>
-        {soComEmail && <FormEntrarSoComEmail />}
+        {soComEmail && <FormEntrarSoComEmail emailPadrao={process.env.DEV_EMAIL_PADRAO || undefined} />}
       </Cartao>
     </Moldura>
   );
