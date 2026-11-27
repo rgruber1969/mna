@@ -998,6 +998,19 @@ Aba **Pedidos** no negócio, sem recortes da proposta acima:
   aprovar, as pessoas daquela compradora passam a ver a versão atual do
   documento no data room. Ligar e aprovar ficam na auditoria.
 
+### Tarefas gerais (construído em 2026-11-27)
+
+* Tarefas **fora de negócio**, num quadro (kanban) em Tarefas › "Quadro de
+  tarefas gerais", com as colunas **A fazer → Em andamento → Aguardando
+  terceiros → Concluído**. Arrastar o cartão ou usar "Mover para" muda a
+  coluna; clicar abre a edição (título, descrição, prioridade, prazo e um
+  responsável do escritório).
+* Qualquer pessoa do escritório cria. **Veem e mexem** quem criou, o
+  responsável e os administradores; **exclui** só quem criou (ou um
+  administrador). Criar, editar, mover e excluir ficam na auditoria.
+* Tabela própria (`tarefa_geral`), separada das tarefas de negócio, que
+  continuam com as regras de lado e compradora.
+
 ## Pendências de domínio
 
 * Gatilhos de tarefas automáticas (a informar).

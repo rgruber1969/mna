@@ -11,6 +11,8 @@ import { EstruturaDoTenant } from "@/components/acesso/cabecalho";
 import { portaoDeDoisFatores } from "@/components/acesso/telas";
 import { Cartao, Titulo } from "@/components/ui/basicos";
 import { ListaPaginada } from "@/components/ui/paginacao-local";
+import { quadroDeTarefasGerais } from "@/server/services/tarefas-gerais";
+import { QuadroDeTarefasGerais } from "@/components/tarefas/quadro-geral";
 
 /** Minhas tarefas abertas em todos os negócios (atalho da tela inicial). */
 async function Painel({ filtro }: { filtro: Promise<string> }) {
@@ -20,10 +22,11 @@ async function Painel({ filtro }: { filtro: Promise<string> }) {
   const portao = portaoDeDoisFatores(acesso);
   if (portao) return portao;
   const f = await filtro;
-  const [todas, t, tt] = await Promise.all([
+  const [todas, t, tt, quadro] = await Promise.all([
     minhasTarefasAbertas(acesso),
     getTranslations("painel"),
     getTranslations("tarefas"),
+    f === "quadro" ? quadroDeTarefasGerais(acesso) : null,
   ]);
   const lista = f === "atrasadas" ? todas.filter((x) => x.atrasada) : todas;
   const br = (d: string) => d.split("-").reverse().join("/");
@@ -39,13 +42,16 @@ async function Painel({ filtro }: { filtro: Promise<string> }) {
   return (
     <EstruturaDoTenant acesso={acesso}>
       <main className="flex flex-1 items-start justify-start px-3 py-6 sm:px-6">
-        <Cartao largura="max-w-4xl">
+        <Cartao largura={f === "quadro" ? "max-w-[1600px]" : "max-w-4xl"}>
           <Titulo ajuda={t("minhasTarefasAjuda")}>{t("minhasTarefas")}</Titulo>
-          <div className="mb-3 flex gap-2">
+          <div className="mb-3 flex flex-wrap gap-2">
             {aba("", t("todas", { n: todas.length }))}
             {aba("atrasadas", t("soAtrasadas", { n: todas.filter((x) => x.atrasada).length }))}
+            {aba("quadro", tt("gerais.aba"))}
           </div>
-          {lista.length === 0 ? (
+          {quadro ? (
+            <QuadroDeTarefasGerais tarefas={quadro.tarefas} pessoas={quadro.pessoas} eu={acesso.usuario.id} />
+          ) : lista.length === 0 ? (
             <p className="text-muted text-sm">{t("semTarefas")}</p>
           ) : (
             <ListaPaginada

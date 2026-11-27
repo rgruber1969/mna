@@ -24,10 +24,11 @@ seguir para o próximo.
 2. **Grade de 8 em todas as telas** (não iniciado em 2026-11-26: fica
    para a execução de domingo, antes do item 3) (espaçamentos 8/16/24; trocar 6 e 12
    px restantes).
-3. **Kanban de tarefas gerais** (fora de negócio): A fazer → Em andamento
-   → Aguardando terceiros → Concluído.
-4. **Guia de integração da API** só com exemplos dos endpoints que já
-   existem (sem rotas novas).
+3. ~~Kanban de tarefas gerais~~ — **feito em 2026-11-27** (Tarefas › "Quadro
+   de tarefas gerais"; regra em `dominio.md`, "Tarefas gerais").
+4. ~~Guia de integração da API~~ — **feito em 2026-11-27**
+   (`docs/integracao/guia-da-api.md` e bloco "Como usar a API" em
+   Configurações › Chaves de API).
 5. **Anonimização** (itens da V2). Decisão para PDF: **tarja + código**
    (remover de verdade o texto original e escrever o código no lugar,
    com fundo branco; o layout pode mudar levemente).
@@ -77,8 +78,6 @@ estimado, na mesma escala do `escopo-v1.md`: **P** (pequeno), **M**
       documentos, mensagens). Aparece uma vez por pessoa; "Ver o tour de
       novo" nas preferências da conta o reapresenta. Textos nas mensagens
       (idiomas) e cores pelos tokens do tema.
-- [ ] [Tarefas] Kanban de tarefas gerais (fora de deal), com colunas
-      sugeridas: A fazer → Em andamento → Aguardando terceiros → Concluído.
 - [ ] [Busca] Busca do cabeçalho também em registros (empresas, pessoas,
       negócios), respeitando as permissões; na V1 ela procura só as opções
       do menu.

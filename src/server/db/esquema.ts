@@ -1121,6 +1121,35 @@ export const tarefa = pgTable(
   (t) => [index("tarefa_deal_idx").on(t.tenantId, t.dealId, t.situacao), isolamento()],
 ).enableRLS();
 
+/**
+ * Tarefa geral, fora de negócio (kanban de tarefas gerais, 2026-11-27): vista
+ * por quem criou, pelo responsável e pelos administradores do tenant.
+ */
+export const tarefaGeral = pgTable(
+  "tarefa_geral",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: doTenant(),
+    titulo: text("titulo").notNull(),
+    descricao: text("descricao"),
+    prioridade: text("prioridade")
+      .$type<"baixa" | "normal" | "alta" | "urgente">()
+      .notNull()
+      .default("normal"),
+    prazo: date("prazo"),
+    situacao: text("situacao")
+      .$type<"a_fazer" | "andamento" | "aguardando" | "concluida">()
+      .notNull()
+      .default("a_fazer"),
+    responsavelId: uuid("responsavel_id").references(() => usuario.id, { onDelete: "set null" }),
+    criadoPor: uuid("criado_por").references(() => usuario.id, { onDelete: "set null" }),
+    concluidaEm: timestamp("concluida_em", { withTimezone: true }),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [index("tarefa_geral_idx").on(t.tenantId, t.situacao), isolamento()],
+).enableRLS();
+
 /** Responsável pela tarefa: um usuário ou um perfil (todos com aquele perfil no negócio). */
 export const tarefaResponsavel = pgTable(
   "tarefa_responsavel",

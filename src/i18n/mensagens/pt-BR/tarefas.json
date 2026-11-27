@@ -60,6 +60,25 @@
       "etapaInvalida": "Etapa inválida.",
       "situacaoInvalida": "Situação inválida."
     },
-    "conversa": "Conversa"
+    "conversa": "Conversa",
+    "gerais": {
+      "aba": "Quadro de tarefas gerais",
+      "explicacao": "Tarefas fora dos negócios. Arraste o cartão entre as colunas ou use \"Mover para\". Veem a tarefa quem criou, o responsável e os administradores.",
+      "responsavel": "Responsável",
+      "moverPara": "Mover \"{titulo}\" para",
+      "colunaVazia": "Nada aqui.",
+      "fechar": "Fechar",
+      "salvar": "Salvar",
+      "salvando": "Salvando…",
+      "erros": {
+        "titulo": "O título precisa ter de 2 a 200 caracteres.",
+        "prazo": "Prazo inválido.",
+        "dados": "Dados inválidos.",
+        "responsavel": "Escolha um responsável deste escritório.",
+        "naoEncontrada": "Tarefa não encontrada.",
+        "situacao": "Coluna inválida.",
+        "soQuemCriou": "Só quem criou a tarefa (ou um administrador) pode excluí-la."
+      }
+    }
   }
 }
