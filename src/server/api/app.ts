@@ -143,6 +143,21 @@ api.on(["GET", "POST", "PUT"], "/inngest", (c) => atenderTarefas(c));
 registrarRotasV1(api);
 
 /**
+ * Raiz da API v1 (sem autenticação): só se apresenta e aponta a documentação,
+ * para quem abre o endereço no navegador não ver um 404.
+ */
+api.get("/v1", (c) => {
+  const docs = process.env.NODE_ENV !== "production" || process.env.API_DOCS_ENABLED === "true";
+  return c.json({
+    api: `API ${produto.nome}`,
+    versao: "v1",
+    autenticacao: "Authorization: Bearer chv_... (chave criada em Configurações › Chaves de API)",
+    ...(docs ? { documentacao: "/api/referencia", swagger: "/api/docs", openapi: "/api/openapi.json" } : {}),
+    exemplo: "GET /api/v1/negocios",
+  });
+});
+
+/**
  * Documentação da API. Fora da produção, sempre disponível; em produção,
  * só com API_DOCS_ENABLED=true (ASVS V13.4: evitar exposição desnecessária).
  */

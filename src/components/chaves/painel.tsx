@@ -35,7 +35,9 @@ function SobreAApi({ slug, t }: { slug: string; t: Awaited<ReturnType<typeof get
       <dl className="grid gap-3 text-sm sm:grid-cols-[180px_1fr]">
         <dt className="text-muted">{t("api.endereco")}</dt>
         <dd>
-          <code className={codigo}>{raiz}/v1</code>
+          <a href={`${raiz}/v1`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <code className={codigo}>{raiz}/v1</code>
+          </a>
         </dd>
         <dt className="text-muted">{t("api.documentacao")}</dt>
         <dd>
@@ -76,7 +78,9 @@ function SobreAApi({ slug, t }: { slug: string; t: Awaited<ReturnType<typeof get
         </dd>
         <dt className="text-muted">{t("api.status")}</dt>
         <dd>
-          <code className={codigo}>GET {raiz}/status</code>
+          <a href={`${raiz}/status`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <code className={codigo}>GET {raiz}/status</code>
+          </a>
         </dd>
       </dl>
       <ul className="text-muted mt-4 list-disc space-y-1 pl-5 text-xs leading-relaxed">
