@@ -12,23 +12,22 @@ lançador de módulos no cabeçalho (os dois últimos eram da V3).
 
 ## Plano de execução da V2 (combinado em 2026-11-26)
 
-Ordem definida pelo responsável. Itens 1 e 2 começam em 2026-11-26; do
-item 3 em diante, execução automática a partir de 2026-11-29 (domingo),
-sem esperar comando. Se um item depender de resposta do responsável,
+Ordem definida pelo responsável. Execução automática a partir de
+2026-11-29 (domingo), sem esperar comando, pelos itens ainda não feitos
+(2, 5, 6 e 7). Se um item depender de resposta do responsável,
 fazer o máximo possível, anotar a dúvida em "Dúvidas pendentes" abaixo e
 seguir para o próximo.
 
 1. ~~Pedidos antes da Diligência, por qualquer compradora~~ — **feito em
    2026-11-26** (categoria "Pode ir sem NDA" + aprovação do Coordenador;
    regra em `dominio.md`, "Pedidos de documentos").
-2. **Grade de 8 em todas as telas** (não iniciado em 2026-11-26: fica
-   para a execução de domingo, antes do item 3) (espaçamentos 8/16/24; trocar 6 e 12
-   px restantes).
+2. **Grade de 8 em todas as telas** (não iniciado; primeiro item de
+   domingo): espaçamentos 8/16/24, trocando os 6 e 12 px restantes.
 3. ~~Kanban de tarefas gerais~~ — **feito em 2026-11-27** (Tarefas › "Quadro
    de tarefas gerais"; regra em `dominio.md`, "Tarefas gerais").
 4. ~~Guia de integração da API~~ — **feito em 2026-11-27**
-   (`docs/integracao/guia-da-api.md` e bloco "Como usar a API" em
-   Configurações › Chaves de API).
+   (página `/api/referencia` com o guia como introdução e exemplos de
+   resposta; botão "Como usar a API" em Configurações › Chaves de API).
 5. **Anonimização** (itens da V2). Decisão para PDF: **tarja + código**
    (remover de verdade o texto original e escrever o código no lugar,
    com fundo branco; o layout pode mudar levemente).
