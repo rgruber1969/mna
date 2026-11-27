@@ -1,0 +1,660 @@
+{
+  "get /v1/negocios": {
+    "itens": [
+      {
+        "id": "89acd5eb-9dab-4fe4-bbb4-7a20f69fcb74",
+        "numero": 1,
+        "nome": "N-0001 Projeto Carvalho",
+        "nomeInterno": "Venda Agro 2026",
+        "vendedoras": ["Agro Vale do Sul Ltda."],
+        "compradoraEscolhida": null,
+        "descricao": null,
+        "tipo": "Aquisição total",
+        "situacao": "andamento",
+        "coordenadores": ["Ana Ribeiro"],
+        "dataInicio": "2026-08-25",
+        "etapa": "Diligência",
+        "etapasEmParalelo": 0
+      },
+      {
+        "id": "b22c81a3-c48d-4d00-a424-f5b72c90cf4d",
+        "numero": 2,
+        "nome": "N-0002 Projeto Aurora",
+        "nomeInterno": "Venda Clínica 2026",
+        "vendedoras": ["Clínica Horizonte S.A."],
+        "compradoraEscolhida": null,
+        "descricao": null,
+        "tipo": "Aquisição total",
+        "situacao": "andamento",
+        "coordenadores": ["Ana Ribeiro"],
+        "dataInicio": "2026-08-28",
+        "etapa": "Term Sheet",
+        "etapasEmParalelo": 0
+      }
+    ],
+    "total": 9,
+    "pagina": 1,
+    "porPagina": 2
+  },
+  "get /v1/negocios/{id}": {
+    "id": "3bfda174-6862-4ac8-8ab0-2cf0d8b46808",
+    "numero": 9,
+    "nome": "N-0009 Projeto Jatobá",
+    "codinome": "Projeto Jatobá",
+    "nomeInterno": "Venda Madeireira 2026",
+    "tipoOperacaoId": "3c1c2141-291e-4ad0-b881-d02c6b40f75f",
+    "tipo": "Aquisição total",
+    "tipoComPercentual": false,
+    "percentual": null,
+    "objeto": "empresas",
+    "grupo": null,
+    "dataInicio": "2026-09-18",
+    "previsaoFechamento": "2027-06-06",
+    "valorEstimado": "15800000.00",
+    "descricao": null,
+    "situacao": "andamento",
+    "podeVerVendedora": true,
+    "podeEditar": true,
+    "podeGerirParticipantes": true,
+    "podeExcluir": true,
+    "empresas": [
+      {
+        "id": "ee92c294-6bc0-4fed-adba-c751ada66e9f",
+        "empresaId": "cce3d8a7-39df-4169-a370-84ae01104fbd",
+        "nome": "Compradora A de Jatobá S.A.",
+        "cnpj": null,
+        "papel": "Compradora",
+        "lado": "comprador",
+        "situacaoFunil": "escolhida",
+        "doContratante": false,
+        "atuaPara": null
+      },
+      {
+        "id": "bae259ee-246a-4bb3-a437-b7ea50f14178",
+        "empresaId": "66b0244a-d40a-47d4-b1c5-2cb9f83b29f8",
+        "nome": "Compradora B de Jatobá S.A.",
+        "cnpj": null,
+        "papel": "Compradora",
+        "lado": "comprador",
+        "situacaoFunil": "prospectada",
+        "doContratante": false,
+        "atuaPara": null
+      }
+    ],
+    "compradoras": [
+      {
+        "empresaId": "cce3d8a7-39df-4169-a370-84ae01104fbd",
+        "nome": "Compradora A de Jatobá S.A."
+      },
+      {
+        "empresaId": "66b0244a-d40a-47d4-b1c5-2cb9f83b29f8",
+        "nome": "Compradora B de Jatobá S.A."
+      }
+    ],
+    "participantes": [
+      {
+        "id": "9b61e364-f5a1-411b-a4da-f0876459071e",
+        "pessoaId": "cc0b0ccc-3159-4c0b-bdcb-76a7f7f3dc6e",
+        "nome": "Ana Ribeiro",
+        "temUsuario": true,
+        "perfil": "Coordenador do negócio",
+        "empresa": "Escritório Exemplo",
+        "lado": "vendedor",
+        "prazo": null,
+        "alcance": null,
+        "coordenador": true,
+        "foto": null
+      }
+    ]
+  },
+  "get /v1/negocios/{id}/documentos": {
+    "documentos": [
+      {
+        "id": "e4dd45e9-8bd7-4245-88cd-3b406f8fd521",
+        "titulo": "E-book teaser",
+        "categoria": "E-book teaser",
+        "etapaId": null,
+        "etapa": null,
+        "podeNovaVersao": true,
+        "categoriaId": "58f94661-cba5-46b7-8787-a84447503ffa",
+        "podeEditar": true,
+        "versoes": [
+          {
+            "id": "9b4f465a-4b44-4dbb-a815-3e2f6c29cc3a",
+            "numero": 1,
+            "nomeArquivo": "ebook-teaser-v1-projeto-jatobá-demonstracao.pdf",
+            "tamanho": 2940,
+            "tipo": "application/pdf",
+            "situacao": "disponivel",
+            "enviadoPor": "Ana Ribeiro",
+            "criadoEm": {},
+            "comentario": "Versão 1",
+            "acesso": [],
+            "acessoIds": {
+              "todos": false,
+              "perfis": [],
+              "usuarios": []
+            },
+            "podeAlterarAcesso": true,
+            "podeEditarComentario": true,
+            "podeBaixar": true,
+            "podeExcluir": false
+          }
+        ]
+      }
+    ],
+    "categorias": [
+      {
+        "id": "78ec1154-dcc7-4fae-a00a-89fa72655144",
+        "nome": "Ambiental"
+      },
+      {
+        "id": "c1b0b01c-d35d-431c-a23a-26e48e7f6e53",
+        "nome": "Contencioso"
+      }
+    ],
+    "etapas": [
+      {
+        "id": "09bd8b85-5a59-4d34-838a-ee09c736434a",
+        "nome": "Prospecção"
+      },
+      {
+        "id": "325391d6-a54b-4a19-bc99-abcbe1ac6898",
+        "nome": "Negociação informal"
+      }
+    ]
+  },
+  "get /v1/negocios/{id}/tarefas": {
+    "tarefas": []
+  },
+  "get /v1/negocios/{id}/conversas": [
+    {
+      "alvo": {
+        "tipo": "deal",
+        "id": null
+      },
+      "rotulo": "",
+      "total": 0,
+      "naoLidas": 0,
+      "ultimaEm": null
+    },
+    {
+      "alvo": {
+        "tipo": "etapa",
+        "id": "09bd8b85-5a59-4d34-838a-ee09c736434a"
+      },
+      "rotulo": "Prospecção",
+      "total": 0,
+      "naoLidas": 0,
+      "ultimaEm": null
+    }
+  ],
+  "get /v1/negocios/{id}/ofertas": {
+    "ofertas": [
+      {
+        "id": "2b95263c-aa68-4d1c-932c-b4ad2fc0e72b",
+        "compradoraId": "cce3d8a7-39df-4169-a370-84ae01104fbd",
+        "compradora": "Compradora A de Jatobá S.A.",
+        "anteriorId": null,
+        "rodada": 1,
+        "data": "2026-11-24",
+        "instrumento": "informal",
+        "enterpriseValue": null,
+        "equityValue": null,
+        "parcelaVista": "1000000.00",
+        "parcelas": [],
+        "earnout": null,
+        "earnoutValor": null,
+        "retencao": null,
+        "retencaoValor": null,
+        "condicoesPrecedentes": null,
+        "validade": null,
+        "garantiasCompradora": null,
+        "garantiasVendedora": null,
+        "correcaoParcelas": null,
+        "condicoesTransicao": null,
+        "exclusividade": null,
+        "naoConcorrencia": null,
+        "observacoes": null,
+        "rateio": [],
+        "rateioProprio": false,
+        "criterioRateio": null,
+        "acesso": [],
+        "acessoIds": {
+          "perfis": [],
+          "usuarios": []
+        },
+        "arquivos": [],
+        "criadoPor": "Ana Ribeiro",
+        "criadoEm": "2026-11-24T00:09:48.086Z",
+        "podeEditar": true,
+        "podeExcluir": true,
+        "aceita": true
+      }
+    ],
+    "completa": true,
+    "podeCriar": true,
+    "podeEditarRateio": true,
+    "rateioDoNegocio": [
+      {
+        "empresaId": "6da2230a-9033-4ac7-9c77-ca4ded58476b",
+        "nome": "Madeireira Pinhal Ltda.",
+        "percentual": null
+      }
+    ],
+    "criterioDoNegocio": null,
+    "previsaoFechamento": "2027-06-06",
+    "podeAceitar": true
+  },
+  "get /v1/negocios/{id}/pedidos": {
+    "pedidos": [
+      {
+        "id": "32cf3e46-8f03-4383-a266-3fd2a549d29c",
+        "numero": 1,
+        "titulo": "Diligência contábil e fiscal",
+        "compradora": "Compradora A de Jatobá S.A.",
+        "solicitante": null,
+        "data": "2026-11-23",
+        "itens": 6,
+        "abertos": 3,
+        "entregues": 2,
+        "podeEditar": true,
+        "podeExcluir": true
+      }
+    ],
+    "podeCriar": true,
+    "compradoras": [
+      {
+        "id": "66b0244a-d40a-47d4-b1c5-2cb9f83b29f8",
+        "nome": "Compradora B de Jatobá S.A."
+      },
+      {
+        "id": "4e465646-7f92-4498-af11-6816178747b8",
+        "nome": "Compradora C de Jatobá S.A."
+      }
+    ],
+    "empresas": [
+      {
+        "id": "4422818c-2593-40ed-a405-6ae5c690f285",
+        "nome": "Escritório Exemplo"
+      },
+      {
+        "id": "6da2230a-9033-4ac7-9c77-ca4ded58476b",
+        "nome": "Madeireira Pinhal Ltda."
+      }
+    ],
+    "anteriores": [],
+    "vendedor": true
+  },
+  "get /v1/pedidos/{id}": {
+    "id": "32cf3e46-8f03-4383-a266-3fd2a549d29c",
+    "dealId": "3bfda174-6862-4ac8-8ab0-2cf0d8b46808",
+    "numero": 1,
+    "titulo": "Diligência contábil e fiscal",
+    "descricao": null,
+    "compradoraId": "cce3d8a7-39df-4169-a370-84ae01104fbd",
+    "compradora": "Compradora A de Jatobá S.A.",
+    "solicitanteId": null,
+    "solicitante": null,
+    "solicitantePessoas": null,
+    "data": "2026-11-23",
+    "dataBase": null,
+    "periodos": ["2024", "2025"],
+    "amostragem": null,
+    "origem": null,
+    "rodadas": [
+      {
+        "id": "4776215b-fdf5-4847-a010-cf854b72b833",
+        "numero": 1,
+        "nome": "Lista inicial",
+        "data": "2026-11-23"
+      }
+    ],
+    "itens": [
+      {
+        "id": "14a6b7f1-5d07-4ec5-9be9-47f776b7b595",
+        "rodadaId": "4776215b-fdf5-4847-a010-cf854b72b833",
+        "assunto": "Contábil",
+        "codigo": "B.01",
+        "grupo": "B - Demonstrações",
+        "subgrupo": null,
+        "prioridade": "Alta",
+        "descricao": "Balancetes mensais",
+        "formato": "XLSX",
+        "tipo": "documento",
+        "dataPedido": "2026-11-23",
+        "dataEntrega": "2026-11-23",
+        "diasEmAberto": 0,
+        "departamento": null,
+        "responsavelId": null,
+        "responsavel": null,
+        "observacaoSolicitante": "Analíticos",
+        "resposta": null,
+        "ondeObter": "Tribunal Superior do Trabalho — https://cndt-certidao.tst.jus.br/",
+        "fonteId": "1e12c278-e245-46ff-a26b-cb4e77dddbb6",
+        "situacoes": {
+          "2024": "entregue",
+          "2025": "entregue"
+        },
+        "situacao": "entregue",
+        "documentos": []
+      },
+      {
+        "id": "be6e88d4-3c3a-47a2-beb5-0f397381fac2",
+        "rodadaId": "4776215b-fdf5-4847-a010-cf854b72b833",
+        "assunto": "Contábil",
+        "codigo": "B.02",
+        "grupo": "B - Demonstrações",
+        "subgrupo": null,
+        "prioridade": "Média",
+        "descricao": "Razão contábil",
+        "formato": "TXT",
+        "tipo": "documento",
+        "dataPedido": "2026-11-23",
+        "dataEntrega": null,
+        "diasEmAberto": 4,
+        "departamento": null,
+        "responsavelId": null,
+        "responsavel": null,
+        "observacaoSolicitante": null,
+        "resposta": null,
+        "ondeObter": null,
+        "fonteId": null,
+        "situacoes": {
+          "2024": "pendente",
+          "2025": "pendente"
+        },
+        "situacao": "pendente",
+        "documentos": []
+      }
+    ],
+    "painel": {
+      "assuntos": ["Contábil", "Certidões"],
+      "porAssunto": {
+        "Contábil": {
+          "pendente": 1,
+          "parcial": 0,
+          "em_analise": 0,
+          "entregue": 1,
+          "aprovado": 0,
+          "nao_aplicavel": 1
+        },
+        "Certidões": {
+          "pendente": 2,
+          "parcial": 0,
+          "em_analise": 0,
+          "entregue": 1,
+          "aprovado": 0,
+          "nao_aplicavel": 0
+        }
+      },
+      "total": {
+        "pendente": 3,
+        "parcial": 0,
+        "em_analise": 0,
+        "entregue": 2,
+        "aprovado": 0,
+        "nao_aplicavel": 1
+      },
+      "itens": 6
+    },
+    "documentos": [
+      {
+        "id": "e4dd45e9-8bd7-4245-88cd-3b406f8fd521",
+        "titulo": "E-book teaser"
+      }
+    ],
+    "responsaveis": [
+      {
+        "id": "6f1d6493-52e1-42e7-89b7-303d7e48e22b",
+        "nome": "Ana Ribeiro"
+      }
+    ],
+    "fontes": [
+      {
+        "id": "09964951-1692-420b-b779-422ea26d984c",
+        "nome": "Busca de marcas e patentes registradas",
+        "orgao": "INPI",
+        "link": "https://busca.inpi.gov.br/pePI/",
+        "gratuito": true
+      },
+      {
+        "id": "1e12c278-e245-46ff-a26b-cb4e77dddbb6",
+        "nome": "Certidão Negativa de Débitos Trabalhistas (CNDT)",
+        "orgao": "Tribunal Superior do Trabalho",
+        "link": "https://cndt-certidao.tst.jus.br/",
+        "gratuito": true
+      }
+    ],
+    "prioridades": ["Imediata", "Alta"],
+    "podeEditar": true,
+    "podeExcluir": true,
+    "podeBaixar": true,
+    "vendedor": true,
+    "podeAprovarSemNda": true
+  },
+  "get /v1/negocios/{id}/ebook": {
+    "vendedor": true,
+    "podeCriar": true,
+    "materiais": [
+      {
+        "material": "ebook_teaser",
+        "versoes": [
+          {
+            "id": "60bc73cb-d010-4da4-a56c-c334d28954d4",
+            "material": "ebook_teaser",
+            "numero": 1,
+            "situacao": "em_revisao",
+            "identidade": "tenant",
+            "incluiValuation": false,
+            "observacoes": null,
+            "criadoPor": "Ana Ribeiro",
+            "criadoEm": "2026-11-24T18:25:42.247Z",
+            "aprovadoPor": null,
+            "aprovadoEm": null,
+            "liberadoPor": null,
+            "liberadoEm": null,
+            "comentarios": [],
+            "podeComentar": true,
+            "podeAprovar": true,
+            "podeLiberar": false,
+            "podeExcluir": true,
+            "documentoVersaoId": "9b4f465a-4b44-4dbb-a815-3e2f6c29cc3a"
+          }
+        ]
+      },
+      {
+        "material": "ebook_completo",
+        "versoes": []
+      }
+    ]
+  },
+  "get /v1/empresas": {
+    "itens": [
+      {
+        "id": "3d58d652-a81a-48f4-8422-9e530e667fed",
+        "razaoSocial": "Agro Vale do Sul Ltda.",
+        "nomeFantasia": null,
+        "cnpj": null,
+        "pais": "Brasil",
+        "grupo": null,
+        "doContratante": false,
+        "inativa": false,
+        "pessoas": 0,
+        "rostos": []
+      },
+      {
+        "id": "88147351-3d14-4883-ac3e-77caf3424b37",
+        "razaoSocial": "Clínica Horizonte S.A.",
+        "nomeFantasia": null,
+        "cnpj": null,
+        "pais": "Brasil",
+        "grupo": null,
+        "doContratante": false,
+        "inativa": false,
+        "pessoas": 0,
+        "rostos": []
+      }
+    ],
+    "total": 46,
+    "pagina": 1,
+    "porPagina": 2
+  },
+  "get /v1/empresas/{id}": {
+    "id": "3d58d652-a81a-48f4-8422-9e530e667fed",
+    "tenantId": "fb7aea5d-116f-4adf-b3e5-69a99abcc510",
+    "cnpj": null,
+    "identificadorEstrangeiro": null,
+    "razaoSocial": "Agro Vale do Sul Ltda.",
+    "nomeFantasia": null,
+    "cnae": null,
+    "cep": null,
+    "logradouro": null,
+    "numero": null,
+    "complemento": null,
+    "bairro": null,
+    "cidade": null,
+    "uf": null,
+    "pais": "Brasil",
+    "site": null,
+    "telefone": null,
+    "email": null,
+    "emailFinanceiro": null,
+    "observacoes": null,
+    "grupoId": null,
+    "doContratante": false,
+    "inativaEm": null,
+    "criadoEm": "2026-11-23T17:09:34.580Z",
+    "atualizadoEm": "2026-11-23T17:09:34.580Z",
+    "grupo": null,
+    "vinculos": []
+  },
+  "get /v1/pessoas": {
+    "itens": [
+      {
+        "id": "cc0b0ccc-3159-4c0b-bdcb-76a7f7f3dc6e",
+        "nome": "Ana Ribeiro",
+        "email": "demo@exemplo.test",
+        "empresas": [],
+        "temConta": true,
+        "acesso": "usuario",
+        "inativa": false,
+        "foto": null
+      },
+      {
+        "id": "01a25000-65e7-44ac-aace-995b774f9347",
+        "nome": "Chave de API: Exemplos da documentação 1795799147205",
+        "email": null,
+        "empresas": [],
+        "temConta": true,
+        "acesso": "usuario",
+        "inativa": false,
+        "foto": null
+      }
+    ],
+    "total": 4,
+    "pagina": 1,
+    "porPagina": 2
+  },
+  "get /v1/pessoas/{id}": {
+    "id": "cc0b0ccc-3159-4c0b-bdcb-76a7f7f3dc6e",
+    "tenantId": "fb7aea5d-116f-4adf-b3e5-69a99abcc510",
+    "nome": "Ana Ribeiro",
+    "email": "demo@exemplo.test",
+    "telefone": null,
+    "nacionalidade": null,
+    "estadoCivil": null,
+    "profissao": null,
+    "dataNascimento": null,
+    "cep": null,
+    "logradouro": null,
+    "numero": null,
+    "complemento": null,
+    "bairro": null,
+    "cidade": null,
+    "uf": null,
+    "pais": "Brasil",
+    "rgOrgao": null,
+    "rgUf": null,
+    "conjugeNome": null,
+    "conjugeEmail": null,
+    "usuarioId": "6f1d6493-52e1-42e7-89b7-303d7e48e22b",
+    "inativaEm": null,
+    "criadoEm": "2026-11-23T17:09:34.514Z",
+    "atualizadoEm": "2026-11-23T17:09:34.514Z",
+    "acesso": "usuario",
+    "mascarados": {
+      "cpf": null,
+      "rg": null,
+      "documentoEstrangeiro": null,
+      "conjugeCpf": null,
+      "conjugeRg": null,
+      "conjugeRegime": null
+    },
+    "vinculos": []
+  },
+  "get /v1/contratos": {
+    "contratos": []
+  },
+  "get /v1/busca/documentos": {
+    "resultados": []
+  },
+  "get /v1/resumos/mensagens": {
+    "naoLidas": 0,
+    "pessoas": 0,
+    "negocios": 0,
+    "mencoes": 0,
+    "desde": null,
+    "trechos": []
+  },
+  "get /v1/auditoria": {
+    "itens": [
+      {
+        "id": "5b88bc2c-3bdc-4690-b964-b6909f101104",
+        "ocorridoEm": "2026-11-27T17:06:44.662Z",
+        "tipo": "documentos.busca",
+        "assunto": "documentos",
+        "ator": "Chave de API: Exemplos da documentação 1795799204050",
+        "alvoTipo": "tenant",
+        "alvoId": "fb7aea5d-116f-4adf-b3e5-69a99abcc510",
+        "negocio": null,
+        "detalhes": {
+          "porNegocio": false,
+          "resultados": 0
+        }
+      },
+      {
+        "id": "267c76d0-1359-4266-ab3d-c86bfec625f0",
+        "ocorridoEm": "2026-11-27T17:06:44.091Z",
+        "tipo": "chave_api.criada",
+        "assunto": "chave_api",
+        "ator": "Ana Ribeiro",
+        "alvoTipo": "chave_api",
+        "alvoId": "28a72886-ffd9-4cfd-a2b2-3b09c0636ca7",
+        "negocio": null,
+        "detalhes": {
+          "nome": "Exemplos da documentação 1795799204050"
+        }
+      }
+    ],
+    "total": 66,
+    "pagina": 1,
+    "porPagina": 2
+  },
+  "get /v1/templates": {
+    "templates": [
+      {
+        "codigo": "nda",
+        "alvo": "negocio",
+        "campos": ["negocio", "vendedoras"]
+      },
+      {
+        "codigo": "term-sheet",
+        "alvo": "negocio",
+        "campos": ["negocio", "tipo"]
+      }
+    ],
+    "negocios": [],
+    "contratos": []
+  }
+}

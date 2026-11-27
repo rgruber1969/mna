@@ -14,6 +14,7 @@ import { registrarRotasV1 } from "./rotas-v1";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { GUIA_DA_API } from "./guia-da-api";
+import EXEMPLOS from "./exemplos-da-api.json";
 
 /**
  * API REST (ADR-0004): Hono com especificação OpenAPI gerada a partir dos
@@ -141,6 +142,18 @@ api.on(["GET", "POST", "PUT"], "/inngest", (c) => atenderTarefas(c));
 
 // Rotas públicas da API (chave de API ou sessão), com a mesma camada de serviços das telas.
 registrarRotasV1(api);
+
+/**
+ * Exemplos de resposta na documentação: respostas reais do tenant de
+ * demonstração (dados fictícios), resumidas, geradas por `pnpm api:exemplos`.
+ */
+for (const d of api.openAPIRegistry.definitions) {
+  if (d.type !== "route") continue;
+  const exemplo = (EXEMPLOS as Record<string, unknown>)[`${d.route.method} ${d.route.path}`];
+  const ok = d.route.responses?.[200] as { content?: Record<string, { example?: unknown }> } | undefined;
+  const json = ok?.content?.["application/json"];
+  if (exemplo && json) json.example = exemplo;
+}
 
 /**
  * Raiz da API v1 (sem autenticação): só se apresenta e aponta a documentação,
