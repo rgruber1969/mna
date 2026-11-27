@@ -7,6 +7,7 @@ import { FormNovaChave } from "@/components/chaves/formulario";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { Ajuda, Etiqueta, estiloTabela } from "@/components/ui/basicos";
 import { dominio, protocolo } from "@/server/enderecos";
+import { BotaoComoUsarAApi } from "@/components/chaves/como-usar";
 
 /**
  * Bloco "Como usar a API": endereço deste tenant, documentação interativa,
@@ -17,8 +18,20 @@ function SobreAApi({ slug, t }: { slug: string; t: Awaited<ReturnType<typeof get
   const docs = process.env.NODE_ENV !== "production" || process.env.API_DOCS_ENABLED === "true";
   const codigo = "bg-surface text-text rounded px-1.5 py-0.5 font-mono text-xs break-all";
   return (
-    <section className="border-border bg-primary-soft/40 mb-6 rounded-xl border p-4">
-      <h3 className="text-text mb-3 text-sm font-semibold">{t("api.titulo")}</h3>
+    <div>
+      {docs && (
+        <a
+          href="/api/referencia"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-primary text-primary-foreground mb-2 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold"
+        >
+          {t("api.abrirGuia")} ↗
+        </a>
+      )}
+      <p className="text-muted mb-4 text-xs">
+        {docs ? t("api.abrirGuiaAjuda") : t("api.documentacaoFechada")}
+      </p>
       <dl className="grid gap-3 text-sm sm:grid-cols-[180px_1fr]">
         <dt className="text-muted">{t("api.endereco")}</dt>
         <dd>
@@ -28,6 +41,14 @@ function SobreAApi({ slug, t }: { slug: string; t: Awaited<ReturnType<typeof get
         <dd>
           {docs ? (
             <span className="flex flex-wrap gap-x-4 gap-y-1">
+              <a
+                href="/api/referencia"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {t("api.referencia")}
+              </a>
               <a
                 href="/api/docs"
                 target="_blank"
@@ -64,9 +85,9 @@ function SobreAApi({ slug, t }: { slug: string; t: Awaited<ReturnType<typeof get
         <li>{t("api.regras.endereco")}</li>
         <li>{t("api.regras.listas")}</li>
         <li>{t("api.regras.erros")}</li>
-        <li>{t("api.regras.guia")}</li>
+        <li>{t("api.regras.formatos")}</li>
       </ul>
-    </section>
+    </div>
   );
 }
 
@@ -90,9 +111,10 @@ export async function PainelDeChaves({ acesso }: { acesso: AcessoTenant }) {
       <div className="text-muted mb-4 flex items-center gap-2 text-sm">
         <Ajuda texto={t("ajuda")} />
         {t("titulo")}
+        <BotaoComoUsarAApi rotulo={t("api.titulo")} rotuloFechar={t("api.fechar")}>
+          <SobreAApi slug={acesso.tenant.slug} t={t} />
+        </BotaoComoUsarAApi>
       </div>
-
-      <SobreAApi slug={acesso.tenant.slug} t={t} />
       <div className="mb-6">
         <FormNovaChave perfis={perfis.map((p) => ({ id: p.id, nome: p.nome }))} />
       </div>

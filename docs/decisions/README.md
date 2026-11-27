@@ -73,6 +73,7 @@ projeto e em `docs/projeto/`.
 | Tela "Sobre" e foto no topo | "Sobre" no menu do usuário, com abas Versão (número em `src/config/versao.ts`), Segurança (o que é criptografado, sem detalhes que ajudem ataque) e Funcionalidades (reais e simuladas); foto do usuário também no topo, ao lado das notificações, abrindo o mesmo menu do rodapé lateral | 2026-11-26 |
 | Lançador de módulos | Ícone de grade no cabeçalho com os módulos que a pessoa pode ver (os itens do menu) e "Outras aplicações" configuradas em `src/config/aplicacoes.ts`, abrindo em nova aba | 2026-11-26 |
 | Valores em reais | Campo com máscara único (`CampoDeValor`: digita só números, "R$" à esquerda) em contratos, ofertas e valor estimado do negócio | 2026-11-26 |
+| Documentação da API | Página de referência amigável dentro do sistema (`/api/referencia`, Scalar servido pelo próprio pacote, sem CDN, sem IA, sem telemetria e sem fontes externas), com o guia de integração como introdução (`src/server/api/guia-da-api.ts`); Swagger mantido como versão técnica; mesma regra de produção (`API_DOCS_ENABLED`); nas Chaves de API, botão "Como usar a API" abre as instruções numa janela. Escolha entre: dentro do sistema, GitHub Pages ou os dois | 2026-11-27 |
 | Configurações | Um item de menu "Configurações", com abas **verticais** em dois grupos (Tenant; Cadastros auxiliares), em ordem alfabética dentro de cada grupo (ajuste de 2026-11-23); cadastros auxiliares em tabela, com as ações em colunas e inclusão na última linha ("Adicionar") | 2026-11-19 |
 
 ## Substituídas

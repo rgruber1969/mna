@@ -39,9 +39,9 @@
       "titulo": "Como usar a API",
       "endereco": "Endereço da API",
       "documentacao": "Documentação",
-      "swagger": "Documentação interativa (Swagger)",
+      "swagger": "Swagger (técnico)",
       "openapi": "Especificação OpenAPI (JSON)",
-      "documentacaoFechada": "Fechada neste ambiente; peça o guia de integração ao suporte.",
+      "documentacaoFechada": "A documentação está fechada neste ambiente; peça o guia de integração ao suporte.",
       "autenticacao": "Autenticação",
       "status": "Teste rápido (sem chave)",
       "regras": {
@@ -50,8 +50,12 @@
         "endereco": "A chave só funciona no endereço deste escritório.",
         "listas": "Listas: parâmetros pagina, porPagina (até 100) e busca; a resposta traz itens e total.",
         "erros": "Erros em JSON: 401 sem chave ou chave inválida, 403 sem permissão, 404 não encontrado (ou sem acesso), 400 dado inválido.",
-        "guia": "Datas no formato AAAA-MM-DD e valores com ponto decimal (1234.56). O guia de integração completo, com exemplos, pode ser pedido ao suporte."
-      }
+        "formatos": "Datas no formato AAAA-MM-DD e valores com ponto decimal (1234.56)."
+      },
+      "abrirGuia": "Abrir o guia de integração e a referência da API",
+      "abrirGuiaAjuda": "Abre em nova aba: guia com exemplos, todas as rotas com os campos e um botão para testar com a sua chave.",
+      "referencia": "Guia e referência",
+      "fechar": "Fechar"
     }
   }
 }

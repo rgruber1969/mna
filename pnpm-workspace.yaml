@@ -7,3 +7,6 @@ allowBuilds:
   # têm binários prontos por plataforma, sem precisar compilar.
   "@parcel/watcher": false
   "@swc/core": false
+  # Vem com o Scalar (documentação da API); servimos o arquivo pronto do
+  # navegador (standalone.js), sem precisar do script de instalação.
+  vue-demi: false

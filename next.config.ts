@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:caminho*", headers: [{ key: "Referrer-Policy", value: "same-origin" }] }];
   },
+  // Página de referência da API (Scalar): o script do navegador é lido do pacote pela rota da API.
+  outputFileTracingIncludes: {
+    "/api/[[...rota]]": ["./node_modules/@scalar/api-reference/dist/browser/standalone.js"],
+  },
   // Envios por server action: foto da conta (até 2 MB) e anexos do cadastro (até 10 MB).
   experimental: {
     serverActions: { bodySizeLimit: "11mb" },

@@ -11,6 +11,9 @@ import { serve as servirTarefas } from "inngest/hono";
 import { inngest } from "@/server/tarefas/cliente";
 import { funcoes } from "@/server/tarefas/funcoes";
 import { registrarRotasV1 } from "./rotas-v1";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { GUIA_DA_API } from "./guia-da-api";
 
 /**
  * API REST (ADR-0004): Hono com especificação OpenAPI gerada a partir dos
@@ -152,8 +155,47 @@ if (documentacaoHabilitada) {
     info: {
       title: `API ${produto.nome}`,
       version: produto.versao,
-      description: "API REST da plataforma.",
+      // O guia de integração vira a introdução da página de referência.
+      description: GUIA_DA_API,
     },
   });
   api.get("/docs", swaggerUI({ url: "/api/openapi.json" }));
+
+  /**
+   * Referência amigável da API (Scalar, decisão de 2026-11-27): o mesmo
+   * OpenAPI, com o guia como introdução, busca e "testar" com a chave. O
+   * script vem do pacote e é servido por aqui (sem CDN externo).
+   */
+  let scalar: Promise<Buffer> | null = null;
+  api.get("/referencia/scalar.js", async (c) => {
+    // Caminho no disco (o pacote não exporta o arquivo como módulo); no build de
+    // produção ele vai junto por outputFileTracingIncludes (next.config.ts).
+    scalar ??= readFile(
+      path.join(process.cwd(), "node_modules/@scalar/api-reference/dist/browser/standalone.js"),
+    );
+    return c.body(new Uint8Array(await scalar), 200, {
+      "content-type": "text/javascript; charset=utf-8",
+      "cache-control": "public, max-age=86400",
+      "x-content-type-options": "nosniff",
+    });
+  });
+  api.get("/referencia", (c) => {
+    const config = JSON.stringify({
+      theme: "default",
+      // Nada sai daqui para o Scalar: sem barra de desenvolvedor (propaganda), sem IA,
+      // sem telemetria e sem fontes externas (as do sistema operacional bastam).
+      showDeveloperTools: "never",
+      showToolbar: "never",
+      telemetry: false,
+      agent: { disabled: true },
+      withDefaultFonts: false,
+      hideClientButton: false,
+      defaultHttpClient: { targetKey: "shell", clientKey: "curl" },
+      metaData: { title: `API ${produto.nome}` },
+    }).replace(/</g, "\\u003c");
+    const titulo = `API ${produto.nome}`.replace(/[<>&"]/g, "");
+    return c.html(
+      `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${titulo}</title></head><body><script id="api-reference" data-url="/api/openapi.json" data-configuration='${config.replace(/'/g, "&#39;")}'></script><script src="/api/referencia/scalar.js"></script></body></html>`,
+    );
+  });
 }
