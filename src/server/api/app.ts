@@ -14,7 +14,12 @@ import { registrarRotasV1 } from "./rotas-v1";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { GUIA_DA_API } from "./guia-da-api";
-import EXEMPLOS from "./exemplos-da-api.json";
+import { completarExemplos } from "./exemplos";
+import { protocolo, resolverArea } from "@/server/enderecos";
+
+/** Origem (protocolo + host) do pedido, só se o host for um endereço válido da aplicação. */
+const origemDoPedido = (host: string | undefined) =>
+  host && resolverArea(host).tipo !== "invalido" ? `${protocolo()}://${host}` : "/";
 
 /**
  * API REST (ADR-0004): Hono com especificação OpenAPI gerada a partir dos
@@ -144,18 +149,6 @@ api.on(["GET", "POST", "PUT"], "/inngest", (c) => atenderTarefas(c));
 registrarRotasV1(api);
 
 /**
- * Exemplos de resposta na documentação: respostas reais do tenant de
- * demonstração (dados fictícios), resumidas, geradas por `pnpm api:exemplos`.
- */
-for (const d of api.openAPIRegistry.definitions) {
-  if (d.type !== "route") continue;
-  const exemplo = (EXEMPLOS as Record<string, unknown>)[`${d.route.method} ${d.route.path}`];
-  const ok = d.route.responses?.[200] as { content?: Record<string, { example?: unknown }> } | undefined;
-  const json = ok?.content?.["application/json"];
-  if (exemplo && json) json.example = exemplo;
-}
-
-/**
  * Raiz da API v1 (sem autenticação): só se apresenta e aponta a documentação,
  * para quem abre o endereço no navegador não ver um 404.
  */
@@ -178,14 +171,21 @@ const documentacaoHabilitada =
   process.env.NODE_ENV !== "production" || process.env.API_DOCS_ENABLED === "true";
 
 if (documentacaoHabilitada) {
-  api.doc31("/openapi.json", {
-    openapi: "3.1.0",
-    info: {
-      title: `API ${produto.nome}`,
-      version: produto.versao,
-      // O guia de integração vira a introdução da página de referência.
-      description: GUIA_DA_API,
-    },
+  // Especificação OpenAPI com o endereço deste escritório (para os exemplos de chamada
+  // saírem completos) e os exemplos de chamada e de retorno (exemplos.ts).
+  api.get("/openapi.json", (c) => {
+    const doc = api.getOpenAPI31Document({
+      openapi: "3.1.0",
+      info: {
+        title: `API ${produto.nome}`,
+        version: produto.versao,
+        // O guia de integração vira a introdução da página de referência.
+        description: GUIA_DA_API,
+      },
+      // Host do pedido (o Next reescreve a URL por dentro); só entra no documento, se for válido.
+      servers: [{ url: origemDoPedido(c.req.header("host")), description: "Este escritório" }],
+    });
+    return c.json(completarExemplos(doc as never));
   });
   api.get("/docs", swaggerUI({ url: "/api/openapi.json" }));
 
