@@ -6,6 +6,69 @@ import { listarPerfis } from "@/server/services/perfis";
 import { FormNovaChave } from "@/components/chaves/formulario";
 import { BotaoDeAcao } from "@/components/usuarios/formularios";
 import { Ajuda, Etiqueta, estiloTabela } from "@/components/ui/basicos";
+import { dominio, protocolo } from "@/server/enderecos";
+
+/**
+ * Bloco "Como usar a API": endereço deste tenant, documentação interativa,
+ * autenticação e regras principais (guia completo: docs/integracao/guia-da-api.md).
+ */
+function SobreAApi({ slug, t }: { slug: string; t: Awaited<ReturnType<typeof getTranslations<"chaves">>> }) {
+  const raiz = `${protocolo()}://${slug}.${dominio()}/api`;
+  const docs = process.env.NODE_ENV !== "production" || process.env.API_DOCS_ENABLED === "true";
+  const codigo = "bg-surface text-text rounded px-1.5 py-0.5 font-mono text-xs break-all";
+  return (
+    <section className="border-border bg-primary-soft/40 mb-6 rounded-xl border p-4">
+      <h3 className="text-text mb-3 text-sm font-semibold">{t("api.titulo")}</h3>
+      <dl className="grid gap-3 text-sm sm:grid-cols-[180px_1fr]">
+        <dt className="text-muted">{t("api.endereco")}</dt>
+        <dd>
+          <code className={codigo}>{raiz}/v1</code>
+        </dd>
+        <dt className="text-muted">{t("api.documentacao")}</dt>
+        <dd>
+          {docs ? (
+            <span className="flex flex-wrap gap-x-4 gap-y-1">
+              <a
+                href="/api/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {t("api.swagger")}
+              </a>
+              <a
+                href="/api/openapi.json"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {t("api.openapi")}
+              </a>
+            </span>
+          ) : (
+            <span className="text-muted">{t("api.documentacaoFechada")}</span>
+          )}
+        </dd>
+        <dt className="text-muted">{t("api.autenticacao")}</dt>
+        <dd>
+          <code className={codigo}>Authorization: Bearer chv_…</code>
+        </dd>
+        <dt className="text-muted">{t("api.status")}</dt>
+        <dd>
+          <code className={codigo}>GET {raiz}/status</code>
+        </dd>
+      </dl>
+      <ul className="text-muted mt-4 list-disc space-y-1 pl-5 text-xs leading-relaxed">
+        <li>{t("api.regras.perfil")}</li>
+        <li>{t("api.regras.segredo")}</li>
+        <li>{t("api.regras.endereco")}</li>
+        <li>{t("api.regras.listas")}</li>
+        <li>{t("api.regras.erros")}</li>
+        <li>{t("api.regras.guia")}</li>
+      </ul>
+    </section>
+  );
+}
 
 /** Chaves de API do tenant (itens 25 e 26), dentro de Configurações: só administradores. */
 export async function PainelDeChaves({ acesso }: { acesso: AcessoTenant }) {
@@ -29,6 +92,7 @@ export async function PainelDeChaves({ acesso }: { acesso: AcessoTenant }) {
         {t("titulo")}
       </div>
 
+      <SobreAApi slug={acesso.tenant.slug} t={t} />
       <div className="mb-6">
         <FormNovaChave perfis={perfis.map((p) => ({ id: p.id, nome: p.nome }))} />
       </div>

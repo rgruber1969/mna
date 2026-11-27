@@ -34,6 +34,24 @@
       "dataInvalida": "Data inválida.",
       "dataNoPassado": "A validade precisa ser hoje ou depois.",
       "naoEncontrada": "Chave não encontrada."
+    },
+    "api": {
+      "titulo": "Como usar a API",
+      "endereco": "Endereço da API",
+      "documentacao": "Documentação",
+      "swagger": "Documentação interativa (Swagger)",
+      "openapi": "Especificação OpenAPI (JSON)",
+      "documentacaoFechada": "Fechada neste ambiente; peça o guia de integração ao suporte.",
+      "autenticacao": "Autenticação",
+      "status": "Teste rápido (sem chave)",
+      "regras": {
+        "perfil": "A chave age como um usuário de serviço: vê e faz só o que o perfil escolhido permite, e tudo fica na auditoria, como nas telas.",
+        "segredo": "O segredo aparece uma única vez, na criação: guarde-o num cofre de segredos. Revogar corta o acesso na hora.",
+        "endereco": "A chave só funciona no endereço deste escritório.",
+        "listas": "Listas: parâmetros pagina, porPagina (até 100) e busca; a resposta traz itens e total.",
+        "erros": "Erros em JSON: 401 sem chave ou chave inválida, 403 sem permissão, 404 não encontrado (ou sem acesso), 400 dado inválido.",
+        "guia": "Datas no formato AAAA-MM-DD e valores com ponto decimal (1234.56). O guia de integração completo, com exemplos, pode ser pedido ao suporte."
+      }
     }
   }
 }
